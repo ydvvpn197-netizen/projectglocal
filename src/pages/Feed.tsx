@@ -5,88 +5,50 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { usePosts, Post } from "@/hooks/usePosts";
+import { format } from 'date-fns';
 
 const Feed = () => {
-  const posts = [
-    {
-      id: 1,
-      type: "event",
-      author: "Local Events Team",
-      avatar: "LE",
-      time: "2 hours ago",
-      title: "Jazz Night at Downtown Cafe",
-      content: "Join us for an evening of smooth jazz and great coffee. Local artists will be performing original compositions.",
-      location: "Downtown Cafe, 2.5 km away",
-      eventDate: "Tonight, 8 PM",
-      likes: 24,
-      comments: 8,
-      tags: ["Music", "Jazz", "Coffee"]
-    },
-    {
-      id: 2,
-      type: "artist",
-      author: "Sarah Johnson",
-      avatar: "SJ",
-      time: "4 hours ago",
-      title: "Available for Portrait Sessions",
-      content: "Professional photographer offering outdoor portrait sessions this weekend. Special rates for families and couples!",
-      location: "City Park Area, 1.8 km away",
-      price: "$150/session",
-      rating: 4.8,
-      likes: 18,
-      comments: 12,
-      tags: ["Photography", "Portraits", "Outdoors"]
-    },
-    {
-      id: 3,
-      type: "discussion",
-      author: "Community Board",
-      avatar: "CB",
-      time: "6 hours ago",
-      title: "New Park Development Discussion",
-      content: "The city is planning a new community park. Share your thoughts on what amenities you'd like to see included.",
-      location: "Riverside District",
-      groupMembers: 156,
-      likes: 45,
-      comments: 23,
-      tags: ["Community", "Parks", "Development"]
-    },
-    {
-      id: 4,
-      type: "user_post",
-      author: "Mike Chen",
-      avatar: "MC",
-      time: "8 hours ago",
-      title: "Amazing street art discovered!",
-      content: "Found this incredible mural during my morning walk. The local art scene is really thriving! 🎨",
-      location: "Arts District, 3.2 km away",
-      likes: 67,
-      comments: 15,
-      tags: ["Art", "Street Art", "Local Culture"]
-    }
-  ];
+  const { posts, loading, toggleLike } = usePosts();
 
-  const PostCard = ({ post }: { post: any }) => (
+  const PostCard = ({ post }: { post: Post }) => {
+    const getInitials = (name?: string) => {
+      if (!name) return 'U';
+      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    };
+
+    const getTimeAgo = (dateString: string) => {
+      try {
+        return format(new Date(dateString), 'MMM d, yyyy');
+      } catch {
+        return 'Unknown date';
+      }
+    };
+
+    return (
     <Card className="mb-6 shadow-sm hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="" />
+              <AvatarImage src={post.profiles?.avatar_url || ""} />
               <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                {post.avatar}
+                {getInitials(post.profiles?.display_name || post.profiles?.username)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium text-sm">{post.author}</p>
+              <p className="font-medium text-sm">
+                {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
+              </p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {post.time}
-                {post.location && (
+                {getTimeAgo(post.created_at)}
+                {(post.location_city || post.event_location) && (
                   <>
                     <span>•</span>
                     <MapPin className="h-3 w-3" />
-                    {post.location}
+                    {post.event_location || `${post.location_city}, ${post.location_state}`}
                   </>
                 )}
               </div>
@@ -111,51 +73,60 @@ const Feed = () => {
         </div>
 
         {/* Event specific info */}
-        {post.type === "event" && post.eventDate && (
+        {post.type === "event" && post.event_date && (
           <div className="flex items-center gap-2 text-sm bg-primary/5 p-3 rounded-lg">
             <Calendar className="h-4 w-4 text-primary" />
-            <span className="font-medium text-primary">{post.eventDate}</span>
+            <span className="font-medium text-primary">
+              {format(new Date(post.event_date), 'PPP p')}
+            </span>
           </div>
         )}
 
         {/* Artist specific info */}
-        {post.type === "artist" && (
+        {post.type === "artist" && post.price_range && (
           <div className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-yellow-500" />
-              <span className="text-sm font-medium">{post.rating}</span>
+              <span className="text-sm font-medium">New Artist</span>
             </div>
-            <span className="text-sm font-medium text-primary">{post.price}</span>
+            <span className="text-sm font-medium text-primary">{post.price_range}</span>
           </div>
         )}
 
         {/* Discussion specific info */}
-        {post.type === "discussion" && post.groupMembers && (
+        {post.type === "discussion" && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" />
-            <span>{post.groupMembers} members in this discussion</span>
+            <span>Community discussion</span>
           </div>
         )}
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2">
-          {post.tags.map((tag: string) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {post.tags.map((tag: string) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-between pt-2 border-t">
           <div className="flex items-center gap-6">
-            <Button variant="ghost" size="sm" className="gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => toggleLike(post.id)}
+            >
               <Heart className="h-4 w-4" />
-              {post.likes}
+              {post.likes_count || 0}
             </Button>
             <Button variant="ghost" size="sm" className="gap-2">
               <MessageCircle className="h-4 w-4" />
-              {post.comments}
+              {post.comments_count || 0}
             </Button>
             <Button variant="ghost" size="sm" className="gap-2">
               <Share className="h-4 w-4" />
@@ -175,10 +146,24 @@ const Feed = () => {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="container max-w-4xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
-    <MainLayout>
+    <ProtectedRoute>
+      <MainLayout>
       <div className="container max-w-4xl mx-auto p-6">
         {/* Feed Header */}
         <div className="mb-6">
@@ -230,7 +215,7 @@ const Feed = () => {
 
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-0">
-              {posts.filter(post => post.type === "user_post").map((post) => (
+              {posts.filter(post => post.type === "post").map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
@@ -238,6 +223,7 @@ const Feed = () => {
         </Tabs>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 };
 

@@ -8,13 +8,20 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/MainLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useState } from "react";
 import { X, Plus, MapPin, Calendar, DollarSign, Users } from "lucide-react";
+import { usePosts } from "@/hooks/usePosts";
+import { useNavigate } from "react-router-dom";
 
 const CreatePost = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  const { createPost } = usePosts();
+  const navigate = useNavigate();
 
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -27,8 +34,35 @@ const CreatePost = () => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  const handleCreatePost = async (e: React.FormEvent, type: 'post' | 'event' | 'artist' | 'discussion' | 'service') => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    setLoading(true);
+    try {
+      const postData = {
+        type,
+        title: formData.get('title') as string,
+        content: formData.get('content') as string,
+        event_date: formData.get('eventDate') ? new Date(formData.get('eventDate') as string).toISOString() : undefined,
+        event_location: formData.get('eventLocation') as string || formData.get('serviceArea') as string,
+        price_range: formData.get('eventPrice') as string || formData.get('servicePrice') as string,
+        tags: tags.length > 0 ? tags : undefined
+      };
+
+      const { error } = await createPost(postData);
+      if (!error) {
+        navigate('/feed');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <MainLayout>
+    <ProtectedRoute>
+      <MainLayout>
       <div className="container max-w-3xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-2">Create New Post</h1>
@@ -53,19 +87,26 @@ const CreatePost = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="post-title">Title</Label>
-                  <Input id="post-title" placeholder="What's on your mind?" />
-                </div>
+                <form onSubmit={(e) => handleCreatePost(e, 'post')} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="post-title">Title</Label>
+                    <Input 
+                      id="post-title" 
+                      name="title"
+                      placeholder="What's on your mind?" 
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="post-content">Content</Label>
-                  <Textarea 
-                    id="post-content" 
-                    placeholder="Share your thoughts, experiences, or updates..."
-                    className="min-h-32"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="post-content">Content</Label>
+                    <Textarea 
+                      id="post-content" 
+                      name="content"
+                      placeholder="Share your thoughts, experiences, or updates..."
+                      className="min-h-32"
+                      required
+                    />
+                  </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="post-location">Location (Optional)</Label>
@@ -119,9 +160,15 @@ const CreatePost = () => {
                   />
                 </div>
 
-                <Button className="w-full" size="lg">
-                  Share Post
-                </Button>
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Share Post"}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>
@@ -136,11 +183,17 @@ const CreatePost = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="event-title">Event Title</Label>
-                    <Input id="event-title" placeholder="Amazing Event Name" />
-                  </div>
+                <form onSubmit={(e) => handleCreatePost(e, 'event')} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="event-title">Event Title</Label>
+                      <Input 
+                        id="event-title" 
+                        name="title"
+                        placeholder="Amazing Event Name" 
+                        required
+                      />
+                    </div>
                   <div className="space-y-2">
                     <Label htmlFor="event-category">Category</Label>
                     <Select>
@@ -159,14 +212,16 @@ const CreatePost = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="event-description">Description</Label>
-                  <Textarea 
-                    id="event-description" 
-                    placeholder="Describe your event..."
-                    className="min-h-24"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="event-description">Description</Label>
+                    <Textarea 
+                      id="event-description"
+                      name="content"
+                      placeholder="Describe your event..."
+                      className="min-h-24"
+                      required
+                    />
+                  </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -174,7 +229,8 @@ const CreatePost = () => {
                     <div className="relative">
                       <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        id="event-date" 
+                        id="event-date"
+                        name="eventDate"
                         type="datetime-local"
                         className="pl-10"
                       />
@@ -185,7 +241,8 @@ const CreatePost = () => {
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        id="event-location" 
+                        id="event-location"
+                        name="eventLocation"
                         placeholder="Event venue"
                         className="pl-10"
                       />
@@ -199,7 +256,8 @@ const CreatePost = () => {
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        id="event-price" 
+                        id="event-price"
+                        name="eventPrice"
                         placeholder="0.00"
                         type="number"
                         className="pl-10"
@@ -220,9 +278,15 @@ const CreatePost = () => {
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg">
-                  Create Event
-                </Button>
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Create Event"}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>
@@ -237,11 +301,17 @@ const CreatePost = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="service-title">Service Title</Label>
-                    <Input id="service-title" placeholder="What service do you offer?" />
-                  </div>
+                <form onSubmit={(e) => handleCreatePost(e, 'artist')} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="service-title">Service Title</Label>
+                      <Input 
+                        id="service-title" 
+                        name="title"
+                        placeholder="What service do you offer?" 
+                        required
+                      />
+                    </div>
                   <div className="space-y-2">
                     <Label htmlFor="service-category">Category</Label>
                     <Select>
@@ -262,14 +332,16 @@ const CreatePost = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="service-description">Description</Label>
-                  <Textarea 
-                    id="service-description" 
-                    placeholder="Describe your service, experience, and what you offer..."
-                    className="min-h-24"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="service-description">Description</Label>
+                    <Textarea 
+                      id="service-description"
+                      name="content"
+                      placeholder="Describe your service, experience, and what you offer..."
+                      className="min-h-24"
+                      required
+                    />
+                  </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -277,7 +349,8 @@ const CreatePost = () => {
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        id="service-price" 
+                        id="service-price"
+                        name="servicePrice"
                         placeholder="50 - 150"
                         className="pl-10"
                       />
@@ -304,16 +377,23 @@ const CreatePost = () => {
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      id="service-area" 
+                      id="service-area"
+                      name="serviceArea"
                       placeholder="Within 15km of current location"
                       className="pl-10"
                     />
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg">
-                  List Service
-                </Button>
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "List Service"}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>
@@ -328,10 +408,16 @@ const CreatePost = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="discussion-title">Discussion Topic</Label>
-                  <Input id="discussion-title" placeholder="What would you like to discuss?" />
-                </div>
+                <form onSubmit={(e) => handleCreatePost(e, 'discussion')} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="discussion-title">Discussion Topic</Label>
+                    <Input 
+                      id="discussion-title" 
+                      name="title"
+                      placeholder="What would you like to discuss?" 
+                      required
+                    />
+                  </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="discussion-category">Category</Label>
@@ -351,14 +437,16 @@ const CreatePost = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="discussion-content">Discussion Starter</Label>
-                  <Textarea 
-                    id="discussion-content" 
-                    placeholder="Share your thoughts, ask questions, or provide context for the discussion..."
-                    className="min-h-32"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="discussion-content">Discussion Starter</Label>
+                    <Textarea 
+                      id="discussion-content"
+                      name="content"
+                      placeholder="Share your thoughts, ask questions, or provide context for the discussion..."
+                      className="min-h-32"
+                      required
+                    />
+                  </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="discussion-rules">Discussion Guidelines (Optional)</Label>
@@ -369,15 +457,22 @@ const CreatePost = () => {
                   />
                 </div>
 
-                <Button className="w-full" size="lg">
-                  Start Discussion
-                </Button>
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Start Discussion"}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 };
 
