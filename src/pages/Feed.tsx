@@ -8,9 +8,12 @@ import { MainLayout } from "@/components/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { usePosts, Post } from "@/hooks/usePosts";
 import { format } from 'date-fns';
+import { useSampleData } from "@/hooks/useSampleData";
+import { Link } from "react-router-dom";
 
 const Feed = () => {
   const { posts, loading, toggleLike } = usePosts();
+  const { createSamplePosts, loading: sampleLoading } = useSampleData();
 
   const PostCard = ({ post }: { post: Post }) => {
     const getInitials = (name?: string) => {
@@ -56,11 +59,11 @@ const Feed = () => {
           </div>
           <Badge variant={
             post.type === "event" ? "default" : 
-            post.type === "artist" ? "secondary" :
+            post.type === "service" ? "secondary" :
             post.type === "discussion" ? "outline" : "secondary"
           }>
             {post.type === "event" ? "Event" : 
-             post.type === "artist" ? "Artist" :
+             post.type === "service" ? "Service" :
              post.type === "discussion" ? "Discussion" : "Post"}
           </Badge>
         </div>
@@ -82,12 +85,12 @@ const Feed = () => {
           </div>
         )}
 
-        {/* Artist specific info */}
-        {post.type === "artist" && post.price_range && (
+        {/* Service specific info */}
+        {post.type === "service" && post.price_range && (
           <div className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-yellow-500" />
-              <span className="text-sm font-medium">New Artist</span>
+              <span className="text-sm font-medium">Service Available</span>
             </div>
             <span className="text-sm font-medium text-primary">{post.price_range}</span>
           </div>
@@ -137,7 +140,7 @@ const Feed = () => {
           {post.type === "event" && (
             <Button size="sm">Interested</Button>
           )}
-          {post.type === "artist" && (
+          {post.type === "service" && (
             <Button size="sm">Book Now</Button>
           )}
           {post.type === "discussion" && (
@@ -167,8 +170,21 @@ const Feed = () => {
       <div className="container max-w-4xl mx-auto p-6">
         {/* Feed Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Your Local Feed</h1>
-          <p className="text-muted-foreground">Discover what's happening in your community</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">Your Local Feed</h1>
+              <p className="text-muted-foreground">Discover what's happening in your community</p>
+            </div>
+            {posts.length === 0 && !loading && (
+              <Button 
+                onClick={createSamplePosts} 
+                disabled={sampleLoading}
+                variant="outline"
+              >
+                {sampleLoading ? "Creating..." : "Add Sample Data"}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Feed Tabs */}
@@ -176,16 +192,25 @@ const Feed = () => {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="artists">Artists</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
             <TabsTrigger value="discussions">Discussions</TabsTrigger>
             <TabsTrigger value="posts">Posts</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6">
             <div className="space-y-0">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+              {posts.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">No posts yet. Be the first to share!</p>
+                  <Button asChild>
+                    <Link to="/create">Create Your First Post</Link>
+                  </Button>
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -197,9 +222,9 @@ const Feed = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="artists" className="mt-6">
+          <TabsContent value="services" className="mt-6">
             <div className="space-y-0">
-              {posts.filter(post => post.type === "artist").map((post) => (
+              {posts.filter(post => post.type === "service").map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>

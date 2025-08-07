@@ -34,7 +34,7 @@ const CreatePost = () => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleCreatePost = async (e: React.FormEvent, type: 'post' | 'event' | 'artist' | 'discussion' | 'service') => {
+  const handleCreatePost = async (e: React.FormEvent, type: 'post' | 'event' | 'service' | 'discussion') => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
@@ -301,7 +301,7 @@ const CreatePost = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <form onSubmit={(e) => handleCreatePost(e, 'artist')} className="space-y-6">
+                <form onSubmit={(e) => handleCreatePost(e, 'service')} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="service-title">Service Title</Label>

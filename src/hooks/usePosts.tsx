@@ -5,7 +5,7 @@ import { useToast } from './use-toast';
 
 export interface Post {
   id: string;
-  type: 'post' | 'event' | 'artist' | 'discussion' | 'service';
+  type: 'post' | 'event' | 'service' | 'discussion';
   title?: string;
   content: string;
   user_id: string;
@@ -68,7 +68,7 @@ export const usePosts = () => {
   };
 
   const createPost = async (postData: {
-    type: 'post' | 'event' | 'artist' | 'discussion' | 'service';
+    type: 'post' | 'event' | 'service' | 'discussion';
     title?: string;
     content: string;
     event_date?: string;
