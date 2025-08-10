@@ -11,6 +11,9 @@ import LocationSetup from "./pages/LocationSetup";
 import Onboarding from "./pages/Onboarding";
 import Feed from "./pages/Feed";
 import CreatePost from "./pages/CreatePost";
+import Discover from "./pages/Discover";
+import Community from "./pages/Community";
+import Events from "./pages/Events";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +32,9 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/feed" element={<Feed />} />
             <Route path="/create" element={<CreatePost />} />
+            <Route path="/discover" element={<Discover />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/events" element={<Events />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithOAuth: (provider: 'google' | 'facebook') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -93,6 +94,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const signInWithOAuth = async (provider: 'google' | 'facebook') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/feed`
+      }
+    });
+
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+
+    return { error };
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -116,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading,
       signUp,
       signIn,
+      signInWithOAuth,
       signOut
     }}>
       {children}

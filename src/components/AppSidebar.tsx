@@ -17,8 +17,7 @@ const mainItems = [
   { title: "Feed", url: "/feed", icon: Home },
   { title: "Discover", url: "/discover", icon: Search },
   { title: "Events", url: "/events", icon: Calendar },
-  { title: "Artists", url: "/artists", icon: Zap },
-  { title: "Groups", url: "/groups", icon: Users },
+  { title: "Community", url: "/community", icon: Users },
 ];
 
 const userItems = [
