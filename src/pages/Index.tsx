@@ -68,45 +68,61 @@ const Index = () => {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-              <MapPin className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold">Local Discovery</h3>
-            <p className="text-muted-foreground">
-              Find events, services, and activities happening near you
-            </p>
-          </div>
+          <Button variant="ghost" className="h-auto p-0" asChild>
+            <Link to="/discover">
+              <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border hover:bg-card/80 transition-colors">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Local Discovery</h3>
+                <p className="text-muted-foreground">
+                  Find events, services, and activities happening near you
+                </p>
+              </div>
+            </Link>
+          </Button>
           
-          <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-              <Zap className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold">Book Artists</h3>
-            <p className="text-muted-foreground">
-              Hire local talent for your events and special occasions
-            </p>
-          </div>
+          <Button variant="ghost" className="h-auto p-0" asChild>
+            <Link to="/book-artist">
+              <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border hover:bg-card/80 transition-colors">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Book Artists</h3>
+                <p className="text-muted-foreground">
+                  Hire local talent for your events and special occasions
+                </p>
+              </div>
+            </Link>
+          </Button>
           
-          <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-              <Users className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold">Join Groups</h3>
-            <p className="text-muted-foreground">
-              Connect with like-minded people in your area
-            </p>
-          </div>
+          <Button variant="ghost" className="h-auto p-0" asChild>
+            <Link to="/community">
+              <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border hover:bg-card/80 transition-colors">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Join Community</h3>
+                <p className="text-muted-foreground">
+                  Connect with like-minded people in your area
+                </p>
+              </div>
+            </Link>
+          </Button>
           
-          <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-              <Calendar className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold">Create Events</h3>
-            <p className="text-muted-foreground">
-              Organize and promote your own local events
-            </p>
-          </div>
+          <Button variant="ghost" className="h-auto p-0" asChild>
+            <Link to="/events">
+              <div className="text-center space-y-4 p-6 rounded-lg bg-card/50 border hover:bg-card/80 transition-colors">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
+                  <Calendar className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Create Events</h3>
+                <p className="text-muted-foreground">
+                  Organize and promote your own local events
+                </p>
+              </div>
+            </Link>
+          </Button>
         </div>
       </section>
 

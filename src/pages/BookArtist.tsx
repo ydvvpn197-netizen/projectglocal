@@ -1,0 +1,375 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MainLayout } from "@/components/MainLayout";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { CalendarIcon, Star, Users, MapPin, Clock } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+interface Artist {
+  id: string;
+  display_name: string;
+  bio: string;
+  avatar_url?: string;
+  location_city: string;
+  location_state: string;
+  is_verified: boolean;
+  specialty?: string;
+  rating?: number;
+}
+
+const BookArtist = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [bookingDate, setBookingDate] = useState<Date>();
+  const [bookingData, setBookingData] = useState({
+    eventType: "",
+    duration: "",
+    budget: "",
+    location: "",
+    description: "",
+    contactEmail: "",
+    contactPhone: ""
+  });
+
+  useEffect(() => {
+    fetchArtists();
+  }, []);
+
+  const fetchArtists = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .not('display_name', 'is', null)
+        .not('bio', 'is', null)
+        .limit(20);
+
+      if (error) throw error;
+
+      // Transform data and add mock specialty/rating for demo
+      const transformedArtists = data.map(profile => ({
+        ...profile,
+        specialty: ['Musician', 'Photographer', 'Painter', 'Performer', 'DJ'][Math.floor(Math.random() * 5)],
+        rating: 4.2 + Math.random() * 0.8
+      }));
+
+      setArtists(transformedArtists);
+    } catch (error) {
+      console.error('Error fetching artists:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load artists. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBooking = async () => {
+    if (!selectedArtist || !bookingDate) {
+      toast({
+        title: "Missing Information",
+        description: "Please select an artist and booking date.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to make a booking request.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Create a booking post
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          type: 'post',
+          title: `Booking Request: ${selectedArtist.display_name}`,
+          content: `Event Type: ${bookingData.eventType}\nDate: ${format(bookingDate, 'PPP')}\nDuration: ${bookingData.duration}\nBudget: ${bookingData.budget}\nLocation: ${bookingData.location}\nDescription: ${bookingData.description}`,
+          contact_info: `Email: ${bookingData.contactEmail}\nPhone: ${bookingData.contactPhone}`,
+          event_date: bookingDate.toISOString(),
+          event_location: bookingData.location,
+          price_range: bookingData.budget,
+          tags: ['booking', 'artist', selectedArtist.specialty?.toLowerCase() || 'general']
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Booking Request Sent!",
+        description: "Your booking request has been submitted. The artist will be notified.",
+      });
+
+      // Reset form
+      setSelectedArtist(null);
+      setBookingDate(undefined);
+      setBookingData({
+        eventType: "",
+        duration: "",
+        budget: "",
+        location: "",
+        description: "",
+        contactEmail: "",
+        contactPhone: ""
+      });
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit booking request. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-6 w-6 text-primary" />
+            <h1 className="text-3xl font-bold">Book Local Artists</h1>
+          </div>
+          <p className="text-muted-foreground">
+            Find and book talented local artists for your events and special occasions.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Artist Selection */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Available Artists</h2>
+            <div className="grid gap-4 max-h-[600px] overflow-y-auto">
+              {artists.map((artist) => (
+                <Card 
+                  key={artist.id} 
+                  className={cn(
+                    "cursor-pointer transition-all hover:shadow-md",
+                    selectedArtist?.id === artist.id && "ring-2 ring-primary"
+                  )}
+                  onClick={() => setSelectedArtist(artist)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Users className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg">{artist.display_name}</CardTitle>
+                          {artist.is_verified && (
+                            <div className="w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                              <span className="text-xs text-primary-foreground">✓</span>
+                            </div>
+                          )}
+                        </div>
+                        <CardDescription className="flex items-center gap-4 mt-1">
+                          <span>{artist.specialty}</span>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs">{artist.rating?.toFixed(1)}</span>
+                          </div>
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">{artist.bio}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      {artist.location_city}, {artist.location_state}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Booking Form */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Booking Details</h2>
+            {selectedArtist ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Book {selectedArtist.display_name}</CardTitle>
+                  <CardDescription>
+                    Fill out the details for your booking request
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="eventType">Event Type</Label>
+                    <Select value={bookingData.eventType} onValueChange={(value) => setBookingData({...bookingData, eventType: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select event type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="wedding">Wedding</SelectItem>
+                        <SelectItem value="birthday">Birthday Party</SelectItem>
+                        <SelectItem value="corporate">Corporate Event</SelectItem>
+                        <SelectItem value="festival">Festival</SelectItem>
+                        <SelectItem value="private">Private Event</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Event Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !bookingDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {bookingDate ? format(bookingDate, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={bookingDate}
+                          onSelect={setBookingDate}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="duration">Duration</Label>
+                      <Select value={bookingData.duration} onValueChange={(value) => setBookingData({...bookingData, duration: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1-2 hours">1-2 hours</SelectItem>
+                          <SelectItem value="3-4 hours">3-4 hours</SelectItem>
+                          <SelectItem value="full-day">Full day</SelectItem>
+                          <SelectItem value="multiple-days">Multiple days</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="budget">Budget Range</Label>
+                      <Select value={bookingData.budget} onValueChange={(value) => setBookingData({...bookingData, budget: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Budget" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="$100-$300">$100-$300</SelectItem>
+                          <SelectItem value="$300-$500">$300-$500</SelectItem>
+                          <SelectItem value="$500-$1000">$500-$1000</SelectItem>
+                          <SelectItem value="$1000+">$1000+</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Event Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="Enter event location"
+                      value={bookingData.location}
+                      onChange={(e) => setBookingData({...bookingData, location: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Event Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe your event and any specific requirements..."
+                      value={bookingData.description}
+                      onChange={(e) => setBookingData({...bookingData, description: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Contact Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={bookingData.contactEmail}
+                        onChange={(e) => setBookingData({...bookingData, contactEmail: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Contact Phone</Label>
+                      <Input
+                        id="phone"
+                        placeholder="(555) 123-4567"
+                        value={bookingData.contactPhone}
+                        onChange={(e) => setBookingData({...bookingData, contactPhone: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <Button onClick={handleBooking} className="w-full">
+                    Send Booking Request
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <div className="text-center space-y-2">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <p className="text-muted-foreground">
+                      Select an artist to start your booking request
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default BookArtist;
