@@ -481,6 +481,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_site_url: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       users_in_same_area: {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
