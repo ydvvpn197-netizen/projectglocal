@@ -95,22 +95,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithOAuth = async (provider: 'google' | 'facebook') => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/feed`
-      }
-    });
-
-    if (error) {
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive"
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider as any,
+        options: {
+          redirectTo: `${window.location.origin}/feed`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
       });
-    }
 
-    return { error };
+      if (error) {
+        console.error('OAuth error:', error);
+        toast({
+          title: "Authentication Error", 
+          description: error.message || `${provider} authentication failed. Please ensure ${provider} login is enabled in your Supabase project settings.`,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('OAuth catch error:', error);
+      const errorMessage = error.message || "An unexpected error occurred during authentication";
+      toast({
+        title: "Authentication Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error };
+    }
   };
 
   const signOut = async () => {
