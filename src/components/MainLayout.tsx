@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, User, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import { LocationToggle } from "@/components/LocationToggle";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <Link to="/" className="font-semibold text-foreground hover:text-primary transition-colors">
                   Local Social Hub
                 </Link>
+                <LocationToggle compact />
               </div>
               
               <div className="flex items-center gap-2">

@@ -295,6 +295,9 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          current_latitude: number | null
+          current_location_updated_at: string | null
+          current_longitude: number | null
           display_name: string | null
           id: string
           is_verified: boolean | null
@@ -303,6 +306,7 @@ export type Database = {
           location_country: string | null
           location_state: string | null
           longitude: number | null
+          real_time_location_enabled: boolean | null
           updated_at: string
           user_id: string
           user_type: string | null
@@ -312,6 +316,9 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          current_latitude?: number | null
+          current_location_updated_at?: string | null
+          current_longitude?: number | null
           display_name?: string | null
           id?: string
           is_verified?: boolean | null
@@ -320,6 +327,7 @@ export type Database = {
           location_country?: string | null
           location_state?: string | null
           longitude?: number | null
+          real_time_location_enabled?: boolean | null
           updated_at?: string
           user_id: string
           user_type?: string | null
@@ -329,6 +337,9 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          current_latitude?: number | null
+          current_location_updated_at?: string | null
+          current_longitude?: number | null
           display_name?: string | null
           id?: string
           is_verified?: boolean | null
@@ -337,6 +348,7 @@ export type Database = {
           location_country?: string | null
           location_state?: string | null
           longitude?: number | null
+          real_time_location_enabled?: boolean | null
           updated_at?: string
           user_id?: string
           user_type?: string | null

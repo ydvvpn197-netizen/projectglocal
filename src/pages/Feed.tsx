@@ -13,26 +13,34 @@ import { Link } from "react-router-dom";
 import { DistanceFilter } from "@/components/DistanceFilter";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 
 const Feed = () => {
   const { posts, loading, toggleLike } = usePosts();
   const { createSamplePosts, loading: sampleLoading } = useSampleData();
+  const { currentLocation, isEnabled: locationEnabled } = useLocation();
   const [distanceFilter, setDistanceFilter] = useState(50);
   const [localNews, setLocalNews] = useState<any[]>([]);
   const [loadingNews, setLoadingNews] = useState(false);
   const { user } = useAuth();
 
-  // Fetch local news when component mounts
+  // Fetch local news when component mounts or location changes
   useEffect(() => {
     fetchLocalNews();
-  }, []);
+  }, [currentLocation, locationEnabled]);
 
   const fetchLocalNews = async () => {
     setLoadingNews(true);
     try {
+      // Determine location to use
+      let locationParam = 'Your Area';
+      if (locationEnabled && currentLocation) {
+        locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
+      }
+
       const { data, error } = await supabase.functions.invoke('fetch-local-news', {
-        body: { location: 'Your Area' }
+        body: { location: locationParam }
       });
       
       if (error) throw error;
@@ -216,7 +224,14 @@ const Feed = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-2">Your Local Feed</h1>
-              <p className="text-muted-foreground">Discover what's happening in your community</p>
+              <p className="text-muted-foreground">
+                Discover what's happening in your community
+                {locationEnabled && currentLocation && (
+                  <span className="block text-sm text-primary mt-1">
+                    📍 Using your real-time location
+                  </span>
+                )}
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <DistanceFilter 

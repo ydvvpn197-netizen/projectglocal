@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/components/ui/use-toast";
+import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsItem {
@@ -29,6 +30,7 @@ interface LocalEvent {
 
 const Discover = () => {
   const { toast } = useToast();
+  const { currentLocation, isEnabled: locationEnabled } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [localNews, setLocalNews] = useState<NewsItem[]>([]);
   const [nearbyEvents, setNearbyEvents] = useState<LocalEvent[]>([]);
@@ -91,19 +93,25 @@ const Discover = () => {
 
   useEffect(() => {
     fetchLocalContent();
-  }, []);
+  }, [currentLocation, locationEnabled]);
 
   const fetchLocalContent = async () => {
     try {
       setLoading(true);
       
+      // Determine location to use
+      let locationParam = 'Your Area';
+      if (locationEnabled && currentLocation) {
+        locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
+      }
+      
       // Fetch real dynamic news and events
       const [newsResponse, eventsResponse] = await Promise.all([
         supabase.functions.invoke('fetch-local-news', {
-          body: { location: 'Your Area' }
+          body: { location: locationParam }
         }),
         supabase.functions.invoke('fetch-local-events', {
-          body: { location: 'Your Area' }
+          body: { location: locationParam }
         })
       ]);
 
@@ -147,6 +155,11 @@ const Discover = () => {
           </div>
           <p className="text-muted-foreground">
             Discover amazing events, artists, and experiences in your area.
+            {locationEnabled && currentLocation && (
+              <span className="block text-sm text-primary mt-1">
+                📍 Using your real-time location
+              </span>
+            )}
           </p>
         </div>
 

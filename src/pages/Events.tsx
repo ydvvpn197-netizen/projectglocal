@@ -6,19 +6,27 @@ import { Calendar, MapPin, Clock, Users, Plus, Filter } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "@/hooks/useLocation";
 
 const Events = () => {
+  const { currentLocation, isEnabled: locationEnabled } = useLocation();
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [currentLocation, locationEnabled]);
 
   const fetchEvents = async () => {
     try {
+      // Determine location to use
+      let locationParam = 'Your Area';
+      if (locationEnabled && currentLocation) {
+        locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
+      }
+
       const { data, error } = await supabase.functions.invoke('fetch-local-events', {
-        body: { location: 'Your Area' }
+        body: { location: locationParam }
       });
       
       if (error) throw error;
