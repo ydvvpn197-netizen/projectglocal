@@ -375,59 +375,7 @@ export type Database = {
       }
     }
     Views: {
-      artist_bookings_safe: {
-        Row: {
-          artist_id: string | null
-          budget_max: number | null
-          budget_min: number | null
-          contact_info: string | null
-          created_at: string | null
-          event_date: string | null
-          event_description: string | null
-          event_location: string | null
-          id: string | null
-          status: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          artist_id?: string | null
-          budget_max?: number | null
-          budget_min?: number | null
-          contact_info?: string | null
-          created_at?: string | null
-          event_date?: string | null
-          event_description?: string | null
-          event_location?: string | null
-          id?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          artist_id?: string | null
-          budget_max?: number | null
-          budget_min?: number | null
-          contact_info?: string | null
-          created_at?: string | null
-          event_date?: string | null
-          event_description?: string | null
-          event_location?: string | null
-          id?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "artist_bookings_artist_id_fkey"
-            columns: ["artist_id"]
-            isOneToOne: false
-            referencedRelation: "artists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_distance: {
