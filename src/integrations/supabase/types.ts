@@ -375,12 +375,63 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      posts_secure: {
+        Row: {
+          comments_count: number | null
+          contact_info: string | null
+          content: string | null
+          created_at: string | null
+          event_date: string | null
+          event_location: string | null
+          id: string | null
+          image_urls: string[] | null
+          latitude: number | null
+          likes_count: number | null
+          location_city: string | null
+          location_country: string | null
+          location_state: string | null
+          longitude: number | null
+          price_range: string | null
+          status: Database["public"]["Enums"]["post_status"] | null
+          tags: string[] | null
+          title: string | null
+          type: Database["public"]["Enums"]["post_type"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_distance: {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
+      }
+      get_posts_with_restricted_contact: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          user_id: string
+          type: Database["public"]["Enums"]["post_type"]
+          title: string
+          content: string
+          location_city: string
+          location_state: string
+          location_country: string
+          latitude: number
+          longitude: number
+          event_date: string
+          event_location: string
+          price_range: string
+          contact_info: string
+          tags: string[]
+          image_urls: string[]
+          likes_count: number
+          comments_count: number
+          status: Database["public"]["Enums"]["post_status"]
+          created_at: string
+          updated_at: string
+        }[]
       }
       users_in_same_area: {
         Args: { user1_id: string; user2_id: string }

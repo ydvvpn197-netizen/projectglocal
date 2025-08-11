@@ -41,10 +41,10 @@ export const usePosts = () => {
 
     try {
       const { data, error } = await supabase
-        .from('posts')
+        .from('posts_secure')
         .select(`
           *,
-          profiles!posts_user_id_fkey (
+          profiles!posts_secure_user_id_fkey (
             display_name,
             username,
             avatar_url
@@ -55,18 +55,8 @@ export const usePosts = () => {
       if (error) {
         throw error;
       }
-
-      // Filter out contact_info for posts that are not owned by current user
-      const filteredPosts = (data || []).map(post => {
-        if (post.user_id !== user.id) {
-          // Hide contact_info for posts from other users (area-based visibility)
-          const { contact_info, ...postWithoutContact } = post;
-          return postWithoutContact;
-        }
-        return post;
-      });
       
-      setPosts(filteredPosts as Post[]);
+      setPosts(data as Post[] || []);
     } catch (error: any) {
       toast({
         title: "Error loading posts",
