@@ -42,35 +42,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string, userType: 'user' | 'artist' = 'user') => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          display_name: firstName && lastName ? `${firstName} ${lastName}` : firstName,
-          username: email.split('@')[0],
-          user_type: userType
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            username: email.split('@')[0],
+            display_name: firstName && lastName ? `${firstName} ${lastName}` : email.split('@')[0],
+            first_name: firstName,
+            last_name: lastName,
+            user_type: userType || 'user'
+          }
         }
+      });
+
+      if (error) {
+        toast({
+          title: "Sign Up Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
       }
-    });
 
-    if (error) {
+      if (data?.user && !data?.session) {
+        toast({
+          title: "Check your email",
+          description: "Please check your email and click the confirmation link to complete registration.",
+        });
+      } else {
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created successfully.",
+        });
+      }
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive"
+        title: "Sign Up Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Account created",
-        description: "Please check your email to confirm your account."
-      });
+      return { error };
     }
-
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {

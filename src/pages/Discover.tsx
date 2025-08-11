@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NewsItem {
   title: string;
@@ -94,74 +95,26 @@ const Discover = () => {
 
   const fetchLocalContent = async () => {
     try {
-      // Simulate API calls for local content
-      // In production, integrate with services like:
-      // - Eventbrite API
-      // - Meetup API
-      // - NewsAPI
-      // - Yelp API
+      setLoading(true);
       
-      setTimeout(() => {
-        // Mock local news
-        setLocalNews([
-          {
-            title: "New Community Center Opens Downtown",
-            description: "The new community center will feature art studios, meeting spaces, and a performance hall.",
-            url: "#",
-            source: "Local News Today",
-            publishedAt: "2 hours ago",
-            category: "Community"
-          },
-          {
-            title: "Summer Festival Registration Now Open",
-            description: "Local artists and vendors can now register for the annual summer festival happening next month.",
-            url: "#",
-            source: "City Events",
-            publishedAt: "5 hours ago",
-            category: "Events"
-          },
-          {
-            title: "Local Business Spotlight: Green Garden Cafe",
-            description: "Discover the story behind the neighborhood's newest eco-friendly restaurant.",
-            url: "#",
-            source: "Business Weekly",
-            publishedAt: "1 day ago",
-            category: "Business"
-          }
-        ]);
+      // Fetch real dynamic news and events
+      const [newsResponse, eventsResponse] = await Promise.all([
+        supabase.functions.invoke('fetch-local-news', {
+          body: { location: 'Your Area' }
+        }),
+        supabase.functions.invoke('fetch-local-events', {
+          body: { location: 'Your Area' }
+        })
+      ]);
 
-        // Mock nearby events
-        setNearbyEvents([
-          {
-            id: "1",
-            title: "Yoga in the Park",
-            description: "Free morning yoga session for all skill levels",
-            location: "Riverside Park",
-            date: "Tomorrow, 8:00 AM",
-            category: "Wellness",
-            price: "Free"
-          },
-          {
-            id: "2",
-            title: "Local Farmers Market",
-            description: "Fresh produce and handmade goods from local vendors",
-            location: "Main Street Square",
-            date: "Saturday, 9:00 AM",
-            category: "Market"
-          },
-          {
-            id: "3",
-            title: "Photography Workshop",
-            description: "Learn street photography techniques with local experts",
-            location: "Creative Space Studio",
-            date: "Sunday, 2:00 PM",
-            category: "Workshop",
-            price: "$35"
-          }
-        ]);
-
-        setLoading(false);
-      }, 1000);
+      if (newsResponse.data?.news) {
+        setLocalNews(newsResponse.data.news);
+      }
+      
+      if (eventsResponse.data?.events) {
+        setNearbyEvents(eventsResponse.data.events.slice(0, 6));
+      }
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching local content:', error);
       toast({

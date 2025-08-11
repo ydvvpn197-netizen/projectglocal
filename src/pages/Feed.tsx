@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +11,38 @@ import { format } from 'date-fns';
 import { useSampleData } from "@/hooks/useSampleData";
 import { Link } from "react-router-dom";
 import { DistanceFilter } from "@/components/DistanceFilter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Feed = () => {
   const { posts, loading, toggleLike } = usePosts();
   const { createSamplePosts, loading: sampleLoading } = useSampleData();
   const [distanceFilter, setDistanceFilter] = useState(50);
+  const [localNews, setLocalNews] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState(false);
   const { user } = useAuth();
+
+  // Fetch local news when component mounts
+  useEffect(() => {
+    fetchLocalNews();
+  }, []);
+
+  const fetchLocalNews = async () => {
+    setLoadingNews(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-local-news', {
+        body: { location: 'Your Area' }
+      });
+      
+      if (error) throw error;
+      setLocalNews(data.news || []);
+    } catch (error) {
+      console.error('Error fetching local news:', error);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
 
   const PostCard = ({ post }: { post: Post }) => {
     const getInitials = (name?: string) => {
@@ -211,6 +235,30 @@ const Feed = () => {
             </div>
           </div>
         </div>
+
+        {/* Local News Section */}
+        {!loadingNews && localNews.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Local News & Updates</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {localNews.slice(0, 3).map((news, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-2">
+                    <Badge variant="secondary" className="w-fit mb-2">{news.category}</Badge>
+                    <CardTitle className="text-base leading-tight">{news.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-2">{news.description}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {new Date(news.publishedAt).toLocaleString()}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Feed Tabs */}
         <Tabs defaultValue="all" className="mb-6">

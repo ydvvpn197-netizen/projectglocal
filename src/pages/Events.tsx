@@ -4,9 +4,50 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Clock, Users, Plus, Filter } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Events = () => {
-  const upcomingEvents = [
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-local-events', {
+        body: { location: 'Your Area' }
+      });
+      
+      if (error) throw error;
+      
+      // Transform the events to match our current interface
+      const transformedEvents = data.events?.map((event: any, index: number) => ({
+        id: index + 1,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        attendees: event.attendees,
+        category: event.category,
+        isGoing: Math.random() > 0.8, // Randomly assign some as "going"
+        image: ["🎨", "🍕", "🎷", "⚽", "🎭", "📚", "🌟", "🎪"][index % 8]
+      })) || [];
+      
+      setUpcomingEvents(transformedEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      // Fallback to static data
+      setUpcomingEvents(staticEvents);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const staticEvents = [
     {
       id: 1,
       title: "Local Art Exhibition Opening",
@@ -98,6 +139,16 @@ const Events = () => {
       </CardContent>
     </Card>
   );
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
