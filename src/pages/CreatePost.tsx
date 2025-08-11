@@ -13,6 +13,7 @@ import { useState } from "react";
 import { X, Plus, MapPin, Calendar, DollarSign, Users } from "lucide-react";
 import { usePosts } from "@/hooks/usePosts";
 import { useNavigate } from "react-router-dom";
+import { sanitizeText, sanitizeHtml, sanitizeTags } from "@/lib/sanitize";
 
 const CreatePost = () => {
   const [tags, setTags] = useState<string[]>([]);
@@ -24,8 +25,9 @@ const CreatePost = () => {
   const navigate = useNavigate();
 
   const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+    const sanitizedTag = sanitizeText(newTag, 50);
+    if (sanitizedTag && !tags.includes(sanitizedTag)) {
+      setTags([...tags, sanitizedTag]);
       setNewTag("");
     }
   };
@@ -43,12 +45,12 @@ const CreatePost = () => {
     try {
       const postData = {
         type,
-        title: formData.get('title') as string,
-        content: formData.get('content') as string,
+        title: sanitizeText(formData.get('title') as string || '', 200),
+        content: sanitizeText(formData.get('content') as string || '', 5000),
         event_date: formData.get('eventDate') ? new Date(formData.get('eventDate') as string).toISOString() : undefined,
-        event_location: formData.get('eventLocation') as string || formData.get('serviceArea') as string,
-        price_range: formData.get('eventPrice') as string || formData.get('servicePrice') as string,
-        tags: tags.length > 0 ? tags : undefined
+        event_location: sanitizeText((formData.get('eventLocation') as string || formData.get('serviceArea') as string) || '', 500),
+        price_range: sanitizeText((formData.get('eventPrice') as string || formData.get('servicePrice') as string) || '', 100),
+        tags: tags.length > 0 ? sanitizeTags(tags) : undefined
       };
 
       const { error } = await createPost(postData);

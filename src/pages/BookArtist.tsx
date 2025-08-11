@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CalendarIcon, Star, Users, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { sanitizeText, sanitizeEmail } from "@/lib/sanitize";
 
 interface Artist {
   id: string;
@@ -99,19 +100,30 @@ const BookArtist = () => {
     }
 
     try {
+      // Sanitize all input data
+      const sanitizedData = {
+        eventType: sanitizeText(bookingData.eventType, 100),
+        duration: sanitizeText(bookingData.duration, 50),
+        budget: sanitizeText(bookingData.budget, 50),
+        location: sanitizeText(bookingData.location, 500),
+        description: sanitizeText(bookingData.description, 2000),
+        contactEmail: sanitizeEmail(bookingData.contactEmail),
+        contactPhone: sanitizeText(bookingData.contactPhone, 20)
+      };
+
       // Create a booking post
       const { error } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
           type: 'post',
-          title: `Booking Request: ${selectedArtist.display_name}`,
-          content: `Event Type: ${bookingData.eventType}\nDate: ${format(bookingDate, 'PPP')}\nDuration: ${bookingData.duration}\nBudget: ${bookingData.budget}\nLocation: ${bookingData.location}\nDescription: ${bookingData.description}`,
-          contact_info: `Email: ${bookingData.contactEmail}\nPhone: ${bookingData.contactPhone}`,
+          title: sanitizeText(`Booking Request: ${selectedArtist.display_name}`, 200),
+          content: sanitizeText(`Event Type: ${sanitizedData.eventType}\nDate: ${format(bookingDate, 'PPP')}\nDuration: ${sanitizedData.duration}\nBudget: ${sanitizedData.budget}\nLocation: ${sanitizedData.location}\nDescription: ${sanitizedData.description}`, 5000),
+          contact_info: `Email: ${sanitizedData.contactEmail}\nPhone: ${sanitizedData.contactPhone}`,
           event_date: bookingDate.toISOString(),
-          event_location: bookingData.location,
-          price_range: bookingData.budget,
-          tags: ['booking', 'artist', selectedArtist.specialty?.toLowerCase() || 'general']
+          event_location: sanitizedData.location,
+          price_range: sanitizedData.budget,
+          tags: ['booking', 'artist', sanitizeText(selectedArtist.specialty?.toLowerCase() || 'general', 50)]
         });
 
       if (error) throw error;

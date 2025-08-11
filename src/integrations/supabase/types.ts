@@ -375,37 +375,29 @@ export type Database = {
       }
     }
     Views: {
-      posts_secure: {
-        Row: {
-          comments_count: number | null
-          contact_info: string | null
-          content: string | null
-          created_at: string | null
-          event_date: string | null
-          event_location: string | null
-          id: string | null
-          image_urls: string[] | null
-          latitude: number | null
-          likes_count: number | null
-          location_city: string | null
-          location_country: string | null
-          location_state: string | null
-          longitude: number | null
-          price_range: string | null
-          status: Database["public"]["Enums"]["post_status"] | null
-          tags: string[] | null
-          title: string | null
-          type: Database["public"]["Enums"]["post_type"] | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_distance: {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
+      }
+      get_artist_bookings_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          user_id: string
+          artist_id: string
+          event_date: string
+          event_location: string
+          event_description: string
+          budget_min: number
+          budget_max: number
+          contact_info: string
+          status: string
+          created_at: string
+          updated_at: string
+        }[]
       }
       get_posts_with_restricted_contact: {
         Args: Record<PropertyKey, never>

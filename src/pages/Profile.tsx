@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/MainLayout";
 import { EngagementFeatures } from "@/components/EngagementFeatures";
+import { sanitizeText } from "@/lib/sanitize";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,10 +37,12 @@ const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
     display_name: "",
+    username: "",
     bio: "",
     location_city: "",
     location_state: "",
-    location_country: ""
+    location_country: "",
+    avatar_url: ""
   });
 
   useEffect(() => {
@@ -64,10 +67,12 @@ const Profile = () => {
         setProfile(data);
         setFormData({
           display_name: data.display_name || "",
+          username: data.username || "",
           bio: data.bio || "",
           location_city: data.location_city || "",
           location_state: data.location_state || "",
-          location_country: data.location_country || ""
+          location_country: data.location_country || "",
+          avatar_url: data.avatar_url || ""
         });
       }
     } catch (error) {
@@ -86,11 +91,22 @@ const Profile = () => {
     if (!user) return;
 
     try {
+      // Sanitize form data before saving
+      const sanitizedData = {
+        display_name: sanitizeText(formData.display_name || '', 100),
+        username: sanitizeText(formData.username || '', 50),
+        bio: sanitizeText(formData.bio || '', 1000),
+        location_city: sanitizeText(formData.location_city || '', 100),
+        location_state: sanitizeText(formData.location_state || '', 100),
+        location_country: sanitizeText(formData.location_country || '', 100),
+        avatar_url: formData.avatar_url // URLs should be validated separately if needed
+      };
+
       const { error } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
-          ...formData,
+          ...sanitizedData,
           updated_at: new Date().toISOString()
         });
 

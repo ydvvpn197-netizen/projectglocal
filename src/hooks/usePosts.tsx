@@ -40,17 +40,9 @@ export const usePosts = () => {
     if (!user) return;
 
     try {
+      // Use the secure function instead of the view
       const { data, error } = await supabase
-        .from('posts_secure')
-        .select(`
-          *,
-          profiles!posts_secure_user_id_fkey (
-            display_name,
-            username,
-            avatar_url
-          )
-        `)
-        .order('created_at', { ascending: false });
+        .rpc('get_posts_with_restricted_contact');
 
       if (error) {
         throw error;
