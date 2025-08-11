@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar } from "lucide-react";
+import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar, Phone, Mail } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { usePosts, Post } from "@/hooks/usePosts";
@@ -12,11 +12,13 @@ import { useSampleData } from "@/hooks/useSampleData";
 import { Link } from "react-router-dom";
 import { DistanceFilter } from "@/components/DistanceFilter";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Feed = () => {
   const { posts, loading, toggleLike } = usePosts();
   const { createSamplePosts, loading: sampleLoading } = useSampleData();
   const [distanceFilter, setDistanceFilter] = useState(50);
+  const { user } = useAuth();
 
   const PostCard = ({ post }: { post: Post }) => {
     const getInitials = (name?: string) => {
@@ -115,6 +117,20 @@ const Feed = () => {
                 {tag}
               </Badge>
             ))}
+          </div>
+        )}
+
+        {/* Contact Information - Only shown for user's own posts */}
+        {post.contact_info && post.user_id === user?.id && (
+          <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Phone className="h-4 w-4 text-amber-600" />
+              <span className="text-sm font-medium text-amber-800">Contact Information</span>
+            </div>
+            <p className="text-sm text-amber-700">{post.contact_info}</p>
+            <p className="text-xs text-amber-600 mt-1">
+              ⚠️ This contact information is only visible to you
+            </p>
           </div>
         )}
 

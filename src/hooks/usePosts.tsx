@@ -14,6 +14,7 @@ export interface Post {
   event_date?: string;
   event_location?: string;
   price_range?: string;
+  contact_info?: string;
   location_city?: string;
   location_state?: string;
   location_country?: string;
@@ -55,7 +56,17 @@ export const usePosts = () => {
         throw error;
       }
 
-      setPosts((data || []) as Post[]);
+      // Filter out contact_info for posts that are not owned by current user
+      const filteredPosts = (data || []).map(post => {
+        if (post.user_id !== user.id) {
+          // Hide contact_info for posts from other users (area-based visibility)
+          const { contact_info, ...postWithoutContact } = post;
+          return postWithoutContact;
+        }
+        return post;
+      });
+      
+      setPosts(filteredPosts as Post[]);
     } catch (error: any) {
       toast({
         title: "Error loading posts",
