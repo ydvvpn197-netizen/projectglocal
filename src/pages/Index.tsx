@@ -27,7 +27,9 @@ const Index = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Local Social Hub</span>
+            <Link to="/" className="text-xl font-bold hover:text-primary transition-colors">
+              Local Social Hub
+            </Link>
           </div>
           <Button asChild>
             <Link to="/signin">Get Started</Link>

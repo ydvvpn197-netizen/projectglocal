@@ -98,13 +98,16 @@ const SignIn = () => {
                 <p className="text-sm text-muted-foreground">Create & join local events</p>
               </div>
             </button>
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-card/50 border">
+            <button 
+              onClick={() => navigate('/book-artist')}
+              className="flex items-center gap-3 p-4 rounded-lg bg-card/50 border hover:bg-card/80 transition-colors cursor-pointer"
+            >
               <Zap className="h-8 w-8 text-primary" />
-              <div>
+              <div className="text-left">
                 <h3 className="font-semibold">Book Artists</h3>
                 <p className="text-sm text-muted-foreground">Hire local talent easily</p>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
