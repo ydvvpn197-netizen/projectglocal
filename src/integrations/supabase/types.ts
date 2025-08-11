@@ -375,7 +375,7 @@ export type Database = {
       }
     }
     Views: {
-      artist_bookings_public: {
+      artist_bookings_safe: {
         Row: {
           artist_id: string | null
           budget_max: number | null
@@ -392,9 +392,9 @@ export type Database = {
         }
         Insert: {
           artist_id?: string | null
-          budget_max?: never
-          budget_min?: never
-          contact_info?: never
+          budget_max?: number | null
+          budget_min?: number | null
+          contact_info?: string | null
           created_at?: string | null
           event_date?: string | null
           event_description?: string | null
@@ -406,9 +406,9 @@ export type Database = {
         }
         Update: {
           artist_id?: string | null
-          budget_max?: never
-          budget_min?: never
-          contact_info?: never
+          budget_max?: number | null
+          budget_min?: number | null
+          contact_info?: string | null
           created_at?: string | null
           event_date?: string | null
           event_description?: string | null
@@ -433,6 +433,10 @@ export type Database = {
       calculate_distance: {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
+      }
+      can_view_booking_details: {
+        Args: { _booking_id: string; _user_id: string }
+        Returns: boolean
       }
       get_artist_bookings_secure: {
         Args: Record<PropertyKey, never>
