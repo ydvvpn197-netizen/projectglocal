@@ -14,6 +14,7 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [userType, setUserType] = useState<'user' | 'artist'>('user');
   const [loading, setLoading] = useState(false);
   
   const { signIn, signUp, signInWithOAuth, user } = useAuth();
@@ -35,7 +36,7 @@ const SignIn = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, firstName, lastName);
+        const { error } = await signUp(email, password, firstName, lastName, userType);
         if (!error) {
           navigate('/location');
         }
@@ -166,26 +167,58 @@ const SignIn = () => {
             {/* Email Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input 
-                      id="firstName" 
-                      placeholder="John"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                    />
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input 
+                        id="firstName" 
+                        placeholder="John"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input 
+                        id="lastName" 
+                        placeholder="Doe"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input 
-                      id="lastName" 
-                      placeholder="Doe"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                    />
+                  
+                  <div className="space-y-3">
+                    <Label>I want to join as:</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setUserType('user')}
+                        className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                          userType === 'user' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="font-medium">Community Member</div>
+                        <div className="text-sm text-muted-foreground">Join discussions, book artists, attend events</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setUserType('artist')}
+                        className={`p-4 rounded-lg border-2 text-left transition-colors ${
+                          userType === 'artist' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="font-medium">Artist</div>
+                        <div className="text-sm text-muted-foreground">Showcase talent, get bookings, offer services</div>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
               
               <div className="space-y-2">
@@ -241,13 +274,6 @@ const SignIn = () => {
               </button>
             </div>
 
-            {isSignUp && (
-              <div className="text-center">
-                <button className="text-sm text-primary hover:underline">
-                  Are you an artist? Join here
-                </button>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

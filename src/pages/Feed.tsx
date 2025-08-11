@@ -10,10 +10,13 @@ import { usePosts, Post } from "@/hooks/usePosts";
 import { format } from 'date-fns';
 import { useSampleData } from "@/hooks/useSampleData";
 import { Link } from "react-router-dom";
+import { DistanceFilter } from "@/components/DistanceFilter";
+import { useState } from "react";
 
 const Feed = () => {
   const { posts, loading, toggleLike } = usePosts();
   const { createSamplePosts, loading: sampleLoading } = useSampleData();
+  const [distanceFilter, setDistanceFilter] = useState(50);
 
   const PostCard = ({ post }: { post: Post }) => {
     const getInitials = (name?: string) => {
@@ -175,15 +178,21 @@ const Feed = () => {
               <h1 className="text-2xl font-bold mb-2">Your Local Feed</h1>
               <p className="text-muted-foreground">Discover what's happening in your community</p>
             </div>
-            {posts.length === 0 && !loading && (
-              <Button 
-                onClick={createSamplePosts} 
-                disabled={sampleLoading}
-                variant="outline"
-              >
-                {sampleLoading ? "Creating..." : "Add Sample Data"}
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              <DistanceFilter 
+                currentDistance={distanceFilter}
+                onDistanceChange={setDistanceFilter}
+              />
+              {posts.length === 0 && !loading && (
+                <Button 
+                  onClick={createSamplePosts} 
+                  disabled={sampleLoading}
+                  variant="outline"
+                >
+                  {sampleLoading ? "Creating..." : "Add Sample Data"}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

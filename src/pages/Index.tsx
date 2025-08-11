@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Users, Calendar, Zap } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { ArtistShowcase } from "@/components/ArtistShowcase";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -117,6 +118,9 @@ const Index = () => {
           </Link>
         </div>
       </section>
+
+      {/* Artist Showcase */}
+      <ArtistShowcase />
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">

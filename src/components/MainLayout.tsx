@@ -27,7 +27,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="flex items-center justify-between h-full px-4">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
-                <Link to="/" className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link to="/feed" className="font-semibold text-foreground hover:text-primary transition-colors">
                   Local Social Hub
                 </Link>
               </div>

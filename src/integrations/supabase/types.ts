@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      artist_bookings: {
+        Row: {
+          artist_id: string
+          budget_max: number | null
+          budget_min: number | null
+          contact_info: string
+          created_at: string
+          event_date: string
+          event_description: string
+          event_location: string
+          id: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          artist_id: string
+          budget_max?: number | null
+          budget_min?: number | null
+          contact_info: string
+          created_at?: string
+          event_date: string
+          event_description: string
+          event_location: string
+          id?: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          artist_id?: string
+          budget_max?: number | null
+          budget_min?: number | null
+          contact_info?: string
+          created_at?: string
+          event_date?: string
+          event_description?: string
+          event_location?: string
+          id?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_bookings_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artists: {
+        Row: {
+          bio: string | null
+          created_at: string
+          experience_years: number | null
+          hourly_rate_max: number | null
+          hourly_rate_min: number | null
+          id: string
+          is_available: boolean | null
+          portfolio_urls: string[] | null
+          specialty: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          experience_years?: number | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string
+          is_available?: boolean | null
+          portfolio_urls?: string[] | null
+          specialty?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          experience_years?: number | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string
+          is_available?: boolean | null
+          portfolio_urls?: string[] | null
+          specialty?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -210,6 +305,7 @@ export type Database = {
           longitude: number | null
           updated_at: string
           user_id: string
+          user_type: string | null
           username: string | null
         }
         Insert: {
@@ -226,6 +322,7 @@ export type Database = {
           longitude?: number | null
           updated_at?: string
           user_id: string
+          user_type?: string | null
           username?: string | null
         }
         Update: {
@@ -242,6 +339,7 @@ export type Database = {
           longitude?: number | null
           updated_at?: string
           user_id?: string
+          user_type?: string | null
           username?: string | null
         }
         Relationships: []
