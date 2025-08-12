@@ -165,6 +165,44 @@ export type Database = {
         }
         Relationships: []
       }
+      group_admins: {
+        Row: {
+          created_at: string
+          group_id: string
+          group_name: string
+          id: string
+          joined_date: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          group_name: string
+          id?: string
+          joined_date?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          group_name?: string
+          id?: string
+          joined_date?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_admins_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           group_id: string
