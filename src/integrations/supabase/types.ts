@@ -555,7 +555,66 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          current_latitude: number | null
+          current_location_updated_at: string | null
+          current_longitude: number | null
+          display_name: string | null
+          is_verified: boolean | null
+          latitude: number | null
+          location_city: string | null
+          location_country: string | null
+          location_state: string | null
+          longitude: number | null
+          real_time_location_enabled: boolean | null
+          user_id: string | null
+          user_type: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          current_latitude?: never
+          current_location_updated_at?: never
+          current_longitude?: never
+          display_name?: string | null
+          is_verified?: boolean | null
+          latitude?: never
+          location_city?: never
+          location_country?: never
+          location_state?: never
+          longitude?: never
+          real_time_location_enabled?: never
+          user_id?: string | null
+          user_type?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          current_latitude?: never
+          current_location_updated_at?: never
+          current_longitude?: never
+          display_name?: string | null
+          is_verified?: boolean | null
+          latitude?: never
+          location_city?: never
+          location_country?: never
+          location_state?: never
+          longitude?: never
+          real_time_location_enabled?: never
+          user_id?: string | null
+          user_type?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_distance: {
@@ -626,6 +685,23 @@ export type Database = {
           status: Database["public"]["Enums"]["post_status"]
           created_at: string
           updated_at: string
+        }[]
+      }
+      get_secure_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          username: string
+          display_name: string
+          avatar_url: string
+          bio: string
+          user_type: string
+          is_verified: boolean
+          created_at: string
+          location_city: string
+          location_state: string
+          location_country: string
+          is_same_area: boolean
         }[]
       }
       get_site_url: {
