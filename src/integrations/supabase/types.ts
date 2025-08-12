@@ -165,6 +165,174 @@ export type Database = {
         }
         Relationships: []
       }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_message_likes: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_message_likes_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_message_views: {
+        Row: {
+          id: string
+          message_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_message_views_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          is_edited: boolean | null
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          is_edited?: boolean | null
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          is_edited?: boolean | null
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       interests: {
         Row: {
           created_at: string
@@ -413,6 +581,25 @@ export type Database = {
           status: string
           created_at: string
           updated_at: string
+        }[]
+      }
+      get_group_messages_with_details: {
+        Args: { group_id_param: string }
+        Returns: {
+          id: string
+          group_id: string
+          user_id: string
+          content: string
+          parent_id: string
+          created_at: string
+          updated_at: string
+          is_edited: boolean
+          user_display_name: string
+          user_avatar_url: string
+          likes_count: number
+          is_liked_by_user: boolean
+          replies_count: number
+          views_count: number
         }[]
       }
       get_posts_with_restricted_contact: {

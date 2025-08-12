@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,13 +7,86 @@ import { Users, MessageCircle, Heart, Share2, Plus, BarChart3, Star } from "luci
 import { MainLayout } from "@/components/MainLayout";
 import { PollCard } from "@/components/PollCard";
 import { ReviewCard } from "@/components/ReviewCard";
+import { GroupView } from "@/components/GroupView";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Community = () => {
   const { toast } = useToast();
   const [userVotes, setUserVotes] = useState<{[key: string]: string}>({});
   const [helpfulReviews, setHelpfulReviews] = useState<{[key: string]: boolean}>({});
-  const groups = [
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [userGroups, setUserGroups] = useState<any[]>([]);
+  const [allGroups, setAllGroups] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  // Fetch user's groups and available groups
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch groups user is a member of
+        const { data: memberGroups, error: memberError } = await supabase
+          .from('groups')
+          .select(`
+            *,
+            group_members!inner (role),
+            member_count:group_members(count)
+          `)
+          .eq('group_members.user_id', user.id);
+
+        if (memberError) throw memberError;
+
+        const transformedUserGroups = memberGroups?.map(group => ({
+          id: group.id,
+          name: group.name,
+          description: group.description,
+          category: group.category,
+          members: group.member_count?.[0]?.count || 0,
+          posts: 0, // We'll calculate this if needed
+          isJoined: true
+        })) || [];
+
+        setUserGroups(transformedUserGroups);
+
+        // Fetch all available groups (not joined)
+        const userGroupIds = transformedUserGroups.map(g => g.id);
+        const { data: availableGroups, error: availableError } = await supabase
+          .from('groups')
+          .select(`
+            *,
+            member_count:group_members(count)
+          `)
+          .not('id', 'in', `(${userGroupIds.join(',') || 'null'})`);
+
+        if (availableError) throw availableError;
+
+        const transformedAvailableGroups = availableGroups?.map(group => ({
+          id: group.id,
+          name: group.name,
+          description: group.description,
+          category: group.category,
+          members: group.member_count?.[0]?.count || 0,
+          posts: 0,
+          isJoined: false
+        })) || [];
+
+        setAllGroups([...transformedUserGroups, ...transformedAvailableGroups]);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+        // Fallback to static data
+        setUserGroups(staticGroups.filter(g => g.isJoined));
+        setAllGroups(staticGroups);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
+  const staticGroups = [
     {
       id: 1,
       name: "Local Photographers",
@@ -153,6 +226,37 @@ const Community = () => {
     });
   };
 
+  const joinGroup = async (groupId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: groupId,
+          user_id: user.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "You have joined the group.",
+      });
+
+      // Refresh groups
+      window.location.reload();
+    } catch (error) {
+      console.error('Error joining group:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join group. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleMarkHelpful = (reviewId: string) => {
     setHelpfulReviews(prev => ({ ...prev, [reviewId]: !prev[reviewId] }));
     toast({
@@ -160,6 +264,20 @@ const Community = () => {
       description: "Your feedback helps the community.",
     });
   };
+
+  // Show group view if a group is selected
+  if (selectedGroupId) {
+    return (
+      <MainLayout>
+        <GroupView 
+          groupId={selectedGroupId}
+          onBack={() => setSelectedGroupId(null)}
+        />
+      </MainLayout>
+    );
+  }
+
+  const displayGroups = loading ? staticGroups : allGroups;
 
   return (
     <MainLayout>
@@ -185,7 +303,7 @@ const Community = () => {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">My Groups</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groups.filter(group => group.isJoined).map((group) => (
+            {(loading ? staticGroups.filter(g => g.isJoined) : userGroups).map((group) => (
               <Card key={group.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">{group.name}</CardTitle>
@@ -198,7 +316,11 @@ const Community = () => {
                       <span>{group.members} members</span>
                       <span>{group.posts} posts</span>
                     </div>
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => setSelectedGroupId(group.id)}
+                    >
                       View Group
                     </Button>
                   </div>
@@ -311,7 +433,7 @@ const Community = () => {
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Suggested Groups</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groups.filter(group => !group.isJoined).map((group) => (
+            {displayGroups.filter(group => !group.isJoined).map((group) => (
               <Card key={group.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">{group.name}</CardTitle>
@@ -324,7 +446,11 @@ const Community = () => {
                       <span>{group.members} members</span>
                       <span>{group.posts} posts</span>
                     </div>
-                    <Button className="w-full">
+                    <Button 
+                      className="w-full"
+                      onClick={() => joinGroup(group.id)}
+                      disabled={loading}
+                    >
                       Join Group
                     </Button>
                   </div>
