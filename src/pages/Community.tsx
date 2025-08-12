@@ -88,7 +88,7 @@ const Community = () => {
 
   const staticGroups = [
     {
-      id: 1,
+      id: "550e8400-e29b-41d4-a716-446655440001",
       name: "Local Photographers",
       description: "Share your photography and get feedback from fellow photographers in the area.",
       members: 234,
@@ -97,7 +97,7 @@ const Community = () => {
       isJoined: true
     },
     {
-      id: 2,
+      id: "550e8400-e29b-41d4-a716-446655440002", 
       name: "Food Lovers Unite",
       description: "Discover the best local restaurants and share your culinary adventures.",
       members: 567,
@@ -106,8 +106,8 @@ const Community = () => {
       isJoined: false
     },
     {
-      id: 3,
-      name: "Outdoor Adventures",
+      id: "550e8400-e29b-41d4-a716-446655440003",
+      name: "Outdoor Adventures", 
       description: "Plan hiking trips, outdoor activities, and explore nature together.",
       members: 189,
       posts: 156,
@@ -118,7 +118,7 @@ const Community = () => {
 
   const discussions = [
     {
-      id: 1,
+      id: "550e8400-e29b-41d4-a716-446655440101",
       title: "Best coffee shops downtown?",
       author: "Sarah M.",
       group: "Food Lovers Unite",
@@ -127,7 +127,7 @@ const Community = () => {
       timeAgo: "2h ago"
     },
     {
-      id: 2,
+      id: "550e8400-e29b-41d4-a716-446655440102",
       title: "Photography workshop this weekend",
       author: "Mike Chen",
       group: "Local Photographers",
@@ -136,7 +136,7 @@ const Community = () => {
       timeAgo: "4h ago"
     },
     {
-      id: 3,
+      id: "550e8400-e29b-41d4-a716-446655440103",
       title: "Hiking trail recommendations?",
       author: "Emma J.",
       group: "Outdoor Adventures",

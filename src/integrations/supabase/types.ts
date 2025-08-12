@@ -632,6 +632,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      is_group_member: {
+        Args: { check_group_id: string; check_user_id: string }
+        Returns: boolean
+      }
       users_in_same_area: {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
