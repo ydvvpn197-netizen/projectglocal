@@ -275,7 +275,7 @@ export const EventFiltersComponent = ({ filters, onFiltersChange, onClearFilters
             {/* Price Range */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">
-                Price Range: ${filters.priceRange.min} - ${filters.priceRange.max}
+                Price Range: ₹{filters.priceRange.min} - ₹{filters.priceRange.max}
               </Label>
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
@@ -287,8 +287,8 @@ export const EventFiltersComponent = ({ filters, onFiltersChange, onClearFilters
                         updateFilters('priceRange', { ...filters.priceRange, min: value[0] })
                       }
                       min={0}
-                      max={500}
-                      step={5}
+                      max={10000}
+                      step={100}
                       className="w-full"
                     />
                   </div>
@@ -300,8 +300,8 @@ export const EventFiltersComponent = ({ filters, onFiltersChange, onClearFilters
                         updateFilters('priceRange', { ...filters.priceRange, max: value[0] })
                       }
                       min={0}
-                      max={500}
-                      step={5}
+                      max={10000}
+                      step={100}
                       className="w-full"
                     />
                   </div>
