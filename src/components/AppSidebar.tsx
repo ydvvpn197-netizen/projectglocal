@@ -1,5 +1,7 @@
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { NotificationBell } from "@/components/NotificationBell";
+import { useAuth } from "@/hooks/useAuth";
 
 import {
   Sidebar,
@@ -18,15 +20,18 @@ const mainItems = [
   { title: "Discover", url: "/discover", icon: Search },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
+  { title: "Book Artists", url: "/book-artist", icon: Palette },
 ];
 
 const userItems = [
+  { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { user } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -47,10 +52,13 @@ export function AppSidebar() {
         {/* App Title */}
         {!collapsed && (
           <div className="p-4 border-b border-sidebar-border">
-            <h2 className="text-lg font-bold text-sidebar-foreground flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              Local Hub
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-sidebar-foreground flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                Local Hub
+              </h2>
+              {user && <NotificationBell />}
+            </div>
           </div>
         )}
 

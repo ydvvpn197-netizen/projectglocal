@@ -21,6 +21,8 @@ const CreateGroup = lazy(() => import("./pages/CreateGroup"));
 const Events = lazy(() => import("./pages/Events"));
 const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const BookArtist = lazy(() => import("./pages/BookArtist"));
+const ArtistOnboarding = lazy(() => import("./pages/ArtistOnboarding"));
+const ArtistDashboard = lazy(() => import("./pages/ArtistDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -63,6 +65,8 @@ const App = () => (
               <Route path="/events" element={<Events />} />
               <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
               <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
+              <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
+              <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

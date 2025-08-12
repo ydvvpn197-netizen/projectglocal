@@ -53,8 +53,43 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      {/* Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold">L</span>
+              </div>
+              <span className="text-xl font-bold">Local Hub</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/book-artist')}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Book Artists
+              </button>
+              <button
+                onClick={() => navigate('/events')}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Events
+              </button>
+              <button
+                onClick={() => navigate('/community')}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Community
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex items-center justify-center p-4 pt-12">
+        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         
         {/* Hero Section */}
         <div className="hidden lg:block space-y-8">
@@ -207,7 +242,7 @@ const SignIn = () => {
                         <div className="font-medium">Community Member</div>
                         <div className="text-sm text-muted-foreground">Join discussions, book artists, attend events</div>
                       </button>
-                      <button
+                       <button
                         type="button"
                         onClick={() => setUserType('artist')}
                         className={`p-4 rounded-lg border-2 text-left transition-colors ${
@@ -217,7 +252,7 @@ const SignIn = () => {
                         }`}
                       >
                         <div className="font-medium">Artist</div>
-                        <div className="text-sm text-muted-foreground">Showcase talent, get bookings, offer services</div>
+                        <div className="text-sm text-muted-foreground">Showcase skills, receive bookings, earn money</div>
                       </button>
                     </div>
                   </div>
@@ -279,6 +314,7 @@ const SignIn = () => {
 
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

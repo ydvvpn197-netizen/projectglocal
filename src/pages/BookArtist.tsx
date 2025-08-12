@@ -18,6 +18,7 @@ import { sanitizeText, sanitizeEmail } from "@/lib/sanitize";
 
 interface Artist {
   id: string;
+  user_id: string;
   display_name: string;
   bio: string;
   avatar_url?: string;
@@ -26,6 +27,7 @@ interface Artist {
   is_verified: boolean;
   specialty?: string;
   rating?: number;
+  artist_skills?: string[];
 }
 
 const BookArtist = () => {
@@ -54,16 +56,17 @@ const BookArtist = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .eq('user_type', 'artist')
         .not('display_name', 'is', null)
         .not('bio', 'is', null)
         .limit(20);
 
       if (error) throw error;
 
-      // Transform data and add mock specialty/rating for demo
+      // Transform data to use real artist skills or fallback to mock data
       const transformedArtists = data.map(profile => ({
         ...profile,
-        specialty: ['Musician', 'Photographer', 'Painter', 'Performer', 'DJ'][Math.floor(Math.random() * 5)],
+        specialty: profile.artist_skills?.[0] || ['Musician', 'Photographer', 'Painter', 'Performer', 'DJ'][Math.floor(Math.random() * 5)],
         rating: 4.2 + Math.random() * 0.8
       }));
 
@@ -112,7 +115,7 @@ const BookArtist = () => {
       };
 
       // Create a booking post
-      const { error } = await supabase
+      const { data: bookingPostData, error } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
@@ -124,9 +127,28 @@ const BookArtist = () => {
           event_location: sanitizedData.location,
           price_range: sanitizedData.budget,
           tags: ['booking', 'artist', sanitizeText(selectedArtist.specialty?.toLowerCase() || 'general', 50)]
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Create notification for the artist
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: selectedArtist.user_id,
+          type: 'booking_request',
+          title: 'New Booking Request',
+          message: `You have a new booking request for ${sanitizedData.eventType} on ${format(bookingDate, 'PPP')}`,
+          data: { 
+            booking_id: bookingPostData.id, 
+            client_id: user.id,
+            event_type: sanitizedData.eventType,
+            event_date: bookingDate.toISOString()
+          }
+        });
+
 
       toast({
         title: "Booking Request Sent!",

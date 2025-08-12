@@ -109,6 +109,66 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          artist_id: string
+          booking_id: string
+          client_id: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          booking_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          booking_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          message: string
+          message_type: string
+          read: boolean
+          sender_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string
+          read?: boolean
+          sender_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string
+          read?: boolean
+          sender_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -586,6 +646,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           comments_count: number | null
@@ -660,6 +756,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          artist_skills: string[] | null
+          availability_schedule: Json | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -667,6 +765,8 @@ export type Database = {
           current_location_updated_at: string | null
           current_longitude: number | null
           display_name: string | null
+          hourly_rate_max: number | null
+          hourly_rate_min: number | null
           id: string
           is_verified: boolean | null
           latitude: number | null
@@ -674,6 +774,7 @@ export type Database = {
           location_country: string | null
           location_state: string | null
           longitude: number | null
+          portfolio_urls: string[] | null
           real_time_location_enabled: boolean | null
           updated_at: string
           user_id: string
@@ -681,6 +782,8 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          artist_skills?: string[] | null
+          availability_schedule?: Json | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -688,6 +791,8 @@ export type Database = {
           current_location_updated_at?: string | null
           current_longitude?: number | null
           display_name?: string | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
           id?: string
           is_verified?: boolean | null
           latitude?: number | null
@@ -695,6 +800,7 @@ export type Database = {
           location_country?: string | null
           location_state?: string | null
           longitude?: number | null
+          portfolio_urls?: string[] | null
           real_time_location_enabled?: boolean | null
           updated_at?: string
           user_id: string
@@ -702,6 +808,8 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          artist_skills?: string[] | null
+          availability_schedule?: Json | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -709,6 +817,8 @@ export type Database = {
           current_location_updated_at?: string | null
           current_longitude?: number | null
           display_name?: string | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
           id?: string
           is_verified?: boolean | null
           latitude?: number | null
@@ -716,6 +826,7 @@ export type Database = {
           location_country?: string | null
           location_state?: string | null
           longitude?: number | null
+          portfolio_urls?: string[] | null
           real_time_location_enabled?: boolean | null
           updated_at?: string
           user_id?: string
