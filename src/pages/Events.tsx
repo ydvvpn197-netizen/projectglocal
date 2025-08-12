@@ -2,16 +2,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, Clock, Users, Plus, Filter } from "lucide-react";
+import { Calendar, MapPin, Clock, Users, Plus } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "@/hooks/useLocation";
+import { EventFiltersComponent, EventFilters } from "@/components/EventFilters";
 
 const Events = () => {
   const { currentLocation, isEnabled: locationEnabled } = useLocation();
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<EventFilters>({
+    eventTypes: [],
+    dateRange: {},
+    timeRange: {
+      startTime: "00:00",
+      endTime: "23:59"
+    },
+    proximity: 50,
+    area: "",
+    priceRange: {
+      min: 0,
+      max: 500
+    },
+    freeOnly: false
+  });
 
   useEffect(() => {
     fetchEvents();
@@ -94,7 +110,71 @@ const Events = () => {
     }
   ];
 
-  const myEvents = upcomingEvents.filter(event => event.isGoing);
+  // Filter events based on active filters
+  const filteredEvents = useMemo(() => {
+    return upcomingEvents.filter(event => {
+      // Event type filter
+      if (filters.eventTypes.length > 0 && !filters.eventTypes.includes(event.category)) {
+        return false;
+      }
+
+      // Date range filter
+      if (filters.dateRange.from || filters.dateRange.to) {
+        const eventDate = new Date(event.date);
+        if (filters.dateRange.from && eventDate < filters.dateRange.from) return false;
+        if (filters.dateRange.to && eventDate > filters.dateRange.to) return false;
+      }
+
+      // Time range filter
+      if (filters.timeRange.startTime !== "00:00" || filters.timeRange.endTime !== "23:59") {
+        const eventTime = event.time.replace(/[^0-9:]/g, ''); // Extract time only
+        const [hours, minutes] = eventTime.split(':').map(Number);
+        const eventTimeMinutes = hours * 60 + minutes;
+        
+        const [startHours, startMinutes] = filters.timeRange.startTime.split(':').map(Number);
+        const startTimeMinutes = startHours * 60 + startMinutes;
+        
+        const [endHours, endMinutes] = filters.timeRange.endTime.split(':').map(Number);
+        const endTimeMinutes = endHours * 60 + endMinutes;
+        
+        if (eventTimeMinutes < startTimeMinutes || eventTimeMinutes > endTimeMinutes) {
+          return false;
+        }
+      }
+
+      // Area filter
+      if (filters.area && !event.location.toLowerCase().includes(filters.area.toLowerCase())) {
+        return false;
+      }
+
+      // Free events filter
+      if (filters.freeOnly && event.price && event.price > 0) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [upcomingEvents, filters]);
+
+  const myEvents = filteredEvents.filter(event => event.isGoing);
+
+  const clearFilters = () => {
+    setFilters({
+      eventTypes: [],
+      dateRange: {},
+      timeRange: {
+        startTime: "00:00",
+        endTime: "23:59"
+      },
+      proximity: 50,
+      area: "",
+      priceRange: {
+        min: 0,
+        max: 500
+      },
+      freeOnly: false
+    });
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -173,10 +253,11 @@ const Events = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Filter
-            </Button>
+            <EventFiltersComponent 
+              filters={filters}
+              onFiltersChange={setFilters}
+              onClearFilters={clearFilters}
+            />
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Create Event
@@ -193,11 +274,24 @@ const Events = () => {
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
+            {filteredEvents.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Try adjusting your filters to see more events.
+                  </p>
+                  <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="my-events" className="space-y-6">
