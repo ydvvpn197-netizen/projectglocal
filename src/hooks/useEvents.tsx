@@ -51,18 +51,40 @@ export const useEvents = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
+      console.log('Fetching events with function: get_events_with_attendance');
+      
       const { data, error } = await supabase.rpc('get_events_with_attendance');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase RPC error:', error);
+        throw error;
+      }
       
+      console.log('Events fetched successfully:', data?.length || 0, 'events');
       setEvents(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching events:', error);
+      
+      // Provide more specific error messages based on error type
+      let errorMessage = "Failed to fetch events";
+      if (error?.message?.includes('function') && error?.message?.includes('does not exist')) {
+        errorMessage = "Database function not found. Please contact support.";
+      } else if (error?.code === 'PGRST116') {
+        errorMessage = "Database function error. Please try again.";
+      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error?.code === '42883') {
+        errorMessage = "Database configuration error. Please contact support.";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to fetch events",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Set empty array so UI doesn't break
+      setEvents([]);
     } finally {
       setLoading(false);
     }

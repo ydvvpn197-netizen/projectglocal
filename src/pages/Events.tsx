@@ -13,8 +13,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAuth } from "@/hooks/useAuth";
 
 const Events = () => {
-  const { events: upcomingEvents, loading, toggleAttendance, deleteEvent } = useEvents();
+  const { events: upcomingEvents, loading, toggleAttendance, deleteEvent, refetch } = useEvents();
   const { user } = useAuth();
+  const [hasError, setHasError] = useState(false);
   const [filters, setFilters] = useState<EventFilters>({
     eventTypes: [],
     dateRange: {},
@@ -107,6 +108,20 @@ const Events = () => {
       myEventsFiltered: myEvents
     };
   }, [upcomingEvents, filters]);
+
+  // Check if we have an error state (no events and not loading)
+  useEffect(() => {
+    if (!loading && upcomingEvents.length === 0) {
+      setHasError(true);
+    } else if (upcomingEvents.length > 0) {
+      setHasError(false);
+    }
+  }, [loading, upcomingEvents]);
+
+  const handleRetry = async () => {
+    setHasError(false);
+    await refetch();
+  };
 
   const clearFilters = () => {
     setFilters({
@@ -244,6 +259,38 @@ const Events = () => {
       <MainLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error fallback if we failed to load events
+  if (hasError && upcomingEvents.length === 0) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="text-center p-8 max-w-md">
+            <CardContent className="space-y-4">
+              <div className="text-6xl">😓</div>
+              <h3 className="text-lg font-semibold">Failed to Load Events</h3>
+              <p className="text-muted-foreground">
+                We're having trouble connecting to our events service. This could be due to:
+              </p>
+              <ul className="text-sm text-muted-foreground space-y-1 text-left">
+                <li>• Network connectivity issues</li>
+                <li>• Temporary server problems</li>
+                <li>• Database maintenance</li>
+              </ul>
+              <div className="flex flex-col gap-2 pt-4">
+                <Button onClick={handleRetry}>
+                  Try Again
+                </Button>
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                  Refresh Page
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     );
