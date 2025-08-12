@@ -144,6 +144,104 @@ export type Database = {
           },
         ]
       }
+      event_attendees: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          event_date: string
+          event_time: string
+          id: string
+          image_url: string | null
+          latitude: number | null
+          location_city: string | null
+          location_country: string | null
+          location_name: string
+          location_state: string | null
+          longitude: number | null
+          max_attendees: number | null
+          price: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_time: string
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          location_city?: string | null
+          location_country?: string | null
+          location_name: string
+          location_state?: string | null
+          longitude?: number | null
+          max_attendees?: number | null
+          price?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_time?: string
+          id?: string
+          image_url?: string | null
+          latitude?: number | null
+          location_city?: string | null
+          location_country?: string | null
+          location_name?: string
+          location_state?: string | null
+          longitude?: number | null
+          max_attendees?: number | null
+          price?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -626,6 +724,32 @@ export type Database = {
           status: string
           created_at: string
           updated_at: string
+        }[]
+      }
+      get_events_with_attendance: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          user_id: string
+          title: string
+          description: string
+          event_date: string
+          event_time: string
+          location_name: string
+          location_city: string
+          location_state: string
+          location_country: string
+          latitude: number
+          longitude: number
+          category: string
+          max_attendees: number
+          price: number
+          image_url: string
+          tags: string[]
+          created_at: string
+          updated_at: string
+          attendees_count: number
+          user_attending: boolean
         }[]
       }
       get_filtered_profile: {

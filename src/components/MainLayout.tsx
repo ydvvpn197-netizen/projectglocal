@@ -3,8 +3,9 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Bell, User, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LocationToggle } from "@/components/LocationToggle";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { signOut, user } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
@@ -35,12 +37,28 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
               
               <div className="flex items-center gap-2">
-                <Button asChild size="sm">
-                  <Link to="/create">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create
-                  </Link>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => navigate('/create')}>
+                      Create Post
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/create-event')}>
+                      Create Event
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/community/create-discussion')}>
+                      Start Discussion
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/community/create-group')}>
+                      Create Group
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button variant="ghost" size="icon">
                   <Bell className="h-4 w-4" />
                 </Button>

@@ -5,14 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Clock, Users, Plus } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useLocation } from "@/hooks/useLocation";
+import { useEvents } from "@/hooks/useEvents";
 import { EventFiltersComponent, EventFilters } from "@/components/EventFilters";
+import { CreateEventButton } from "@/components/CreateEventButton";
 
 const Events = () => {
-  const { currentLocation, isEnabled: locationEnabled } = useLocation();
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { events: upcomingEvents, loading, toggleAttendance } = useEvents();
   const [filters, setFilters] = useState<EventFilters>({
     eventTypes: [],
     dateRange: {},
@@ -29,105 +27,25 @@ const Events = () => {
     freeOnly: false
   });
 
-  useEffect(() => {
-    fetchEvents();
-  }, [currentLocation, locationEnabled]);
-
-  const fetchEvents = async () => {
-    try {
-      // Determine location to use
-      let locationParam = 'Your Area';
-      if (locationEnabled && currentLocation) {
-        locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
-      }
-
-      const { data, error } = await supabase.functions.invoke('fetch-local-events', {
-        body: { location: locationParam }
-      });
-      
-      if (error) throw error;
-      
-      // Transform the events to match our current interface
-      const transformedEvents = data.events?.map((event: any, index: number) => ({
-        id: index + 1,
-        title: event.title,
-        description: event.description,
-        date: event.date,
-        time: event.time,
-        location: event.location,
-        attendees: event.attendees,
-        category: event.category,
-        isGoing: Math.random() > 0.8, // Randomly assign some as "going"
-        image: ["🎨", "🍕", "🎷", "⚽", "🎭", "📚", "🌟", "🎪"][index % 8]
-      })) || [];
-      
-      setUpcomingEvents(transformedEvents);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      // Fallback to static data
-      setUpcomingEvents(staticEvents);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const staticEvents = [
-    {
-      id: 1,
-      title: "Local Art Exhibition Opening",
-      description: "Join us for the grand opening of our newest art exhibition featuring local artists.",
-      date: "2024-01-15",
-      time: "7:00 PM",
-      location: "Downtown Gallery",
-      attendees: 45,
-      category: "Art",
-      isGoing: false,
-      image: "🎨"
-    },
-    {
-      id: 2,
-      title: "Community Food Festival",
-      description: "Taste the best local cuisine from food trucks and restaurants around the city.",
-      date: "2024-01-20",
-      time: "12:00 PM",
-      location: "Central Park",
-      attendees: 234,
-      category: "Food",
-      isGoing: true,
-      image: "🍕"
-    },
-    {
-      id: 3,
-      title: "Live Jazz Performance",
-      description: "An intimate evening of live jazz music featuring local musicians.",
-      date: "2024-01-18",
-      time: "8:30 PM",
-      location: "Blue Note Cafe",
-      attendees: 67,
-      category: "Music",
-      isGoing: false,
-      image: "🎷"
-    }
-  ];
 
   // Filter events based on active filters
   const filteredEvents = useMemo(() => {
     return upcomingEvents.filter(event => {
       // Event type filter
-      if (filters.eventTypes.length > 0 && !filters.eventTypes.includes(event.category)) {
+      if (filters.eventTypes.length > 0 && !filters.eventTypes.includes(event.category || '')) {
         return false;
       }
 
       // Date range filter
       if (filters.dateRange.from || filters.dateRange.to) {
-        const eventDate = new Date(event.date);
+        const eventDate = new Date(event.event_date);
         if (filters.dateRange.from && eventDate < filters.dateRange.from) return false;
         if (filters.dateRange.to && eventDate > filters.dateRange.to) return false;
       }
 
       // Time range filter
       if (filters.timeRange.startTime !== "00:00" || filters.timeRange.endTime !== "23:59") {
-        const eventTime = event.time.replace(/[^0-9:]/g, ''); // Extract time only
+        const eventTime = event.event_time;
         const [hours, minutes] = eventTime.split(':').map(Number);
         const eventTimeMinutes = hours * 60 + minutes;
         
@@ -143,7 +61,7 @@ const Events = () => {
       }
 
       // Area filter
-      if (filters.area && !event.location.toLowerCase().includes(filters.area.toLowerCase())) {
+      if (filters.area && !event.location_name.toLowerCase().includes(filters.area.toLowerCase())) {
         return false;
       }
 
@@ -156,7 +74,7 @@ const Events = () => {
     });
   }, [upcomingEvents, filters]);
 
-  const myEvents = filteredEvents.filter(event => event.isGoing);
+  const myEvents = filteredEvents.filter(event => event.user_attending);
 
   const clearFilters = () => {
     setFilters({
@@ -185,16 +103,32 @@ const Events = () => {
     });
   };
 
+  const getEventEmoji = (category?: string) => {
+    const emojiMap: { [key: string]: string } = {
+      'Art & Culture': '🎨',
+      'Music': '🎵',
+      'Food & Drink': '🍕',
+      'Sports & Fitness': '⚽',
+      'Technology': '💻',
+      'Business': '💼',
+      'Education': '📚',
+      'Health & Wellness': '🌿',
+      'Community': '🏘️',
+      'Entertainment': '🎭',
+    };
+    return emojiMap[category || ''] || '🌟';
+  };
+
   const EventCard = ({ event }: { event: typeof upcomingEvents[0] }) => (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="space-y-2">
-            <div className="text-4xl">{event.image}</div>
+            <div className="text-4xl">{getEventEmoji(event.category)}</div>
             <CardTitle className="text-lg">{event.title}</CardTitle>
             <CardDescription>{event.description}</CardDescription>
           </div>
-          <Badge variant="secondary">{event.category}</Badge>
+          {event.category && <Badge variant="secondary">{event.category}</Badge>}
         </div>
       </CardHeader>
       <CardContent>
@@ -202,26 +136,32 @@ const Events = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              {formatDate(event.date)}
+              {formatDate(event.event_date)}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
-              {event.time}
+              {event.event_time}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              {event.location}
+              {event.location_name}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              {event.attendees} attending
+              {event.attendees_count} attending
             </div>
+            {event.price > 0 && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-semibold">${event.price}</span>
+              </div>
+            )}
           </div>
           <Button 
             className="w-full" 
-            variant={event.isGoing ? "secondary" : "default"}
+            variant={event.user_attending ? "secondary" : "default"}
+            onClick={() => toggleAttendance(event.id)}
           >
-            {event.isGoing ? "Going" : "Attend Event"}
+            {event.user_attending ? "Going" : "Attend Event"}
           </Button>
         </div>
       </CardContent>
@@ -258,10 +198,7 @@ const Events = () => {
               onFiltersChange={setFilters}
               onClearFilters={clearFilters}
             />
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Event
-            </Button>
+            <CreateEventButton />
           </div>
         </div>
 

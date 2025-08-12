@@ -19,6 +19,7 @@ const Community = lazy(() => import("./pages/Community"));
 const CreateDiscussion = lazy(() => import("./pages/CreateDiscussion"));
 const CreateGroup = lazy(() => import("./pages/CreateGroup"));
 const Events = lazy(() => import("./pages/Events"));
+const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const BookArtist = lazy(() => import("./pages/BookArtist"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/community/create-discussion" element={<CreateDiscussion />} />
               <Route path="/community/create-group" element={<CreateGroup />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
               <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
