@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar, Phone, Mail } from "lucide-react";
+import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar, Phone, Mail, Copy, Check } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { usePosts, Post } from "@/hooks/usePosts";
@@ -15,6 +15,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
+import { PostComments } from "@/components/PostComments";
+import { useToast } from "@/hooks/use-toast";
 
 const Feed = () => {
   const { posts, loading, toggleLike } = usePosts();
@@ -53,6 +55,11 @@ const Feed = () => {
   };
 
   const PostCard = ({ post }: { post: Post }) => {
+    const [showComments, setShowComments] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const { toast } = useToast();
+
     const getInitials = (name?: string) => {
       if (!name) return 'U';
       return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -63,6 +70,34 @@ const Feed = () => {
         return format(new Date(dateString), 'MMM d, yyyy');
       } catch {
         return 'Unknown date';
+      }
+    };
+
+    const handleLike = async () => {
+      setIsLiked(!isLiked);
+      await toggleLike(post.id);
+    };
+
+    const handleShare = async () => {
+      const postUrl = `${window.location.origin}/post/${post.id}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: post.title || 'Check out this post',
+            text: post.content,
+            url: postUrl,
+          });
+        } else {
+          await navigator.clipboard.writeText(postUrl);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          toast({
+            title: "Link copied!",
+            description: "Post link has been copied to clipboard."
+          });
+        }
+      } catch (error) {
+        console.log('Error sharing:', error);
       }
     };
 
@@ -172,19 +207,33 @@ const Feed = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="gap-2"
-              onClick={() => toggleLike(post.id)}
+              className={`gap-2 ${isLiked ? 'text-red-500' : ''}`}
+              onClick={handleLike}
             >
-              <Heart className="h-4 w-4" />
+              <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
               {post.likes_count || 0}
             </Button>
-            <Button variant="ghost" size="sm" className="gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => setShowComments(!showComments)}
+            >
               <MessageCircle className="h-4 w-4" />
               {post.comments_count || 0}
             </Button>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <Share className="h-4 w-4" />
-              Share
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={handleShare}
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <Share className="h-4 w-4" />
+              )}
+              {copied ? 'Copied!' : 'Share'}
             </Button>
           </div>
           
@@ -198,6 +247,13 @@ const Feed = () => {
             <Button size="sm" variant="outline">Join</Button>
           )}
         </div>
+
+        {/* Comments Section */}
+        <PostComments 
+          postId={post.id}
+          isOpen={showComments}
+          onClose={() => setShowComments(false)}
+        />
       </CardContent>
     </Card>
     );
