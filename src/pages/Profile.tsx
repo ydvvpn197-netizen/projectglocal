@@ -102,15 +102,28 @@ const Profile = () => {
         avatar_url: formData.avatar_url // URLs should be validated separately if needed
       };
 
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          ...sanitizedData,
-          updated_at: new Date().toISOString()
-        });
+      let result;
+      if (profile) {
+        // Update existing profile
+        result = await supabase
+          .from('profiles')
+          .update({
+            ...sanitizedData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+      } else {
+        // Insert new profile
+        result = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            ...sanitizedData,
+            updated_at: new Date().toISOString()
+          });
+      }
 
-      if (error) throw error;
+      if (result.error) throw result.error;
 
       toast({
         title: "Profile Updated",
