@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useState } from "react";
-import { X, Plus, MapPin, Calendar, DollarSign, Users } from "lucide-react";
+import { X, Plus, MapPin, Calendar, DollarSign, Users, Clock, Tag } from "lucide-react";
 import { usePosts } from "@/hooks/usePosts";
+import { useEvents } from "@/hooks/useEvents";
 import { useNavigate } from "react-router-dom";
 import { sanitizeText, sanitizeHtml, sanitizeTags } from "@/lib/sanitize";
 
@@ -22,6 +23,7 @@ const CreatePost = () => {
   const [loading, setLoading] = useState(false);
   
   const { createPost } = usePosts();
+  const { createEvent } = useEvents();
   const navigate = useNavigate();
 
   const addTag = () => {
@@ -43,19 +45,41 @@ const CreatePost = () => {
     
     setLoading(true);
     try {
-      const postData = {
-        type,
-        title: sanitizeText(formData.get('title') as string || '', 200),
-        content: sanitizeText(formData.get('content') as string || '', 5000),
-        event_date: formData.get('eventDate') ? new Date(formData.get('eventDate') as string).toISOString() : undefined,
-        event_location: sanitizeText((formData.get('eventLocation') as string || formData.get('serviceArea') as string) || '', 500),
-        price_range: sanitizeText((formData.get('eventPrice') as string || formData.get('servicePrice') as string) || '', 100),
-        tags: tags.length > 0 ? sanitizeTags(tags) : undefined
-      };
+      if (type === 'event') {
+        // Handle event creation separately using the events hook
+        const eventData = {
+          title: sanitizeText(formData.get('title') as string || '', 200),
+          description: sanitizeText(formData.get('content') as string || '', 5000),
+          event_date: formData.get('event_date') as string,
+          event_time: formData.get('event_time') as string,
+          location_name: sanitizeText(formData.get('location_name') as string || '', 500),
+          category: formData.get('category') as string || undefined,
+          max_attendees: formData.get('max_attendees') ? parseInt(formData.get('max_attendees') as string) : undefined,
+          price: formData.get('price') ? parseFloat(formData.get('price') as string) : 0,
+          image_url: formData.get('image_url') as string || undefined,
+          tags: formData.get('tags') ? (formData.get('tags') as string).split(',').map(tag => tag.trim()) : undefined,
+        };
+        
+        const success = await createEvent(eventData);
+        if (success) {
+          navigate('/events');
+        }
+      } else {
+        // Handle other post types
+        const postData = {
+          type,
+          title: sanitizeText(formData.get('title') as string || '', 200),
+          content: sanitizeText(formData.get('content') as string || '', 5000),
+          event_date: formData.get('eventDate') ? new Date(formData.get('eventDate') as string).toISOString() : undefined,
+          event_location: sanitizeText((formData.get('eventLocation') as string || formData.get('serviceArea') as string) || '', 500),
+          price_range: sanitizeText((formData.get('eventPrice') as string || formData.get('servicePrice') as string) || '', 100),
+          tags: tags.length > 0 ? sanitizeTags(tags) : undefined
+        };
 
-      const { error } = await createPost(postData);
-      if (!error) {
-        navigate('/feed');
+        const { error } = await createPost(postData);
+        if (!error) {
+          navigate('/feed');
+        }
       }
     } finally {
       setLoading(false);
@@ -188,31 +212,36 @@ const CreatePost = () => {
                 <form onSubmit={(e) => handleCreatePost(e, 'event')} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="event-title">Event Title</Label>
+                      <Label htmlFor="event-title">Event Title *</Label>
                       <Input 
                         id="event-title" 
                         name="title"
-                        placeholder="Amazing Event Name" 
+                        placeholder="Enter event title" 
                         required
                       />
                     </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="event-category">Category</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="music">Music</SelectItem>
-                        <SelectItem value="art">Art & Culture</SelectItem>
-                        <SelectItem value="sports">Sports</SelectItem>
-                        <SelectItem value="food">Food & Drink</SelectItem>
-                        <SelectItem value="business">Business</SelectItem>
-                        <SelectItem value="community">Community</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      <Label htmlFor="event-category">Category</Label>
+                      <Select name="category">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Art & Culture">Art & Culture</SelectItem>
+                          <SelectItem value="Music">Music</SelectItem>
+                          <SelectItem value="Food & Drink">Food & Drink</SelectItem>
+                          <SelectItem value="Sports & Fitness">Sports & Fitness</SelectItem>
+                          <SelectItem value="Technology">Technology</SelectItem>
+                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Education">Education</SelectItem>
+                          <SelectItem value="Health & Wellness">Health & Wellness</SelectItem>
+                          <SelectItem value="Community">Community</SelectItem>
+                          <SelectItem value="Entertainment">Entertainment</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="event-description">Description</Label>
@@ -221,64 +250,103 @@ const CreatePost = () => {
                       name="content"
                       placeholder="Describe your event..."
                       className="min-h-24"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="event-date" className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Date *
+                      </Label>
+                      <Input 
+                        id="event-date"
+                        name="event_date"
+                        type="date"
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="event-time" className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Time *
+                      </Label>
+                      <Input 
+                        id="event-time"
+                        name="event_time"
+                        type="time"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="event-location" className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Location *
+                    </Label>
+                    <Input 
+                      id="event-location"
+                      name="location_name"
+                      placeholder="Event venue or address"
                       required
                     />
                   </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="event-date">Date & Time</Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        id="event-date"
-                        name="eventDate"
-                        type="datetime-local"
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="event-location">Location</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        id="event-location"
-                        name="eventLocation"
-                        placeholder="Event venue"
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="event-price">Ticket Price (Optional)</Label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="event-price" className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Price (USD)
+                      </Label>
                       <Input 
                         id="event-price"
-                        name="eventPrice"
-                        placeholder="0.00"
+                        name="price"
+                        placeholder="0 for free events"
                         type="number"
-                        className="pl-10"
+                        min="0"
+                        step="0.01"
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="event-capacity">Max Attendees</Label>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <div className="space-y-2">
+                      <Label htmlFor="event-capacity" className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Max Attendees
+                      </Label>
                       <Input 
                         id="event-capacity" 
-                        placeholder="50"
+                        name="max_attendees"
+                        placeholder="Optional"
                         type="number"
-                        className="pl-10"
+                        min="1"
                       />
                     </div>
                   </div>
-                </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="event-image">Image URL</Label>
+                      <Input 
+                        id="event-image"
+                        name="image_url"
+                        type="url"
+                        placeholder="Optional event image"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="event-tags" className="flex items-center gap-2">
+                        <Tag className="h-4 w-4" />
+                        Tags
+                      </Label>
+                      <Input 
+                        id="event-tags"
+                        name="tags"
+                        placeholder="photography, outdoor, beginner (comma separated)"
+                      />
+                    </div>
+                  </div>
 
                   <Button 
                     className="w-full" 

@@ -179,6 +179,23 @@ export const useEvents = () => {
     fetchEvents(); // Fetch events even when not logged in
   }, [user]);
 
+  // Listen for real-time updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('events-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'events' },
+        () => {
+          fetchEvents(); // Refetch when events change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return {
     events,
     loading,
