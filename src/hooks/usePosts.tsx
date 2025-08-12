@@ -37,7 +37,10 @@ export const usePosts = () => {
   const { toast } = useToast();
 
   const fetchPosts = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       // Use the secure function instead of the view
@@ -50,6 +53,7 @@ export const usePosts = () => {
       
       setPosts(data as Post[] || []);
     } catch (error: any) {
+      console.error('Error fetching posts:', error);
       toast({
         title: "Error loading posts",
         description: error.message,
@@ -146,7 +150,9 @@ export const usePosts = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    if (user) {
+      fetchPosts();
+    }
   }, [user]);
 
   return {

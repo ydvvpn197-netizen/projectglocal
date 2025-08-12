@@ -5,21 +5,38 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import Index from "./pages/Index";
-import SignIn from "./pages/SignIn";
-import LocationSetup from "./pages/LocationSetup";
-import Onboarding from "./pages/Onboarding";
-import Feed from "./pages/Feed";
-import CreatePost from "./pages/CreatePost";
-import Discover from "./pages/Discover";
-import Community from "./pages/Community";
-import Events from "./pages/Events";
-import BookArtist from "./pages/BookArtist";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
+import { lazy, Suspense } from "react";
 
-const queryClient = new QueryClient();
+// Lazy load pages for better performance
+const Index = lazy(() => import("./pages/Index"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const LocationSetup = lazy(() => import("./pages/LocationSetup"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Feed = lazy(() => import("./pages/Feed"));
+const CreatePost = lazy(() => import("./pages/CreatePost"));
+const Discover = lazy(() => import("./pages/Discover"));
+const Community = lazy(() => import("./pages/Community"));
+const Events = lazy(() => import("./pages/Events"));
+const BookArtist = lazy(() => import("./pages/BookArtist"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Loading component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -28,22 +45,24 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-            <Route path="/feed" element={<Feed />} />
-            <Route path="/create" element={<CreatePost />} />
-            <Route path="/discover" element={<Discover />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/feed" element={<Feed />} />
+              <Route path="/create" element={<CreatePost />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
