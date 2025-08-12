@@ -672,6 +672,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_group_ids: {
+        Args: { check_user_id: string }
+        Returns: string[]
+      }
       is_group_member: {
         Args: { check_group_id: string; check_user_id: string }
         Returns: boolean
