@@ -208,21 +208,21 @@ export type Database = {
           group_id: string
           id: string
           joined_at: string
-          role: string
+          role: Database["public"]["Enums"]["group_role"]
           user_id: string
         }
         Insert: {
           group_id: string
           id?: string
           joined_at?: string
-          role?: string
+          role?: Database["public"]["Enums"]["group_role"]
           user_id: string
         }
         Update: {
           group_id?: string
           id?: string
           joined_at?: string
-          role?: string
+          role?: Database["public"]["Enums"]["group_role"]
           user_id?: string
         }
         Relationships: [
@@ -232,6 +232,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "groups"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -724,6 +731,7 @@ export type Database = {
       }
     }
     Enums: {
+      group_role: "viewer" | "member" | "editor" | "admin"
       post_status: "active" | "inactive" | "completed"
       post_type: "post" | "event" | "service" | "discussion"
     }
@@ -853,6 +861,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      group_role: ["viewer", "member", "editor", "admin"],
       post_status: ["active", "inactive", "completed"],
       post_type: ["post", "event", "service", "discussion"],
     },
