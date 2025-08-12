@@ -10,9 +10,11 @@ import { ReviewCard } from "@/components/ReviewCard";
 import { GroupView } from "@/components/GroupView";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Community = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [userVotes, setUserVotes] = useState<{[key: string]: string}>({});
   const [helpfulReviews, setHelpfulReviews] = useState<{[key: string]: boolean}>({});
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -293,7 +295,10 @@ const Community = () => {
               Connect with like-minded people in your area and join local groups.
             </p>
           </div>
-          <Button className="flex items-center gap-2">
+          <Button 
+            className="flex items-center gap-2"
+            onClick={() => navigate("/community/create-group")}
+          >
             <Plus className="h-4 w-4" />
             Create Group
           </Button>
@@ -350,7 +355,10 @@ const Community = () => {
           <TabsContent value="discussions" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Recent Discussions</h2>
-              <Button className="flex items-center gap-2">
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => navigate("/community/create-discussion")}
+              >
                 <Plus className="h-4 w-4" />
                 Start Discussion
               </Button>

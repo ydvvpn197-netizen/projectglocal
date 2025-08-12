@@ -16,6 +16,8 @@ const Feed = lazy(() => import("./pages/Feed"));
 const CreatePost = lazy(() => import("./pages/CreatePost"));
 const Discover = lazy(() => import("./pages/Discover"));
 const Community = lazy(() => import("./pages/Community"));
+const CreateDiscussion = lazy(() => import("./pages/CreateDiscussion"));
+const CreateGroup = lazy(() => import("./pages/CreateGroup"));
 const Events = lazy(() => import("./pages/Events"));
 const BookArtist = lazy(() => import("./pages/BookArtist"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -55,6 +57,8 @@ const App = () => (
               <Route path="/create" element={<CreatePost />} />
               <Route path="/discover" element={<Discover />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/community/create-discussion" element={<CreateDiscussion />} />
+              <Route path="/community/create-group" element={<CreateGroup />} />
               <Route path="/events" element={<Events />} />
               <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
