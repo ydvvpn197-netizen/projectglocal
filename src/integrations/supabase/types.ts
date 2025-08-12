@@ -144,6 +144,63 @@ export type Database = {
           },
         ]
       }
+      discussions: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          group_id: string | null
+          id: string
+          is_anonymous: boolean | null
+          latitude: number | null
+          likes_count: number | null
+          location_city: string | null
+          location_country: string | null
+          location_state: string | null
+          longitude: number | null
+          replies_count: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          latitude?: number | null
+          likes_count?: number | null
+          location_city?: string | null
+          location_country?: string | null
+          location_state?: string | null
+          longitude?: number | null
+          replies_count?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          latitude?: number | null
+          likes_count?: number | null
+          location_city?: string | null
+          location_country?: string | null
+          location_state?: string | null
+          longitude?: number | null
+          replies_count?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_attendees: {
         Row: {
           created_at: string
@@ -722,6 +779,25 @@ export type Database = {
           budget_max: number
           contact_info: string
           status: string
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      get_discussions_with_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          user_id: string
+          title: string
+          content: string
+          category: string
+          is_anonymous: boolean
+          group_id: string
+          group_name: string
+          author_name: string
+          author_avatar: string
+          likes_count: number
+          replies_count: number
           created_at: string
           updated_at: string
         }[]

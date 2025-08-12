@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, MessageCircle, Heart, Share2, Plus, BarChart3, Star } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { PollCard } from "@/components/PollCard";
@@ -11,10 +12,12 @@ import { GroupView } from "@/components/GroupView";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useDiscussions } from "@/hooks/useDiscussions";
 
 const Community = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { discussions: recentDiscussions, loading: discussionsLoading } = useDiscussions();
   const [userVotes, setUserVotes] = useState<{[key: string]: string}>({});
   const [helpfulReviews, setHelpfulReviews] = useState<{[key: string]: boolean}>({});
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -118,35 +121,6 @@ const Community = () => {
     }
   ];
 
-  const discussions = [
-    {
-      id: "550e8400-e29b-41d4-a716-446655440101",
-      title: "Best coffee shops downtown?",
-      author: "Sarah M.",
-      group: "Food Lovers Unite",
-      replies: 23,
-      likes: 45,
-      timeAgo: "2h ago"
-    },
-    {
-      id: "550e8400-e29b-41d4-a716-446655440102",
-      title: "Photography workshop this weekend",
-      author: "Mike Chen",
-      group: "Local Photographers",
-      replies: 12,
-      likes: 67,
-      timeAgo: "4h ago"
-    },
-    {
-      id: "550e8400-e29b-41d4-a716-446655440103",
-      title: "Hiking trail recommendations?",
-      author: "Emma J.",
-      group: "Outdoor Adventures",
-      replies: 18,
-      likes: 34,
-      timeAgo: "6h ago"
-    }
-  ];
 
   const polls = [
     {
@@ -364,34 +338,71 @@ const Community = () => {
               </Button>
             </div>
             <div className="space-y-4">
-              {discussions.map((discussion) => (
-                <Card key={discussion.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold text-lg">{discussion.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          by {discussion.author} in {discussion.group} • {discussion.timeAgo}
+              {discussionsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : recentDiscussions.length > 0 ? (
+                recentDiscussions.map((discussion) => (
+                  <Card key={discussion.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={discussion.author_avatar} />
+                            <AvatarFallback>
+                              {discussion.author_name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{discussion.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              by {discussion.author_name} 
+                              {discussion.group_name && ` in ${discussion.group_name}`} • 
+                              {new Date(discussion.created_at).toLocaleDateString()}
+                            </p>
+                            {discussion.category && (
+                              <Badge variant="secondary" className="mt-2 text-xs">
+                                {discussion.category}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {discussion.content}
                         </p>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-1">
-                          <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{discussion.replies}</span>
+                        <div className="flex items-center gap-6">
+                          <div className="flex items-center gap-1">
+                            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">{discussion.replies_count}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Heart className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">{discussion.likes_count}</span>
+                          </div>
+                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                            <Share2 className="h-4 w-4" />
+                            Share
+                          </Button>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Heart className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{discussion.likes}</span>
-                        </div>
-                        <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                          <Share2 className="h-4 w-4" />
-                          Share
-                        </Button>
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No discussions yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Be the first to start a discussion in your community!
+                    </p>
+                    <Button onClick={() => navigate("/community/create-discussion")}>
+                      Start Discussion
+                    </Button>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
           </TabsContent>
 

@@ -176,9 +176,7 @@ export const useEvents = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchEvents();
-    }
+    fetchEvents(); // Fetch events even when not logged in
   }, [user]);
 
   return {

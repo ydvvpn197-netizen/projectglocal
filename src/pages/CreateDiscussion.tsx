@@ -6,23 +6,27 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useDiscussions } from "@/hooks/useDiscussions";
 
 const CreateDiscussion = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { createDiscussion } = useDiscussions();
   const [loading, setLoading] = useState(false);
   const [userGroups, setUserGroups] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     groupId: "",
-    category: "general"
+    category: "general",
+    isAnonymous: false
   });
 
   useEffect(() => {
@@ -55,10 +59,21 @@ const CreateDiscussion = () => {
     e.preventDefault();
     if (!user) return;
 
-    if (!formData.title.trim() || !formData.content.trim() || !formData.groupId) {
+    // For anonymous discussions, only title and content are required
+    if (!formData.title.trim() || !formData.content.trim()) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields.",
+        description: "Please fill in title and content.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For non-anonymous discussions, group is required
+    if (!formData.isAnonymous && !formData.groupId) {
+      toast({
+        title: "Error",
+        description: "Please select a group or choose anonymous discussion.",
         variant: "destructive"
       });
       return;
@@ -66,36 +81,25 @@ const CreateDiscussion = () => {
 
     setLoading(true);
     try {
-      // Create the discussion as a group message
-      const { error } = await supabase
-        .from('group_messages')
-        .insert({
-          group_id: formData.groupId,
-          user_id: user.id,
-          content: `**${formData.title}**\n\n${formData.content}`
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Your discussion has been started.",
+      const success = await createDiscussion({
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
+        is_anonymous: formData.isAnonymous,
+        group_id: formData.isAnonymous ? undefined : formData.groupId
       });
 
-      navigate("/community");
+      if (success) {
+        navigate("/community");
+      }
     } catch (error) {
       console.error('Error creating discussion:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create discussion. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -127,20 +131,35 @@ const CreateDiscussion = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="group">Group *</Label>
-                <Select value={formData.groupId} onValueChange={(value) => handleInputChange("groupId", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a group to post in" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userGroups.map((group) => (
-                      <SelectItem key={group.id} value={group.id}>
-                        {group.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="anonymous" 
+                    checked={formData.isAnonymous}
+                    onCheckedChange={(checked) => handleInputChange("isAnonymous", checked as boolean)}
+                  />
+                  <Label htmlFor="anonymous" className="text-sm font-medium">
+                    Post anonymously (without joining a group)
+                  </Label>
+                </div>
+                
+                {!formData.isAnonymous && (
+                  <div className="space-y-2">
+                    <Label htmlFor="group">Group *</Label>
+                    <Select value={formData.groupId} onValueChange={(value) => handleInputChange("groupId", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a group to post in" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userGroups.map((group) => (
+                          <SelectItem key={group.id} value={group.id}>
+                            {group.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -192,7 +211,7 @@ const CreateDiscussion = () => {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={loading || !formData.title.trim() || !formData.content.trim() || !formData.groupId}
+                  disabled={loading || !formData.title.trim() || !formData.content.trim() || (!formData.isAnonymous && !formData.groupId)}
                   className="flex-1"
                 >
                   {loading ? "Creating..." : "Start Discussion"}
