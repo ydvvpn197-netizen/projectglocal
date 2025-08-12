@@ -28,9 +28,9 @@ const Events = () => {
   });
 
 
-  // Filter events based on active filters
-  const filteredEvents = useMemo(() => {
-    return upcomingEvents.filter(event => {
+  // Helper function to apply filters to events
+  const applyFilters = (events: typeof upcomingEvents) => {
+    return events.filter(event => {
       // Event type filter
       if (filters.eventTypes.length > 0 && !filters.eventTypes.includes(event.category || '')) {
         return false;
@@ -72,9 +72,37 @@ const Events = () => {
 
       return true;
     });
-  }, [upcomingEvents, filters]);
+  };
 
-  const myEvents = filteredEvents.filter(event => event.user_attending);
+  // Categorize events by date and attendance
+  const { upcomingEventsFiltered, pastEventsFiltered, myEventsFiltered } = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Set to start of today for comparison
+
+    // Separate events by date first
+    const upcoming = upcomingEvents.filter(event => {
+      const eventDate = new Date(event.event_date);
+      return eventDate >= now;
+    });
+
+    const past = upcomingEvents.filter(event => {
+      const eventDate = new Date(event.event_date);
+      return eventDate < now;
+    });
+
+    // Apply filters to each category
+    const upcomingFiltered = applyFilters(upcoming);
+    const pastFiltered = applyFilters(past);
+    
+    // My events: events user is attending (from all events, both past and upcoming)
+    const myEvents = applyFilters(upcomingEvents.filter(event => event.user_attending));
+
+    return {
+      upcomingEventsFiltered: upcomingFiltered,
+      pastEventsFiltered: pastFiltered,
+      myEventsFiltered: myEvents
+    };
+  }, [upcomingEvents, filters]);
 
   const clearFilters = () => {
     setFilters({
@@ -211,9 +239,9 @@ const Events = () => {
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-6">
-            {filteredEvents.length > 0 ? (
+            {upcomingEventsFiltered.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.map((event) => (
+                {upcomingEventsFiltered.map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
@@ -221,7 +249,7 @@ const Events = () => {
               <Card className="text-center py-12">
                 <CardContent>
                   <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                  <h3 className="text-lg font-semibold mb-2">No upcoming events found</h3>
                   <p className="text-muted-foreground mb-4">
                     Try adjusting your filters to see more events.
                   </p>
@@ -232,9 +260,9 @@ const Events = () => {
           </TabsContent>
 
           <TabsContent value="my-events" className="space-y-6">
-            {myEvents.length > 0 ? (
+            {myEventsFiltered.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myEvents.map((event) => (
+                {myEventsFiltered.map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
@@ -253,15 +281,23 @@ const Events = () => {
           </TabsContent>
 
           <TabsContent value="past" className="space-y-6">
-            <Card className="text-center py-12">
-              <CardContent>
-                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No past events</h3>
-                <p className="text-muted-foreground">
-                  Your attended events will appear here once you've joined some events.
-                </p>
-              </CardContent>
-            </Card>
+            {pastEventsFiltered.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pastEventsFiltered.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No past events</h3>
+                  <p className="text-muted-foreground">
+                    No past events found. Events you've attended will appear here.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
