@@ -57,9 +57,9 @@ const Profile = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         throw error;
       }
 
@@ -73,6 +73,18 @@ const Profile = () => {
           location_state: data.location_state || "",
           location_country: data.location_country || "",
           avatar_url: data.avatar_url || ""
+        });
+      } else {
+        // No profile exists, set empty form data
+        setProfile(null);
+        setFormData({
+          display_name: "",
+          username: "",
+          bio: "",
+          location_city: "",
+          location_state: "",
+          location_country: "",
+          avatar_url: ""
         });
       }
     } catch (error) {
@@ -99,31 +111,21 @@ const Profile = () => {
         location_city: sanitizeText(formData.location_city || '', 100),
         location_state: sanitizeText(formData.location_state || '', 100),
         location_country: sanitizeText(formData.location_country || '', 100),
-        avatar_url: formData.avatar_url // URLs should be validated separately if needed
+        avatar_url: formData.avatar_url
       };
 
-      let result;
-      if (profile) {
-        // Update existing profile
-        result = await supabase
-          .from('profiles')
-          .update({
-            ...sanitizedData,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-      } else {
-        // Insert new profile
-        result = await supabase
-          .from('profiles')
-          .insert({
-            user_id: user.id,
-            ...sanitizedData,
-            updated_at: new Date().toISOString()
-          });
-      }
+      // Use upsert with proper conflict resolution
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          ...sanitizedData,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
 
-      if (result.error) throw result.error;
+      if (error) throw error;
 
       toast({
         title: "Profile Updated",
