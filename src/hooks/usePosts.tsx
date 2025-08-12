@@ -149,6 +149,39 @@ export const usePosts = () => {
     }
   };
 
+  const deletePost = async (postId: string) => {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Post deleted",
+        description: "Your post has been deleted successfully."
+      });
+
+      // Refresh posts
+      fetchPosts();
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error deleting post",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { error };
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchPosts();
@@ -160,6 +193,7 @@ export const usePosts = () => {
     loading,
     createPost,
     toggleLike,
+    deletePost,
     refetch: fetchPosts
   };
 };

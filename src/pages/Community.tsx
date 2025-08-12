@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, MessageCircle, Heart, Share2, Plus, BarChart3, Star } from "lucide-react";
+import { Users, MessageCircle, Heart, Share2, Plus, BarChart3, Star, MoreVertical, Trash2 } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { PollCard } from "@/components/PollCard";
 import { ReviewCard } from "@/components/ReviewCard";
@@ -13,11 +13,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useDiscussions } from "@/hooks/useDiscussions";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/useAuth";
 
 const Community = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { discussions: recentDiscussions, loading: discussionsLoading } = useDiscussions();
+  const { discussions: recentDiscussions, loading: discussionsLoading, deleteDiscussion } = useDiscussions();
+  const { user } = useAuth();
   const [userVotes, setUserVotes] = useState<{[key: string]: string}>({});
   const [helpfulReviews, setHelpfulReviews] = useState<{[key: string]: boolean}>({});
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -355,17 +359,52 @@ const Community = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{discussion.title}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              by {discussion.author_name} 
-                              {discussion.group_name && ` in ${discussion.group_name}`} • 
-                              {new Date(discussion.created_at).toLocaleDateString()}
-                            </p>
-                            {discussion.category && (
-                              <Badge variant="secondary" className="mt-2 text-xs">
-                                {discussion.category}
-                              </Badge>
-                            )}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg">{discussion.title}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  by {discussion.author_name} 
+                                  {discussion.group_name && ` in ${discussion.group_name}`} • 
+                                  {new Date(discussion.created_at).toLocaleDateString()}
+                                </p>
+                                {discussion.category && (
+                                  <Badge variant="secondary" className="mt-2 text-xs">
+                                    {discussion.category}
+                                  </Badge>
+                                )}
+                              </div>
+                              {user?.id === discussion.user_id && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Discussion</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete this discussion? This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => deleteDiscussion(discussion.id)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">

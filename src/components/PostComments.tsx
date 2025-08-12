@@ -13,9 +13,10 @@ interface PostCommentsProps {
   postId: string;
   isOpen: boolean;
   onClose: () => void;
+  postOwnerId?: string;
 }
 
-export const PostComments = ({ postId, isOpen, onClose }: PostCommentsProps) => {
+export const PostComments = ({ postId, isOpen, onClose, postOwnerId }: PostCommentsProps) => {
   const { comments, loading, addComment, deleteComment } = useComments(postId);
   const { user } = useAuth();
   const [newComment, setNewComment] = useState('');
@@ -104,14 +105,15 @@ export const PostComments = ({ postId, isOpen, onClose }: PostCommentsProps) => 
             </div>
           ) : (
             comments.map((comment) => (
-              <CommentItem 
-                key={comment.id} 
-                comment={comment} 
-                currentUserId={user?.id}
-                onDelete={deleteComment}
-                getInitials={getInitials}
-                getTimeAgo={getTimeAgo}
-              />
+                    <CommentItem
+                      key={comment.id}
+                      comment={comment}
+                      currentUserId={user?.id}
+                      postOwnerId={postOwnerId}
+                      onDelete={deleteComment}
+                      getInitials={getInitials}
+                      getTimeAgo={getTimeAgo}
+                    />
             ))
           )}
         </div>
@@ -123,12 +125,14 @@ export const PostComments = ({ postId, isOpen, onClose }: PostCommentsProps) => 
 interface CommentItemProps {
   comment: Comment;
   currentUserId?: string;
+  postOwnerId?: string;
   onDelete: (commentId: string) => void;
   getInitials: (name?: string) => string;
   getTimeAgo: (dateString: string) => string;
 }
 
-const CommentItem = ({ comment, currentUserId, onDelete, getInitials, getTimeAgo }: CommentItemProps) => {
+const CommentItem = ({ comment, currentUserId, postOwnerId, onDelete, getInitials, getTimeAgo }: CommentItemProps) => {
+  const canDelete = currentUserId === comment.user_id || currentUserId === postOwnerId;
   return (
     <div className="flex gap-3 p-3 rounded-lg bg-muted/30">
       <Avatar className="h-8 w-8 flex-shrink-0">
@@ -149,7 +153,7 @@ const CommentItem = ({ comment, currentUserId, onDelete, getInitials, getTimeAgo
             </span>
           </div>
 
-          {currentUserId === comment.user_id && (
+          {canDelete && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0">

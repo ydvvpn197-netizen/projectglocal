@@ -196,11 +196,45 @@ export const useEvents = () => {
     };
   }, []);
 
+  const deleteEvent = async (eventId: string) => {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Event deleted",
+        description: "Your event has been deleted successfully."
+      });
+
+      // Refresh events
+      fetchEvents();
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error deleting event",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { error };
+    }
+  };
+
   return {
     events,
     loading,
     createEvent,
     toggleAttendance,
+    deleteEvent,
     refetch: fetchEvents,
   };
 };

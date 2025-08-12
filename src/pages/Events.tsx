@@ -2,15 +2,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, Clock, Users, Plus } from "lucide-react";
+import { Calendar, MapPin, Clock, Users, Plus, MoreVertical, Trash2 } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useState, useEffect, useMemo } from "react";
 import { useEvents } from "@/hooks/useEvents";
 import { EventFiltersComponent, EventFilters } from "@/components/EventFilters";
 import { CreateEventButton } from "@/components/CreateEventButton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/useAuth";
 
 const Events = () => {
-  const { events: upcomingEvents, loading, toggleAttendance } = useEvents();
+  const { events: upcomingEvents, loading, toggleAttendance, deleteEvent } = useEvents();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<EventFilters>({
     eventTypes: [],
     dateRange: {},
@@ -147,54 +151,93 @@ const Events = () => {
     return emojiMap[category || ''] || '🌟';
   };
 
-  const EventCard = ({ event }: { event: typeof upcomingEvents[0] }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="space-y-2">
-            <div className="text-4xl">{getEventEmoji(event.category)}</div>
-            <CardTitle className="text-lg">{event.title}</CardTitle>
-            <CardDescription>{event.description}</CardDescription>
+  const EventCard = ({ event }: { event: typeof upcomingEvents[0] }) => {
+    const handleDelete = async () => {
+      await deleteEvent(event.id);
+    };
+
+    return (
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <div className="text-4xl">{getEventEmoji(event.category)}</div>
+              <CardTitle className="text-lg">{event.title}</CardTitle>
+              <CardDescription>{event.description}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {event.category && <Badge variant="secondary">{event.category}</Badge>}
+              {user?.id === event.user_id && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this event? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
-          {event.category && <Badge variant="secondary">{event.category}</Badge>}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              {formatDate(event.event_date)}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              {event.event_time}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              {event.location_name}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              {event.attendees_count} attending
-            </div>
-            {event.price > 0 && (
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-semibold">${event.price}</span>
+                <Calendar className="h-4 w-4" />
+                {formatDate(event.event_date)}
               </div>
-            )}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                {event.event_time}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                {event.location_name}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                {event.attendees_count} attending
+              </div>
+              {event.price > 0 && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="font-semibold">${event.price}</span>
+                </div>
+              )}
+            </div>
+            <Button 
+              className="w-full" 
+              variant={event.user_attending ? "secondary" : "default"}
+              onClick={() => toggleAttendance(event.id)}
+            >
+              {event.user_attending ? "Going" : "Attend Event"}
+            </Button>
           </div>
-          <Button 
-            className="w-full" 
-            variant={event.user_attending ? "secondary" : "default"}
-            onClick={() => toggleAttendance(event.id)}
-          >
-            {event.user_attending ? "Going" : "Attend Event"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (

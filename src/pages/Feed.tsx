@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar, Phone, Mail, Copy, Check } from "lucide-react";
+import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar, Phone, Mail, Copy, Check, MoreVertical, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MainLayout } from "@/components/MainLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { usePosts, Post } from "@/hooks/usePosts";
@@ -19,7 +21,7 @@ import { PostComments } from "@/components/PostComments";
 import { useToast } from "@/hooks/use-toast";
 
 const Feed = () => {
-  const { posts, loading, toggleLike } = usePosts();
+  const { posts, loading, toggleLike, deletePost } = usePosts();
   const { createSamplePosts, loading: sampleLoading } = useSampleData();
   const { currentLocation, isEnabled: locationEnabled } = useLocation();
   const [distanceFilter, setDistanceFilter] = useState(50);
@@ -59,6 +61,7 @@ const Feed = () => {
     const [isLiked, setIsLiked] = useState(false);
     const [copied, setCopied] = useState(false);
     const { toast } = useToast();
+    const { user: currentUser } = useAuth();
 
     const getInitials = (name?: string) => {
       if (!name) return 'U';
@@ -101,10 +104,14 @@ const Feed = () => {
       }
     };
 
+    const handleDelete = async () => {
+      await deletePost(post.id);
+    };
+
     return (
     <Card className="mb-6 shadow-sm hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.profiles?.avatar_url || ""} />
@@ -129,15 +136,48 @@ const Feed = () => {
               </div>
             </div>
           </div>
-          <Badge variant={
-            post.type === "event" ? "default" : 
-            post.type === "service" ? "secondary" :
-            post.type === "discussion" ? "outline" : "secondary"
-          }>
-            {post.type === "event" ? "Event" : 
-             post.type === "service" ? "Service" :
-             post.type === "discussion" ? "Discussion" : "Post"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={
+              post.type === "event" ? "default" : 
+              post.type === "service" ? "secondary" :
+              post.type === "discussion" ? "outline" : "secondary"
+            }>
+              {post.type === "event" ? "Event" : 
+               post.type === "service" ? "Service" :
+               post.type === "discussion" ? "Discussion" : "Post"}
+            </Badge>
+            {currentUser?.id === post.user_id && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this post? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
 
@@ -253,6 +293,7 @@ const Feed = () => {
           postId={post.id}
           isOpen={showComments}
           onClose={() => setShowComments(false)}
+          postOwnerId={post.user_id}
         />
       </CardContent>
     </Card>

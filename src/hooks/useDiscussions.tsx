@@ -104,10 +104,44 @@ export const useDiscussions = () => {
     }
   }, [user]);
 
+  const deleteDiscussion = async (discussionId: string) => {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    try {
+      const { error } = await supabase
+        .from('discussions')
+        .delete()
+        .eq('id', discussionId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Discussion deleted",
+        description: "Your discussion has been deleted successfully."
+      });
+
+      // Refresh discussions
+      fetchDiscussions();
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Error deleting discussion",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { error };
+    }
+  };
+
   return {
     discussions,
     loading,
     createDiscussion,
+    deleteDiscussion,
     refetch: fetchDiscussions,
   };
 };
