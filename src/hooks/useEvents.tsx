@@ -52,29 +52,45 @@ export const useEvents = () => {
     try {
       setLoading(true);
       console.log('Fetching events with function: get_events_with_attendance');
+      console.log('Supabase client initialized:', !!supabase);
+      console.log('Current user auth state:', user ? 'authenticated' : 'unauthenticated');
       
       const { data, error } = await supabase.rpc('get_events_with_attendance');
       
       if (error) {
-        console.error('Supabase RPC error:', error);
+        console.error('Supabase RPC error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
       
       console.log('Events fetched successfully:', data?.length || 0, 'events');
       setEvents(data || []);
     } catch (error: any) {
-      console.error('Error fetching events:', error);
+      console.error('Error fetching events - Full error object:', error);
       
       // Provide more specific error messages based on error type
       let errorMessage = "Failed to fetch events";
+      
       if (error?.message?.includes('function') && error?.message?.includes('does not exist')) {
         errorMessage = "Database function not found. Please contact support.";
       } else if (error?.code === 'PGRST116') {
         errorMessage = "Database function error. Please try again.";
-      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+      } else if (error?.message?.includes('JWT')) {
+        errorMessage = "Authentication issue. Please try signing in again.";
+      } else if (error?.message?.includes('network') || error?.message?.includes('fetch') || error?.message?.includes('NetworkError')) {
         errorMessage = "Network error. Please check your connection and try again.";
       } else if (error?.code === '42883') {
         errorMessage = "Database configuration error. Please contact support.";
+      } else if (error?.code === '42P01') {
+        errorMessage = "Database table not found. Please contact support.";
+      } else if (error?.message?.includes('404')) {
+        errorMessage = "Service endpoint not found. Please contact support.";
+      } else if (error?.message?.includes('500')) {
+        errorMessage = "Server error. Please try again in a few moments.";
       }
       
       toast({
