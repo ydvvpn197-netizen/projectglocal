@@ -74,9 +74,19 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
         `)
         .eq('id', groupId)
         .eq('group_members.user_id', currentUserId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        toast({
+          title: "Access denied",
+          description: "You don't have access to this group or it doesn't exist.",
+          variant: "destructive"
+        });
+        onBack();
+        return;
+      }
 
       // Get member count
       const { count } = await supabase
