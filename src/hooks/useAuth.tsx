@@ -42,13 +42,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
 
-    // Set up auth state listener
+  // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (isMounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          
+          // Handle post-signup redirects for artists
+          if (event === 'SIGNED_IN' && session?.user?.user_metadata?.user_type === 'artist') {
+            // Check if this is a new signup or existing user
+            const isNewSignup = session?.user?.user_metadata?.first_name;
+            if (isNewSignup) {
+              setTimeout(() => {
+                window.location.href = '/artist-onboarding';
+              }, 100);
+            }
+          }
         }
       }
     );

@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { Mail, Lock, MapPin, Users, Calendar, Zap } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { SampleDataCreator } from "@/components/SampleDataCreator";
 
 const SignIn = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -38,7 +39,12 @@ const SignIn = () => {
       if (isSignUp) {
         const { error } = await signUp(email, password, firstName, lastName, userType);
         if (!error) {
-          navigate('/location');
+          // Redirect based on user type
+          if (userType === 'artist') {
+            navigate('/artist-onboarding');
+          } else {
+            navigate('/location');
+          }
         }
       } else {
         const { error } = await signIn(email, password);
@@ -314,6 +320,11 @@ const SignIn = () => {
 
           </CardContent>
         </Card>
+        
+        {/* Sample Data Creator */}
+        <div className="mt-8">
+          <SampleDataCreator />
+        </div>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -870,7 +870,7 @@ export type Database = {
     }
     Functions: {
       calculate_distance: {
-        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
       can_view_booking_details: {
@@ -880,148 +880,148 @@ export type Database = {
       get_artist_bookings_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          user_id: string
           artist_id: string
-          event_date: string
-          event_location: string
-          event_description: string
-          budget_min: number
           budget_max: number
+          budget_min: number
           contact_info: string
-          status: string
           created_at: string
+          event_date: string
+          event_description: string
+          event_location: string
+          id: string
+          status: string
           updated_at: string
+          user_id: string
         }[]
       }
       get_discussions_with_details: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          user_id: string
-          title: string
-          content: string
+          author_avatar: string
+          author_name: string
           category: string
-          is_anonymous: boolean
+          content: string
+          created_at: string
           group_id: string
           group_name: string
-          author_name: string
-          author_avatar: string
+          id: string
+          is_anonymous: boolean
           likes_count: number
           replies_count: number
-          created_at: string
+          title: string
           updated_at: string
+          user_id: string
         }[]
       }
       get_events_with_attendance: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          user_id: string
-          title: string
+          attendees_count: number
+          category: string
+          created_at: string
           description: string
           event_date: string
           event_time: string
-          location_name: string
-          location_city: string
-          location_state: string
-          location_country: string
+          id: string
+          image_url: string
           latitude: number
+          location_city: string
+          location_country: string
+          location_name: string
+          location_state: string
           longitude: number
-          category: string
           max_attendees: number
           price: number
-          image_url: string
           tags: string[]
-          created_at: string
+          title: string
           updated_at: string
-          attendees_count: number
           user_attending: boolean
+          user_id: string
         }[]
       }
       get_filtered_profile: {
         Args: { profile_user_id: string }
         Returns: {
-          user_id: string
-          username: string
-          display_name: string
           avatar_url: string
           bio: string
-          user_type: string
-          is_verified: boolean
           created_at: string
-          location_city: string
-          location_state: string
-          location_country: string
-          latitude: number
-          longitude: number
           current_latitude: number
-          current_longitude: number
-          real_time_location_enabled: boolean
           current_location_updated_at: string
+          current_longitude: number
+          display_name: string
           is_own_profile: boolean
+          is_verified: boolean
+          latitude: number
+          location_city: string
+          location_country: string
+          location_state: string
+          longitude: number
+          real_time_location_enabled: boolean
+          user_id: string
+          user_type: string
+          username: string
         }[]
       }
       get_group_messages_with_details: {
         Args: { group_id_param: string }
         Returns: {
-          id: string
-          group_id: string
-          user_id: string
           content: string
-          parent_id: string
           created_at: string
-          updated_at: string
+          group_id: string
+          id: string
           is_edited: boolean
-          user_display_name: string
-          user_avatar_url: string
-          likes_count: number
           is_liked_by_user: boolean
+          likes_count: number
+          parent_id: string
           replies_count: number
+          updated_at: string
+          user_avatar_url: string
+          user_display_name: string
+          user_id: string
           views_count: number
         }[]
       }
       get_posts_with_restricted_contact: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          user_id: string
-          type: Database["public"]["Enums"]["post_type"]
-          title: string
+          comments_count: number
+          contact_info: string
           content: string
-          location_city: string
-          location_state: string
-          location_country: string
-          latitude: number
-          longitude: number
+          created_at: string
           event_date: string
           event_location: string
-          price_range: string
-          contact_info: string
-          tags: string[]
+          id: string
           image_urls: string[]
+          latitude: number
           likes_count: number
-          comments_count: number
+          location_city: string
+          location_country: string
+          location_state: string
+          longitude: number
+          price_range: string
           status: Database["public"]["Enums"]["post_status"]
-          created_at: string
+          tags: string[]
+          title: string
+          type: Database["public"]["Enums"]["post_type"]
           updated_at: string
+          user_id: string
         }[]
       }
       get_secure_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_id: string
-          username: string
-          display_name: string
           avatar_url: string
           bio: string
-          user_type: string
-          is_verified: boolean
           created_at: string
-          location_city: string
-          location_state: string
-          location_country: string
+          display_name: string
           is_same_area: boolean
+          is_verified: boolean
+          location_city: string
+          location_country: string
+          location_state: string
+          user_id: string
+          user_type: string
+          username: string
         }[]
       }
       get_site_url: {
