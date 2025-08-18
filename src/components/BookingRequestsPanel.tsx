@@ -14,12 +14,14 @@ import { format } from "date-fns";
 interface BookingRequest {
   id: string;
   user_id: string;
-  title: string;
-  content: string;
-  contact_info: string;
+  artist_id: string;
   event_date: string;
   event_location: string;
-  price_range: string;
+  event_description: string;
+  budget_min: number;
+  budget_max: number;
+  contact_info: string;
+  status: string;
   created_at: string;
   client_name: string;
   client_avatar: string;
@@ -44,8 +46,7 @@ export const BookingRequestsPanel = () => {
           {
             event: 'INSERT',
             schema: 'public',
-            table: 'posts',
-            filter: `type=eq.post`
+            table: 'artist_bookings'
           },
           () => {
             fetchBookingRequests();
@@ -63,32 +64,45 @@ export const BookingRequestsPanel = () => {
     if (!user) return;
 
     try {
-      // Find booking requests that mention this artist
+      // First, get the artist record for the current user
+      const { data: artistData, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (artistError) {
+        console.error('Artist not found:', artistError);
+        setBookingRequests([]);
+        return;
+      }
+
+      // Fetch booking requests for this artist
       const { data, error } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          profiles (
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq('type', 'post')
-        .contains('tags', ['booking'])
+        .from('artist_bookings')
+        .select('*')
+        .eq('artist_id', artistData.id)
+        .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Transform the data to include client info
-      const transformedRequests = data?.map(request => {
-        // Handle the profiles data safely
-        const profileData = Array.isArray(request.profiles) ? request.profiles[0] : request.profiles;
-        return {
-          ...request,
-          client_name: profileData?.display_name || 'Unknown User',
-          client_avatar: profileData?.avatar_url || ''
-        };
-      }) || [];
+      // Fetch profile data for each request
+      const transformedRequests = await Promise.all(
+        (data || []).map(async (request) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('user_id', request.user_id)
+            .single();
+
+          return {
+            ...request,
+            client_name: profileData?.display_name || 'Unknown User',
+            client_avatar: profileData?.avatar_url || ''
+          };
+        })
+      );
 
       setBookingRequests(transformedRequests);
     } catch (error) {
@@ -157,19 +171,6 @@ export const BookingRequestsPanel = () => {
     }
   };
 
-  const parseBookingContent = (content: string) => {
-    const lines = content.split('\n');
-    const details: Record<string, string> = {};
-    
-    lines.forEach(line => {
-      const [key, ...valueParts] = line.split(':');
-      if (key && valueParts.length > 0) {
-        details[key.trim()] = valueParts.join(':').trim();
-      }
-    });
-    
-    return details;
-  };
 
   if (!user) return null;
 
@@ -209,9 +210,8 @@ export const BookingRequestsPanel = () => {
         ) : (
           <ScrollArea className="h-96">
             <div className="space-y-4">
-              {bookingRequests.map((request) => {
-                const details = parseBookingContent(request.content);
-                return (
+               {bookingRequests.map((request) => {
+                 return (
                   <div key={request.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -228,31 +228,29 @@ export const BookingRequestsPanel = () => {
                       <Badge variant="outline">New Request</Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{details['Date'] || format(new Date(request.event_date), 'PPP')}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{details['Duration'] || 'Not specified'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate">{request.event_location || 'Location TBD'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span>{request.price_range || 'Budget TBD'}</span>
-                      </div>
-                    </div>
+                     <div className="grid grid-cols-2 gap-4 text-sm">
+                       <div className="flex items-center gap-2">
+                         <Calendar className="h-4 w-4 text-muted-foreground" />
+                         <span>{format(new Date(request.event_date), 'PPP')}</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <MapPin className="h-4 w-4 text-muted-foreground" />
+                         <span className="truncate">{request.event_location || 'Location TBD'}</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <DollarSign className="h-4 w-4 text-muted-foreground" />
+                         <span>
+                           {request.budget_min && request.budget_max 
+                             ? `$${request.budget_min} - $${request.budget_max}`
+                             : 'Budget TBD'
+                           }
+                         </span>
+                       </div>
+                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Event Type: {details['Event Type'] || 'Not specified'}</p>
-                      {details['Description'] && (
-                        <p className="text-sm text-muted-foreground">{details['Description']}</p>
-                      )}
-                    </div>
+                     <div className="space-y-2">
+                       <p className="text-sm text-muted-foreground">{request.event_description}</p>
+                     </div>
 
                     <Separator />
 
@@ -270,25 +268,31 @@ export const BookingRequestsPanel = () => {
                               Full information about this booking request
                             </DialogDescription>
                           </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="font-medium mb-2">Client Information</h4>
-                              <p>Name: {request.client_name}</p>
-                              {request.contact_info && (
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                  {request.contact_info}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <h4 className="font-medium mb-2">Event Details</h4>
-                              <div className="space-y-1 text-sm">
-                                {Object.entries(details).map(([key, value]) => (
-                                  <p key={key}><strong>{key}:</strong> {value}</p>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
+                           <div className="space-y-4">
+                             <div>
+                               <h4 className="font-medium mb-2">Client Information</h4>
+                               <p>Name: {request.client_name}</p>
+                               {request.contact_info && (
+                                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                   {request.contact_info}
+                                 </p>
+                               )}
+                             </div>
+                             <div>
+                               <h4 className="font-medium mb-2">Event Details</h4>
+                               <div className="space-y-1 text-sm">
+                                 <p><strong>Date:</strong> {format(new Date(request.event_date), 'PPP')}</p>
+                                 <p><strong>Location:</strong> {request.event_location}</p>
+                                 <p><strong>Description:</strong> {request.event_description}</p>
+                                 <p><strong>Budget:</strong> 
+                                   {request.budget_min && request.budget_max 
+                                     ? ` $${request.budget_min} - $${request.budget_max}`
+                                     : ' Not specified'
+                                   }
+                                 </p>
+                               </div>
+                             </div>
+                           </div>
                         </DialogContent>
                       </Dialog>
 
