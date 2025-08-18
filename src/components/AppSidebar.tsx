@@ -21,6 +21,7 @@ const mainItems = [
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
   { title: "Book Artists", url: "/book-artist", icon: Palette },
+  { title: "Discover Artists", url: "/discover", icon: Users },
 ];
 
 const userItems = [

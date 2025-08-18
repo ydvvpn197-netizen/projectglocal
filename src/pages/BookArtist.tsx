@@ -213,7 +213,6 @@ const BookArtist = () => {
                     "cursor-pointer transition-all hover:shadow-md",
                     selectedArtist?.id === artist.id && "ring-2 ring-primary"
                   )}
-                  onClick={() => setSelectedArtist(artist)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-3">
@@ -236,6 +235,10 @@ const BookArtist = () => {
                             <span className="text-xs">{artist.rating?.toFixed(1)}</span>
                           </div>
                         </CardDescription>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <a className="text-sm text-primary hover:underline" href={`/artist/${artist.user_id}`}>View profile</a>
+                        <button className="text-xs text-muted-foreground" onClick={(e) => { e.stopPropagation(); setSelectedArtist(artist); }}>Select</button>
                       </div>
                     </div>
                   </CardHeader>
