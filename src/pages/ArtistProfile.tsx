@@ -42,7 +42,7 @@ const ArtistProfile = () => {
   const [discussionOpen, setDiscussionOpen] = useState(false);
   const [booking, setBooking] = useState({ title: "", details: "", date: "", location: "" });
   const [discussion, setDiscussion] = useState({ title: "", content: "" });
-  const { isFollowing, follow, unfollow, loading: followLoading } = useFollows(artistUserId);
+  const { isFollowing, follow, unfollow, loading: followLoading, followersCount, followingCount } = useFollows(artistUserId);
 
   useEffect(() => {
     const load = async () => {
@@ -197,6 +197,10 @@ const ArtistProfile = () => {
                 <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2"><Users className="h-4 w-4" />{profile.location_city}, {profile.location_state}</div>
                   <div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Hourly: {profile.hourly_rate_min ?? '-'} - {profile.hourly_rate_max ?? '-'}</div>
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <Badge variant="secondary" className="text-xs">Followers: {followersCount}</Badge>
+                  <Badge variant="outline" className="text-xs">Following: {followingCount}</Badge>
                 </div>
               </CardContent>
             </Card>

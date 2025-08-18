@@ -28,6 +28,7 @@ const Feed = () => {
   const [localNews, setLocalNews] = useState<any[]>([]);
   const [loadingNews, setLoadingNews] = useState(false);
   const { user } = useAuth();
+  const [followingIds, setFollowingIds] = useState<string[]>([]);
 
   // Fetch local news when component mounts or location changes
   useEffect(() => {
@@ -55,6 +56,15 @@ const Feed = () => {
       setLoadingNews(false);
     }
   };
+
+  useEffect(() => {
+    const fetchFollowing = async () => {
+      if (!user) return;
+      const { data } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
+      setFollowingIds((data || []).map((r: any) => r.following_id));
+    };
+    fetchFollowing();
+  }, [user]);
 
   const PostCard = ({ post }: { post: Post }) => {
     const [showComments, setShowComments] = useState(false);
@@ -374,8 +384,9 @@ const Feed = () => {
 
         {/* Feed Tabs */}
         <Tabs defaultValue="all" className="mb-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="following">Following</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="services">Services</TabsTrigger>
             <TabsTrigger value="discussions">Discussions</TabsTrigger>
@@ -404,6 +415,18 @@ const Feed = () => {
               {posts.filter(post => post.type === "event").map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="following" className="mt-6">
+            <div className="space-y-0">
+              {followingIds.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">Follow users and artists to see their posts here.</div>
+              ) : (
+                posts.filter(post => followingIds.includes(post.user_id)).map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))
+              )}
             </div>
           </TabsContent>
 

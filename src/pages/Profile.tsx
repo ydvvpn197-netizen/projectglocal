@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/MainLayout";
 import { EngagementFeatures } from "@/components/EngagementFeatures";
 import { sanitizeText } from "@/lib/sanitize";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useFollows } from "@/hooks/useFollows";
 import { User, MapPin, Calendar, Edit, Camera } from "lucide-react";
 
-interface Profile {
+interface ProfileShape {
   id: string;
   user_id: string;
   username: string;
@@ -27,6 +27,7 @@ interface Profile {
   location_country: string;
   is_verified: boolean;
   created_at: string;
+  artist_skills?: string[];
 }
 
 const Profile = () => {
@@ -34,7 +35,7 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<ProfileShape | null>(null);
   const [formData, setFormData] = useState({
     display_name: "",
     username: "",
@@ -44,6 +45,7 @@ const Profile = () => {
     location_country: "",
     avatar_url: ""
   });
+  const { followersCount, followingCount } = useFollows(user?.id);
 
   useEffect(() => {
     if (user) {
@@ -64,18 +66,17 @@ const Profile = () => {
       }
 
       if (data) {
-        setProfile(data);
+        setProfile(data as any);
         setFormData({
-          display_name: data.display_name || "",
-          username: data.username || "",
-          bio: data.bio || "",
-          location_city: data.location_city || "",
-          location_state: data.location_state || "",
-          location_country: data.location_country || "",
-          avatar_url: data.avatar_url || ""
+          display_name: (data as any).display_name || "",
+          username: (data as any).username || "",
+          bio: (data as any).bio || "",
+          location_city: (data as any).location_city || "",
+          location_state: (data as any).location_state || "",
+          location_country: (data as any).location_country || "",
+          avatar_url: (data as any).avatar_url || ""
         });
       } else {
-        // No profile exists, set empty form data
         setProfile(null);
         setFormData({
           display_name: "",
@@ -103,7 +104,6 @@ const Profile = () => {
     if (!user) return;
 
     try {
-      // Sanitize form data before saving
       const sanitizedData = {
         display_name: sanitizeText(formData.display_name || '', 100),
         username: sanitizeText(formData.username || '', 50),
@@ -114,7 +114,6 @@ const Profile = () => {
         avatar_url: formData.avatar_url
       };
 
-      // Use upsert with proper conflict resolution
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -199,6 +198,10 @@ const Profile = () => {
                       {profile?.is_verified && (
                         <Badge variant="secondary">Verified</Badge>
                       )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">Followers: {followersCount}</Badge>
+                      <Badge variant="outline" className="text-xs">Following: {followingCount}</Badge>
                     </div>
                     <Button variant="outline" size="sm">
                       <Camera className="h-4 w-4 mr-2" />
@@ -318,3 +321,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
