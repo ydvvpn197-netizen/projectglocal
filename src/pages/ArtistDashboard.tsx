@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { BookingRequestsPanel } from "@/components/BookingRequestsPanel";
+import { ActiveChatsPanel } from "@/components/ActiveChatsPanel";
+import { EarningsPanel } from "@/components/EarningsPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,7 @@ const ArtistDashboard = () => {
   });
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("bookings");
 
   useEffect(() => {
     if (user) {
@@ -50,12 +53,65 @@ const ArtistDashboard = () => {
       if (profileError) throw profileError;
       setProfile(profileData);
 
-      // Mock stats for now - in a real app, you'd calculate these from actual data
+      // Get artist ID first
+      const { data: artistData, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (artistError) {
+        console.log('No artist record found, using mock data');
+        setStats({
+          totalBookings: 0,
+          pendingRequests: 0,
+          totalEarnings: 0,
+          averageRating: 0
+        });
+        return;
+      }
+
+      // Fetch real stats from database
+      const [bookingsResult, pendingResult, conversationsResult] = await Promise.all([
+        // Total bookings (accepted + completed)
+        supabase
+          .from('artist_bookings')
+          .select('id, budget_min, budget_max, status')
+          .eq('artist_id', artistData.id)
+          .in('status', ['accepted', 'completed']),
+        
+        // Pending requests
+        supabase
+          .from('artist_bookings')
+          .select('id')
+          .eq('artist_id', artistData.id)
+          .eq('status', 'pending'),
+        
+        // Active conversations
+        supabase
+          .from('chat_conversations')
+          .select('id')
+          .eq('artist_id', user.id)
+          .eq('status', 'active')
+      ]);
+
+      const totalBookings = bookingsResult.data?.length || 0;
+      const pendingRequests = pendingResult.data?.length || 0;
+      
+      // Calculate total earnings from completed bookings (using budget_max as estimated earnings)
+      const completedBookings = bookingsResult.data?.filter(b => b.status === 'completed') || [];
+      const totalEarnings = completedBookings.reduce((sum, booking) => {
+        return sum + (booking.budget_max || booking.budget_min || 0);
+      }, 0);
+      
+      // Mock average rating for now
+      const averageRating = totalBookings > 0 ? 4.2 + Math.random() * 0.8 : 0;
+
       setStats({
-        totalBookings: Math.floor(Math.random() * 50) + 10,
-        pendingRequests: Math.floor(Math.random() * 5),
-        totalEarnings: Math.floor(Math.random() * 5000) + 1000,
-        averageRating: 4.2 + Math.random() * 0.8
+        totalBookings,
+        pendingRequests,
+        totalEarnings,
+        averageRating
       });
 
     } catch (error) {
@@ -140,7 +196,10 @@ const ArtistDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveTab("bookings")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
               <CalendarDays className="h-4 w-4 text-muted-foreground" />
@@ -148,12 +207,15 @@ const ArtistDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalBookings}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+12%</span> from last month
+                Click to view all bookings
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveTab("bookings")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
               <MessageCircle className="h-4 w-4 text-muted-foreground" />
@@ -161,12 +223,15 @@ const ArtistDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{stats.pendingRequests}</div>
               <p className="text-xs text-muted-foreground">
-                Awaiting your response
+                {stats.pendingRequests > 0 ? "Awaiting your response" : "No pending requests"}
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveTab("earnings")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -174,29 +239,39 @@ const ArtistDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">${stats.totalEarnings.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+8%</span> from last month
+                Click for earnings details
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveTab("chats")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
               <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+              <div className="text-2xl font-bold">{stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A'}</div>
               <p className="text-xs text-muted-foreground">
-                From {stats.totalBookings} reviews
+                {stats.totalBookings > 0 ? `From ${stats.totalBookings} bookings` : "Complete bookings to get rated"}
               </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="bookings" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
-            <TabsTrigger value="bookings">Booking Requests</TabsTrigger>
+            <TabsTrigger value="bookings">
+              Booking Requests
+              {stats.pendingRequests > 0 && (
+                <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                  {stats.pendingRequests}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="chats">Active Chats</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
           </TabsList>
@@ -206,42 +281,11 @@ const ArtistDashboard = () => {
           </TabsContent>
 
           <TabsContent value="chats">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Conversations</CardTitle>
-                <CardDescription>
-                  Chat with clients about accepted bookings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No active conversations</p>
-                  <p className="text-sm">Conversations will appear here when you accept booking requests</p>
-                </div>
-              </CardContent>
-            </Card>
+            <ActiveChatsPanel />
           </TabsContent>
 
           <TabsContent value="earnings">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Earnings Overview
-                </CardTitle>
-                <CardDescription>
-                  Track your income and performance metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Earnings analytics coming soon</p>
-                  <p className="text-sm">Detailed income tracking and insights will be available here</p>
-                </div>
-              </CardContent>
-            </Card>
+            <EarningsPanel />
           </TabsContent>
         </Tabs>
       </div>

@@ -124,6 +124,17 @@ export const BookingRequestsPanel = () => {
       const request = bookingRequests.find(r => r.id === requestId);
       if (!request) return;
 
+      // Update the booking status in the database
+      const { error: updateError } = await supabase
+        .from('artist_bookings')
+        .update({ 
+          status: action === 'accept' ? 'accepted' : 'rejected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
+      if (updateError) throw updateError;
+
       // Create notification for the client
       await supabase
         .from('notifications')
