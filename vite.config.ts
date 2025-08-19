@@ -6,6 +6,9 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Set base URL for production deployment
+  base: mode === 'production' ? '/' : '/',
+  
   server: {
     host: "::",
     port: 8080,
@@ -16,7 +19,7 @@ export default defineConfig(({ mode }) => ({
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
         "font-src 'self' data:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in; " +
         "frame-ancestors 'none';"
     }
   },
