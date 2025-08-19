@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Users, Calendar, Zap } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { ArtistShowcase } from "@/components/ArtistShowcase";
-import { UniformHeader } from "@/components/UniformHeader";
+// import { ArtistShowcase } from "@/components/ArtistShowcase";
+// import { UniformHeader } from "@/components/UniformHeader";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -23,7 +23,30 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <UniformHeader showAuthButtons={true} showLocationButton={false} />
+      {/* Temporarily disabled UniformHeader to test basic loading */}
+      {/* <UniformHeader showAuthButtons={true} showLocationButton={false} /> */}
+
+      {/* Simple header for testing */}
+      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold">L</span>
+              </div>
+              <span className="text-xl font-bold">Local Social Hub</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/signin">Sign In</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/signin">Get Started</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
@@ -101,37 +124,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Artist Showcase */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center space-y-8">
-          <div>
-            <h2 className="text-3xl font-bold mb-4">Featured Local Artists</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Discover talented creators in your area and book them for your next event
-            </p>
-          </div>
-          <ArtistShowcase />
-          <Button size="lg" variant="outline" asChild>
-            <Link to="/book-artist">
-              View All Artists
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="bg-card rounded-lg p-8 text-center space-y-4">
-          <h2 className="text-3xl font-bold">Ready to Join Your Local Community?</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Start connecting with neighbors, discovering events, and supporting local artists today.
-          </p>
-          <Button size="lg" asChild>
-            <Link to="/signin">Join Local Social Hub</Link>
-          </Button>
-        </div>
-      </section>
+      {/* Temporarily disabled ArtistShowcase to test basic loading */}
+      {/* <ArtistShowcase /> */}
     </div>
   );
 };

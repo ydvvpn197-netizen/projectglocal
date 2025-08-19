@@ -7,7 +7,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { lazy } from "react";
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
-import { useRoutePreloader } from "./hooks/useRoutePreloader";
+// import { useRoutePreloader } from "./hooks/useRoutePreloader";
 
 // Lazy load pages with better chunking
 // Core pages (loaded immediately)
@@ -60,8 +60,8 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Initialize route preloader
-  useRoutePreloader();
+  // Initialize route preloader - temporarily disabled to fix infinite reload
+  // useRoutePreloader();
 
   return (
     <QueryClientProvider client={queryClient}>

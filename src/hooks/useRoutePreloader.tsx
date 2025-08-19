@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 // Route preloading configuration
@@ -29,55 +29,58 @@ const ROUTE_PRELOAD_CONFIG = {
 export const useRoutePreloader = () => {
   const location = useLocation();
 
-  const preloadRoute = useCallback((route: string) => {
-    // Dynamic import for route preloading
-    switch (route) {
-      case '/feed':
-        import('../pages/Feed');
-        break;
-      case '/discover':
-        import('../pages/Discover');
-        break;
-      case '/community':
-        import('../pages/Community');
-        break;
-      case '/events':
-        import('../pages/Events');
-        break;
-      case '/book-artist':
-        import('../pages/BookArtist');
-        break;
-      case '/profile':
-        import('../pages/Profile');
-        break;
-      case '/settings':
-        import('../pages/Settings');
-        break;
-      case '/messages':
-        import('../pages/Messages');
-        break;
-      case '/chat':
-        import('../pages/Chat');
-        break;
-      case '/create':
-        import('../pages/CreatePost');
-        break;
-      case '/create-event':
-        import('../pages/CreateEvent');
-        break;
-      case '/artist-dashboard':
-        import('../pages/ArtistDashboard');
-        break;
-      case '/community/create-discussion':
-        import('../pages/CreateDiscussion');
-        break;
-      case '/community/create-group':
-        import('../pages/CreateGroup');
-        break;
-      default:
-        break;
-    }
-  }, []);
+  // Memoize the preloadRoute function to prevent infinite loops
+  const preloadRoute = useMemo(() => {
+    return (route: string) => {
+      // Dynamic import for route preloading
+      switch (route) {
+        case '/feed':
+          import('../pages/Feed');
+          break;
+        case '/discover':
+          import('../pages/Discover');
+          break;
+        case '/community':
+          import('../pages/Community');
+          break;
+        case '/events':
+          import('../pages/Events');
+          break;
+        case '/book-artist':
+          import('../pages/BookArtist');
+          break;
+        case '/profile':
+          import('../pages/Profile');
+          break;
+        case '/settings':
+          import('../pages/Settings');
+          break;
+        case '/messages':
+          import('../pages/Messages');
+          break;
+        case '/chat':
+          import('../pages/Chat');
+          break;
+        case '/create':
+          import('../pages/CreatePost');
+          break;
+        case '/create-event':
+          import('../pages/CreateEvent');
+          break;
+        case '/artist-dashboard':
+          import('../pages/ArtistDashboard');
+          break;
+        case '/community/create-discussion':
+          import('../pages/CreateDiscussion');
+          break;
+        case '/community/create-group':
+          import('../pages/CreateGroup');
+          break;
+        default:
+          break;
+      }
+    };
+  }, []); // Empty dependency array to ensure it's only created once
 
   const preloadRelatedRoutes = useCallback((currentRoute: string) => {
     const relatedRoutes = ROUTE_PRELOAD_CONFIG.hover[currentRoute as keyof typeof ROUTE_PRELOAD_CONFIG.hover];
@@ -86,10 +89,10 @@ export const useRoutePreloader = () => {
     }
   }, [preloadRoute]);
 
-  // Preload immediate routes on mount
+  // Preload immediate routes on mount - only run once
   useEffect(() => {
     ROUTE_PRELOAD_CONFIG.immediate.forEach(route => preloadRoute(route));
-  }, [preloadRoute]);
+  }, []); // Remove preloadRoute dependency to prevent infinite loop
 
   // Preload related routes when current route changes
   useEffect(() => {

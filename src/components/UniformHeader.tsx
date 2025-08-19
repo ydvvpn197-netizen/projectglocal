@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from "@/components/ui/input";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState, memo } from "react";
-import { useHoverPreload } from "@/hooks/useRoutePreloader";
+// import { useHoverPreload } from "@/hooks/useRoutePreloader";
 
 interface UniformHeaderProps {
   showLocationButton?: boolean;
@@ -22,15 +22,15 @@ interface UniformHeaderProps {
   className?: string;
 }
 
-// Memoized navigation link component with hover preloading
+// Memoized navigation link component with hover preloading - temporarily disabled
 const NavLink = memo(({ route, label }: { route: string; label: string }) => {
-  const { handleMouseEnter } = useHoverPreload(route);
+  // const { handleMouseEnter } = useHoverPreload(route);
   
   return (
     <Link 
       to={route} 
       className="text-sm text-muted-foreground hover:text-primary transition-colors"
-      onMouseEnter={handleMouseEnter}
+      // onMouseEnter={handleMouseEnter}
     >
       {label}
     </Link>
