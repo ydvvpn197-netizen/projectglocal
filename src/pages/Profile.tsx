@@ -13,7 +13,8 @@ import { sanitizeText } from "@/lib/sanitize";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { User, MapPin, Calendar, Edit, Camera } from "lucide-react";
+import { User, MapPin, Calendar, Edit, Camera, MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -32,6 +33,7 @@ interface Profile {
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -144,6 +146,46 @@ const Profile = () => {
     }
   };
 
+  const handleMessageUser = async () => {
+    if (!user || !profile) return;
+
+    try {
+      // Find existing conversation between these two users (not closed)
+      const { data: existing } = await supabase
+        .from('chat_conversations')
+        .select('id, status, client_id, artist_id')
+        .or(`and(client_id.eq.${user.id},artist_id.eq.${profile.user_id}),and(client_id.eq.${profile.user_id},artist_id.eq.${user.id}))`)
+        .not('status', 'eq', 'closed')
+        .maybeSingle();
+
+      let conversationId = existing?.id;
+
+      if (!conversationId) {
+        const { data: created, error: createErr } = await supabase
+          .from('chat_conversations')
+          .insert({
+            booking_id: null,
+            client_id: user.id,
+            artist_id: profile.user_id,
+            status: 'pending'
+          })
+          .select()
+          .single();
+        if (createErr) throw createErr;
+        conversationId = created.id;
+      }
+
+      navigate(`/chat/${conversationId}`);
+    } catch (err) {
+      console.error('Error starting chat:', err);
+      toast({
+        title: "Error",
+        description: "Failed to start chat.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <MainLayout>
@@ -172,14 +214,26 @@ const Profile = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Profile Information</CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditing(!editing)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    {editing ? "Cancel" : "Edit"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {user && profile && user.id !== profile.user_id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleMessageUser}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        Message
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditing(!editing)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      {editing ? "Cancel" : "Edit"}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">

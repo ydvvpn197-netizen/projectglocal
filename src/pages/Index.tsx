@@ -51,45 +51,53 @@ const Index = () => {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-              <MapPin className="h-8 w-8 text-primary" />
+          <Link to="/discover" className="block group">
+            <div className="text-center space-y-4 p-6 rounded-lg bg-card border hover:bg-card/80 hover:shadow-md transition-all cursor-pointer">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                <MapPin className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold">Local Discovery</h3>
+              <p className="text-muted-foreground">
+                Find events, services, and people right in your neighborhood
+              </p>
             </div>
-            <h3 className="text-xl font-semibold">Local Discovery</h3>
-            <p className="text-muted-foreground">
-              Find events, services, and people right in your neighborhood
-            </p>
-          </div>
+          </Link>
 
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-              <Users className="h-8 w-8 text-primary" />
+          <Link to="/community" className="block group">
+            <div className="text-center space-y-4 p-6 rounded-lg bg-card border hover:bg-card/80 hover:shadow-md transition-all cursor-pointer">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                <Users className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold">Community</h3>
+              <p className="text-muted-foreground">
+                Join local groups, discussions, and build meaningful connections
+              </p>
             </div>
-            <h3 className="text-xl font-semibold">Community</h3>
-            <p className="text-muted-foreground">
-              Join local groups, discussions, and build meaningful connections
-            </p>
-          </div>
+          </Link>
 
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-              <Calendar className="h-8 w-8 text-primary" />
+          <Link to="/events" className="block group">
+            <div className="text-center space-y-4 p-6 rounded-lg bg-card border hover:bg-card/80 hover:shadow-md transition-all cursor-pointer">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                <Calendar className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold">Events</h3>
+              <p className="text-muted-foreground">
+                Create and join amazing events happening in your community
+              </p>
             </div>
-            <h3 className="text-xl font-semibold">Events</h3>
-            <p className="text-muted-foreground">
-              Create and join amazing events happening in your community
-            </p>
-          </div>
+          </Link>
 
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-              <Zap className="h-8 w-8 text-primary" />
+          <Link to="/book-artist" className="block group">
+            <div className="text-center space-y-4 p-6 rounded-lg bg-card border hover:bg-card/80 hover:shadow-md transition-all cursor-pointer">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto group-hover:bg-primary/20 transition-colors">
+                <Zap className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold">Book Artists</h3>
+              <p className="text-muted-foreground">
+                Hire talented local artists for your next event or project
+              </p>
             </div>
-            <h3 className="text-xl font-semibold">Book Artists</h3>
-            <p className="text-muted-foreground">
-              Hire talented local artists for your next event or project
-            </p>
-          </div>
+          </Link>
         </div>
       </section>
 
