@@ -40,13 +40,7 @@ export const usePolls = () => {
       
       const { data, error } = await supabase
         .from('polls')
-        .select(`
-          *,
-          profiles!polls_user_id_fkey (
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -60,9 +54,19 @@ export const usePolls = () => {
 
       const userVoteMap = new Map(userVotes?.map(vote => [vote.poll_id, vote.option_id]) || []);
 
+      // Get author profiles
+      const userIds = [...new Set(data?.map(poll => poll.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(profile => [profile.user_id, profile]) || []);
+
       const pollsWithAuthor = data?.map(poll => {
         const hasVoted = userVoteMap.has(poll.id);
         const userVote = userVoteMap.get(poll.id);
+        const authorProfile = profileMap.get(poll.user_id);
         
         // Calculate time remaining
         let timeRemaining = '';
@@ -84,8 +88,8 @@ export const usePolls = () => {
 
         return {
           ...poll,
-          author_name: poll.profiles?.full_name || 'Anonymous',
-          author_avatar: poll.profiles?.avatar_url,
+          author_name: authorProfile?.full_name || 'Anonymous',
+          author_avatar: authorProfile?.avatar_url,
           has_voted: hasVoted,
           user_vote: userVote,
           time_remaining: timeRemaining

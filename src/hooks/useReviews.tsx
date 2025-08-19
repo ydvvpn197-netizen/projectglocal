@@ -44,13 +44,7 @@ export const useReviews = () => {
       
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles!reviews_user_id_fkey (
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -63,12 +57,24 @@ export const useReviews = () => {
 
       const userVoteMap = new Map(userVotes?.map(vote => [vote.review_id, true]) || []);
 
-      const reviewsWithAuthor = data?.map(review => ({
-        ...review,
-        author_name: review.profiles?.full_name || 'Anonymous',
-        author_avatar: review.profiles?.avatar_url,
-        is_helpful: userVoteMap.has(review.id)
-      })) || [];
+      // Get author profiles
+      const userIds = [...new Set(data?.map(review => review.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', userIds);
+
+      const profileMap = new Map(profiles?.map(profile => [profile.user_id, profile]) || []);
+
+      const reviewsWithAuthor = data?.map(review => {
+        const authorProfile = profileMap.get(review.user_id);
+        return {
+          ...review,
+          author_name: authorProfile?.full_name || 'Anonymous',
+          author_avatar: authorProfile?.avatar_url,
+          is_helpful: userVoteMap.has(review.id)
+        };
+      }) || [];
 
       setReviews(reviewsWithAuthor);
     } catch (error) {
