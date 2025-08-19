@@ -130,7 +130,7 @@ export function ArtistShowcase() {
                     <span className="font-medium text-primary">{artist.hourlyRate}</span>
                   </div>
                   <Button size="sm" asChild>
-                    <Link to="/book-artist">Book Now</Link>
+                    <Link to={`/artist/${artist.id}`}>View Profile</Link>
                   </Button>
                 </div>
               </CardContent>

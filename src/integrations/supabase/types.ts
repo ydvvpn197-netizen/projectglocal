@@ -67,6 +67,102 @@ export type Database = {
           },
         ]
       }
+      artist_discussion_moderation_notifications: {
+        Row: {
+          artist_id: string
+          created_at: string
+          discussion_id: string
+          id: string
+          read: boolean | null
+          type: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          discussion_id: string
+          id?: string
+          read?: boolean | null
+          type?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          discussion_id?: string
+          id?: string
+          read?: boolean | null
+          type?: string
+        }
+        Relationships: []
+      }
+      artist_discussion_replies: {
+        Row: {
+          content: string
+          created_at: string
+          discussion_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          discussion_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          discussion_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      artist_discussions: {
+        Row: {
+          artist_id: string
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean | null
+          likes_count: number | null
+          replies_count: number | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          artist_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          replies_count?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          artist_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          replies_count?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       artists: {
         Row: {
           bio: string | null

@@ -3,6 +3,7 @@ import { MainLayout } from "@/components/MainLayout";
 import { BookingRequestsPanel } from "@/components/BookingRequestsPanel";
 import { ActiveChatsPanel } from "@/components/ActiveChatsPanel";
 import { EarningsPanel } from "@/components/EarningsPanel";
+import { ArtistModerationPanel } from "@/components/ArtistModerationPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -274,6 +275,7 @@ const ArtistDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="chats">Active Chats</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
+            <TabsTrigger value="moderation">Discussion Moderation</TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings">
@@ -286,6 +288,10 @@ const ArtistDashboard = () => {
 
           <TabsContent value="earnings">
             <EarningsPanel />
+          </TabsContent>
+
+          <TabsContent value="moderation">
+            <ArtistModerationPanel />
           </TabsContent>
         </Tabs>
       </div>

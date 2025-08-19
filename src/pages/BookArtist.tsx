@@ -240,10 +240,33 @@ const BookArtist = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">{artist.bio}</p>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      {artist.location_city}, {artist.location_state}
+                    <p className="text-sm text-muted-foreground mb-3">{artist.bio}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        {artist.location_city}, {artist.location_state}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`/artist/${artist.user_id}`, '_blank');
+                          }}
+                        >
+                          View Profile
+                        </Button>
+                        <Button 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedArtist(artist);
+                          }}
+                        >
+                          Quick Book
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

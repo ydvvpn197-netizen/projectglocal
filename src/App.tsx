@@ -24,6 +24,7 @@ const BookArtist = lazy(() => import("./pages/BookArtist"));
 const ArtistOnboarding = lazy(() => import("./pages/ArtistOnboarding"));
 const ArtistDashboard = lazy(() => import("./pages/ArtistDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ArtistProfile = lazy(() => import("./pages/ArtistProfile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
               <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
               <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
+              <Route path="/artist/:artistId" element={<ArtistProfile />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
