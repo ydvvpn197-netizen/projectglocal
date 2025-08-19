@@ -30,6 +30,61 @@ export const useFollows = (profileUserId?: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, profileUserId]);
 
+  // Realtime updates for followers/following
+  useEffect(() => {
+    if (!user || !profileUserId) return;
+    const followersChannel = supabase
+      .channel(`follows:followers:${profileUserId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'follows',
+        filter: `following_id=eq.${profileUserId}`,
+      }, (payload: any) => {
+        setFollowersCount((c) => c + 1);
+        if (payload?.new?.follower_id === user.id && payload?.new?.following_id === profileUserId) {
+          setIsFollowing(true);
+        }
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'follows',
+        filter: `following_id=eq.${profileUserId}`,
+      }, (payload: any) => {
+        setFollowersCount((c) => Math.max(0, c - 1));
+        if (payload?.old?.follower_id === user.id && payload?.old?.following_id === profileUserId) {
+          setIsFollowing(false);
+        }
+      })
+      .subscribe();
+
+    const followingChannel = supabase
+      .channel(`follows:following:${profileUserId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'follows',
+        filter: `follower_id=eq.${profileUserId}`,
+      }, () => {
+        setFollowingCount((c) => c + 1);
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'follows',
+        filter: `follower_id=eq.${profileUserId}`,
+      }, () => {
+        setFollowingCount((c) => Math.max(0, c - 1));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(followersChannel);
+      supabase.removeChannel(followingChannel);
+    };
+  }, [user?.id, profileUserId]);
+
   const follow = async () => {
     if (!user || !profileUserId) return;
     setLoading(true);
