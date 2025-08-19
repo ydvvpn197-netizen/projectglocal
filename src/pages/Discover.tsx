@@ -3,11 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
+import { AdvancedSearch } from "@/components/AdvancedSearch";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from "date-fns";
 
 interface NewsItem {
   title: string;
@@ -26,292 +30,327 @@ interface LocalEvent {
   date: string;
   category: string;
   price?: string;
+  attendees?: number;
+}
+
+interface TrendingItem {
+  id: string;
+  type: 'event' | 'artist' | 'post' | 'group';
+  title: string;
+  description: string;
+  engagement: number;
+  image?: string;
 }
 
 const Discover = () => {
   const { toast } = useToast();
   const { currentLocation, isEnabled: locationEnabled } = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("search");
   const [localNews, setLocalNews] = useState<NewsItem[]>([]);
   const [nearbyEvents, setNearbyEvents] = useState<LocalEvent[]>([]);
+  const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Mock data for demonstration - in production, replace with real API calls
-  const featuredEvents = [
-    {
-      id: 1,
-      title: "Local Art Exhibition",
-      location: "Downtown Gallery",
-      date: "Tomorrow, 7:00 PM",
-      attendees: 24,
-      image: "🎨",
-      category: "Art"
-    },
-    {
-      id: 2,
-      title: "Community Food Festival",
-      location: "Central Park",
-      date: "This Weekend",
-      attendees: 156,
-      image: "🍕",
-      category: "Food"
-    },
-    {
-      id: 3,
-      title: "Live Jazz Night",
-      location: "Blue Note Cafe",
-      date: "Friday, 8:30 PM",
-      attendees: 42,
-      image: "🎷",
-      category: "Music"
-    }
-  ];
-
-  const localArtists = [
-    {
-      id: 1,
-      name: "Sarah Chen",
-      type: "Photographer",
-      rating: 4.9,
-      image: "📸"
-    },
-    {
-      id: 2,
-      name: "Mike Johnson",
-      type: "Musician",
-      rating: 4.8,
-      image: "🎸"
-    },
-    {
-      id: 3,
-      name: "Emma Davis",
-      type: "Painter",
-      rating: 4.7,
-      image: "🎨"
-    }
-  ];
 
   useEffect(() => {
     fetchLocalContent();
+    fetchTrendingContent();
   }, [currentLocation, locationEnabled]);
 
   const fetchLocalContent = async () => {
     try {
       setLoading(true);
       
-      // Determine location to use
-      let locationParam = 'Your Area';
-      if (locationEnabled && currentLocation) {
-        locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
+      // Fetch local news from Supabase Edge Function
+      if (currentLocation) {
+        const { data: newsData } = await supabase.functions.invoke('fetch-local-news', {
+          body: {
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            radius: 50 // 50km radius
+          }
+        });
+        
+        if (newsData) {
+          setLocalNews(newsData.slice(0, 5)); // Show top 5 news items
+        }
       }
-      
-      // Fetch real dynamic news and events
-      const [newsResponse, eventsResponse] = await Promise.all([
-        supabase.functions.invoke('fetch-local-news', {
-          body: { location: locationParam }
-        }),
-        supabase.functions.invoke('fetch-local-events', {
-          body: { location: locationParam }
-        })
-      ]);
 
-      if (newsResponse.data?.news) {
-        setLocalNews(newsResponse.data.news);
+      // Fetch nearby events
+      if (currentLocation) {
+        const { data: events } = await supabase
+          .from('events')
+          .select('*')
+          .gte('event_date', new Date().toISOString().split('T')[0])
+          .order('event_date', { ascending: true })
+          .limit(6);
+
+        if (events) {
+          setNearbyEvents(events.map(event => ({
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            location: event.location_name,
+            date: event.event_date,
+            category: event.category,
+            price: event.price ? `$${event.price}` : 'Free'
+          })));
+        }
       }
-      
-      if (eventsResponse.data?.events) {
-        setNearbyEvents(eventsResponse.data.events.slice(0, 6));
-      }
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching local content:', error);
       toast({
         title: "Error",
-        description: "Failed to load local content. Please try again.",
+        description: "Failed to load local content",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   };
 
-  const filteredEvents = featuredEvents.filter(event =>
-    event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const fetchTrendingContent = async () => {
+    try {
+      // Fetch trending events (most attendees)
+      const { data: trendingEvents } = await supabase
+        .from('events')
+        .select(`
+          id,
+          title,
+          description,
+          category,
+          max_attendees,
+          event_date,
+          image_url
+        `)
+        .gte('event_date', new Date().toISOString().split('T')[0])
+        .order('max_attendees', { ascending: false })
+        .limit(3);
 
-  const filteredNews = localNews.filter(news =>
-    news.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    news.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      // Fetch trending artists (most bookings)
+      const { data: trendingArtists } = await supabase
+        .from('artists')
+        .select(`
+          id,
+          specialty,
+          bio,
+          profiles!inner (
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('is_available', true)
+        .limit(3);
+
+      // Fetch trending posts (most likes)
+      const { data: trendingPosts } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          title,
+          content,
+          type,
+          likes_count,
+          profiles!inner (
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('status', 'active')
+        .order('likes_count', { ascending: false })
+        .limit(3);
+
+      const trending: TrendingItem[] = [
+        ...(trendingEvents?.map(event => ({
+          id: event.id,
+          type: 'event' as const,
+          title: event.title,
+          description: event.description,
+          engagement: event.max_attendees || 0,
+          image: event.image_url
+        })) || []),
+        ...(trendingArtists?.map(artist => ({
+          id: artist.id,
+          type: 'artist' as const,
+          title: artist.profiles.full_name || 'Anonymous',
+          description: artist.bio || artist.specialty?.join(', ') || '',
+          engagement: 0, // Could be calculated from booking count
+          image: artist.profiles.avatar_url
+        })) || []),
+        ...(trendingPosts?.map(post => ({
+          id: post.id,
+          type: 'post' as const,
+          title: post.title || 'Untitled Post',
+          description: post.content.substring(0, 100) + '...',
+          engagement: post.likes_count || 0,
+          image: post.profiles.avatar_url
+        })) || [])
+      ];
+
+      setTrendingItems(trending);
+    } catch (error) {
+      console.error('Error fetching trending content:', error);
+    }
+  };
+
+  const getTrendingIcon = (type: string) => {
+    switch (type) {
+      case 'event': return <Calendar className="h-4 w-4" />;
+      case 'artist': return <Star className="h-4 w-4" />;
+      case 'post': return <Users className="h-4 w-4" />;
+      case 'group': return <Users className="h-4 w-4" />;
+      default: return <TrendingUp className="h-4 w-4" />;
+    }
+  };
 
   return (
     <MainLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Local Discovery</h1>
-          </div>
+      <div className="container mx-auto px-4 py-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Discover Local</h1>
           <p className="text-muted-foreground">
-            Discover amazing events, artists, and experiences in your area.
-            {locationEnabled && currentLocation && (
-              <span className="block text-sm text-primary mt-1">
-                📍 Using your real-time location
-              </span>
-            )}
+            Explore what's happening in your area and connect with your community
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search for events, news, or venues..." 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="search">Search</TabsTrigger>
+            <TabsTrigger value="trending">Trending</TabsTrigger>
+            <TabsTrigger value="events">Local Events</TabsTrigger>
+            <TabsTrigger value="news">Local News</TabsTrigger>
+          </TabsList>
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        )}
+          <TabsContent value="search" className="space-y-6">
+            <AdvancedSearch />
+          </TabsContent>
 
-        {!loading && (
-          <>
-            {/* Local News */}
-            <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">Local News & Updates</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredNews.map((news, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <Badge variant="secondary" className="mb-2">
-                          {news.category}
-                        </Badge>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <CardTitle className="text-lg leading-tight">{news.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-2">
-                        <Clock className="h-3 w-3" />
-                        {news.publishedAt} • {news.source}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">{news.description}</p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        Read More
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </section>
-
-            {/* Nearby Events */}
-            <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">Happening Nearby</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {nearbyEvents.map((event) => (
-                  <Card key={event.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <Badge variant="outline">{event.category}</Badge>
-                        {event.price && (
-                          <Badge variant={event.price === "Free" ? "secondary" : "default"}>
-                            {event.price}
-                          </Badge>
-                        )}
-                      </div>
-                      <CardTitle className="text-lg">{event.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {event.location}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-3">{event.description}</p>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
-                        <Calendar className="h-4 w-4" />
-                        {event.date}
-                      </div>
-                      <Button className="w-full" variant="outline">
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          </>
-        )}
-
-        {!loading && (
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">Featured Events</h2>
+          <TabsContent value="trending" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
-                <Card key={event.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="text-4xl mb-2">{event.image}</div>
-                      <Badge variant="outline">{event.category}</Badge>
+              {trendingItems.map((item) => (
+                <Card key={`${item.type}-${item.id}`} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      {getTrendingIcon(item.type)}
+                      <Badge variant="secondary" className="text-xs">
+                        {item.type}
+                      </Badge>
                     </div>
-                    <CardTitle className="text-lg">{event.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {event.location}
-                    </CardDescription>
+                    <CardTitle className="text-lg">{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        {event.date}
+                        <Heart className="h-3 w-3" />
+                        <span>{item.engagement}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Users className="h-4 w-4" />
-                        {event.attendees}
-                      </div>
+                      <Button variant="outline" size="sm">
+                        View
+                      </Button>
                     </div>
-                    <Button className="w-full mt-4" variant="outline">
-                      View Details
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </section>
-        )}
+          </TabsContent>
 
-        {/* Local Artists */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Local Artists</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {localArtists.map((artist) => (
-              <Card key={artist.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="text-center">
-                  <div className="text-4xl mb-2">{artist.image}</div>
-                  <CardTitle className="text-lg">{artist.name}</CardTitle>
-                  <CardDescription>{artist.type}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-center gap-1 mb-4">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{artist.rating}</span>
-                  </div>
-                  <Button className="w-full" variant="outline">
-                    View Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+          <TabsContent value="events" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Nearby Events</h2>
+              <Button variant="outline" onClick={() => window.location.href = '/events'}>
+                View All Events
+              </Button>
+            </div>
+            
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-3 bg-muted rounded w-full mb-2"></div>
+                      <div className="h-3 bg-muted rounded w-2/3"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {nearbyEvents.map((event) => (
+                  <Card key={event.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline">{event.category}</Badge>
+                        <span className="text-sm font-medium text-green-600">{event.price}</span>
+                      </div>
+                      <CardTitle className="text-lg">{event.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {event.description}
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{event.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{format(new Date(event.date), 'MMM dd, yyyy')}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="news" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Local News</h2>
+              <Button variant="outline" onClick={() => window.open('https://news.google.com', '_blank')}>
+                More News
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              {localNews.map((news, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-xs">
+                            {news.category}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{news.source}</span>
+                        </div>
+                        <h3 className="font-semibold mb-2">{news.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {news.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(news.publishedAt), 'MMM dd, yyyy')}
+                          </span>
+                          <Button variant="outline" size="sm" onClick={() => window.open(news.url, '_blank')}>
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Read
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );
