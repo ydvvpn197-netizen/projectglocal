@@ -8,70 +8,123 @@ import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { memo, useCallback, useMemo } from 'react';
 
-export const NotificationBell = () => {
+// Memoized notification icon component
+const NotificationIcon = memo(({ type }: { type: string }) => {
+  const icon = useMemo(() => {
+    const icons: Record<string, string> = {
+      booking_request: '🎯',
+      booking_accepted: '✅',
+      booking_declined: '❌',
+      message_request: '💬',
+      new_follower: '👥',
+      event_reminder: '📅',
+      poll_result: '📊',
+      review_reply: '💭',
+      group_invite: '👋',
+      event_update: '🔄',
+    };
+    return icons[type] || '🔔';
+  }, [type]);
+
+  return <span className="text-2xl">{icon}</span>;
+});
+
+NotificationIcon.displayName = 'NotificationIcon';
+
+// Memoized notification item component
+const NotificationItem = memo(({ 
+  notification, 
+  onMarkAsRead, 
+  onDelete, 
+  onNavigate 
+}: {
+  notification: Notification;
+  onMarkAsRead: (id: string) => Promise<void>;
+  onDelete: (id: string) => void;
+  onNavigate: (notification: Notification) => void;
+}) => {
+  const handleClick = useCallback(() => {
+    onNavigate(notification);
+  }, [notification, onNavigate]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(notification.id);
+  }, [notification.id, onDelete]);
+
+  return (
+    <div
+      className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors hover:bg-muted/50 ${
+        notification.read ? 'bg-muted/30' : 'bg-primary/5 border-l-4 border-l-primary'
+      }`}
+      onClick={handleClick}
+    >
+      <div className="flex items-start gap-3">
+        <NotificationIcon type={notification.type} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-sm">{notification.title}</h4>
+            <div className="flex items-center gap-1">
+              {!notification.read && (
+                <div className="w-2 h-2 rounded-full bg-primary" />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={handleDelete}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+            {notification.message}
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            {format(new Date(notification.created_at), 'MMM dd, HH:mm')}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+NotificationItem.displayName = 'NotificationItem';
+
+export const NotificationBell = memo(() => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'booking_request':
-        return '🎯';
-      case 'booking_accepted':
-        return '✅';
-      case 'booking_declined':
-        return '❌';
-      case 'message_request':
-        return '💬';
-      case 'new_follower':
-        return '👥';
-      case 'event_reminder':
-        return '📅';
-      case 'poll_result':
-        return '📊';
-      case 'review_reply':
-        return '💭';
-      case 'group_invite':
-        return '👋';
-      case 'event_update':
-        return '🔄';
-      default:
-        return '🔔';
-    }
-  };
-
-  const handleNotificationClick = async (notification: Notification) => {
+  const handleNotificationClick = useCallback(async (notification: Notification) => {
     await markAsRead(notification.id);
     
     // Navigate based on notification type
-    switch (notification.type) {
-      case 'booking_request':
-      case 'booking_accepted':
-      case 'booking_declined':
-        navigate('/artist-dashboard');
-        break;
-      case 'message_request':
-        navigate('/messages');
-        break;
-      case 'new_follower':
-        navigate('/profile');
-        break;
-      case 'event_reminder':
-      case 'event_update':
-        navigate('/events');
-        break;
-      case 'poll_result':
-        navigate('/community');
-        break;
-      case 'review_reply':
-        navigate('/community');
-        break;
-      case 'group_invite':
-        navigate('/community');
-        break;
+    const routeMap: Record<string, string> = {
+      booking_request: '/artist-dashboard',
+      booking_accepted: '/artist-dashboard',
+      booking_declined: '/artist-dashboard',
+      message_request: '/messages',
+      new_follower: '/profile',
+      event_reminder: '/events',
+      event_update: '/events',
+      poll_result: '/community',
+      review_reply: '/community',
+      group_invite: '/community',
+    };
+    
+    const route = routeMap[notification.type];
+    if (route) {
+      navigate(route);
     }
-  };
+  }, [markAsRead, navigate]);
+
+  const handleDelete = useCallback((id: string) => {
+    deleteNotification(id);
+  }, [deleteNotification]);
 
   if (!user) return null;
 
@@ -127,55 +180,22 @@ export const NotificationBell = () => {
           ) : (
             <div className="p-2">
               {notifications.map((notification) => (
-                <div
+                <NotificationItem
                   key={notification.id}
-                  className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors hover:bg-muted/50 ${
-                    notification.read ? 'bg-muted/30' : 'bg-primary/5 border-l-4 border-l-primary'
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl">
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-sm">{notification.title}</h4>
-                        <div className="flex items-center gap-1">
-                          {!notification.read && (
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notification.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {format(new Date(notification.created_at), 'MMM dd, HH:mm')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  notification={notification}
+                  onMarkAsRead={markAsRead}
+                  onDelete={handleDelete}
+                  onNavigate={handleNotificationClick}
+                />
               ))}
             </div>
           )}
         </ScrollArea>
         {notifications.length > 0 && (
           <div className="p-3 border-t bg-muted/30">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="w-full"
               onClick={() => navigate('/notifications')}
             >
@@ -186,4 +206,6 @@ export const NotificationBell = () => {
       </PopoverContent>
     </Popover>
   );
-};
+});
+
+NotificationBell.displayName = 'NotificationBell';

@@ -12,7 +12,8 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { NotificationBell } from "@/components/NotificationBell";
-import { useState } from "react";
+import { useState, memo } from "react";
+import { useHoverPreload } from "@/hooks/useRoutePreloader";
 
 interface UniformHeaderProps {
   showLocationButton?: boolean;
@@ -20,6 +21,23 @@ interface UniformHeaderProps {
   showSearch?: boolean;
   className?: string;
 }
+
+// Memoized navigation link component with hover preloading
+const NavLink = memo(({ route, label }: { route: string; label: string }) => {
+  const { handleMouseEnter } = useHoverPreload(route);
+  
+  return (
+    <Link 
+      to={route} 
+      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+      onMouseEnter={handleMouseEnter}
+    >
+      {label}
+    </Link>
+  );
+});
+
+NavLink.displayName = 'NavLink';
 
 export function UniformHeader({ 
   showLocationButton = true, 
@@ -108,36 +126,11 @@ export function UniformHeader({
           {/* Center Navigation - Only show if user is authenticated */}
           {user && (
             <div className="hidden md:flex items-center gap-6">
-              <Link 
-                to="/feed" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Feed
-              </Link>
-              <Link 
-                to="/discover" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Discover
-              </Link>
-              <Link 
-                to="/events" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Events
-              </Link>
-              <Link 
-                to="/community" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Community
-              </Link>
-              <Link 
-                to="/book-artist" 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Book Artists
-              </Link>
+              <NavLink route="/feed" label="Feed" />
+              <NavLink route="/discover" label="Discover" />
+              <NavLink route="/events" label="Events" />
+              <NavLink route="/community" label="Community" />
+              <NavLink route="/book-artist" label="Book Artists" />
             </div>
           )}
 

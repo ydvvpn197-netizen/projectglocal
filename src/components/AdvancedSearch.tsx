@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Search, Filter, MapPin, Calendar, Users, Star, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
@@ -28,6 +26,165 @@ interface SearchResult {
   tags?: string[];
 }
 
+// Memoized search result item
+const SearchResultItem = memo(({ result }: { result: SearchResult }) => {
+  const getResultIcon = useCallback((type: string) => {
+    const icons = {
+      artist: <Star className="h-4 w-4" />,
+      event: <Calendar className="h-4 w-4" />,
+      post: <Users className="h-4 w-4" />,
+      group: <Users className="h-4 w-4" />,
+    };
+    return icons[type as keyof typeof icons] || <Search className="h-4 w-4" />;
+  }, []);
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-4">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={result.image} />
+            <AvatarFallback>{result.title.charAt(0)}</AvatarFallback>
+          </Avatar>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              {getResultIcon(result.type)}
+              <Badge variant="secondary" className="text-xs">
+                {result.type}
+              </Badge>
+              <h3 className="font-semibold truncate">{result.title}</h3>
+            </div>
+
+            {result.description && (
+              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                {result.description}
+              </p>
+            )}
+
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              {result.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {result.location}
+                </div>
+              )}
+              {result.distance && (
+                <span>{result.distance.toFixed(1)}km away</span>
+              )}
+              {result.price && (
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  ${result.price}/hr
+                </div>
+              )}
+              {result.date && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {format(new Date(result.date), 'MMM dd, yyyy')}
+                </div>
+              )}
+            </div>
+
+            {result.tags && result.tags.length > 0 && (
+              <div className="flex gap-1 mt-2">
+                {result.tags.slice(0, 3).map((tag, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Button variant="outline" size="sm">
+            View
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+
+SearchResultItem.displayName = 'SearchResultItem';
+
+// Memoized search filters component
+const SearchFilters = memo(({ 
+  filters, 
+  setFilters, 
+  categories 
+}: {
+  filters: any;
+  setFilters: (filters: any) => void;
+  categories: any;
+}) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Search Filters</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="text-sm font-medium">Type</label>
+            <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="artist">Artists</SelectItem>
+                <SelectItem value="event">Events</SelectItem>
+                <SelectItem value="post">Posts</SelectItem>
+                <SelectItem value="group">Groups</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Category</label>
+            <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value})}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {filters.type !== 'all' && categories[filters.type as keyof typeof categories]?.map((cat: string) => (
+                  <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Max Distance: {filters.distance}km</label>
+            <Slider
+              value={[filters.distance]}
+              onValueChange={([value]) => setFilters({...filters, distance: value})}
+              max={100}
+              min={1}
+              step={1}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</label>
+            <Slider
+              value={filters.priceRange}
+              onValueChange={(value) => setFilters({...filters, priceRange: value as [number, number]})}
+              max={1000}
+              min={0}
+              step={10}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+
+SearchFilters.displayName = 'SearchFilters';
+
 export const AdvancedSearch = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -45,14 +202,26 @@ export const AdvancedSearch = () => {
   const { user } = useAuth();
   const { currentLocation } = useLocation();
 
-  const categories = {
+  const categories = useMemo(() => ({
     artist: ['Photographer', 'Musician', 'DJ', 'Chef', 'Designer', 'Writer', 'Performer'],
     event: ['Music', 'Food', 'Art', 'Sports', 'Business', 'Education', 'Entertainment'],
     post: ['News', 'Discussion', 'Question', 'Announcement', 'Review'],
     group: ['Hobby', 'Professional', 'Community', 'Interest', 'Location-based']
-  };
+  }), []);
 
-  const searchAll = async () => {
+  const calculateDistance = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }, []);
+
+  const searchAll = useCallback(async () => {
     if (!query.trim()) return;
     
     setLoading(true);
@@ -199,7 +368,7 @@ export const AdvancedSearch = () => {
       // Apply filters
       let filteredResults = results.filter(result => {
         if (filters.category !== 'all' && result.tags) {
-          return result.tags.some(tag => 
+          return result.tags.some(tag =>
             tag.toLowerCase().includes(filters.category.toLowerCase())
           );
         }
@@ -223,19 +392,7 @@ export const AdvancedSearch = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+  }, [query, filters, currentLocation, calculateDistance]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -245,17 +402,7 @@ export const AdvancedSearch = () => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [query, filters]);
-
-  const getResultIcon = (type: string) => {
-    switch (type) {
-      case 'artist': return <Star className="h-4 w-4" />;
-      case 'event': return <Calendar className="h-4 w-4" />;
-      case 'post': return <Users className="h-4 w-4" />;
-      case 'group': return <Users className="h-4 w-4" />;
-      default: return <Search className="h-4 w-4" />;
-    }
-  };
+  }, [query, filters, searchAll]);
 
   return (
     <div className="space-y-6">
@@ -281,67 +428,11 @@ export const AdvancedSearch = () => {
 
       {/* Filters */}
       {showFilters && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Search Filters</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium">Type</label>
-                <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="artist">Artists</SelectItem>
-                    <SelectItem value="event">Events</SelectItem>
-                    <SelectItem value="post">Posts</SelectItem>
-                    <SelectItem value="group">Groups</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {filters.type !== 'all' && categories[filters.type as keyof typeof categories]?.map(cat => (
-                      <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Max Distance: {filters.distance}km</label>
-                <Slider
-                  value={[filters.distance]}
-                  onValueChange={([value]) => setFilters({...filters, distance: value})}
-                  max={100}
-                  min={1}
-                  step={1}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</label>
-                <Slider
-                  value={filters.priceRange}
-                  onValueChange={(value) => setFilters({...filters, priceRange: value as [number, number]})}
-                  max={1000}
-                  min={0}
-                  step={10}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <SearchFilters 
+          filters={filters} 
+          setFilters={setFilters} 
+          categories={categories} 
+        />
       )}
 
       {/* Results */}
@@ -362,70 +453,7 @@ export const AdvancedSearch = () => {
         )}
 
         {results.map((result) => (
-          <Card key={`${result.type}-${result.id}`} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={result.image} />
-                  <AvatarFallback>{result.title.charAt(0)}</AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getResultIcon(result.type)}
-                    <Badge variant="secondary" className="text-xs">
-                      {result.type}
-                    </Badge>
-                    <h3 className="font-semibold truncate">{result.title}</h3>
-                  </div>
-                  
-                  {result.description && (
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                      {result.description}
-                    </p>
-                  )}
-                  
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    {result.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {result.location}
-                      </div>
-                    )}
-                    {result.distance && (
-                      <span>{result.distance.toFixed(1)}km away</span>
-                    )}
-                    {result.price && (
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        ${result.price}/hr
-                      </div>
-                    )}
-                    {result.date && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(result.date), 'MMM dd, yyyy')}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {result.tags && result.tags.length > 0 && (
-                    <div className="flex gap-1 mt-2">
-                      {result.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                <Button variant="outline" size="sm">
-                  View
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <SearchResultItem key={`${result.type}-${result.id}`} result={result} />
         ))}
       </div>
     </div>
