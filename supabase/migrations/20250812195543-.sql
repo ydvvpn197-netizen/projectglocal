@@ -1,3 +1,12 @@
+-- Allow updating chat_conversations status and add RLS policy
+ALTER TABLE public.chat_conversations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can update their own conversations" ON public.chat_conversations;
+CREATE POLICY "Users can update their own conversations"
+ON public.chat_conversations
+FOR UPDATE
+USING (client_id = auth.uid() OR artist_id = auth.uid());
+
 -- Create the missing users_in_same_area function
 CREATE OR REPLACE FUNCTION public.users_in_same_area(user1_id uuid, user2_id uuid)
  RETURNS boolean

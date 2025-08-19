@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FollowButton } from "@/components/FollowButton";
 import { Star, MapPin, Clock, MessageCircle, Heart, Calendar } from "lucide-react";
+import { useNavigate as useRRNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +52,7 @@ const ArtistProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const rrNavigate = useRRNavigate();
   
   const [artist, setArtist] = useState<ArtistProfile | null>(null);
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
@@ -422,6 +424,34 @@ const ArtistProfile = () => {
                     size="lg"
                     className="w-full sm:w-auto"
                   />
+                  {user && user.id !== artistId && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                      onClick={async () => {
+                        // Create a pending conversation request to mimic Reddit-style request/accept
+                        try {
+                          const { data, error } = await supabase
+                            .from('chat_conversations')
+                            .insert({
+                              booking_id: null,
+                              client_id: user.id,
+                              artist_id: artistId,
+                              status: 'pending'
+                            })
+                            .select()
+                            .single();
+                          if (error) throw error;
+                          rrNavigate(`/messages`);
+                        } catch (err) {
+                          console.error('Error starting chat:', err);
+                        }
+                      }}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" /> Message
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

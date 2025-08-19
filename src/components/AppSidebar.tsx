@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,7 @@ const mainItems = [
 
 const userItems = [
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];

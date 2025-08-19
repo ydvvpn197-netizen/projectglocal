@@ -27,6 +27,8 @@ const Profile = lazy(() => import("./pages/Profile"));
 const ArtistProfile = lazy(() => import("./pages/ArtistProfile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Chat = lazy(() => import("./pages/Chat"));
+const Messages = lazy(() => import("./pages/Messages"));
 
 // Loading component
 const PageLoader = () => (
@@ -68,6 +70,8 @@ const App = () => (
               <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
               <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
               <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
+              <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+              <Route path="/chat/:conversationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
               <Route path="/artist/:artistId" element={<ArtistProfile />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

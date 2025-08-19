@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface ChatConversation {
   id: string;
@@ -29,6 +30,7 @@ export const ActiveChatsPanel = () => {
   const { toast } = useToast();
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -115,11 +117,7 @@ export const ActiveChatsPanel = () => {
   };
 
   const openChat = (conversationId: string) => {
-    // TODO: Implement chat interface navigation
-    toast({
-      title: "Chat Feature",
-      description: "Chat interface will be available soon",
-    });
+    navigate(`/chat/${conversationId}`);
   };
 
   if (!user) return null;
