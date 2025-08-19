@@ -15,7 +15,6 @@ import { CalendarIcon, Star, Users, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { sanitizeText, sanitizeEmail } from "@/lib/sanitize";
-import { FollowButton } from "@/components/FollowButton";
 
 interface Artist {
   id: string;
@@ -115,57 +114,26 @@ const BookArtist = () => {
         contactPhone: sanitizeText(bookingData.contactPhone, 20)
       };
 
-      // Parse budget range like "$100-$300" or "$1000+"
-      const parseBudget = (budget: string): { min: number | null; max: number | null } => {
-        if (!budget) return { min: null, max: null };
-        const cleaned = budget.replace(/\$/g, '').replace(/,/g, '').trim();
-        if (cleaned.endsWith('+')) {
-          const min = parseFloat(cleaned.slice(0, -1));
-          return { min: isNaN(min) ? null : min, max: null };
-        }
-        if (cleaned.includes('-')) {
-          const [minStr, maxStr] = cleaned.split('-').map(s => s.trim());
-          const min = parseFloat(minStr);
-          const max = parseFloat(maxStr);
-          return { min: isNaN(min) ? null : min, max: isNaN(max) ? null : max };
-        }
-        const value = parseFloat(cleaned);
-        return { min: isNaN(value) ? null : value, max: null };
-      };
-
-      const { min: budgetMinParsed, max: budgetMaxParsed } = parseBudget(sanitizedData.budget);
-
-      // Find the artists.id for the selected profile user
-      const { data: artistRow, error: artistLookupError } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('user_id', selectedArtist.user_id)
-        .single();
-
-      if (artistLookupError || !artistRow?.id) {
-        throw artistLookupError || new Error('Artist profile not found');
-      }
-
-      // Create a booking request (NOT a feed post)
-      const { data: bookingRow, error: bookingError } = await supabase
-        .from('artist_bookings')
+      // Create a booking post
+      const { data: bookingPostData, error } = await supabase
+        .from('posts')
         .insert({
           user_id: user.id,
-          artist_id: artistRow.id,
+          type: 'post',
+          title: sanitizeText(`Booking Request: ${selectedArtist.display_name}`, 200),
+          content: sanitizeText(`Event Type: ${sanitizedData.eventType}\nDate: ${format(bookingDate, 'PPP')}\nDuration: ${sanitizedData.duration}\nBudget: ${sanitizedData.budget}\nLocation: ${sanitizedData.location}\nDescription: ${sanitizedData.description}`, 5000),
+          contact_info: `Email: ${sanitizedData.contactEmail}\nPhone: ${sanitizedData.contactPhone}`,
           event_date: bookingDate.toISOString(),
           event_location: sanitizedData.location,
-          event_description: sanitizedData.description,
-          budget_min: budgetMinParsed,
-          budget_max: budgetMaxParsed,
-          contact_info: `Email: ${sanitizedData.contactEmail}\nPhone: ${sanitizedData.contactPhone}`,
-          status: 'pending'
+          price_range: sanitizedData.budget,
+          tags: ['booking', 'artist', sanitizeText(selectedArtist.specialty?.toLowerCase() || 'general', 50)]
         })
         .select()
         .single();
 
-      if (bookingError) throw bookingError;
+      if (error) throw error;
 
-      // Notify the artist
+      // Create notification for the artist
       await supabase
         .from('notifications')
         .insert({
@@ -173,13 +141,14 @@ const BookArtist = () => {
           type: 'booking_request',
           title: 'New Booking Request',
           message: `You have a new booking request for ${sanitizedData.eventType} on ${format(bookingDate, 'PPP')}`,
-          data: {
-            booking_id: bookingRow.id,
+          data: { 
+            booking_id: bookingPostData.id, 
             client_id: user.id,
             event_type: sanitizedData.eventType,
             event_date: bookingDate.toISOString()
           }
         });
+
 
       toast({
         title: "Booking Request Sent!",
@@ -288,11 +257,6 @@ const BookArtist = () => {
                         >
                           View Profile
                         </Button>
-                        <FollowButton 
-                          userId={artist.user_id}
-                          size="sm"
-                          className=""
-                        />
                         <Button 
                           size="sm"
                           onClick={(e) => {
