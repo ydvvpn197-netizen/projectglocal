@@ -96,7 +96,18 @@ const ArtistProfile = () => {
         .eq('user_id', artistId)
         .single();
 
-      if (artistError) throw artistError;
+      if (artistError) {
+        // Gracefully handle missing artists row; still allow viewing profile
+        setArtist({
+          ...profileData,
+          id: profileData.user_id,
+          experience_years: 0,
+          is_available: true,
+          hourly_rate_min: profileData.hourly_rate_min || 0,
+          hourly_rate_max: profileData.hourly_rate_max || 0,
+        } as any);
+        return;
+      }
 
       setArtist({
         ...profileData,

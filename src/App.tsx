@@ -29,6 +29,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Messages = lazy(() => import("./pages/Messages"));
+const About = lazy(() => import("./pages/About"));
 
 // Loading component
 const PageLoader = () => (
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/feed" element={<Feed />} />
               <Route path="/create" element={<CreatePost />} />
               <Route path="/discover" element={<Discover />} />
+              <Route path="/about" element={<About />} />
               <Route path="/community" element={<Community />} />
               <Route path="/community/create-discussion" element={<CreateDiscussion />} />
               <Route path="/community/create-group" element={<CreateGroup />} />

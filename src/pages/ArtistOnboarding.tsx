@@ -39,6 +39,23 @@ const ArtistOnboarding = () => {
 
       if (error) throw error;
 
+      // Ensure an entry exists in artists table for bookings linkage
+      const { error: artistUpsertError } = await supabase
+        .from('artists')
+        .upsert({
+          user_id: user.id,
+          specialty: data.artistSkills && data.artistSkills.length > 0 ? [data.artistSkills[0]] : [],
+          experience_years: 0,
+          portfolio_urls: data.portfolioUrls,
+          hourly_rate_min: data.hourlyRateMin > 0 ? data.hourlyRateMin : null,
+          hourly_rate_max: data.hourlyRateMax > 0 ? data.hourlyRateMax : null,
+          bio: data.bio,
+          is_available: true,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (artistUpsertError) throw artistUpsertError;
+
       toast({
         title: "Artist Profile Created!",
         description: "Your artist profile has been set up successfully. You can now receive booking requests.",
