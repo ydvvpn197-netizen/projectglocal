@@ -441,20 +441,33 @@ const ArtistProfile = () => {
                       size="lg"
                       className="w-full sm:w-auto"
                       onClick={async () => {
-                        // Create a pending conversation request to mimic Reddit-style request/accept
                         try {
-                          const { data, error } = await supabase
+                          // Find existing conversation between these two users (not closed)
+                          const { data: existing } = await supabase
                             .from('chat_conversations')
-                            .insert({
-                              booking_id: null,
-                              client_id: user.id,
-                              artist_id: artistId,
-                              status: 'pending'
-                            })
-                            .select()
-                            .single();
-                          if (error) throw error;
-                          rrNavigate(`/messages`);
+                            .select('id, status, client_id, artist_id')
+                            .or(`and(client_id.eq.${user.id},artist_id.eq.${artistId}),and(client_id.eq.${artistId},artist_id.eq.${user.id}))`)
+                            .not('status', 'eq', 'closed')
+                            .maybeSingle();
+
+                          let conversationId = existing?.id;
+
+                          if (!conversationId) {
+                            const { data: created, error: createErr } = await supabase
+                              .from('chat_conversations')
+                              .insert({
+                                booking_id: null,
+                                client_id: user.id,
+                                artist_id: artistId,
+                                status: 'pending'
+                              })
+                              .select()
+                              .single();
+                            if (createErr) throw createErr;
+                            conversationId = created.id;
+                          }
+
+                          rrNavigate(`/chat/${conversationId}`);
                         } catch (err) {
                           console.error('Error starting chat:', err);
                         }

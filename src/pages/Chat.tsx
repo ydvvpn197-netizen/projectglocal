@@ -58,7 +58,8 @@ const Chat = () => {
                 ))
               )}
             </div>
-            {conversation?.status === 'active' ? (
+            {/* Allow initiator to send while pending; recipient will see prompt to accept */}
+            {conversation?.status === 'active' || conversation?.status === 'pending' ? (
               <div className="mt-4">
                 <MessageComposer onSubmit={sendMessage} placeholder="Send a message..." />
               </div>

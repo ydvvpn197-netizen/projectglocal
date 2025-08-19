@@ -18,6 +18,7 @@ import {
 const mainItems = [
   { title: "Feed", url: "/feed", icon: Home },
   { title: "Discover", url: "/discover", icon: Search },
+  { title: "About", url: "/about", icon: MapPin },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
   { title: "Book Artists", url: "/book-artist", icon: Palette },

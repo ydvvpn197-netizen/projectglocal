@@ -106,6 +106,8 @@ export const useChat = (conversationId?: string) => {
 
   const sendMessage = async (content: string) => {
     if (!user || !conversationId) return;
+
+    // Insert the message
     const { error } = await supabase
       .from('chat_messages')
       .insert({
@@ -115,6 +117,22 @@ export const useChat = (conversationId?: string) => {
         message_type: 'text'
       });
     if (error) throw error;
+
+    // If conversation is pending and the recipient hasn't accepted yet, send an approval notification
+    if (conversation?.status === 'pending') {
+      const recipientId = user.id === conversation?.client_id ? conversation?.artist_id : conversation?.client_id;
+      if (recipientId) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: recipientId,
+            type: 'message_request',
+            title: 'New chat request',
+            message: 'Someone wants to chat with you. Approve to start the conversation.',
+            data: { conversation_id: conversationId }
+          });
+      }
+    }
   };
 
   const isOwnMessage = useMemo(() => {
