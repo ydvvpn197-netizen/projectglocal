@@ -8,8 +8,12 @@ import { Users, MessageCircle, Heart, Share2, Plus, BarChart3, Star, MoreVertica
 import { MainLayout } from "@/components/MainLayout";
 import { PollCard } from "@/components/PollCard";
 import { ReviewCard } from "@/components/ReviewCard";
+import { WriteReviewDialog } from "@/components/WriteReviewDialog";
+import { CreatePollDialog } from "@/components/CreatePollDialog";
 import { GroupView } from "@/components/GroupView";
 import { useToast } from "@/hooks/use-toast";
+import { useReviews } from "@/hooks/useReviews";
+import { usePolls } from "@/hooks/usePolls";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useDiscussions } from "@/hooks/useDiscussions";
@@ -21,13 +25,14 @@ const Community = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { discussions: recentDiscussions, loading: discussionsLoading, deleteDiscussion } = useDiscussions();
+  const { reviews, loading: reviewsLoading } = useReviews();
+  const { polls, loading: pollsLoading } = usePolls();
   const { user } = useAuth();
-  const [userVotes, setUserVotes] = useState<{[key: string]: string}>({});
-  const [helpfulReviews, setHelpfulReviews] = useState<{[key: string]: boolean}>({});
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [userGroups, setUserGroups] = useState<any[]>([]);
   const [allGroups, setAllGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   // Fetch user's groups and available groups
   useEffect(() => {
     const fetchGroups = async () => {
@@ -125,87 +130,6 @@ const Community = () => {
     }
   ];
 
-
-  const polls = [
-    {
-      id: "poll1",
-      title: "Best time for community yoga sessions?",
-      description: "Help us decide when to schedule our weekly outdoor yoga sessions",
-      options: [
-        { id: "morning", text: "Early Morning (7-9 AM)", votes: 34 },
-        { id: "evening", text: "Evening (6-8 PM)", votes: 52 },
-        { id: "weekend", text: "Weekend Mornings", votes: 28 }
-      ],
-      totalVotes: 114,
-      timeRemaining: "3 days left",
-      hasVoted: false
-    },
-    {
-      id: "poll2", 
-      title: "Community garden location preference?",
-      description: "Where should we establish our new community garden?",
-      options: [
-        { id: "central", text: "Central Park Area", votes: 41 },
-        { id: "riverfront", text: "Riverfront District", votes: 29 },
-        { id: "north", text: "North Side Community Center", votes: 18 }
-      ],
-      totalVotes: 88,
-      timeRemaining: "5 days left",
-      hasVoted: true,
-      userVote: "central"
-    }
-  ];
-
-  const reviews = [
-    {
-      id: "review1",
-      businessName: "Sunrise Coffee Roasters",
-      category: "restaurant",
-      rating: 5,
-      reviewText: "Amazing local coffee shop! The baristas know their craft and the atmosphere is perfect for working or meeting friends. Their Ethiopian blend is exceptional.",
-      author: "Lisa K.",
-      timeAgo: "1 day ago",
-      location: "Downtown District",
-      helpful: 12,
-      replies: 3,
-      isHelpful: false
-    },
-    {
-      id: "review2",
-      businessName: "Green Valley Bike Repair",
-      category: "service",
-      rating: 4,
-      reviewText: "Quick and reliable service. Fixed my bike chain in under 30 minutes. Prices are reasonable and the owner is very knowledgeable about cycling.",
-      author: "Tom R.",
-      timeAgo: "3 days ago", 
-      location: "Green Valley",
-      helpful: 8,
-      replies: 1,
-      isHelpful: true
-    },
-    {
-      id: "review3",
-      businessName: "Luna Art Gallery",
-      category: "entertainment",
-      rating: 5,
-      reviewText: "Beautiful local art gallery featuring work from community artists. The current exhibition on urban landscapes is breathtaking. Highly recommend!",
-      author: "Maya P.",
-      timeAgo: "5 days ago",
-      location: "Arts District", 
-      helpful: 15,
-      replies: 5,
-      isHelpful: false
-    }
-  ];
-
-  const handleVote = (pollId: string, optionId: string) => {
-    setUserVotes(prev => ({ ...prev, [pollId]: optionId }));
-    toast({
-      title: "Vote Recorded!",
-      description: "Thank you for participating in the community poll.",
-    });
-  };
-
   const joinGroup = async (groupId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -235,14 +159,6 @@ const Community = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const handleMarkHelpful = (reviewId: string) => {
-    setHelpfulReviews(prev => ({ ...prev, [reviewId]: !prev[reviewId] }));
-    toast({
-      title: helpfulReviews[reviewId] ? "Removed from helpful" : "Marked as helpful",
-      description: "Your feedback helps the community.",
-    });
   };
 
   // Show group view if a group is selected
@@ -448,41 +364,78 @@ const Community = () => {
           <TabsContent value="polls" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Community Polls</h2>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Create Poll
-              </Button>
+              <CreatePollDialog>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Poll
+                </Button>
+              </CreatePollDialog>
             </div>
             <div className="space-y-6">
-              {polls.map((poll) => (
-                <PollCard
-                  key={poll.id}
-                  {...poll}
-                  hasVoted={poll.hasVoted || Boolean(userVotes[poll.id])}
-                  userVote={poll.userVote || userVotes[poll.id]}
-                  onVote={handleVote}
-                />
-              ))}
+              {pollsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : polls.length > 0 ? (
+                polls.map((poll) => (
+                  <PollCard
+                    key={poll.id}
+                    {...poll}
+                  />
+                ))
+              ) : (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No polls yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create the first community poll to gather opinions!
+                    </p>
+                    <CreatePollDialog>
+                      <Button>Create Poll</Button>
+                    </CreatePollDialog>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="reviews" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Local Business Reviews</h2>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Write Review
-              </Button>
+              <WriteReviewDialog>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Write Review
+                </Button>
+              </WriteReviewDialog>
             </div>
             <div className="space-y-6">
-              {reviews.map((review) => (
-                <ReviewCard
-                  key={review.id}
-                  {...review}
-                  isHelpful={helpfulReviews[review.id] || review.isHelpful}
-                  onMarkHelpful={handleMarkHelpful}
-                />
-              ))}
+              {reviewsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                </div>
+              ) : reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    {...review}
+                  />
+                ))
+              ) : (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No reviews yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Be the first to review a local business!
+                    </p>
+                    <WriteReviewDialog>
+                      <Button>Write Review</Button>
+                    </WriteReviewDialog>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </Tabs>

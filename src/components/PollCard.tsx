@@ -3,7 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Clock, Users } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BarChart3, Clock, Users, Share2, MoreVertical, Trash2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { usePolls } from "@/hooks/usePolls";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface PollOption {
   id: string;
@@ -14,13 +19,16 @@ interface PollOption {
 interface PollCardProps {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   options: PollOption[];
-  totalVotes: number;
-  timeRemaining: string;
-  hasVoted: boolean;
-  userVote?: string;
-  onVote: (pollId: string, optionId: string) => void;
+  total_votes: number;
+  time_remaining?: string;
+  has_voted?: boolean;
+  user_vote?: string;
+  author_name?: string;
+  author_avatar?: string;
+  created_at: string;
+  user_id: string;
 }
 
 export function PollCard({ 
@@ -28,38 +36,115 @@ export function PollCard({
   title, 
   description, 
   options, 
-  totalVotes, 
-  timeRemaining, 
-  hasVoted, 
-  userVote,
-  onVote 
+  total_votes, 
+  time_remaining, 
+  has_voted, 
+  user_vote,
+  author_name,
+  author_avatar,
+  created_at,
+  user_id
 }: PollCardProps) {
   const [selectedOption, setSelectedOption] = useState<string>("");
+  const { user } = useAuth();
+  const { votePoll, deletePoll, sharePoll } = usePolls();
 
-  const handleVote = () => {
-    if (selectedOption && !hasVoted) {
-      onVote(id, selectedOption);
+  const handleVote = async () => {
+    if (selectedOption && !has_voted) {
+      await votePoll(id, selectedOption);
     }
   };
 
+  const handleDelete = async () => {
+    await deletePoll(id);
+  };
+
+  const handleShare = async () => {
+    await sharePoll(id);
+  };
+
   const getPercentage = (votes: number) => 
-    totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+    total_votes > 0 ? (votes / total_votes) * 100 : 0;
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
               <CardTitle className="text-lg">{title}</CardTitle>
             </div>
-            <CardDescription>{description}</CardDescription>
+            {description && <CardDescription>{description}</CardDescription>}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={author_avatar} />
+                <AvatarFallback className="text-xs">
+                  {author_name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span>by {author_name}</span>
+              <span>•</span>
+              <span>{formatDate(created_at)}</span>
+            </div>
           </div>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {timeRemaining}
-          </Badge>
+          
+          <div className="flex items-center gap-2">
+            {time_remaining && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {time_remaining}
+              </Badge>
+            )}
+            
+            {user?.id === user_id && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleShare}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </DropdownMenuItem>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Poll</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this poll? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -67,13 +152,13 @@ export function PollCard({
           {options.map((option) => {
             const percentage = getPercentage(option.votes);
             const isSelected = selectedOption === option.id;
-            const isUserVote = userVote === option.id;
+            const isUserVote = user_vote === option.id;
             
             return (
               <div key={option.id} className="space-y-2">
                 <div 
                   className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    hasVoted 
+                    has_voted 
                       ? isUserVote 
                         ? "bg-primary/10 border-primary" 
                         : "bg-muted/50"
@@ -81,12 +166,12 @@ export function PollCard({
                         ? "bg-primary/10 border-primary" 
                         : "bg-card hover:bg-muted/50"
                   }`}
-                  onClick={() => !hasVoted && setSelectedOption(option.id)}
+                  onClick={() => !has_voted && setSelectedOption(option.id)}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{option.text}</span>
                     <div className="flex items-center gap-2">
-                      {hasVoted && (
+                      {has_voted && (
                         <span className="text-sm text-muted-foreground">
                           {percentage.toFixed(1)}%
                         </span>
@@ -97,7 +182,7 @@ export function PollCard({
                     </div>
                   </div>
                   
-                  {hasVoted && (
+                  {has_voted && (
                     <div className="mt-2">
                       <Progress value={percentage} className="h-2" />
                     </div>
@@ -111,18 +196,29 @@ export function PollCard({
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" />
-            <span>{totalVotes} votes</span>
+            <span>{total_votes} votes</span>
           </div>
           
-          {!hasVoted && (
-            <Button 
-              onClick={handleVote}
-              disabled={!selectedOption}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
               size="sm"
+              onClick={handleShare}
             >
-              Vote
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
             </Button>
-          )}
+            
+            {!has_voted && (
+              <Button 
+                onClick={handleVote}
+                disabled={!selectedOption}
+                size="sm"
+              >
+                Vote
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
