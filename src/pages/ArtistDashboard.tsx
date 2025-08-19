@@ -32,6 +32,7 @@ const ArtistDashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("bookings");
+  const [pendingDiscussionRequests, setPendingDiscussionRequests] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -72,7 +73,7 @@ const ArtistDashboard = () => {
       }
 
       // Fetch real stats from database
-      const [bookingsResult, pendingResult, conversationsResult] = await Promise.all([
+      const [bookingsResult, pendingResult, conversationsResult, discussionsResult] = await Promise.all([
         // Total bookings (accepted + completed)
         supabase
           .from('artist_bookings')
@@ -92,7 +93,13 @@ const ArtistDashboard = () => {
           .from('chat_conversations')
           .select('id')
           .eq('artist_id', user.id)
-          .eq('status', 'active')
+          .eq('status', 'active'),
+        // Pending discussion requests to moderate
+        (supabase as any)
+          .from('artist_discussion_requests')
+          .select('*')
+          .eq('artist_user_id', user.id)
+          .eq('status', 'pending')
       ]);
 
       const totalBookings = bookingsResult.data?.length || 0;
@@ -113,6 +120,8 @@ const ArtistDashboard = () => {
         totalEarnings,
         averageRating
       });
+
+      setPendingDiscussionRequests(discussionsResult.data || []);
 
     } catch (error) {
       console.error('Error fetching artist data:', error);
@@ -274,6 +283,14 @@ const ArtistDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="chats">Active Chats</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
+            <TabsTrigger value="moderation">
+              Discussion Requests
+              {pendingDiscussionRequests.length > 0 && (
+                <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                  {pendingDiscussionRequests.length}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings">
@@ -286,6 +303,54 @@ const ArtistDashboard = () => {
 
           <TabsContent value="earnings">
             <EarningsPanel />
+          </TabsContent>
+
+          <TabsContent value="moderation">
+            <div className="space-y-4">
+              {pendingDiscussionRequests.length === 0 ? (
+                <div className="text-muted-foreground">No pending discussion requests.</div>
+              ) : (
+                pendingDiscussionRequests.map((req) => (
+                  <Card key={req.id}>
+                    <CardHeader>
+                      <CardTitle className="text-base">{req.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{req.content}</p>
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" size="sm" onClick={async () => {
+                          await (supabase as any).from('artist_discussion_requests').update({ status: 'rejected' }).eq('id', req.id);
+                          setPendingDiscussionRequests((arr) => arr.filter((r) => r.id !== req.id));
+                        }}>
+                          Reject
+                        </Button>
+                        <Button size="sm" onClick={async () => {
+                          await (supabase as any).from('artist_discussion_requests').update({ status: 'approved' }).eq('id', req.id);
+                          // Create a discussion post visible to followers
+                          await supabase.from('posts').insert({
+                            user_id: req.artist_user_id,
+                            type: 'discussion',
+                            title: req.title,
+                            content: req.content,
+                            tags: ['artist-discussion']
+                          });
+                          // Notify followers is handled by feed inclusion; also notify requester
+                          await supabase.from('notifications').insert({
+                            user_id: req.requester_user_id,
+                            type: 'discussion_request_approved',
+                            title: 'Discussion approved',
+                            message: 'Your discussion request was approved and is now live.'
+                          });
+                          setPendingDiscussionRequests((arr) => arr.filter((r) => r.id !== req.id));
+                        }}>
+                          Approve & Publish
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>

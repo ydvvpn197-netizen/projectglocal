@@ -129,9 +129,14 @@ export function ArtistShowcase() {
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium text-primary">{artist.hourlyRate}</span>
                   </div>
-                  <Button size="sm" asChild>
-                    <Link to="/book-artist">Book Now</Link>
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="secondary" asChild>
+                      <Link to={`/artist/${artist.id}`}>View Profile</Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link to="/book-artist">Book Now</Link>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
