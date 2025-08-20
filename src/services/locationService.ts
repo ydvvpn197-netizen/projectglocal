@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { checkTableExists, createUserPreferencesFallback } from '@/utils/databaseUtils';
 import { 
   Location, 
   LocationPreferences, 
@@ -17,6 +18,32 @@ import {
 } from '../utils/locationUtils';
 
 export class LocationService {
+  private static userPreferencesTableAvailable: boolean | null = null;
+
+  /**
+   * Check if user_preferences table is available
+   */
+  private static async checkUserPreferencesTable(): Promise<boolean> {
+    if (this.userPreferencesTableAvailable !== null) {
+      return this.userPreferencesTableAvailable;
+    }
+
+    try {
+      const preferencesTable = await checkTableExists('user_preferences');
+      this.userPreferencesTableAvailable = preferencesTable.exists;
+
+      if (!this.userPreferencesTableAvailable) {
+        console.warn('User preferences table not available. Using fallback preferences.');
+      }
+
+      return this.userPreferencesTableAvailable;
+    } catch (error) {
+      console.error('Error checking user preferences table:', error);
+      this.userPreferencesTableAvailable = false;
+      return false;
+    }
+  }
+
   /**
    * Get current user's location from browser or database
    */
@@ -29,33 +56,20 @@ export class LocationService {
       const cached = getCachedLocationData(`user_${user.id}`);
       if (cached) return cached;
 
-      // Get from database - try new columns first, then fall back to old columns
+      // Get from database - use existing location columns
       const { data: profile } = await supabase
         .from('profiles')
-        .select('location_lat, location_lng, location_name, location_enabled, latitude, longitude, real_time_location_enabled')
-        .eq('id', user.id)
+        .select('latitude, longitude, real_time_location_enabled, location_city, location_state, location_country')
+        .eq('user_id', user.id)
         .single();
 
       if (profile) {
-        // Try new location columns first
-        if (profile.location_enabled && profile.location_lat && profile.location_lng) {
-          const location: Location = {
-            lat: profile.location_lat,
-            lng: profile.location_lng,
-            name: profile.location_name || undefined,
-          };
-          
-          // Cache the result
-          cacheLocationData(`user_${user.id}`, location);
-          return location;
-        }
-        
-        // Fall back to old location columns
-        if (profile.real_time_location_enabled && profile.latitude && profile.longitude) {
+        // Use existing location columns
+        if (profile.latitude && profile.longitude) {
           const location: Location = {
             lat: profile.latitude,
             lng: profile.longitude,
-            name: undefined,
+            name: profile.location_city ? `${profile.location_city}, ${profile.location_state || ''}`.trim() : undefined,
           };
           
           // Cache the result
@@ -68,6 +82,78 @@ export class LocationService {
     } catch (error) {
       console.error('Error getting current user location:', error);
       return null;
+    }
+  }
+
+  /**
+   * Get user location preferences
+   */
+  static async getUserLocationPreferences(): Promise<LocationPreferences> {
+    try {
+      const tableAvailable = await this.checkUserPreferencesTable();
+      
+      if (!tableAvailable) {
+        console.warn('User preferences table not available. Using fallback preferences.');
+        return createUserPreferencesFallback();
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return createUserPreferencesFallback();
+
+      const { data: preferences, error } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user preferences:', error);
+        return createUserPreferencesFallback();
+      }
+
+      if (!preferences) {
+        // Create default preferences
+        const defaultPreferences = createUserPreferencesFallback();
+        await this.saveUserLocationPreferences(defaultPreferences);
+        return defaultPreferences;
+      }
+
+      return preferences;
+    } catch (error) {
+      console.error('Error getting user location preferences:', error);
+      return createUserPreferencesFallback();
+    }
+  }
+
+  /**
+   * Save user location preferences
+   */
+  static async saveUserLocationPreferences(preferences: Partial<LocationPreferences>): Promise<boolean> {
+    try {
+      const tableAvailable = await this.checkUserPreferencesTable();
+      
+      if (!tableAvailable) {
+        console.warn('User preferences table not available. Preferences not saved.');
+        return false;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: user.id,
+          ...preferences,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      return true;
+    } catch (error) {
+      console.error('Error saving user location preferences:', error);
+      return false;
     }
   }
 
@@ -98,11 +184,11 @@ export class LocationService {
 
       // Cache the result
       cacheLocationData(`user_${user.id}`, location);
-      
+
       return location;
     } catch (error) {
       console.error('Error detecting and saving location:', error);
-      throw error;
+      return null;
     }
   }
 
@@ -186,15 +272,15 @@ export class LocationService {
       const [profile, preferences] = await Promise.all([
         supabase
           .from('profiles')
-          .select('location_enabled, location_auto_detect, real_time_location_enabled')
-          .eq('id', user.id)
+          .select('real_time_location_enabled')
+          .eq('user_id', user.id)
           .single(),
-        this.getUserPreferences()
+        this.getUserLocationPreferences()
       ]);
 
-      // Use new location settings if available, otherwise fall back to old ones
-      const isEnabled = profile.data?.location_enabled ?? profile.data?.real_time_location_enabled ?? false;
-      const autoDetect = profile.data?.location_auto_detect ?? true;
+      // Use existing location settings
+      const isEnabled = profile.data?.real_time_location_enabled ?? false;
+      const autoDetect = true; // Default to true since we don't have this column
 
       return {
         enabled: isEnabled,
@@ -223,30 +309,21 @@ export class LocationService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Update profile - update both new and old columns for compatibility
-      if (settings.enabled !== undefined || settings.auto_detect !== undefined) {
-        const updateData: any = {};
-        
-        if (settings.enabled !== undefined) {
-          updateData.location_enabled = settings.enabled;
-          updateData.real_time_location_enabled = settings.enabled; // Also update old column
-        }
-        
-        if (settings.auto_detect !== undefined) {
-          updateData.location_auto_detect = settings.auto_detect;
-        }
-
+      // Update profile - use existing column
+      if (settings.enabled !== undefined) {
         const { error: profileError } = await supabase
           .from('profiles')
-          .update(updateData)
-          .eq('id', user.id);
+          .update({
+            real_time_location_enabled: settings.enabled
+          })
+          .eq('user_id', user.id);
 
         if (profileError) throw profileError;
       }
 
       // Update preferences
       if (settings.radius_km !== undefined || settings.categories !== undefined || settings.notifications !== undefined) {
-        await this.updateUserPreferences({
+        await this.saveUserLocationPreferences({
           location_radius_km: settings.radius_km,
           location_categories: settings.categories,
           location_notifications: settings.notifications,
@@ -396,7 +473,7 @@ export class LocationService {
   }> {
     try {
       const userLocation = await this.getCurrentUserLocation();
-      const preferences = await this.getUserPreferences();
+      const preferences = await this.getUserLocationPreferences();
       
       if (!userLocation) {
         return {

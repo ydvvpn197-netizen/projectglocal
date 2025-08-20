@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UniformHeader } from "@/components/UniformHeader";
 import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
+import { NetworkStatus, NetworkStatusIndicator } from "@/components/NetworkStatus";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -26,6 +27,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
+          {/* Network Status Alert */}
+          <NetworkStatus />
+          
           {/* Promotional Banner */}
           <PromotionalBanner 
             position="top" 
@@ -45,6 +49,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
               
               <div className="flex items-center gap-2">
+                <NetworkStatusIndicator className="mr-2" />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="sm">

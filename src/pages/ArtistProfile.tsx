@@ -252,6 +252,24 @@ const ArtistProfile = () => {
     }
 
     try {
+      // Check if booking already exists for this user, artist, and date
+      const { data: existingBooking } = await supabase
+        .from('artist_bookings')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('artist_id', artist?.id)
+        .eq('event_date', eventDate)
+        .single();
+
+      if (existingBooking) {
+        toast({
+          title: "Booking already exists",
+          description: "You have already sent a booking request for this date and artist.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('artist_bookings')
         .insert({
@@ -266,7 +284,17 @@ const ArtistProfile = () => {
           status: 'pending'
         });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast({
+            title: "Booking already exists",
+            description: "You have already sent a booking request for this date and artist.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Booking request sent",

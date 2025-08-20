@@ -210,7 +210,7 @@ export class VotingService {
   }> {
     try {
       const { data, error } = await supabase
-        .from('post_comments')
+        .from('comments')
         .select('upvotes, downvotes, score')
         .eq('id', commentId)
         .single();
@@ -342,7 +342,7 @@ export class VotingService {
         return data.user_id === userId;
       } else {
         const { data, error } = await supabase
-          .from('post_comments')
+          .from('comments')
           .select('user_id')
           .eq('id', targetId)
           .single();
@@ -416,7 +416,7 @@ export class VotingService {
       const score = upvoteCount - downvoteCount;
 
       await supabase
-        .from('post_comments')
+        .from('comments')
         .update({
           upvotes: upvoteCount,
           downvotes: downvoteCount,

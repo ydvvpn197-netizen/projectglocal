@@ -133,64 +133,88 @@ export const useNotifications = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          
-          // Show toast for new notifications
-          toast({
-            title: newNotification.title,
-            description: newNotification.message,
-            duration: 5000,
+    let channel: any;
+
+    const setupSubscription = async () => {
+      try {
+        channel = supabase
+          .channel('notifications')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const newNotification = payload.new as Notification;
+              setNotifications(prev => [newNotification, ...prev]);
+              setUnreadCount(prev => prev + 1);
+              
+              // Show toast for new notifications
+              toast({
+                title: newNotification.title,
+                description: newNotification.message,
+                duration: 5000,
+              });
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const updatedNotification = payload.new as Notification;
+              setNotifications(prev => 
+                prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+              );
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const deletedNotification = payload.old as Notification;
+              setNotifications(prev => prev.filter(n => n.id !== deletedNotification.id));
+              if (!deletedNotification.read) {
+                setUnreadCount(prev => Math.max(0, prev - 1));
+              }
+            }
+          )
+          .on('system', { event: 'disconnect' }, () => {
+            console.log('WebSocket disconnected, attempting to reconnect...');
+          })
+          .on('system', { event: 'reconnect' }, () => {
+            console.log('WebSocket reconnected');
+          })
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              console.log('Notifications subscription active');
+            } else if (status === 'CHANNEL_ERROR') {
+              console.warn('Notifications subscription error, will retry...');
+            }
           });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const updatedNotification = payload.new as Notification;
-          setNotifications(prev => 
-            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
-          );
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const deletedNotification = payload.old as Notification;
-          setNotifications(prev => prev.filter(n => n.id !== deletedNotification.id));
-          if (!deletedNotification.read) {
-            setUnreadCount(prev => Math.max(0, prev - 1));
-          }
-        }
-      )
-      .subscribe();
+      } catch (error) {
+        console.error('Error setting up notifications subscription:', error);
+      }
+    };
+
+    setupSubscription();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [user, toast]);
 

@@ -2,17 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  X, 
-  Gift, 
-  Percent, 
-  Clock, 
-  Users, 
-  TrendingUp,
-  ArrowRight,
-  Star
-} from 'lucide-react';
+import { X, ExternalLink, AlertTriangle } from 'lucide-react';
 import { MarketingService } from '@/services/marketingService';
+import { checkTableExists } from '@/utils/databaseUtils';
 import type { Campaign } from '@/types/marketing';
 
 /**
@@ -33,20 +25,16 @@ interface PromotionalBannerProps {
   onAction?: (campaign: Campaign) => void;
 }
 
-interface BannerCampaign extends Campaign {
-  isDismissed?: boolean;
-}
-
 /**
  * PromotionalBanner component for displaying dynamic promotional campaigns
- * 
+ *
  * Features:
  * - Campaign targeting and filtering
  * - Multiple visual variants
  * - Auto-rotation through campaigns
  * - Dismissible banners
  * - Analytics tracking
- * 
+ *
  * @param props - Component props
  * @returns JSX element
  */
@@ -58,69 +46,132 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
   onDismiss,
   onAction
 }) => {
-  const [campaigns, setCampaigns] = useState<BannerCampaign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [marketingTablesAvailable, setMarketingTablesAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
-    loadActiveCampaigns();
+    const checkMarketingTables = async () => {
+      try {
+        const campaignsTable = await checkTableExists('marketing_campaigns');
+        setMarketingTablesAvailable(campaignsTable.exists);
+        
+        if (!campaignsTable.exists) {
+          console.warn('Marketing campaigns table not available. Banner will be hidden.');
+          setError('Marketing features not available');
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking marketing tables:', error);
+        setMarketingTablesAvailable(false);
+        setError('Unable to check marketing features');
+        setLoading(false);
+        return;
+      }
+    };
+
+    checkMarketingTables();
   }, []);
 
-  const loadActiveCampaigns = async () => {
+  useEffect(() => {
+    if (marketingTablesAvailable === false) {
+      setLoading(false);
+      return;
+    }
+
+    if (marketingTablesAvailable === true) {
+      loadCampaigns();
+    }
+  }, [marketingTablesAvailable]);
+
+  const loadCampaigns = async () => {
     try {
       setLoading(true);
-      const activeCampaigns = await MarketingService.getCampaigns({
-        status: 'active',
-        campaign_type: 'promotional'
+      setError(null);
+
+      const activeCampaigns = await MarketingService.getActiveCampaigns();
+      
+      // Filter campaigns based on position and variant
+      let filteredCampaigns = activeCampaigns.filter(campaign => {
+        if (position === 'top' && campaign.campaign_config?.positions?.includes('top')) {
+          return true;
+        }
+        if (position === 'sidebar' && campaign.campaign_config?.positions?.includes('sidebar')) {
+          return true;
+        }
+        if (variant === 'featured' && campaign.campaign_type === 'promotional') {
+          return true;
+        }
+        if (variant === 'urgent' && campaign.campaign_config?.urgent) {
+          return true;
+        }
+        return false;
       });
 
-      // Filter and sort campaigns based on priority and relevance
-      const filteredCampaigns = activeCampaigns
-        .filter(campaign => {
-          const now = new Date();
-          const startDate = campaign.start_date ? new Date(campaign.start_date) : null;
-          const endDate = campaign.end_date ? new Date(campaign.end_date) : null;
-          
-          return (!startDate || now >= startDate) && (!endDate || now <= endDate);
-        })
-        .sort((a, b) => {
-          // Sort by priority: featured > urgent > default
-          const priorityOrder = { featured: 3, urgent: 2, default: 1 };
-          const aPriority = priorityOrder[a.campaign_config?.priority || 'default'];
-          const bPriority = priorityOrder[b.campaign_config?.priority || 'default'];
-          
-          if (aPriority !== bPriority) {
-            return bPriority - aPriority;
-          }
-          
-          // Then by creation date (newer first)
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        })
-        .slice(0, maxCampaigns);
+      // Limit the number of campaigns
+      filteredCampaigns = filteredCampaigns.slice(0, maxCampaigns);
 
       setCampaigns(filteredCampaigns);
     } catch (error) {
-      console.error('Failed to load promotional campaigns:', error);
+      console.error('Error loading campaigns:', error);
+      setError('Failed to load promotional campaigns');
     } finally {
       setLoading(false);
     }
   };
 
+  // Auto-rotate campaigns
+  useEffect(() => {
+    if (campaigns.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % campaigns.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [campaigns.length]);
+
   const handleDismiss = (campaignId: string) => {
-    setCampaigns(prev => prev.map(campaign => 
-      campaign.id === campaignId ? { ...campaign, isDismissed: true } : campaign
-    ));
+    // Remove from local state
+    setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+    
+    // Track dismiss event
+    MarketingService.trackEvent('campaign_dismissed', { campaign_id: campaignId });
+    
+    // Call parent callback
     onDismiss?.(campaignId);
   };
 
   const handleAction = (campaign: Campaign) => {
+    // Track click event
+    MarketingService.trackEvent('campaign_clicked', { 
+      campaign_id: campaign.id,
+      campaign_type: campaign.campaign_type 
+    });
+    
+    // Call parent callback
     onAction?.(campaign);
   };
+
+  // Don't render if no campaigns or marketing tables not available
+  if (loading) {
+    return null; // Don't show loading state for banner
+  }
+
+  if (error || campaigns.length === 0 || marketingTablesAvailable === false) {
+    return null; // Hide banner if there are issues or no campaigns
+  }
+
+  const currentCampaign = campaigns[currentIndex];
+  if (!currentCampaign) return null;
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'featured':
-        return 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-500';
+        return 'bg-gradient-to-r from-purple-600 to-blue-600 text-white border-purple-500';
       case 'urgent':
         return 'bg-gradient-to-r from-red-600 to-orange-600 text-white border-red-500';
       default:
@@ -128,162 +179,73 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
     }
   };
 
-  const getPositionStyles = () => {
-    switch (position) {
-      case 'top':
-        return 'fixed top-0 left-0 right-0 z-50';
-      case 'bottom':
-        return 'fixed bottom-0 left-0 right-0 z-50';
-      case 'sidebar':
-        return 'relative';
-      default:
-        return 'relative';
-    }
-  };
-
-  const formatTimeRemaining = (endDate: string) => {
-    const now = new Date();
-    const end = new Date(endDate);
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return 'Expired';
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
-    if (days > 0) return `${days}d ${hours}h left`;
-    if (hours > 0) return `${hours}h left`;
-    return 'Less than 1h left';
-  };
-
-  const getCampaignIcon = (campaign: Campaign) => {
-    const config = campaign.campaign_config;
-    
-    if (config?.priority === 'featured') return Star;
-    if (config?.urgency === 'high') return Clock;
-    if (config?.type === 'referral') return Users;
-    if (config?.type === 'discount') return Percent;
-    
-    return Gift;
-  };
-
-  if (loading) {
-    return null;
-  }
-
-  const activeCampaigns = campaigns.filter(campaign => !campaign.isDismissed);
-  
-  if (activeCampaigns.length === 0) {
-    return null;
-  }
-
   return (
-    <div className={`${getPositionStyles()} ${className}`}>
-      {activeCampaigns.map((campaign, index) => {
-        const Icon = getCampaignIcon(campaign);
-        const timeRemaining = campaign.end_date ? formatTimeRemaining(campaign.end_date) : null;
-        
-        return (
-          <Card
-            key={campaign.id}
-            className={`${getVariantStyles()} border-2 shadow-lg transition-all duration-300 ${
-              index === currentIndex ? 'opacity-100' : 'opacity-0 hidden'
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="flex-shrink-0">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-sm truncate">
-                        {campaign.name}
-                      </h3>
-                      {campaign.campaign_config?.priority === 'featured' && (
-                        <Badge variant="secondary" className="text-xs">
-                          Featured
-                        </Badge>
-                      )}
-                      {timeRemaining && timeRemaining !== 'Expired' && (
-                        <Badge variant="outline" className="text-xs border-white/30 text-white/90">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {timeRemaining}
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {campaign.description && (
-                      <p className="text-xs text-white/90 line-clamp-2">
-                        {campaign.description}
-                      </p>
-                    )}
-                    
-                    {campaign.campaign_config?.stats && (
-                      <div className="flex items-center gap-4 mt-2 text-xs text-white/80">
-                        {campaign.campaign_config.stats.impressions && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3" />
-                            {campaign.campaign_config.stats.impressions} views
-                          </span>
-                        )}
-                        {campaign.campaign_config.stats.conversions && (
-                          <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            {campaign.campaign_config.stats.conversions} claimed
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {campaign.campaign_config?.cta && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleAction(campaign)}
-                      className="text-xs font-medium"
-                    >
-                      {campaign.campaign_config.cta}
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  )}
-                  
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDismiss(campaign.id)}
-                    className="text-white/70 hover:text-white hover:bg-white/10"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+    <div className={`relative ${className}`}>
+      <Card className={`border-2 ${getVariantStyles()}`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary" className="text-xs">
+                  {currentCampaign.campaign_type}
+                </Badge>
+                {currentCampaign.campaign_config?.urgent && (
+                  <Badge variant="destructive" className="text-xs">
+                    Limited Time
+                  </Badge>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-      
-      {/* Navigation dots for multiple campaigns */}
-      {activeCampaigns.length > 1 && (
-        <div className="flex justify-center gap-1 mt-2">
-          {activeCampaigns.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentIndex 
-                  ? 'bg-white' 
-                  : 'bg-white/30 hover:bg-white/50'
-              }`}
-            />
-          ))}
-        </div>
-      )}
+              
+              <h3 className="font-semibold text-lg mb-1">
+                {currentCampaign.name}
+              </h3>
+              
+              {currentCampaign.description && (
+                <p className="text-sm opacity-90 mb-3">
+                  {currentCampaign.description}
+                </p>
+              )}
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleAction(currentCampaign)}
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                >
+                  {currentCampaign.campaign_config?.cta_text || 'Learn More'}
+                  <ExternalLink className="ml-1 h-3 w-3" />
+                </Button>
+                
+                {campaigns.length > 1 && (
+                  <div className="flex gap-1">
+                    {campaigns.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          index === currentIndex 
+                            ? 'bg-white' 
+                            : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleDismiss(currentCampaign.id)}
+              className="text-white/70 hover:text-white hover:bg-white/10"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
