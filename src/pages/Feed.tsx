@@ -19,6 +19,8 @@ import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 import { PostComments } from "@/components/PostComments";
 import { useToast } from "@/hooks/use-toast";
+import { SocialShareButton } from "@/components/marketing/SocialShareButton";
+import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
 
 const Feed = () => {
   const { posts, loading, toggleLike, deletePost } = usePosts();
@@ -262,19 +264,25 @@ const Feed = () => {
               <MessageCircle className="h-4 w-4" />
               {post.comments_count || 0}
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <SocialShareButton
+              content={{
+                content_type: 'post',
+                content_id: post.id,
+                share_text: post.title || 'Check out this post',
+                share_url: `${window.location.origin}/post/${post.id}`
+              }}
+              variant="ghost"
+              size="sm"
+              showLabel={false}
+              platforms={['facebook', 'twitter', 'linkedin', 'whatsapp']}
+              onShare={(platform) => {
+                toast({
+                  title: "Shared successfully!",
+                  description: `Post shared on ${platform}`
+                });
+              }}
               className="gap-2"
-              onClick={handleShare}
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Share className="h-4 w-4" />
-              )}
-              {copied ? 'Copied!' : 'Share'}
-            </Button>
+            />
           </div>
           
           {post.type === "event" && (
@@ -316,6 +324,14 @@ const Feed = () => {
     <ProtectedRoute>
       <MainLayout>
       <div className="container max-w-4xl mx-auto p-6">
+        {/* Promotional Banner */}
+        <PromotionalBanner 
+          position="top" 
+          variant="default" 
+          maxCampaigns={2}
+          className="mb-4"
+        />
+        
         {/* Feed Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">

@@ -26,19 +26,19 @@ export const config = {
   // Social Media API Keys
   social: {
     facebook: {
-      appId: import.meta.env.NEXT_PUBLIC_FACEBOOK_APP_ID || ""
+      appId: import.meta.env.VITE_FACEBOOK_APP_ID || import.meta.env.NEXT_PUBLIC_FACEBOOK_APP_ID || ""
     },
     twitter: {
-      apiKey: import.meta.env.NEXT_PUBLIC_TWITTER_API_KEY || ""
+      apiKey: import.meta.env.VITE_TWITTER_API_KEY || import.meta.env.NEXT_PUBLIC_TWITTER_API_KEY || ""
     },
     linkedin: {
-      clientId: import.meta.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || ""
+      clientId: import.meta.env.VITE_LINKEDIN_CLIENT_ID || import.meta.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || ""
     },
     whatsapp: {
-      apiKey: import.meta.env.NEXT_PUBLIC_WHATSAPP_API_KEY || ""
+      apiKey: import.meta.env.VITE_WHATSAPP_API_KEY || import.meta.env.NEXT_PUBLIC_WHATSAPP_API_KEY || ""
     },
     telegram: {
-      botToken: import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || ""
+      botToken: import.meta.env.VITE_TELEGRAM_BOT_TOKEN || import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || ""
     }
   },
 
@@ -67,6 +67,19 @@ export const validateEnvironment = () => {
 
   if (!config.news.apiKey) {
     warnings.push("VITE_NEWS_API_KEY is not set. News feed features may not work properly.");
+  }
+
+  // Check for social media API keys
+  if (!config.social.facebook.appId) {
+    warnings.push("VITE_FACEBOOK_APP_ID is not set. Facebook sharing may not work properly.");
+  }
+
+  if (!config.social.twitter.apiKey) {
+    warnings.push("VITE_TWITTER_API_KEY is not set. Twitter sharing may not work properly.");
+  }
+
+  if (!config.social.linkedin.clientId) {
+    warnings.push("VITE_LINKEDIN_CLIENT_ID is not set. LinkedIn sharing may not work properly.");
   }
 
   // Log warnings and errors

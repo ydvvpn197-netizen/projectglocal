@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/MainLayout";
 import { EngagementFeatures } from "@/components/EngagementFeatures";
+import { ReferralProgram } from "@/components/marketing/ReferralProgram";
 import { sanitizeText } from "@/lib/sanitize";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -210,32 +211,39 @@ const Profile = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Profile Info */}
           <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Profile Information</CardTitle>
-                  <div className="flex items-center gap-2">
-                    {user && profile && user.id !== profile.user_id && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleMessageUser}
-                      >
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        Message
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditing(!editing)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      {editing ? "Cancel" : "Edit"}
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="profile">Profile</TabsTrigger>
+                <TabsTrigger value="referrals">Referrals</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="profile" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Profile Information</CardTitle>
+                      <div className="flex items-center gap-2">
+                        {user && profile && user.id !== profile.user_id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleMessageUser}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Message
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditing(!editing)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          {editing ? "Cancel" : "Edit"}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
               <CardContent className="space-y-6">
                 {/* Profile Picture */}
                 <div className="flex items-center gap-4">
@@ -359,6 +367,12 @@ const Profile = () => {
                 )}
               </CardContent>
             </Card>
+              </TabsContent>
+
+              <TabsContent value="referrals" className="space-y-6">
+                <ReferralProgram />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Engagement Features Sidebar */}

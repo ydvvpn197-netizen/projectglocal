@@ -21,6 +21,7 @@ import {
 import { ReferralService } from '@/services/referralService';
 import { SocialSharingService } from '@/services/socialSharingService';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import type { ReferralAnalytics } from '@/types/marketing';
 
 interface ReferralProgramProps {
@@ -29,11 +30,13 @@ interface ReferralProgramProps {
 
 export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [analytics, setAnalytics] = useState<ReferralAnalytics | null>(null);
   const [referralCode, setReferralCode] = useState<string>('');
   const [referralLink, setReferralLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -62,6 +65,12 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       setAnalytics(analyticsData);
     } catch (error) {
       console.error('Failed to load referral data:', error);
+      setError('Failed to load referral data. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to load referral data. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -74,6 +83,11 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy to clipboard. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -93,6 +107,11 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       await ReferralService.trackReferralClick(referralCode, platform);
     } catch (error) {
       console.error('Failed to share referral link:', error);
+      toast({
+        title: "Share failed",
+        description: "Failed to share referral link. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -111,6 +130,11 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       await loadReferralData();
     } catch (error) {
       console.error('Failed to create referral:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create referral. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -121,6 +145,22 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
           <CardTitle>Referral Program</CardTitle>
           <CardDescription>Loading...</CardDescription>
         </CardHeader>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle>Referral Program</CardTitle>
+          <CardDescription className="text-destructive">{error}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={loadReferralData} variant="outline">
+            Try Again
+          </Button>
+        </CardContent>
       </Card>
     );
   }

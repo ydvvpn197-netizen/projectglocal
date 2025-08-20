@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UniformHeader } from "@/components/UniformHeader";
+import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,14 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
+          {/* Promotional Banner */}
+          <PromotionalBanner 
+            position="top" 
+            variant="default" 
+            maxCampaigns={1}
+            className="z-40"
+          />
+          
           {/* Header */}
           <header className="h-14 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
             <div className="flex items-center justify-between h-full px-4">

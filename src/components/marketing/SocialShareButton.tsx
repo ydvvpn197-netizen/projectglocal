@@ -7,9 +7,11 @@ import {
   Linkedin, 
   MessageCircle, 
   Mail, 
-  Smartphone 
+  Smartphone,
+  Loader2
 } from 'lucide-react';
 import { SocialSharingService } from '@/services/socialSharingService';
+import { useToast } from '@/hooks/use-toast';
 import type { ShareContentData } from '@/types/marketing';
 
 interface SocialShareButtonProps {
@@ -71,6 +73,7 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
 }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [showPlatforms, setShowPlatforms] = useState(false);
+  const { toast } = useToast();
 
   const handleShare = async (platform: string) => {
     try {
@@ -90,8 +93,18 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       
       // Close platform selection
       setShowPlatforms(false);
+      
+      toast({
+        title: "Shared successfully!",
+        description: `Content shared on ${platform}`,
+      });
     } catch (error) {
       console.error('Failed to share:', error);
+      toast({
+        title: "Share failed",
+        description: `Failed to share on ${platform}. Please try again.`,
+        variant: "destructive",
+      });
     } finally {
       setIsSharing(false);
     }
@@ -116,7 +129,11 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
         disabled={isSharing}
         className="flex items-center gap-2"
       >
-        <ShareIcon className="h-4 w-4" />
+        {isSharing ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <ShareIcon className="h-4 w-4" />
+        )}
         {showLabel && (platforms.length === 1 ? platformConfigs[platforms[0]].label : 'Share')}
       </Button>
 
