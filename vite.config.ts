@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: (id) => {
           // Ensure React and React-DOM are always bundled together and loaded first
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query')) {
               return 'react-vendor';
             }
             if (id.includes('@supabase')) {
