@@ -131,12 +131,9 @@ const Discover = () => {
         .from('artists')
         .select(`
           id,
+          user_id,
           specialty,
-          bio,
-          profiles!inner (
-            full_name,
-            avatar_url
-          )
+          bio
         `)
         .eq('is_available', true)
         .limit(3);
@@ -146,14 +143,11 @@ const Discover = () => {
         .from('posts')
         .select(`
           id,
+          user_id,
           title,
           content,
           type,
-          likes_count,
-          profiles!inner (
-            full_name,
-            avatar_url
-          )
+          likes_count
         `)
         .eq('status', 'active')
         .order('likes_count', { ascending: false })
@@ -171,10 +165,10 @@ const Discover = () => {
         ...(trendingArtists?.map(artist => ({
           id: artist.id,
           type: 'artist' as const,
-          title: artist.profiles.full_name || 'Anonymous',
+          title: 'Artist Profile',
           description: artist.bio || artist.specialty?.join(', ') || '',
           engagement: 0, // Could be calculated from booking count
-          image: artist.profiles.avatar_url
+          image: undefined // Will be fetched separately if needed
         })) || []),
         ...(trendingPosts?.map(post => ({
           id: post.id,
@@ -182,7 +176,7 @@ const Discover = () => {
           title: post.title || 'Untitled Post',
           description: post.content.substring(0, 100) + '...',
           engagement: post.likes_count || 0,
-          image: post.profiles.avatar_url
+          image: undefined // Will be fetched separately if needed
         })) || [])
       ];
 

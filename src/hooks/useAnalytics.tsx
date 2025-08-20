@@ -10,8 +10,6 @@ export interface UserStats {
   totalFollowing: number;
   totalLikes: number;
   totalComments: number;
-  totalReviews: number;
-  totalPolls: number;
   engagementRate: number;
 }
 
@@ -23,8 +21,6 @@ export interface PlatformStats {
   totalBookings: number;
   totalGroups: number;
   totalDiscussions: number;
-  totalReviews: number;
-  totalPolls: number;
   activeUsers: number;
   newUsersThisWeek: number;
   newUsersThisMonth: number;
@@ -58,9 +54,7 @@ export const useAnalytics = () => {
         { count: followersCount },
         { count: followingCount },
         { count: likesCount },
-        { count: commentsCount },
-        { count: reviewsCount },
-        { count: pollsCount }
+        { count: commentsCount }
       ] = await Promise.all([
         supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', userId),
         supabase.from('events').select('*', { count: 'exact', head: true }).eq('user_id', userId),
@@ -68,9 +62,7 @@ export const useAnalytics = () => {
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId),
         supabase.from('likes').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('comments').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('polls').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+        supabase.from('comments').select('*', { count: 'exact', head: true }).eq('user_id', userId)
       ]);
 
       // Calculate engagement rate (likes + comments) / posts
@@ -85,8 +77,6 @@ export const useAnalytics = () => {
         totalFollowing: followingCount || 0,
         totalLikes: likesCount || 0,
         totalComments: commentsCount || 0,
-        totalReviews: reviewsCount || 0,
-        totalPolls: pollsCount || 0,
         engagementRate: Math.round(engagementRate * 100) / 100
       });
     } catch (error) {
@@ -103,9 +93,7 @@ export const useAnalytics = () => {
         { count: totalPosts },
         { count: totalBookings },
         { count: totalGroups },
-        { count: totalDiscussions },
-        { count: totalReviews },
-        { count: totalPolls }
+        { count: totalDiscussions }
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('artists').select('*', { count: 'exact', head: true }),
@@ -113,9 +101,7 @@ export const useAnalytics = () => {
         supabase.from('posts').select('*', { count: 'exact', head: true }),
         supabase.from('artist_bookings').select('*', { count: 'exact', head: true }),
         supabase.from('groups').select('*', { count: 'exact', head: true }),
-        supabase.from('discussions').select('*', { count: 'exact', head: true }),
-        supabase.from('reviews').select('*', { count: 'exact', head: true }),
-        supabase.from('polls').select('*', { count: 'exact', head: true })
+        supabase.from('discussions').select('*', { count: 'exact', head: true })
       ]);
 
       // Calculate active users (users with activity in last 30 days)
@@ -153,8 +139,6 @@ export const useAnalytics = () => {
         totalBookings: totalBookings || 0,
         totalGroups: totalGroups || 0,
         totalDiscussions: totalDiscussions || 0,
-        totalReviews: totalReviews || 0,
-        totalPolls: totalPolls || 0,
         activeUsers: activeUsers || 0,
         newUsersThisWeek: newUsersThisWeek || 0,
         newUsersThisMonth: newUsersThisMonth || 0
@@ -168,28 +152,24 @@ export const useAnalytics = () => {
     try {
       const [
         { data: event },
-        { count: attendeesCount },
-        { data: reviews }
+        { count: attendeesCount }
       ] = await Promise.all([
         supabase.from('events').select('title').eq('id', eventId).single(),
-        supabase.from('event_attendees').select('*', { count: 'exact', head: true }).eq('event_id', eventId),
-        supabase.from('reviews').select('rating').eq('event_id', eventId)
+        supabase.from('event_attendees').select('*', { count: 'exact', head: true }).eq('event_id', eventId)
       ]);
 
       if (!event) return null;
 
       const totalRevenue = 0; // Would need to calculate from payments
-      const averageRating = reviews && reviews.length > 0 
-        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-        : 0;
+      const averageRating = 0; // No reviews table yet
 
       return {
         eventId,
         title: event.title,
         totalAttendees: attendeesCount || 0,
         totalRevenue,
-        averageRating: Math.round(averageRating * 10) / 10,
-        totalReviews: reviews?.length || 0,
+        averageRating,
+        totalReviews: 0,
         engagementRate: 0 // Would need to calculate from likes, comments, etc.
       };
     } catch (error) {
@@ -214,7 +194,7 @@ export const useAnalytics = () => {
           comments_count,
           created_at,
           profiles!inner (
-            full_name,
+            display_name,
             avatar_url
           )
         `)

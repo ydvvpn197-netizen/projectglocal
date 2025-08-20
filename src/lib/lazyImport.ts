@@ -37,28 +37,28 @@ export const preloadComponent = (importFunc: () => Promise<any>) => {
 export const preloadRoute = (route: string) => {
   switch (route) {
     case '/feed':
-      import('./pages/Feed');
+      import('../pages/Feed');
       break;
     case '/discover':
-      import('./pages/Discover');
+      import('../pages/Discover');
       break;
     case '/community':
-      import('./pages/Community');
+      import('../pages/Community');
       break;
     case '/events':
-      import('./pages/Events');
+      import('../pages/Events');
       break;
     case '/book-artist':
-      import('./pages/BookArtist');
+      import('../pages/BookArtist');
       break;
     case '/profile':
-      import('./pages/Profile');
+      import('../pages/Profile');
       break;
     case '/settings':
-      import('./pages/Settings');
+      import('../pages/Settings');
       break;
     case '/messages':
-      import('./pages/Messages');
+      import('../pages/Messages');
       break;
     default:
       break;

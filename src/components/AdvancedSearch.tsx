@@ -234,43 +234,46 @@ export const AdvancedSearch = () => {
           .from('artists')
           .select(`
             id,
+            user_id,
             specialty,
             hourly_rate_min,
             hourly_rate_max,
-            bio,
-            profiles!inner (
-              full_name,
-              avatar_url,
-              location_city,
-              location_state,
-              latitude,
-              longitude
-            )
+            bio
           `)
-          .or(`specialty.ilike.%${query}%,bio.ilike.%${query}%`)
+          .or(`specialty.cs.{${query}},bio.ilike.%${query}%`)
           .eq('is_available', true);
 
         artists?.forEach(artist => {
-          const distance = calculateDistance(
-            currentLocation?.latitude,
-            currentLocation?.longitude,
-            artist.profiles.latitude,
-            artist.profiles.longitude
-          );
-          
-          if (distance <= filters.distance) {
-            results.push({
-              id: artist.id,
-              type: 'artist',
-              title: artist.profiles.full_name || 'Anonymous',
-              description: artist.bio,
-              image: artist.profiles.avatar_url,
-              price: artist.hourly_rate_min,
-              location: `${artist.profiles.location_city}, ${artist.profiles.location_state}`,
-              distance,
-              tags: artist.specialty
+          // Get profile for this artist
+          supabase
+            .from('profiles')
+            .select('display_name, avatar_url, location_city, location_state, latitude, longitude')
+            .eq('user_id', artist.user_id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile) {
+                const distance = calculateDistance(
+                  currentLocation?.latitude,
+                  currentLocation?.longitude,
+                  profile.latitude,
+                  profile.longitude
+                );
+                
+                if (distance <= filters.distance) {
+                  results.push({
+                    id: artist.id,
+                    type: 'artist',
+                    title: profile.display_name || 'Anonymous',
+                    description: artist.bio,
+                    image: profile.avatar_url,
+                    price: artist.hourly_rate_min,
+                    location: `${profile.location_city}, ${profile.location_state}`,
+                    distance,
+                    tags: artist.specialty
+                  });
+                }
+              }
             });
-          }
         });
       }
 
@@ -315,28 +318,35 @@ export const AdvancedSearch = () => {
           .from('posts')
           .select(`
             id,
+            user_id,
             title,
             content,
             type,
-            created_at,
-            profiles!inner (
-              full_name,
-              avatar_url
-            )
+            created_at
           `)
           .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
           .eq('status', 'active');
 
         posts?.forEach(post => {
-          results.push({
-            id: post.id,
-            type: 'post',
-            title: post.title || 'Untitled Post',
-            description: post.content.substring(0, 100) + '...',
-            image: post.profiles.avatar_url,
-            date: post.created_at,
-            tags: post.type ? [post.type] : []
-          });
+          // Get profile for this post
+          supabase
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('user_id', post.user_id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile) {
+                results.push({
+                  id: post.id,
+                  type: 'post',
+                  title: post.title || 'Untitled Post',
+                  description: post.content.substring(0, 100) + '...',
+                  image: profile.avatar_url,
+                  date: post.created_at,
+                  tags: post.type ? [post.type] : []
+                });
+              }
+            });
         });
       }
 

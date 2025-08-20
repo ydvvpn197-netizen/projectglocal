@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
@@ -33,7 +32,7 @@ export interface ReviewReply {
 
 export const useReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -42,41 +41,12 @@ export const useReviews = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Get user's helpful votes
-      const { data: userVotes } = await supabase
-        .from('review_votes')
-        .select('review_id')
-        .eq('user_id', user?.id);
-
-      const userVoteMap = new Map(userVotes?.map(vote => [vote.review_id, true]) || []);
-
-      // Get author profiles
-      const userIds = [...new Set(data?.map(review => review.user_id) || [])];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(profile => [profile.user_id, profile]) || []);
-
-      const reviewsWithAuthor = data?.map(review => {
-        const authorProfile = profileMap.get(review.user_id);
-        return {
-          ...review,
-          author_name: authorProfile?.full_name || 'Anonymous',
-          author_avatar: authorProfile?.avatar_url,
-          is_helpful: userVoteMap.has(review.id)
-        };
-      }) || [];
-
-      setReviews(reviewsWithAuthor);
+      toast({
+        title: "Reviews Feature Coming Soon",
+        description: "Review functionality is being developed.",
+      });
+      
+      setReviews([]);
     } catch (error) {
       console.error('Error fetching reviews:', error);
       toast({
@@ -99,26 +69,12 @@ export const useReviews = () => {
     try {
       setCreating(true);
       
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert({
-          user_id: user?.id,
-          ...reviewData
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
       toast({
-        title: "Review Posted",
-        description: "Your review has been posted successfully.",
+        title: "Reviews Feature Coming Soon",
+        description: "Review creation functionality is being developed.",
       });
-
-      // Refresh reviews
-      await fetchReviews();
       
-      return { success: true, review: data };
+      return { success: false, error: "Feature not implemented yet" };
     } catch (error: any) {
       console.error('Error creating review:', error);
       toast({
@@ -134,47 +90,10 @@ export const useReviews = () => {
 
   const markHelpful = async (reviewId: string) => {
     try {
-      const existingVote = await supabase
-        .from('review_votes')
-        .select('id')
-        .eq('review_id', reviewId)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (existingVote.data) {
-        // Remove vote
-        const { error } = await supabase
-          .from('review_votes')
-          .delete()
-          .eq('review_id', reviewId)
-          .eq('user_id', user?.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Vote Removed",
-          description: "Your helpful vote has been removed.",
-        });
-      } else {
-        // Add vote
-        const { error } = await supabase
-          .from('review_votes')
-          .insert({
-            review_id: reviewId,
-            user_id: user?.id,
-            is_helpful: true
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Marked as Helpful",
-          description: "Your vote has been recorded.",
-        });
-      }
-
-      // Refresh reviews to update counts
-      await fetchReviews();
+      toast({
+        title: "Reviews Feature Coming Soon",
+        description: "Review voting functionality is being developed.",
+      });
     } catch (error: any) {
       console.error('Error marking helpful:', error);
       toast({
@@ -187,24 +106,12 @@ export const useReviews = () => {
 
   const addReply = async (reviewId: string, replyText: string) => {
     try {
-      const { data, error } = await supabase
-        .from('review_replies')
-        .insert({
-          review_id: reviewId,
-          user_id: user?.id,
-          reply_text: replyText
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
       toast({
-        title: "Reply Posted",
-        description: "Your reply has been posted successfully.",
+        title: "Reviews Feature Coming Soon",
+        description: "Review reply functionality is being developed.",
       });
 
-      return { success: true, reply: data };
+      return { success: false, error: "Feature not implemented yet" };
     } catch (error: any) {
       console.error('Error adding reply:', error);
       toast({
@@ -218,21 +125,10 @@ export const useReviews = () => {
 
   const deleteReview = async (reviewId: string) => {
     try {
-      const { error } = await supabase
-        .from('reviews')
-        .delete()
-        .eq('id', reviewId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
       toast({
-        title: "Review Deleted",
-        description: "Your review has been deleted.",
+        title: "Reviews Feature Coming Soon",
+        description: "Review management functionality is being developed.",
       });
-
-      // Refresh reviews
-      await fetchReviews();
     } catch (error: any) {
       console.error('Error deleting review:', error);
       toast({
@@ -242,12 +138,6 @@ export const useReviews = () => {
       });
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchReviews();
-    }
-  }, [user]);
 
   return {
     reviews,

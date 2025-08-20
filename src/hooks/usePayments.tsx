@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
@@ -30,17 +29,19 @@ export const usePayments = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-        body: {
-          amount: Math.round(amount * 100), // Convert to cents
-          currency,
-          user_id: user?.id
-        }
+      // Simulate payment intent creation
+      toast({
+        title: "Payment Feature Coming Soon",
+        description: "Payment functionality is being developed.",
       });
-
-      if (error) throw error;
-
-      return data as PaymentIntent;
+      
+      return {
+        id: 'mock_payment_intent',
+        amount,
+        currency,
+        status: 'requires_payment_method',
+        client_secret: 'mock_client_secret'
+      } as PaymentIntent;
     } catch (error: any) {
       console.error('Error creating payment intent:', error);
       toast({
@@ -58,32 +59,12 @@ export const usePayments = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('booking_payments')
-        .insert({
-          booking_id: bookingId,
-          payment_intent_id: paymentIntentId,
-          amount: 0, // Will be updated from payment intent
-          currency: 'usd',
-          status: 'completed'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update booking status
-      await supabase
-        .from('artist_bookings')
-        .update({ status: 'confirmed' })
-        .eq('id', bookingId);
-
       toast({
-        title: "Payment Successful",
-        description: "Your booking has been confirmed!",
+        title: "Payment Feature Coming Soon",
+        description: "Payment functionality is being developed.",
       });
 
-      return data;
+      return null;
     } catch (error: any) {
       console.error('Error confirming payment:', error);
       toast({
@@ -101,29 +82,14 @@ export const usePayments = () => {
     try {
       setLoading(true);
       
-      // Create payment intent
-      const paymentIntent = await createPaymentIntent(amount * quantity);
-      
-      // Create ticket order
-      const { data: order, error: orderError } = await supabase
-        .from('event_orders')
-        .insert({
-          event_id: eventId,
-          user_id: user?.id,
-          ticket_type: ticketType,
-          quantity,
-          total_amount: amount * quantity,
-          payment_intent_id: paymentIntent.id,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
+      toast({
+        title: "Payment Feature Coming Soon",
+        description: "Ticket payment functionality is being developed.",
+      });
 
       return {
-        paymentIntent,
-        order
+        paymentIntent: null,
+        order: null
       };
     } catch (error: any) {
       console.error('Error processing ticket payment:', error);
@@ -140,27 +106,11 @@ export const usePayments = () => {
 
   const getPaymentHistory = async () => {
     try {
-      const { data, error } = await supabase
-        .from('booking_payments')
-        .select(`
-          *,
-          artist_bookings!inner (
-            event_description,
-            event_date,
-            artists!inner (
-              profiles!inner (
-                full_name,
-                avatar_url
-              )
-            )
-          )
-        `)
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      return data;
+      toast({
+        title: "Payment History Coming Soon",
+        description: "Payment history functionality is being developed.",
+      });
+      return [];
     } catch (error) {
       console.error('Error fetching payment history:', error);
       return [];
@@ -171,22 +121,12 @@ export const usePayments = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.functions.invoke('request-refund', {
-        body: {
-          payment_intent_id: paymentId,
-          reason,
-          user_id: user?.id
-        }
-      });
-
-      if (error) throw error;
-
       toast({
-        title: "Refund Requested",
-        description: "Your refund request has been submitted for review.",
+        title: "Refund Feature Coming Soon",
+        description: "Refund functionality is being developed.",
       });
 
-      return data;
+      return null;
     } catch (error: any) {
       console.error('Error requesting refund:', error);
       toast({
@@ -202,13 +142,7 @@ export const usePayments = () => {
 
   const getPaymentMethods = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('get-payment-methods', {
-        body: { user_id: user?.id }
-      });
-
-      if (error) throw error;
-
-      return data;
+      return [];
     } catch (error) {
       console.error('Error fetching payment methods:', error);
       return [];
@@ -217,21 +151,12 @@ export const usePayments = () => {
 
   const savePaymentMethod = async (paymentMethodId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('save-payment-method', {
-        body: {
-          payment_method_id: paymentMethodId,
-          user_id: user?.id
-        }
-      });
-
-      if (error) throw error;
-
       toast({
-        title: "Payment Method Saved",
-        description: "Your payment method has been saved for future use.",
+        title: "Payment Methods Coming Soon",
+        description: "Payment method functionality is being developed.",
       });
 
-      return data;
+      return null;
     } catch (error: any) {
       console.error('Error saving payment method:', error);
       toast({

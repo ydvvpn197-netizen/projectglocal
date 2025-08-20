@@ -35,7 +35,7 @@ export const useNotifications = () => {
 
       if (error) throw error;
 
-      setNotifications(data || []);
+      setNotifications(data as Notification[] || []);
       setUnreadCount(data?.filter(n => !n.read).length || 0);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -118,7 +118,7 @@ export const useNotifications = () => {
 
       // Add to local state if it's for current user
       if (notificationData.user_id === user?.id) {
-        setNotifications(prev => [data, ...prev]);
+        setNotifications(prev => [data as Notification, ...prev]);
         setUnreadCount(prev => prev + 1);
       }
 

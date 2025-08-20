@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
@@ -29,7 +28,7 @@ export interface Poll {
 
 export const usePolls = () => {
   const [polls, setPolls] = useState<Poll[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -38,65 +37,12 @@ export const usePolls = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('polls')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Get user's votes
-      const { data: userVotes } = await supabase
-        .from('poll_votes')
-        .select('poll_id, option_id')
-        .eq('user_id', user?.id);
-
-      const userVoteMap = new Map(userVotes?.map(vote => [vote.poll_id, vote.option_id]) || []);
-
-      // Get author profiles
-      const userIds = [...new Set(data?.map(poll => poll.user_id) || [])];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(profile => [profile.user_id, profile]) || []);
-
-      const pollsWithAuthor = data?.map(poll => {
-        const hasVoted = userVoteMap.has(poll.id);
-        const userVote = userVoteMap.get(poll.id);
-        const authorProfile = profileMap.get(poll.user_id);
-        
-        // Calculate time remaining
-        let timeRemaining = '';
-        if (poll.expires_at) {
-          const now = new Date();
-          const expiresAt = new Date(poll.expires_at);
-          const diffMs = expiresAt.getTime() - now.getTime();
-          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          
-          if (diffMs <= 0) {
-            timeRemaining = 'Expired';
-          } else if (diffDays > 0) {
-            timeRemaining = `${diffDays} day${diffDays > 1 ? 's' : ''} left`;
-          } else {
-            timeRemaining = `${diffHours} hour${diffHours > 1 ? 's' : ''} left`;
-          }
-        }
-
-        return {
-          ...poll,
-          author_name: authorProfile?.full_name || 'Anonymous',
-          author_avatar: authorProfile?.avatar_url,
-          has_voted: hasVoted,
-          user_vote: userVote,
-          time_remaining: timeRemaining
-        };
-      }) || [];
-
-      setPolls(pollsWithAuthor);
+      toast({
+        title: "Polls Feature Coming Soon",
+        description: "Poll functionality is being developed.",
+      });
+      
+      setPolls([]);
     } catch (error) {
       console.error('Error fetching polls:', error);
       toast({
@@ -118,26 +64,12 @@ export const usePolls = () => {
     try {
       setCreating(true);
       
-      const { data, error } = await supabase
-        .from('polls')
-        .insert({
-          user_id: user?.id,
-          ...pollData
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
       toast({
-        title: "Poll Created",
-        description: "Your poll has been created successfully.",
+        title: "Polls Feature Coming Soon",
+        description: "Poll creation functionality is being developed.",
       });
-
-      // Refresh polls
-      await fetchPolls();
       
-      return { success: true, poll: data };
+      return { success: false, error: "Feature not implemented yet" };
     } catch (error: any) {
       console.error('Error creating poll:', error);
       toast({
@@ -153,48 +85,10 @@ export const usePolls = () => {
 
   const votePoll = async (pollId: string, optionId: string) => {
     try {
-      // Check if user already voted
-      const existingVote = await supabase
-        .from('poll_votes')
-        .select('id, option_id')
-        .eq('poll_id', pollId)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (existingVote.data) {
-        // Update existing vote
-        const { error } = await supabase
-          .from('poll_votes')
-          .update({ option_id: optionId })
-          .eq('poll_id', pollId)
-          .eq('user_id', user?.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Vote Updated",
-          description: "Your vote has been updated.",
-        });
-      } else {
-        // Create new vote
-        const { error } = await supabase
-          .from('poll_votes')
-          .insert({
-            poll_id: pollId,
-            user_id: user?.id,
-            option_id: optionId
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Vote Recorded",
-          description: "Thank you for participating in the poll.",
-        });
-      }
-
-      // Refresh polls to update vote counts
-      await fetchPolls();
+      toast({
+        title: "Polls Feature Coming Soon",
+        description: "Poll voting functionality is being developed.",
+      });
     } catch (error: any) {
       console.error('Error voting:', error);
       toast({
@@ -207,21 +101,10 @@ export const usePolls = () => {
 
   const deletePoll = async (pollId: string) => {
     try {
-      const { error } = await supabase
-        .from('polls')
-        .delete()
-        .eq('id', pollId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
       toast({
-        title: "Poll Deleted",
-        description: "Your poll has been deleted.",
+        title: "Polls Feature Coming Soon",
+        description: "Poll management functionality is being developed.",
       });
-
-      // Refresh polls
-      await fetchPolls();
     } catch (error: any) {
       console.error('Error deleting poll:', error);
       toast({
@@ -234,21 +117,10 @@ export const usePolls = () => {
 
   const sharePoll = async (pollId: string) => {
     try {
-      const pollUrl = `${window.location.origin}/community/poll/${pollId}`;
-      
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Community Poll',
-          text: 'Check out this community poll!',
-          url: pollUrl
-        });
-      } else {
-        await navigator.clipboard.writeText(pollUrl);
-        toast({
-          title: "Link Copied",
-          description: "Poll link has been copied to clipboard.",
-        });
-      }
+      toast({
+        title: "Polls Feature Coming Soon",
+        description: "Poll sharing functionality is being developed.",
+      });
     } catch (error) {
       console.error('Error sharing poll:', error);
       toast({
@@ -258,12 +130,6 @@ export const usePolls = () => {
       });
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      fetchPolls();
-    }
-  }, [user]);
 
   return {
     polls,
