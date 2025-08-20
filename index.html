@@ -2,24 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none';">
-    <title>Local Community Connect</title>
-    <meta name="description" content="Secure local community platform" />
-    <meta name="author" content="Lovable" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Relaxed but safe CSP for Vite + Supabase in production -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://projectglocal.lovable.app; worker-src 'self' blob:; frame-ancestors 'none';">
+    
+    <title>The Glocal — Local Social Hub</title>
+    <meta name="description" content="Discover local events, connect with your community, and book talented artists near you." />
+    <link rel="canonical" href="https://theglocal.in/" />
 
-    <meta property="og:title" content="nearby-buzz-app" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- Performance: Preconnect to Supabase -->
+    <link rel="preconnect" href="https://tepvzhbgobckybyhryuj.supabase.co" crossorigin />
+    <meta name="theme-color" content="#6D28D9" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The Glocal — Local Social Hub" />
+    <meta property="og:description" content="Discover local events, connect with your community, and book talented artists near you." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback content (replaced once JS loads) -->
+      <noscript>
+        <style>body{background:#fff;color:#111;font-family:system-ui,sans-serif}</style>
+        <div style="max-width:680px;margin:40px auto;padding:16px">
+          <h1>The Glocal</h1>
+          <p>JavaScript is required to run this app. Please enable JavaScript and reload.</p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
