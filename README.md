@@ -1,73 +1,175 @@
-# Welcome to your Lovable project
+# The Glocal - Local Social Hub
 
-## Project info
+A comprehensive local community platform that connects neighbors, promotes local events, and enables artist bookings with integrated marketing features.
 
-**URL**: https://lovable.dev/projects/201882b1-82ef-4022-8b00-69dbcc8a61b4
+## 🚀 Features
 
-## How can I edit this code?
+### Core Platform
+- **Local Feed**: Share posts, events, and services with your community
+- **Event Management**: Create and discover local events
+- **Artist Booking**: Book local artists and performers
+- **Community Groups**: Join discussions and groups
+- **Location Services**: Personalized content based on your location
 
-There are several ways of editing your application.
+### Marketing Features
+- **Social Sharing**: Share content across multiple platforms (Facebook, Twitter, LinkedIn, WhatsApp)
+- **Promotional Banners**: Dynamic promotional campaigns with targeting
+- **Referral Program**: Invite friends and earn rewards
+- **Marketing Analytics**: Track engagement and performance metrics
 
-**Use Lovable**
+### Admin Features
+- **Content Moderation**: Manage posts and user-generated content
+- **Analytics Dashboard**: Monitor platform usage and engagement
+- **User Management**: Administer user accounts and permissions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/201882b1-82ef-4022-8b00-69dbcc8a61b4) and start prompting.
+## 🛠️ Technology Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React 18, TypeScript, Vite
+- **UI Components**: shadcn/ui, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Auth, Functions)
+- **State Management**: React Query, React Context
+- **Testing**: Vitest, React Testing Library
 
-**Use your preferred IDE**
+## 🚀 Quick Start
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js 18+ and npm
+- Supabase account and project
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+```bash
+# Clone the repository
+git clone <repository-url>
+cd projectglocal
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your Supabase credentials
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file with the following variables:
 
-**Use GitHub Codespaces**
+```env
+# Required
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Optional - for enhanced features
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_key
+VITE_NEWS_API_KEY=your_news_api_key
+VITE_FACEBOOK_APP_ID=your_facebook_app_id
+VITE_TWITTER_API_KEY=your_twitter_api_key
+VITE_LINKEDIN_CLIENT_ID=your_linkedin_client_id
+```
 
-## What technologies are used for this project?
+## 📚 Documentation
 
-This project is built with:
+- [Feature Documentation](./docs/features/) - Detailed feature guides
+- [Deployment Guide](./DEPLOYMENT_CHECKLIST.md) - Production deployment checklist
+- [Integration Summary](./FINAL_INTEGRATION_SUMMARY.md) - Technical implementation details
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🧪 Testing
 
-## How can I deploy this project?
+```bash
+# Run all tests
+npm test
 
-Simply open [Lovable](https://lovable.dev/projects/201882b1-82ef-4022-8b00-69dbcc8a61b4) and click on Share -> Publish.
+# Run tests in watch mode
+npm run test:ui
 
-## Can I connect a custom domain to my Lovable project?
+# Generate coverage report
+npm run test:coverage
+```
 
-Yes, you can!
+## 🚀 Deployment
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Production Build
+```bash
+npm run build
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Database Migration
+```bash
+supabase db push
+```
+
+### Deploy
+```bash
+npm run deploy
+```
+
+## 📱 Marketing Features Usage
+
+### Social Sharing
+The platform includes integrated social sharing capabilities:
+
+```tsx
+import { SocialShareButton } from '@/components/marketing/SocialShareButton';
+
+<SocialShareButton
+  content={{
+    content_type: 'post',
+    content_id: post.id,
+    share_text: 'Check out this amazing post!',
+    share_url: `${window.location.origin}/post/${post.id}`
+  }}
+  platforms={['facebook', 'twitter', 'linkedin', 'whatsapp']}
+  onShare={(platform) => console.log(`Shared on ${platform}`)}
+/>
+```
+
+### Promotional Banners
+Display dynamic promotional content:
+
+```tsx
+import { PromotionalBanner } from '@/components/marketing/PromotionalBanner';
+
+<PromotionalBanner
+  position="top"
+  variant="featured"
+  maxCampaigns={2}
+  onAction={(campaign) => console.log('Campaign clicked:', campaign)}
+/>
+```
+
+### Referral Program
+Enable user referrals and rewards:
+
+```tsx
+import { ReferralProgram } from '@/components/marketing/ReferralProgram';
+
+<ReferralProgram />
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Check the [documentation](./docs/)
+- Review [known issues](./docs/features/CODE_REVIEW.md)
+- Create an issue in the repository
+
+---
+
+**The Glocal** - Connecting local communities through technology and shared experiences.

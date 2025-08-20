@@ -19,8 +19,23 @@ import type {
   ReferralMetrics
 } from '@/types/marketing';
 
+/**
+ * MarketingService provides comprehensive marketing functionality including
+ * campaign management, promotional codes, analytics, and referral programs.
+ * 
+ * Features:
+ * - Campaign CRUD operations
+ * - Promotional code management
+ * - Marketing analytics and metrics
+ * - Referral program management
+ * - Social sharing analytics
+ */
 export class MarketingService {
-  // Campaign Management
+  /**
+   * Creates a new marketing campaign
+   * @param data - Campaign creation data
+   * @returns Promise<Campaign> - Created campaign
+   */
   static async createCampaign(data: CreateCampaignData): Promise<Campaign> {
     const { data: campaign, error } = await supabase
       .from('marketing_campaigns')

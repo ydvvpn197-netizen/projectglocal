@@ -15,12 +15,21 @@ import {
 import { MarketingService } from '@/services/marketingService';
 import type { Campaign } from '@/types/marketing';
 
+/**
+ * Props for the PromotionalBanner component
+ */
 interface PromotionalBannerProps {
+  /** Position of the banner in the layout */
   position?: 'top' | 'bottom' | 'sidebar';
+  /** Visual variant of the banner */
   variant?: 'default' | 'featured' | 'urgent';
+  /** Maximum number of campaigns to display */
   maxCampaigns?: number;
+  /** Additional CSS classes */
   className?: string;
+  /** Callback when user dismisses a campaign */
   onDismiss?: (campaignId: string) => void;
+  /** Callback when user interacts with a campaign */
   onAction?: (campaign: Campaign) => void;
 }
 
@@ -28,6 +37,19 @@ interface BannerCampaign extends Campaign {
   isDismissed?: boolean;
 }
 
+/**
+ * PromotionalBanner component for displaying dynamic promotional campaigns
+ * 
+ * Features:
+ * - Campaign targeting and filtering
+ * - Multiple visual variants
+ * - Auto-rotation through campaigns
+ * - Dismissible banners
+ * - Analytics tracking
+ * 
+ * @param props - Component props
+ * @returns JSX element
+ */
 export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
   position = 'top',
   variant = 'default',

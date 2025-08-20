@@ -6,8 +6,22 @@ import type {
   ReferralMetrics
 } from '@/types/marketing';
 
+/**
+ * ReferralService manages user referral programs and rewards
+ * 
+ * Features:
+ * - Referral code generation and management
+ * - Referral tracking and analytics
+ * - Reward processing and distribution
+ * - Social sharing integration
+ * - Performance metrics calculation
+ */
 export class ReferralService {
-  // Create a new referral program entry
+  /**
+   * Creates a new referral program entry for a user
+   * @param data - Referral program configuration data
+   * @returns Promise<Referral> - Created referral entry
+   */
   static async createReferral(data: ReferralProgramData): Promise<Referral> {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error('User not authenticated');

@@ -24,10 +24,27 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import type { ReferralAnalytics } from '@/types/marketing';
 
+/**
+ * Props for the ReferralProgram component
+ */
 interface ReferralProgramProps {
+  /** Additional CSS classes for styling */
   className?: string;
 }
 
+/**
+ * ReferralProgram component for managing user referrals and rewards
+ * 
+ * Features:
+ * - Automatic referral code generation
+ * - Social media sharing integration
+ * - Analytics tracking and display
+ * - Rewards system management
+ * - Copy-to-clipboard functionality
+ * 
+ * @param props - Component props
+ * @returns JSX element
+ */
 export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) => {
   const { user } = useAuth();
   const { toast } = useToast();

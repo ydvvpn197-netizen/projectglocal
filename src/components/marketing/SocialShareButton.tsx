@@ -14,16 +14,30 @@ import { SocialSharingService } from '@/services/socialSharingService';
 import { useToast } from '@/hooks/use-toast';
 import type { ShareContentData } from '@/types/marketing';
 
+/**
+ * Props for the SocialShareButton component
+ */
 interface SocialShareButtonProps {
+  /** Content data to be shared across social platforms */
   content: ShareContentData;
+  /** Visual variant of the button */
   variant?: 'default' | 'outline' | 'ghost';
+  /** Size of the button */
   size?: 'sm' | 'md' | 'lg';
+  /** Whether to show platform labels */
   showLabel?: boolean;
+  /** Array of social platforms to enable sharing on */
   platforms?: Array<'facebook' | 'twitter' | 'linkedin' | 'whatsapp' | 'telegram' | 'email' | 'sms'>;
+  /** Callback function called after successful share */
   onShare?: (platform: string) => void;
+  /** Additional CSS classes */
   className?: string;
 }
 
+/**
+ * Configuration for supported social media platforms
+ * Each platform has an icon, label, and brand color
+ */
 const platformConfigs = {
   facebook: {
     icon: Facebook,
@@ -62,6 +76,18 @@ const platformConfigs = {
   }
 };
 
+/**
+ * SocialShareButton component for sharing content across multiple social media platforms
+ * 
+ * Features:
+ * - Multi-platform support (Facebook, Twitter, LinkedIn, WhatsApp, etc.)
+ * - Loading states and error handling
+ * - Analytics tracking
+ * - Customizable appearance
+ * 
+ * @param props - Component props
+ * @returns JSX element
+ */
 export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
   content,
   variant = 'default',

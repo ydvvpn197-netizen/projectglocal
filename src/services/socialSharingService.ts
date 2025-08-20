@@ -7,8 +7,21 @@ import type {
   ViralContent
 } from '@/types/marketing';
 
+/**
+ * SocialSharingService handles social media sharing operations across multiple platforms
+ * 
+ * Features:
+ * - Multi-platform sharing (Facebook, Twitter, LinkedIn, WhatsApp, etc.)
+ * - Share URL generation
+ * - Analytics tracking
+ * - Platform-specific configurations
+ * - Graceful fallbacks for missing APIs
+ */
 export class SocialSharingService {
-  // Social Media Platform Configuration
+  /**
+   * Configuration for supported social media platforms
+   * Includes share URLs, API keys, and platform-specific settings
+   */
   private static readonly PLATFORM_CONFIGS = {
     facebook: {
       shareUrl: 'https://www.facebook.com/sharer/sharer.php',
