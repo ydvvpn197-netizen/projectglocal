@@ -1,12 +1,12 @@
-# .htaccess file for theglocal.in SPA deployment
+# .htaccess file for theglocal.in SPA deployment with relative paths
 
 # Enable rewrite engine
 RewriteEngine On
 
-# Handle Angular and React Router (SPA)
+# Handle Angular and React Router (SPA) - works with relative paths
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.html [QSA,L]
+RewriteRule ^(.*)$ index.html [QSA,L]
 
 # Security headers
 Header always set X-Content-Type-Options nosniff
@@ -47,3 +47,6 @@ Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 # Remove trailing slashes
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+# Handle subdirectory deployment (if needed)
+# RewriteBase /
