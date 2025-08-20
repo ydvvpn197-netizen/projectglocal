@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map } from "lucide-react";
+import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map, Sparkles, UserPlus } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
+import { TrendingContent } from "@/components/TrendingContent";
+import { RecommendationFeed } from "@/components/RecommendationFeed";
+import { FollowSuggestions } from "@/components/FollowSuggestions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 
@@ -207,9 +210,11 @@ const Discover = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="search">Search</TabsTrigger>
             <TabsTrigger value="trending">Trending</TabsTrigger>
+            <TabsTrigger value="recommendations">For You</TabsTrigger>
+            <TabsTrigger value="follow">People</TabsTrigger>
             <TabsTrigger value="events">Local Events</TabsTrigger>
             <TabsTrigger value="news">Local News</TabsTrigger>
           </TabsList>
@@ -219,35 +224,15 @@ const Discover = () => {
           </TabsContent>
 
           <TabsContent value="trending" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trendingItems.map((item) => (
-                <Card key={`${item.type}-${item.id}`} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      {getTrendingIcon(item.type)}
-                      <Badge variant="secondary" className="text-xs">
-                        {item.type}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg">{item.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Heart className="h-3 w-3" />
-                        <span>{item.engagement}</span>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        View
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <TrendingContent />
+          </TabsContent>
+
+          <TabsContent value="recommendations" className="space-y-6">
+            <RecommendationFeed />
+          </TabsContent>
+
+          <TabsContent value="follow" className="space-y-6">
+            <FollowSuggestions />
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">

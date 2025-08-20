@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAccountDeletion } from "@/hooks/useAccountDeletion";
 import { supabase } from "@/integrations/supabase/client";
+import { LocationSettings } from "@/components/LocationSettings";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -191,8 +192,9 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="account" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="account">Account</TabsTrigger>
+            <TabsTrigger value="location">Location</TabsTrigger>
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
@@ -238,32 +240,11 @@ const Settings = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Location Settings
-                </CardTitle>
-                <CardDescription>
-                  Control how your location is used in the app.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Real-time Location</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow the app to use your current location for better local content.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.real_time_location_enabled}
-                    onCheckedChange={updateLocationSettings}
-                    disabled={saving}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+
+          </TabsContent>
+
+          <TabsContent value="location" className="space-y-6">
+            <LocationSettings />
           </TabsContent>
 
           <TabsContent value="privacy" className="space-y-6">

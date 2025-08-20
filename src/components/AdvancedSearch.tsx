@@ -1,30 +1,21 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { Search, Filter, MapPin, Calendar, Users, Star, DollarSign } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar, Users, Star, DollarSign, X, TrendingUp, Clock, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
+import { SearchResult, SearchFilter } from '@/types/search';
 
-interface SearchResult {
-  id: string;
-  type: 'artist' | 'event' | 'post' | 'group';
-  title: string;
-  description?: string;
-  image?: string;
-  rating?: number;
-  price?: number;
-  location?: string;
-  date?: string;
-  distance?: number;
-  tags?: string[];
-}
+
 
 // Memoized search result item
 const SearchResultItem = memo(({ result }: { result: SearchResult }) => {
@@ -34,6 +25,7 @@ const SearchResultItem = memo(({ result }: { result: SearchResult }) => {
       event: <Calendar className="h-4 w-4" />,
       post: <Users className="h-4 w-4" />,
       group: <Users className="h-4 w-4" />,
+      business: <Map className="h-4 w-4" />,
     };
     return icons[type as keyof typeof icons] || <Search className="h-4 w-4" />;
   }, []);
@@ -54,6 +46,11 @@ const SearchResultItem = memo(({ result }: { result: SearchResult }) => {
                 {result.type}
               </Badge>
               <h3 className="font-semibold truncate">{result.title}</h3>
+              {result.relevanceScore && (
+                <Badge variant="outline" className="text-xs">
+                  {Math.round(result.relevanceScore)}% match
+                </Badge>
+              )}
             </div>
 
             {result.description && (
@@ -66,7 +63,7 @@ const SearchResultItem = memo(({ result }: { result: SearchResult }) => {
               {result.location && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
-                  {result.location}
+                  {result.location.name || `${result.location.city}, ${result.location.state}`}
                 </div>
               )}
               {result.distance && (
@@ -75,13 +72,19 @@ const SearchResultItem = memo(({ result }: { result: SearchResult }) => {
               {result.price && (
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-3 w-3" />
-                  ${result.price}/hr
+                  ${result.price}
                 </div>
               )}
               {result.date && (
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   {format(new Date(result.date), 'MMM dd, yyyy')}
+                </div>
+              )}
+              {result.engagement && (
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3" />
+                  {result.engagement.likes + result.engagement.comments}
                 </div>
               )}
             </div>
@@ -111,23 +114,31 @@ SearchResultItem.displayName = 'SearchResultItem';
 // Memoized search filters component
 const SearchFilters = memo(({ 
   filters, 
-  setFilters, 
+  updateFilters, 
+  resetFilters,
   categories 
 }: {
-  filters: any;
-  setFilters: (filters: any) => void;
+  filters: SearchFilter;
+  updateFilters: (filters: Partial<SearchFilter>) => void;
+  resetFilters: () => void;
   categories: any;
 }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Search Filters</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Search Filters</CardTitle>
+          <Button variant="outline" size="sm" onClick={resetFilters}>
+            <X className="h-4 w-4 mr-2" />
+            Reset
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="text-sm font-medium">Type</label>
-            <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
+            <Label className="text-sm font-medium">Content Type</Label>
+            <Select value={filters.type} onValueChange={(value) => updateFilters({ type: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -137,13 +148,14 @@ const SearchFilters = memo(({
                 <SelectItem value="event">Events</SelectItem>
                 <SelectItem value="post">Posts</SelectItem>
                 <SelectItem value="group">Groups</SelectItem>
+                <SelectItem value="business">Businesses</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <label className="text-sm font-medium">Category</label>
-            <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value})}>
+            <Label className="text-sm font-medium">Category</Label>
+            <Select value={filters.category} onValueChange={(value) => updateFilters({ category: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -157,26 +169,118 @@ const SearchFilters = memo(({
           </div>
 
           <div>
-            <label className="text-sm font-medium">Max Distance: {filters.distance}km</label>
-            <Slider
-              value={[filters.distance]}
-              onValueChange={([value]) => setFilters({...filters, distance: value})}
-              max={100}
-              min={1}
-              step={1}
-            />
+            <Label className="text-sm font-medium">Sort By</Label>
+            <Select value={filters.sortBy} onValueChange={(value) => updateFilters({ sortBy: value })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">Relevance</SelectItem>
+                <SelectItem value="distance">Distance</SelectItem>
+                <SelectItem value="date">Date</SelectItem>
+                <SelectItem value="popularity">Popularity</SelectItem>
+                <SelectItem value="rating">Rating</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+        </div>
 
-          <div>
-            <label className="text-sm font-medium">Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</label>
-            <Slider
-              value={filters.priceRange}
-              onValueChange={(value) => setFilters({...filters, priceRange: value as [number, number]})}
-              max={1000}
-              min={0}
-              step={10}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="location-filter" 
+              checked={filters.location.enabled}
+              onCheckedChange={(checked) => updateFilters({ 
+                location: { ...filters.location, enabled: checked as boolean }
+              })}
             />
+            <Label htmlFor="location-filter">Filter by location</Label>
           </div>
+          
+          {filters.location.enabled && (
+            <div>
+              <Label className="text-sm font-medium">Max Distance: {filters.location.radius}km</Label>
+              <Slider
+                value={[filters.location.radius]}
+                onValueChange={([value]) => updateFilters({ 
+                  location: { ...filters.location, radius: value }
+                })}
+                max={100}
+                min={1}
+                step={1}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="date-filter" 
+              checked={filters.dateRange.enabled}
+              onCheckedChange={(checked) => updateFilters({ 
+                dateRange: { ...filters.dateRange, enabled: checked as boolean }
+              })}
+            />
+            <Label htmlFor="date-filter">Filter by date range</Label>
+          </div>
+          
+          {filters.dateRange.enabled && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Start Date</Label>
+                <Input 
+                  type="date" 
+                  value={filters.dateRange.start}
+                  onChange={(e) => updateFilters({ 
+                    dateRange: { ...filters.dateRange, start: e.target.value }
+                  })}
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">End Date</Label>
+                <Input 
+                  type="date" 
+                  value={filters.dateRange.end}
+                  onChange={(e) => updateFilters({ 
+                    dateRange: { ...filters.dateRange, end: e.target.value }
+                  })}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="price-filter" 
+              checked={filters.priceRange.enabled}
+              onCheckedChange={(checked) => updateFilters({ 
+                priceRange: { ...filters.priceRange, enabled: checked as boolean }
+              })}
+            />
+            <Label htmlFor="price-filter">Filter by price range</Label>
+          </div>
+          
+          {filters.priceRange.enabled && (
+            <div>
+              <Label className="text-sm font-medium">Price Range: ${filters.priceRange.min} - ${filters.priceRange.max}</Label>
+              <Slider
+                value={[filters.priceRange.min, filters.priceRange.max]}
+                onValueChange={(value) => updateFilters({ 
+                  priceRange: { 
+                    ...filters.priceRange, 
+                    min: value[0], 
+                    max: value[1] 
+                  }
+                })}
+                max={1000}
+                min={0}
+                step={10}
+              />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -186,263 +290,106 @@ const SearchFilters = memo(({
 SearchFilters.displayName = 'SearchFilters';
 
 export const AdvancedSearch = () => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    type: 'all',
-    category: 'all',
-    priceRange: [0, 1000],
-    rating: 0,
-    distance: 50,
-    dateRange: 'all',
-    tags: [] as string[]
-  });
+  const {
+    query,
+    setQuery,
+    results,
+    loading,
+    error,
+    filters,
+    updateFilters,
+    resetFilters,
+    suggestions,
+    hasMore,
+    loadMore
+  } = useAdvancedSearch();
+
   const [showFilters, setShowFilters] = useState(false);
-  const { user } = useAuth();
-  const { currentLocation } = useLocation();
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const categories = useMemo(() => ({
     artist: ['Photographer', 'Musician', 'DJ', 'Chef', 'Designer', 'Writer', 'Performer'],
     event: ['Music', 'Food', 'Art', 'Sports', 'Business', 'Education', 'Entertainment'],
     post: ['News', 'Discussion', 'Question', 'Announcement', 'Review'],
-    group: ['Hobby', 'Professional', 'Community', 'Interest', 'Location-based']
+    group: ['Hobby', 'Professional', 'Community', 'Interest', 'Location-based'],
+    business: ['Restaurant', 'Shop', 'Service', 'Entertainment', 'Health', 'Education']
   }), []);
-
-  const calculateDistance = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
-    if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }, []);
-
-  const searchAll = useCallback(async () => {
-    if (!query.trim()) return;
-    
-    setLoading(true);
-    try {
-      const results: SearchResult[] = [];
-      
-      // Search artists
-      if (filters.type === 'all' || filters.type === 'artist') {
-        const { data: artists } = await supabase
-          .from('artists')
-          .select(`
-            id,
-            user_id,
-            specialty,
-            hourly_rate_min,
-            hourly_rate_max,
-            bio
-          `)
-          .or(`specialty.cs.{${query}},bio.ilike.%${query}%`)
-          .eq('is_available', true);
-
-        artists?.forEach(artist => {
-          // Get profile for this artist
-          supabase
-            .from('profiles')
-            .select('display_name, avatar_url, location_city, location_state, latitude, longitude')
-            .eq('user_id', artist.user_id)
-            .single()
-            .then(({ data: profile }) => {
-              if (profile) {
-                const distance = calculateDistance(
-                  currentLocation?.latitude,
-                  currentLocation?.longitude,
-                  profile.latitude,
-                  profile.longitude
-                );
-                
-                if (distance <= filters.distance) {
-                  results.push({
-                    id: artist.id,
-                    type: 'artist',
-                    title: profile.display_name || 'Anonymous',
-                    description: artist.bio,
-                    image: profile.avatar_url,
-                    price: artist.hourly_rate_min,
-                    location: `${profile.location_city}, ${profile.location_state}`,
-                    distance,
-                    tags: artist.specialty
-                  });
-                }
-              }
-            });
-        });
-      }
-
-      // Search events
-      if (filters.type === 'all' || filters.type === 'event') {
-        const { data: events } = await supabase
-          .from('events')
-          .select(`
-            id,
-            title,
-            description,
-            event_date,
-            event_time,
-            location_name,
-            location_city,
-            category,
-            price,
-            image_url,
-            tags
-          `)
-          .or(`title.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
-          .gte('event_date', new Date().toISOString().split('T')[0]);
-
-        events?.forEach(event => {
-          results.push({
-            id: event.id,
-            type: 'event',
-            title: event.title,
-            description: event.description,
-            image: event.image_url,
-            price: event.price,
-            location: event.location_name,
-            date: `${event.event_date} ${event.event_time}`,
-            tags: event.tags
-          });
-        });
-      }
-
-      // Search posts
-      if (filters.type === 'all' || filters.type === 'post') {
-        const { data: posts } = await supabase
-          .from('posts')
-          .select(`
-            id,
-            user_id,
-            title,
-            content,
-            type,
-            created_at
-          `)
-          .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-          .eq('status', 'active');
-
-        posts?.forEach(post => {
-          // Get profile for this post
-          supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('user_id', post.user_id)
-            .single()
-            .then(({ data: profile }) => {
-              if (profile) {
-                results.push({
-                  id: post.id,
-                  type: 'post',
-                  title: post.title || 'Untitled Post',
-                  description: post.content.substring(0, 100) + '...',
-                  image: profile.avatar_url,
-                  date: post.created_at,
-                  tags: post.type ? [post.type] : []
-                });
-              }
-            });
-        });
-      }
-
-      // Search groups
-      if (filters.type === 'all' || filters.type === 'group') {
-        const { data: groups } = await supabase
-          .from('groups')
-          .select(`
-            id,
-            name,
-            description,
-            category,
-            created_at
-          `)
-          .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`);
-
-        groups?.forEach(group => {
-          results.push({
-            id: group.id,
-            type: 'group',
-            title: group.name,
-            description: group.description,
-            date: group.created_at,
-            tags: group.category ? [group.category] : []
-          });
-        });
-      }
-
-      // Apply filters
-      let filteredResults = results.filter(result => {
-        if (filters.category !== 'all' && result.tags) {
-          return result.tags.some(tag =>
-            tag.toLowerCase().includes(filters.category.toLowerCase())
-          );
-        }
-        if (filters.priceRange && result.price) {
-          return result.price >= filters.priceRange[0] && result.price <= filters.priceRange[1];
-        }
-        return true;
-      });
-
-      // Sort by relevance and distance
-      filteredResults.sort((a, b) => {
-        if (a.distance && b.distance) {
-          return a.distance - b.distance;
-        }
-        return 0;
-      });
-
-      setResults(filteredResults);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, filters, currentLocation, calculateDistance]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (query.trim()) {
-        searchAll();
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [query, filters, searchAll]);
 
   return (
     <div className="space-y-6">
       {/* Search Bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search artists, events, posts, groups..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-10"
-          />
+      <div className="relative">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search artists, events, posts, groups, businesses..."
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowSuggestions(e.target.value.length > 0);
+              }}
+              onFocus={() => setShowSuggestions(query.length > 0)}
+              className="pl-10"
+            />
+            {query && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                onClick={() => {
+                  setQuery('');
+                  setShowSuggestions(false);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-        </Button>
+
+        {/* Search Suggestions */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute top-full left-0 right-0 bg-background border rounded-md shadow-lg z-10 mt-1">
+            {suggestions.map((suggestion, index) => (
+              <button
+                key={index}
+                className="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-2"
+                onClick={() => {
+                  setQuery(suggestion);
+                  setShowSuggestions(false);
+                }}
+              >
+                <Search className="h-3 w-3 text-muted-foreground" />
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filters */}
       {showFilters && (
         <SearchFilters 
           filters={filters} 
-          setFilters={setFilters} 
+          updateFilters={updateFilters}
+          resetFilters={resetFilters}
           categories={categories} 
         />
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4">
+          <p className="text-destructive text-sm">{error}</p>
+        </div>
       )}
 
       {/* Results */}
@@ -465,6 +412,19 @@ export const AdvancedSearch = () => {
         {results.map((result) => (
           <SearchResultItem key={`${result.type}-${result.id}`} result={result} />
         ))}
+
+        {/* Load More */}
+        {hasMore && results.length > 0 && (
+          <div className="text-center pt-4">
+            <Button
+              variant="outline"
+              onClick={loadMore}
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : 'Load More'}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

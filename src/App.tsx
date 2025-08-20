@@ -8,6 +8,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { lazy } from "react";
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
+import { app } from '@/config/environment';
 // import { useRoutePreloader } from "./hooks/useRoutePreloader";
 
 // Lazy load pages with better chunking
@@ -51,6 +52,17 @@ const CreatePost = lazy(() => import("./pages/CreatePost"));
 // Error pages
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Test pages
+const LocationTest = lazy(() => import("./pages/LocationTest"));
+const NewsFeed = lazy(() => import("./pages/NewsFeed"));
+
+// Admin pages
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+const ContentModeration = lazy(() => import("./pages/admin/ContentModeration"));
+const Analytics = lazy(() => import("./pages/admin/Analytics"));
+const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -70,7 +82,7 @@ const App = () => {
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <BrowserRouter basename={app.baseUrl}>
             <LazyLoader fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -94,6 +106,16 @@ const App = () => {
                 <Route path="/artist/:artistId" element={<ArtistProfile />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/location-test" element={<ProtectedRoute><LocationTest /></ProtectedRoute>} />
+                <Route path="/news" element={<NewsFeed />} />
+                
+                {/* Admin routes */}
+                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+                <Route path="/admin/moderation" element={<ProtectedRoute><ContentModeration /></ProtectedRoute>} />
+                <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
+                
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

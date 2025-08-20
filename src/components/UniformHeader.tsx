@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MapPin, MapPinOff, RotateCcw, Search, Bell, User, Settings, LogOut } from "lucide-react";
-import { useLocation } from "@/hooks/useLocation";
+import { useLocationManager } from "@/hooks/useLocationManager";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Tooltip,
@@ -48,34 +48,25 @@ export function UniformHeader({
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { 
-    isEnabled, 
-    isLoading, 
-    currentLocation, 
-    lastUpdated, 
-    toggleLocationSharing, 
-    updateCurrentLocation 
-  } = useLocation();
+    location,
+    enabled, 
+    loading, 
+    detectLocation, 
+    refreshLocation 
+  } = useLocationManager();
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const formatLastUpdated = (date: Date | null) => {
-    if (!date) return '';
-    
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return date.toLocaleDateString();
-  };
 
   const handleLocationToggle = async () => {
     setIsLocationLoading(true);
     try {
-      await toggleLocationSharing();
+      if (enabled) {
+        // Disable location
+        await refreshLocation();
+      } else {
+        // Enable location
+        await detectLocation();
+      }
     } finally {
       setIsLocationLoading(false);
     }
@@ -84,7 +75,7 @@ export function UniformHeader({
   const handleLocationRefresh = async () => {
     setIsLocationLoading(true);
     try {
-      await updateCurrentLocation();
+      await refreshLocation();
     } finally {
       setIsLocationLoading(false);
     }
@@ -160,12 +151,12 @@ export function UniformHeader({
                       variant="ghost"
                       size="icon"
                       onClick={handleLocationToggle}
-                      disabled={isLocationLoading}
+                      disabled={isLocationLoading || loading}
                       className="relative"
                     >
-                      {isLocationLoading ? (
+                      {isLocationLoading || loading ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      ) : isEnabled ? (
+                      ) : enabled ? (
                         <MapPin className="h-4 w-4" />
                       ) : (
                         <MapPinOff className="h-4 w-4" />
@@ -175,11 +166,11 @@ export function UniformHeader({
                   <TooltipContent>
                     <div className="text-center">
                       <p className="font-medium">
-                        {isEnabled ? 'Location Enabled' : 'Location Disabled'}
+                        {enabled ? 'Location Enabled' : 'Location Disabled'}
                       </p>
-                      {isEnabled && lastUpdated && (
+                      {enabled && location && (
                         <p className="text-xs text-muted-foreground">
-                          Updated {formatLastUpdated(lastUpdated)}
+                          {location.name || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
                         </p>
                       )}
                     </div>
@@ -189,7 +180,7 @@ export function UniformHeader({
             )}
 
             {/* Location Refresh Button */}
-            {showLocationButton && user && isEnabled && (
+            {showLocationButton && user && enabled && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -197,7 +188,7 @@ export function UniformHeader({
                       variant="ghost"
                       size="icon"
                       onClick={handleLocationRefresh}
-                      disabled={isLocationLoading}
+                      disabled={isLocationLoading || loading}
                     >
                       <RotateCcw className="h-4 w-4" />
                     </Button>

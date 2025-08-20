@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { LocationService } from '../services/locationService';
+import { Location } from '../types/location';
 
 interface LocationData {
   latitude: number;
@@ -34,26 +36,25 @@ export const useLocation = () => {
       if (!user) return;
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('real_time_location_enabled, current_latitude, current_longitude, current_location_updated_at')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        // Use the new location service
+        const location = await LocationService.getCurrentUserLocation();
+        const settings = await LocationService.getLocationSettings();
 
-        if (error) {
-          console.error('Error loading location preferences:', error);
-          return;
-        }
-
-        if (data) {
+        if (location) {
           setLocationState(prev => ({
             ...prev,
-            isEnabled: data.real_time_location_enabled || false,
-            currentLocation: data.current_latitude && data.current_longitude ? {
-              latitude: data.current_latitude,
-              longitude: data.current_longitude,
-            } : null,
-            lastUpdated: data.current_location_updated_at ? new Date(data.current_location_updated_at) : null,
+            isEnabled: settings.enabled,
+            currentLocation: {
+              latitude: location.lat,
+              longitude: location.lng,
+            },
+            lastUpdated: new Date(), // We'll need to add this to the new system
+          }));
+        } else {
+          setLocationState(prev => ({
+            ...prev,
+            isEnabled: settings.enabled,
+            currentLocation: null,
           }));
         }
       } catch (error) {
@@ -92,24 +93,17 @@ export const useLocation = () => {
     });
   }, []);
 
-  // Update location in database
+  // Update location in database using new service
   const updateLocationInDB = useCallback(async (location: LocationData) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          current_latitude: location.latitude,
-          current_longitude: location.longitude,
-          current_location_updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error updating location:', error);
-        throw error;
-      }
+      const locationData: Location = {
+        lat: location.latitude,
+        lng: location.longitude,
+      };
+      
+      await LocationService.setManualLocation(locationData);
     } catch (error) {
       console.error('Error updating location in database:', error);
       throw error;
@@ -129,18 +123,13 @@ export const useLocation = () => {
         // Enable location sharing - get current position
         const position = await getCurrentPosition();
         
-        // Update database with enabled state and current location
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            real_time_location_enabled: true,
-            current_latitude: position.latitude,
-            current_longitude: position.longitude,
-            current_location_updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
+        // Use new location service
+        const locationData: Location = {
+          lat: position.latitude,
+          lng: position.longitude,
+        };
+        
+        await LocationService.detectAndSaveLocation();
 
         setLocationState(prev => ({
           ...prev,
@@ -156,17 +145,7 @@ export const useLocation = () => {
         });
       } else {
         // Disable location sharing
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            real_time_location_enabled: false,
-            current_latitude: null,
-            current_longitude: null,
-            current_location_updated_at: null,
-          })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
+        await LocationService.toggleLocationServices(false);
 
         setLocationState(prev => ({
           ...prev,
@@ -194,7 +173,7 @@ export const useLocation = () => {
         variant: "destructive",
       });
     }
-  }, [user, locationState.isEnabled, getCurrentPosition, updateLocationInDB, toast]);
+  }, [user, locationState.isEnabled, getCurrentPosition, toast]);
 
   // Update current location (when enabled)
   const updateCurrentLocation = useCallback(async () => {

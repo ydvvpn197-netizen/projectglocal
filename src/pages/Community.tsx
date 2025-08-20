@@ -4,7 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, MessageCircle, Heart, Share2, Plus, BarChart3, Star, MoreVertical, Trash2 } from "lucide-react";
+import { 
+  Users, 
+  MessageCircle, 
+  Heart, 
+  Share2, 
+  Plus, 
+  BarChart3, 
+  Star, 
+  MoreVertical, 
+  Trash2,
+  TrendingUp,
+  Flame,
+  Clock,
+  ThumbsUp,
+  Search,
+  Filter
+} from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { PollCard } from "@/components/PollCard";
 import { ReviewCard } from "@/components/ReviewCard";
@@ -20,456 +36,453 @@ import { useDiscussions } from "@/hooks/useDiscussions";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// New Community Engagement Components
+import { CommunityPostCard } from "@/components/CommunityPostCard";
+import { CommunityGroupCard } from "@/components/CommunityGroupCard";
+import { CreatePostDialog } from "@/components/CreatePostDialog";
+import { CreateGroupDialog } from "@/components/CreateGroupDialog";
+import { VoteButtons } from "@/components/VoteButtons";
+
+// New Community Engagement Hooks
+import { useCommunityGroups } from "@/hooks/useCommunityGroups";
+import { useCommunityPosts } from "@/hooks/useCommunityPosts";
+import { useVoting } from "@/hooks/useVoting";
+import { useComments } from "@/hooks/useComments";
+import { useCommunityPolls } from "@/hooks/useCommunityPolls";
 
 const Community = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Legacy hooks (keeping for backward compatibility)
   const { discussions: recentDiscussions, loading: discussionsLoading, deleteDiscussion } = useDiscussions();
   const { reviews, loading: reviewsLoading } = useReviews();
   const { polls, loading: pollsLoading } = usePolls();
-  const { user } = useAuth();
+  
+  // New Community Engagement hooks
+  const { 
+    groups, 
+    userGroups, 
+    trendingGroups, 
+    loading: groupsLoading, 
+    fetchGroups, 
+    fetchTrendingGroups 
+  } = useCommunityGroups();
+  
+  const { 
+    posts, 
+    loading: postsLoading, 
+    fetchRankedPosts, 
+    pinPost, 
+    lockPost, 
+    deletePost 
+  } = useCommunityPosts();
+  
+  const { voteOnPost } = useVoting();
+  const { comments, loading: commentsLoading } = useComments();
+  const { polls: communityPolls, loading: communityPollsLoading } = useCommunityPolls();
+
+  // State
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [userGroups, setUserGroups] = useState<any[]>([]);
-  const [allGroups, setAllGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<'hot' | 'top' | 'new' | 'rising'>('hot');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState('posts');
 
-  // Fetch user's groups and available groups
+  // Fetch data on component mount
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Fetch groups user is a member of
-        const { data: memberGroups, error: memberError } = await supabase
-          .from('groups')
-          .select(`
-            *,
-            group_members!inner (role),
-            member_count:group_members(count)
-          `)
-          .eq('group_members.user_id', user.id);
-
-        if (memberError) throw memberError;
-
-        const transformedUserGroups = memberGroups?.map(group => ({
-          id: group.id,
-          name: group.name,
-          description: group.description,
-          category: group.category,
-          members: group.member_count?.[0]?.count || 0,
-          posts: 0, // We'll calculate this if needed
-          isJoined: true
-        })) || [];
-
-        setUserGroups(transformedUserGroups);
-
-        // Fetch all available groups (not joined)
-        const userGroupIds = transformedUserGroups.map(g => g.id);
-        const { data: availableGroups, error: availableError } = await supabase
-          .from('groups')
-          .select(`
-            *,
-            member_count:group_members(count)
-          `)
-          .not('id', 'in', `(${userGroupIds.join(',') || 'null'})`);
-
-        if (availableError) throw availableError;
-
-        const transformedAvailableGroups = availableGroups?.map(group => ({
-          id: group.id,
-          name: group.name,
-          description: group.description,
-          category: group.category,
-          members: group.member_count?.[0]?.count || 0,
-          posts: 0,
-          isJoined: false
-        })) || [];
-
-        setAllGroups([...transformedUserGroups, ...transformedAvailableGroups]);
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-        // Fallback to static data
-        setUserGroups(staticGroups.filter(g => g.isJoined));
-        setAllGroups(staticGroups);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchGroups();
-  }, []);
+    fetchTrendingGroups();
+    fetchRankedPosts(selectedGroupId, sortBy);
+  }, [selectedGroupId, sortBy]);
 
-  const staticGroups = [
-    {
-      id: "550e8400-e29b-41d4-a716-446655440001",
-      name: "Local Photographers",
-      description: "Share your photography and get feedback from fellow photographers in the area.",
-      members: 234,
-      posts: 89,
-      category: "Photography",
-      isJoined: true
-    },
-    {
-      id: "550e8400-e29b-41d4-a716-446655440002", 
-      name: "Food Lovers Unite",
-      description: "Discover the best local restaurants and share your culinary adventures.",
-      members: 567,
-      posts: 234,
-      category: "Food",
-      isJoined: false
-    },
-    {
-      id: "550e8400-e29b-41d4-a716-446655440003",
-      name: "Outdoor Adventures", 
-      description: "Plan hiking trips, outdoor activities, and explore nature together.",
-      members: 189,
-      posts: 156,
-      category: "Outdoor",
-      isJoined: true
-    }
-  ];
+  const handleVote = async (postId: string, voteType: number) => {
+    return await voteOnPost(postId, voteType);
+  };
 
-  const joinGroup = async (groupId: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  const handlePin = async (postId: string, isPinned: boolean) => {
+    return await pinPost(postId, isPinned);
+  };
 
-      const { error } = await supabase
-        .from('group_members')
-        .insert({
-          group_id: groupId,
-          user_id: user.id
-        });
+  const handleLock = async (postId: string, isLocked: boolean) => {
+    return await lockPost(postId, isLocked);
+  };
 
-      if (error) throw error;
+  const handleDelete = async (postId: string) => {
+    return await deletePost(postId);
+  };
 
-      toast({
-        title: "Success!",
-        description: "You have joined the group.",
-      });
+  const handleGroupSelect = (groupId: string | null) => {
+    setSelectedGroupId(groupId);
+  };
 
-      // Refresh groups
-      window.location.reload();
-    } catch (error) {
-      console.error('Error joining group:', error);
-      toast({
-        title: "Error",
-        description: "Failed to join group. Please try again.",
-        variant: "destructive"
-      });
+  const handleSortChange = (newSortBy: 'hot' | 'top' | 'new' | 'rising') => {
+    setSortBy(newSortBy);
+  };
+
+  const handleSearch = () => {
+    // Implement search functionality
+    console.log('Searching for:', searchQuery);
+  };
+
+  const getSortIcon = (sortType: string) => {
+    switch (sortType) {
+      case 'hot':
+        return <Flame className="h-4 w-4" />;
+      case 'top':
+        return <TrendingUp className="h-4 w-4" />;
+      case 'new':
+        return <Clock className="h-4 w-4" />;
+      case 'rising':
+        return <TrendingUp className="h-4 w-4" />;
+      default:
+        return <Flame className="h-4 w-4" />;
     }
   };
 
-  // Show group view if a group is selected
-  if (selectedGroupId) {
-    return (
-      <MainLayout>
-        <GroupView 
-          groupId={selectedGroupId}
-          onBack={() => setSelectedGroupId(null)}
-        />
-      </MainLayout>
-    );
-  }
+  const categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'general', label: 'General' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'entertainment', label: 'Entertainment' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'news', label: 'News' },
+    { value: 'lifestyle', label: 'Lifestyle' },
+    { value: 'education', label: 'Education' },
+    { value: 'business', label: 'Business' }
+  ];
 
-  const displayGroups = loading ? staticGroups : allGroups;
+  const sortOptions = [
+    { value: 'hot', label: 'Hot', icon: <Flame className="h-4 w-4" /> },
+    { value: 'top', label: 'Top', icon: <TrendingUp className="h-4 w-4" /> },
+    { value: 'new', label: 'New', icon: <Clock className="h-4 w-4" /> },
+    { value: 'rising', label: 'Rising', icon: <TrendingUp className="h-4 w-4" /> }
+  ];
 
   return (
     <MainLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" />
-              <h1 className="text-3xl font-bold">Community</h1>
-            </div>
-            <p className="text-muted-foreground">
-              Connect with like-minded people in your area and join local groups.
-            </p>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Community</h1>
+            <p className="text-gray-600 mt-1">Connect, share, and engage with your local community</p>
           </div>
-          <Button 
-            className="flex items-center gap-2"
-            onClick={() => navigate("/community/create-group")}
-          >
-            <Plus className="h-4 w-4" />
-            Create Group
-          </Button>
+          
+          <div className="flex items-center gap-3">
+            <CreatePostDialog 
+              groupId={selectedGroupId || undefined}
+              trigger={
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Post
+                </Button>
+              }
+            />
+            <CreateGroupDialog 
+              trigger={
+                <Button variant="outline">
+                  <Users className="h-4 w-4 mr-2" />
+                  Create Group
+                </Button>
+              }
+            />
+          </div>
         </div>
 
-        {/* My Groups */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">My Groups</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(loading ? staticGroups.filter(g => g.isJoined) : userGroups).map((group) => (
-              <Card key={group.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">{group.name}</CardTitle>
-                  <CardDescription>{group.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Badge variant="secondary">{group.category}</Badge>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{group.members} members</span>
-                      <span>{group.posts} posts</span>
-                    </div>
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => setSelectedGroupId(group.id)}
-                    >
-                      View Group
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        {/* Search and Filters */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search posts, groups, or discussions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              />
+            </div>
           </div>
-        </section>
+          
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-48">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.value} value={category.value}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        {/* Community Content Tabs */}
-        <Tabs defaultValue="discussions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="discussions" className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              Discussions
-            </TabsTrigger>
-            <TabsTrigger value="polls" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Community Polls
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="flex items-center gap-2">
-              <Star className="h-4 w-4" />
-              Local Reviews
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="groups">Groups</TabsTrigger>
+            <TabsTrigger value="discussions">Discussions</TabsTrigger>
+            <TabsTrigger value="polls">Polls</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="discussions" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Recent Discussions</h2>
-              <Button 
-                className="flex items-center gap-2"
-                onClick={() => navigate("/community/create-discussion")}
-              >
-                <Plus className="h-4 w-4" />
+          {/* Posts Tab */}
+          <TabsContent value="posts" className="space-y-6">
+            {/* Sort Options */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {sortOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    variant={sortBy === option.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleSortChange(option.value as any)}
+                    className="flex items-center gap-2"
+                  >
+                    {option.icon}
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+              
+              <div className="text-sm text-gray-500">
+                {posts.length} posts
+              </div>
+            </div>
+
+            {/* Posts Feed */}
+            <div className="space-y-4">
+              {postsLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-gray-500">Loading posts...</div>
+                </div>
+              ) : posts.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <div className="text-gray-500 mb-4">No posts found</div>
+                  <CreatePostDialog 
+                    trigger={
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Post
+                      </Button>
+                    }
+                  />
+                </Card>
+              ) : (
+                posts.map((post) => (
+                  <CommunityPostCard
+                    key={post.id}
+                    post={post}
+                    onVote={handleVote}
+                    onPin={handlePin}
+                    onLock={handleLock}
+                    onDelete={handleDelete}
+                    showGroupInfo={true}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Groups Tab */}
+          <TabsContent value="groups" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {groupsLoading ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <div className="text-gray-500">Loading groups...</div>
+                </div>
+              ) : groups.length === 0 ? (
+                <div className="col-span-full">
+                  <Card className="p-8 text-center">
+                    <div className="text-gray-500 mb-4">No groups found</div>
+                    <CreateGroupDialog 
+                      trigger={
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Your First Group
+                        </Button>
+                      }
+                    />
+                  </Card>
+                </div>
+              ) : (
+                groups.map((group) => (
+                  <CommunityGroupCard
+                    key={group.id}
+                    group={group}
+                    showJoinButton={true}
+                    showStats={true}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* Trending Groups */}
+            {trendingGroups.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4">Trending Groups</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {trendingGroups.slice(0, 6).map((group) => (
+                    <CommunityGroupCard
+                      key={group.id}
+                      group={group}
+                      showJoinButton={true}
+                      showStats={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Discussions Tab (Legacy) */}
+          <TabsContent value="discussions" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Recent Discussions</h3>
+              <Button onClick={() => navigate("/create-discussion")}>
+                <Plus className="h-4 w-4 mr-2" />
                 Start Discussion
               </Button>
             </div>
-            <div className="space-y-4">
-              {discussionsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                </div>
-              ) : recentDiscussions.length > 0 ? (
-                recentDiscussions.map((discussion) => (
-                  <Card key={discussion.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={discussion.author_avatar} />
-                            <AvatarFallback>
-                              {discussion.author_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg">{discussion.title}</h3>
-                                <p className="text-sm text-muted-foreground">
-                                  by {discussion.author_name} 
-                                  {discussion.group_name && ` in ${discussion.group_name}`} • 
-                                  {new Date(discussion.created_at).toLocaleDateString()}
-                                </p>
-                                {discussion.category && (
-                                  <Badge variant="secondary" className="mt-2 text-xs">
-                                    {discussion.category}
-                                  </Badge>
-                                )}
-                              </div>
-                              {user?.id === discussion.user_id && (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                          <Trash2 className="h-4 w-4 mr-2" />
-                                          Delete
-                                        </DropdownMenuItem>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Delete Discussion</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            Are you sure you want to delete this discussion? This action cannot be undone.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => deleteDiscussion(discussion.id)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              )}
-                            </div>
+
+            {discussionsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-gray-500">Loading discussions...</div>
+              </div>
+            ) : recentDiscussions.length === 0 ? (
+              <Card className="p-8 text-center">
+                <div className="text-gray-500 mb-4">No discussions yet</div>
+                <Button onClick={() => navigate("/create-discussion")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Start a Discussion
+                </Button>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {recentDiscussions.slice(0, 5).map((discussion) => (
+                  <Card key={discussion.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={discussion.author_avatar} />
+                              <AvatarFallback>
+                                {discussion.author_name?.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{discussion.author_name}</span>
+                            <span className="text-sm text-gray-500">
+                              {new Date(discussion.created_at).toLocaleDateString()}
+                            </span>
                           </div>
+                          <h4 className="font-semibold mb-2">{discussion.title}</h4>
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {discussion.content}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {discussion.content}
-                        </p>
-                        <div className="flex items-center gap-6">
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
-                            <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">{discussion.replies_count}</span>
+                            <MessageCircle className="h-4 w-4" />
+                            {discussion.replies_count} replies
                           </div>
                           <div className="flex items-center gap-1">
-                            <Heart className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">{discussion.likes_count}</span>
+                            <Heart className="h-4 w-4" />
+                            {discussion.likes_count} likes
                           </div>
-                          <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                            <Share2 className="h-4 w-4" />
-                            Share
-                          </Button>
                         </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              Share
+                            </DropdownMenuItem>
+                            {user?.id === discussion.user_id && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem className="text-red-600">
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Discussion</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete this discussion? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteDiscussion(discussion.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </CardContent>
                   </Card>
-                ))
-              ) : (
-                <Card className="text-center py-12">
-                  <CardContent>
-                    <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No discussions yet</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Be the first to start a discussion in your community!
-                    </p>
-                    <Button onClick={() => navigate("/community/create-discussion")}>
-                      Start Discussion
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
-          <TabsContent value="polls" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Community Polls</h2>
-              <CreatePollDialog>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create Poll
-                </Button>
-              </CreatePollDialog>
-            </div>
-            <div className="space-y-6">
-              {pollsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                </div>
-              ) : polls.length > 0 ? (
-                polls.map((poll) => (
-                  <PollCard
-                    key={poll.id}
-                    {...poll}
-                  />
-                ))
-              ) : (
-                <Card className="text-center py-12">
-                  <CardContent>
-                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No polls yet</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Create the first community poll to gather opinions!
-                    </p>
-                    <CreatePollDialog>
-                      <Button>Create Poll</Button>
-                    </CreatePollDialog>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
+                     {/* Polls Tab */}
+           <TabsContent value="polls" className="space-y-6">
+             <div className="flex items-center justify-between mb-4">
+               <h3 className="text-lg font-semibold">Community Polls</h3>
+               <CreatePollDialog>
+                 <Button>
+                   <Plus className="h-4 w-4 mr-2" />
+                   Create Poll
+                 </Button>
+               </CreatePollDialog>
+             </div>
 
-          <TabsContent value="reviews" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Local Business Reviews</h2>
-              <WriteReviewDialog>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Write Review
-                </Button>
-              </WriteReviewDialog>
-            </div>
-            <div className="space-y-6">
-              {reviewsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                </div>
-              ) : reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <ReviewCard
-                    key={review.id}
-                    {...review}
-                  />
-                ))
-              ) : (
-                <Card className="text-center py-12">
-                  <CardContent>
-                    <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No reviews yet</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Be the first to review a local business!
-                    </p>
-                    <WriteReviewDialog>
-                      <Button>Write Review</Button>
-                    </WriteReviewDialog>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
+             {pollsLoading ? (
+               <div className="flex items-center justify-center py-12">
+                 <div className="text-gray-500">Loading polls...</div>
+               </div>
+             ) : polls.length === 0 ? (
+               <Card className="p-8 text-center">
+                 <div className="text-gray-500 mb-4">No polls yet</div>
+                 <CreatePollDialog>
+                   <Button>
+                     <Plus className="h-4 w-4 mr-2" />
+                     Create Your First Poll
+                   </Button>
+                 </CreatePollDialog>
+               </Card>
+             ) : (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 {polls.slice(0, 6).map((poll) => (
+                   <PollCard key={poll.id} {...poll} />
+                 ))}
+               </div>
+             )}
+           </TabsContent>
         </Tabs>
-
-        {/* Suggested Groups */}
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Suggested Groups</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayGroups.filter(group => !group.isJoined).map((group) => (
-              <Card key={group.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">{group.name}</CardTitle>
-                  <CardDescription>{group.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Badge variant="secondary">{group.category}</Badge>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{group.members} members</span>
-                      <span>{group.posts} posts</span>
-                    </div>
-                    <Button 
-                      className="w-full"
-                      onClick={() => joinGroup(group.id)}
-                      disabled={loading}
-                    >
-                      Join Group
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
       </div>
     </MainLayout>
   );
