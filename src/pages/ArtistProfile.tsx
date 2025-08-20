@@ -97,15 +97,40 @@ const ArtistProfile = () => {
         .single();
 
       if (artistError) {
-        // Gracefully handle missing artists row; still allow viewing profile
+        // Create artist record if it doesn't exist
+        const { data: newArtistData, error: createError } = await supabase
+          .from('artists')
+          .insert({
+            user_id: artistId,
+            specialty: profileData.artist_skills || [],
+            experience_years: 0,
+            hourly_rate_min: profileData.hourly_rate_min || 0,
+            hourly_rate_max: profileData.hourly_rate_max || 0,
+            bio: profileData.bio || '',
+            is_available: true
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating artist record:', createError);
+          // If we can't create an artist record, set is_available to false to prevent bookings
+          setArtist({
+            ...profileData,
+            id: profileData.user_id,
+            experience_years: 0,
+            is_available: false, // Set to false to prevent bookings
+            hourly_rate_min: profileData.hourly_rate_min || 0,
+            hourly_rate_max: profileData.hourly_rate_max || 0,
+          } as any);
+          return;
+        }
+
         setArtist({
           ...profileData,
-          id: profileData.user_id,
-          experience_years: 0,
-          is_available: true,
-          hourly_rate_min: profileData.hourly_rate_min || 0,
-          hourly_rate_max: profileData.hourly_rate_max || 0,
-        } as any);
+          ...newArtistData,
+          id: newArtistData.id
+        });
         return;
       }
 
@@ -242,6 +267,27 @@ const ArtistProfile = () => {
       return;
     }
 
+    // Check if artist has a valid UUID (not user_id) and is available
+    if (!artist?.id || artist.id === artistId || !artist.is_available) {
+      toast({
+        title: "Artist not available",
+        description: "This artist is not available for booking at the moment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Additional check to ensure artist ID is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(artist.id)) {
+      toast({
+        title: "Artist not available",
+        description: "This artist profile is not properly set up for bookings",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!eventDate || !eventLocation || !eventDescription || !budgetMin || !contactInfo) {
       toast({
         title: "Missing information",
@@ -293,6 +339,14 @@ const ArtistProfile = () => {
           });
           return;
         }
+        if (error.code === '23503') { // Foreign key constraint violation
+          toast({
+            title: "Artist not available",
+            description: "This artist is not available for booking at the moment.",
+            variant: "destructive",
+          });
+          return;
+        }
         throw error;
       }
 
@@ -309,11 +363,22 @@ const ArtistProfile = () => {
       setBudgetMin("");
       setBudgetMax("");
       setContactInfo("");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating booking:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to send booking request";
+      if (error?.code === '23503') {
+        errorMessage = "Artist profile is not properly set up for bookings";
+      } else if (error?.code === '23505') {
+        errorMessage = "You have already sent a booking request for this date and artist";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to send booking request",
+        description: errorMessage,
         variant: "destructive",
       });
     }
