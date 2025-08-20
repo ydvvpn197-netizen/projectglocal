@@ -42,10 +42,13 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks
+          // Ensure React and React-DOM are always bundled together and loaded first
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'react-vendor';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
             }
             if (id.includes('@radix-ui')) {
               return 'ui-vendor';
@@ -58,9 +61,6 @@ export default defineConfig(({ mode }) => ({
             }
             if (id.includes('recharts')) {
               return 'chart-vendor';
-            }
-            if (id.includes('@supabase')) {
-              return 'supabase-vendor';
             }
             if (id.includes('lucide-react')) {
               return 'icons-vendor';
