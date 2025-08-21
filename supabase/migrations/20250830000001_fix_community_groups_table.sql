@@ -1,7 +1,8 @@
--- Fix Database Errors SQL Script
--- Run this in the Supabase SQL Editor to fix the missing tables and issues
+-- Migration: Fix Community Groups Table
+-- Date: 2025-08-30
+-- Description: Ensure community_groups table exists and has proper structure
 
--- 1. Create community_groups table if it doesn't exist
+-- Create community_groups table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.community_groups (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -23,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.community_groups (
   UNIQUE(name, location_city)
 );
 
--- 2. Create group_members table if it doesn't exist
+-- Create group_members table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.group_members (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id UUID REFERENCES public.community_groups(id) ON DELETE CASCADE,
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.group_members (
   UNIQUE(group_id, user_id)
 );
 
--- 3. Create community_posts table if it doesn't exist
+-- Create community_posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.community_posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id UUID REFERENCES public.community_groups(id) ON DELETE CASCADE,
@@ -58,7 +59,7 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. Create indexes for better performance
+-- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_community_groups_category ON public.community_groups(category);
 CREATE INDEX IF NOT EXISTS idx_community_groups_location ON public.community_groups(location_city, location_state);
 CREATE INDEX IF NOT EXISTS idx_community_groups_created_at ON public.community_groups(created_at DESC);
@@ -69,12 +70,12 @@ CREATE INDEX IF NOT EXISTS idx_community_posts_user_id ON public.community_posts
 CREATE INDEX IF NOT EXISTS idx_community_posts_score ON public.community_posts(score DESC);
 CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON public.community_posts(created_at DESC);
 
--- 5. Enable Row Level Security
+-- Enable Row Level Security
 ALTER TABLE public.community_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_posts ENABLE ROW LEVEL SECURITY;
 
--- 6. Create RLS Policies
+-- RLS Policies for community_groups
 DROP POLICY IF EXISTS "Users can view public groups" ON public.community_groups;
 CREATE POLICY "Users can view public groups" ON public.community_groups
   FOR SELECT USING (is_public = true);
@@ -83,6 +84,7 @@ DROP POLICY IF EXISTS "Authenticated users can create groups" ON public.communit
 CREATE POLICY "Authenticated users can create groups" ON public.community_groups
   FOR INSERT WITH CHECK (created_by = auth.uid());
 
+-- RLS Policies for group_members
 DROP POLICY IF EXISTS "Users can join public groups" ON public.group_members;
 CREATE POLICY "Users can join public groups" ON public.group_members
   FOR INSERT WITH CHECK (
@@ -93,6 +95,7 @@ CREATE POLICY "Users can join public groups" ON public.group_members
     )
   );
 
+-- RLS Policies for community_posts
 DROP POLICY IF EXISTS "Users can view posts in public groups" ON public.community_posts;
 CREATE POLICY "Users can view posts in public groups" ON public.community_posts
   FOR SELECT USING (
@@ -102,11 +105,7 @@ CREATE POLICY "Users can view posts in public groups" ON public.community_posts
     )
   );
 
-DROP POLICY IF EXISTS "Authenticated users can create posts" ON public.community_posts;
-CREATE POLICY "Authenticated users can create posts" ON public.community_posts
-  FOR INSERT WITH CHECK (user_id = auth.uid());
-
--- 7. Create function to update updated_at timestamp
+-- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -115,7 +114,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 8. Create triggers for automatic timestamp updates
+-- Create triggers for automatic timestamp updates
 DROP TRIGGER IF EXISTS update_community_groups_updated_at ON public.community_groups;
 CREATE TRIGGER update_community_groups_updated_at
   BEFORE UPDATE ON public.community_groups
@@ -128,7 +127,7 @@ CREATE TRIGGER update_community_posts_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
--- 9. Insert sample data for testing
+-- Insert some sample data for testing
 INSERT INTO public.community_groups (name, description, category, created_by, location_city, location_state, location_country)
 VALUES 
   ('Local Artists Network', 'Connect with local artists and share your work', 'Arts & Culture', 
@@ -138,40 +137,3 @@ VALUES
   ('Food Lovers', 'Share recipes and discover local restaurants', 'Food & Dining', 
    (SELECT id FROM auth.users LIMIT 1), 'Chicago', 'IL', 'USA')
 ON CONFLICT (name, location_city) DO NOTHING;
-
--- 10. Create a function to get trending groups
-CREATE OR REPLACE FUNCTION get_trending_groups(limit_count INTEGER DEFAULT 10)
-RETURNS TABLE(
-  id UUID,
-  name TEXT,
-  description TEXT,
-  category TEXT,
-  member_count INTEGER,
-  post_count INTEGER,
-  location_city TEXT,
-  location_state TEXT,
-  location_country TEXT,
-  created_at TIMESTAMP WITH TIME ZONE
-)
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    cg.id,
-    cg.name,
-    cg.description,
-    cg.category,
-    cg.member_count,
-    cg.post_count,
-    cg.location_city,
-    cg.location_state,
-    cg.location_country,
-    cg.created_at
-  FROM public.community_groups cg
-  WHERE cg.is_public = true
-  ORDER BY cg.member_count DESC, cg.post_count DESC, cg.created_at DESC
-  LIMIT limit_count;
-END;
-$$;

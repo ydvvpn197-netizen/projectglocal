@@ -146,6 +146,34 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
 
   const ShareIcon = Share2;
 
+  // Get button text based on configuration
+  const getButtonText = () => {
+    if (showLabel) {
+      if (platforms.length === 1) {
+        return platformConfigs[platforms[0]].label;
+      }
+      return 'Share';
+    }
+    return '';
+  };
+
+  // Get button classes based on variant and size
+  const getButtonClasses = () => {
+    const baseClasses = "flex items-center gap-2";
+    const variantClasses = {
+      default: "bg-primary text-primary-foreground hover:bg-primary/90",
+      outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+      ghost: "hover:bg-accent hover:text-accent-foreground"
+    };
+    const sizeClasses = {
+      sm: "h-9 px-3 text-sm",
+      md: "h-10 px-4 py-2",
+      lg: "h-11 px-8"
+    };
+    
+    return `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]}`;
+  };
+
   return (
     <div className={`relative ${className}`}>
       <Button
@@ -153,14 +181,14 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
         size={size}
         onClick={handleQuickShare}
         disabled={isSharing}
-        className="flex items-center gap-2"
+        className={getButtonClasses()}
       >
         {isSharing ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <ShareIcon className="h-4 w-4" />
         )}
-        {showLabel && (platforms.length === 1 ? platformConfigs[platforms[0]].label : 'Share')}
+        {getButtonText()}
       </Button>
 
       {showPlatforms && platforms.length > 1 && (

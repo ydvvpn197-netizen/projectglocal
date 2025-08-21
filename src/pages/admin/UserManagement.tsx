@@ -36,8 +36,8 @@ const UserManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<UserManagementFilters>({
     search: '',
-    role: '',
-    status: '',
+    role: 'all',
+    status: 'all',
     dateRange: 'all',
     page: 1,
     limit: 20
@@ -180,7 +180,7 @@ const UserManagement: React.FC = () => {
                     <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Roles</SelectItem>
+                    <SelectItem value="all">All Roles</SelectItem>
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="moderator">Moderator</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
@@ -192,7 +192,7 @@ const UserManagement: React.FC = () => {
                     <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Status</SelectItem>
+                    <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="suspended">Suspended</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>

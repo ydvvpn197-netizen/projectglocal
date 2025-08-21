@@ -344,7 +344,7 @@ const Community = () => {
           <TabsContent value="discussions" className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Recent Discussions</h3>
-              <Button onClick={() => navigate("/create-discussion")}>
+              <Button onClick={() => navigate("/community/create-discussion")}>
                 <Plus className="h-4 w-4 mr-2" />
                 Start Discussion
               </Button>
@@ -357,7 +357,7 @@ const Community = () => {
             ) : recentDiscussions.length === 0 ? (
               <Card className="p-8 text-center">
                 <div className="text-gray-500 mb-4">No discussions yet</div>
-                <Button onClick={() => navigate("/create-discussion")}>
+                <Button onClick={() => navigate("/community/create-discussion")}>
                   <Plus className="h-4 w-4 mr-2" />
                   Start a Discussion
                 </Button>

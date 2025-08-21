@@ -40,9 +40,9 @@ const ContentModeration: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ModerationFilters>({
     search: '',
-    contentType: '',
-    reportStatus: '',
-    reportReason: '',
+    contentType: 'all',
+    reportStatus: 'all',
+    reportReason: 'all',
     dateRange: 'all',
     page: 1,
     limit: 20
@@ -231,7 +231,7 @@ const ContentModeration: React.FC = () => {
                     <SelectValue placeholder="All Content Types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Content Types</SelectItem>
+                    <SelectItem value="all">All Content Types</SelectItem>
                     <SelectItem value="post">Posts</SelectItem>
                     <SelectItem value="comment">Comments</SelectItem>
                     <SelectItem value="event">Events</SelectItem>
@@ -244,7 +244,7 @@ const ContentModeration: React.FC = () => {
                     <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Status</SelectItem>
+                    <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="resolved">Resolved</SelectItem>
                     <SelectItem value="dismissed">Dismissed</SelectItem>
@@ -257,7 +257,7 @@ const ContentModeration: React.FC = () => {
                     <SelectValue placeholder="All Reasons" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Reasons</SelectItem>
+                    <SelectItem value="all">All Reasons</SelectItem>
                     <SelectItem value="spam">Spam</SelectItem>
                     <SelectItem value="inappropriate">Inappropriate</SelectItem>
                     <SelectItem value="harassment">Harassment</SelectItem>

@@ -38,8 +38,8 @@ const NewsFeed: React.FC = () => {
   } = useNewsFeed();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedDateRange, setSelectedDateRange] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedDateRange, setSelectedDateRange] = useState<string>('all');
 
   const categories = [
     { value: 'general', label: 'General' },
@@ -180,7 +180,7 @@ const NewsFeed: React.FC = () => {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category.value} value={category.value}>
                     {category.label}
@@ -193,7 +193,7 @@ const NewsFeed: React.FC = () => {
                 <SelectValue placeholder="Date Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Time</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
                 {dateRanges.map(range => (
                   <SelectItem key={range.value} value={range.value}>
                     {range.label}

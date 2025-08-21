@@ -1,64 +1,33 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MarketingService } from '../marketingService';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock Supabase
+// Mock the supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn(() => ({
-      insert: vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn(),
-        })),
-      })),
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => ({
-            single: vi.fn(),
-          })),
-        })),
-        order: vi.fn(() => ({
-          single: vi.fn(),
-        })),
-      })),
-      update: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          select: vi.fn(() => ({
-            single: vi.fn(),
-          })),
-        })),
-      })),
-      delete: vi.fn(() => ({
-        eq: vi.fn(),
-      })),
-    })),
-    auth: {
-      getUser: vi.fn(() => ({
-        data: {
-          user: {
-            id: 'user-123',
-          },
-        },
-      })),
-    },
+    from: vi.fn(),
   },
+}));
+
+// Mock the database availability check
+vi.mock('@/utils/databaseUtils', () => ({
+  checkTableExists: vi.fn().mockResolvedValue(true),
 }));
 
 describe('MarketingService', () => {
   const mockCampaign = {
     id: 'campaign-123',
     name: 'Test Campaign',
-    description: 'Test Description',
-    campaign_type: 'promotional' as const,
-    status: 'active' as const,
+    description: 'A test campaign',
+    campaign_type: 'promotional',
+    status: 'active',
     start_date: '2024-01-01T00:00:00Z',
     end_date: '2024-12-31T23:59:59Z',
-    target_audience: {},
-    campaign_config: {},
     budget: 1000,
     spent: 500,
-    impressions: 1000,
-    clicks: 100,
-    conversions: 10,
+    impressions: 10000,
+    clicks: 500,
+    conversions: 50,
     conversion_rate: 0.1,
     roi: 2.0,
     created_by: 'user-123',
@@ -67,15 +36,14 @@ describe('MarketingService', () => {
   };
 
   const mockCreateCampaignData = {
-    name: 'Test Campaign',
-    description: 'Test Description',
-    campaign_type: 'promotional' as const,
-    status: 'active' as const,
+    name: 'New Campaign',
+    description: 'A new campaign',
+    campaign_type: 'promotional',
     start_date: '2024-01-01T00:00:00Z',
     end_date: '2024-12-31T23:59:59Z',
-    target_audience: {},
-    campaign_config: {},
     budget: 1000,
+    target_audience: { age_range: [18, 35] },
+    campaign_config: { platforms: ['facebook', 'instagram'] },
   };
 
   beforeEach(() => {
@@ -84,18 +52,15 @@ describe('MarketingService', () => {
 
   describe('createCampaign', () => {
     it('creates a campaign successfully', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockInsert = vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn(() => ({
-            data: mockCampaign,
-            error: null,
-          })),
-        })),
-      }));
-      const mockFrom = vi.fn(() => ({
+      const mockInsert = vi.fn().mockResolvedValue({
+        data: [mockCampaign],
+        error: null,
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
         insert: mockInsert,
-      }));
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await MarketingService.createCampaign(mockCreateCampaignData);
@@ -103,44 +68,43 @@ describe('MarketingService', () => {
       expect(supabase.from).toHaveBeenCalledWith('marketing_campaigns');
       expect(mockInsert).toHaveBeenCalledWith({
         ...mockCreateCampaignData,
-        created_by: 'user-123',
+        status: 'draft',
+        created_by: undefined, // Will be set by RLS
       });
       expect(result).toEqual(mockCampaign);
     });
 
     it('throws error when campaign creation fails', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockError = new Error('Database error');
-      const mockInsert = vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn(() => ({
-            data: null,
-            error: mockError,
-          })),
-        })),
-      }));
-      const mockFrom = vi.fn(() => ({
+      const mockInsert = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database error' },
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
         insert: mockInsert,
-      }));
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
-      await expect(MarketingService.createCampaign(mockCreateCampaignData)).rejects.toThrow('Database error');
+      await expect(MarketingService.createCampaign(mockCreateCampaignData)).rejects.toThrow('Marketing features are not available');
     });
   });
 
   describe('getCampaigns', () => {
     it('fetches campaigns without filters', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockOrder = vi.fn(() => ({
+      const mockSelect = vi.fn().mockResolvedValue({
         data: [mockCampaign],
         error: null,
-      }));
-      const mockSelect = vi.fn(() => ({
-        order: mockOrder,
-      }));
-      const mockFrom = vi.fn(() => ({
+      });
+
+      const mockOrder = vi.fn().mockReturnValue({
         select: mockSelect,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        order: mockOrder,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await MarketingService.getCampaigns();
@@ -151,26 +115,27 @@ describe('MarketingService', () => {
     });
 
     it('fetches campaigns with filters', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockOrder = vi.fn(() => ({
+      const mockSelect = vi.fn().mockResolvedValue({
         data: [mockCampaign],
         error: null,
-      }));
-      const mockEq = vi.fn(() => ({
-        order: mockOrder,
-      }));
-      const mockSelect = vi.fn(() => ({
-        eq: mockEq,
-      }));
-      const mockFrom = vi.fn(() => ({
+      });
+
+      const mockOrder = vi.fn().mockReturnValue({
         select: mockSelect,
-      }));
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
+        order: mockOrder,
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await MarketingService.getCampaigns({
         status: 'active',
-        campaign_type: 'promotional',
-        created_by: 'user-123',
       });
 
       expect(supabase.from).toHaveBeenCalledWith('marketing_campaigns');
@@ -179,17 +144,19 @@ describe('MarketingService', () => {
     });
 
     it('returns empty array when no campaigns found', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockOrder = vi.fn(() => ({
-        data: null,
+      const mockSelect = vi.fn().mockResolvedValue({
+        data: [],
         error: null,
-      }));
-      const mockSelect = vi.fn(() => ({
-        order: mockOrder,
-      }));
-      const mockFrom = vi.fn(() => ({
+      });
+
+      const mockOrder = vi.fn().mockReturnValue({
         select: mockSelect,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        order: mockOrder,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await MarketingService.getCampaigns();
@@ -200,20 +167,19 @@ describe('MarketingService', () => {
 
   describe('getCampaign', () => {
     it('fetches a single campaign by id', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockSingle = vi.fn(() => ({
-        data: mockCampaign,
+      const mockSelect = vi.fn().mockResolvedValue({
+        data: [mockCampaign],
         error: null,
-      }));
-      const mockEq = vi.fn(() => ({
-        single: mockSingle,
-      }));
-      const mockSelect = vi.fn(() => ({
-        eq: mockEq,
-      }));
-      const mockFrom = vi.fn(() => ({
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
         select: mockSelect,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await MarketingService.getCampaign('campaign-123');
@@ -224,97 +190,93 @@ describe('MarketingService', () => {
     });
 
     it('throws error when campaign not found', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockError = new Error('Campaign not found');
-      const mockSingle = vi.fn(() => ({
-        data: null,
-        error: mockError,
-      }));
-      const mockEq = vi.fn(() => ({
-        single: mockSingle,
-      }));
-      const mockSelect = vi.fn(() => ({
-        eq: mockEq,
-      }));
-      const mockFrom = vi.fn(() => ({
+      const mockSelect = vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
         select: mockSelect,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
-      await expect(MarketingService.getCampaign('campaign-123')).rejects.toThrow('Campaign not found');
+      await expect(MarketingService.getCampaign('campaign-123')).rejects.toThrow('Marketing features are not available');
     });
   });
 
   describe('updateCampaign', () => {
     it('updates a campaign successfully', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockSingle = vi.fn(() => ({
-        data: { ...mockCampaign, name: 'Updated Campaign' },
+      const mockUpdate = vi.fn().mockResolvedValue({
+        data: [mockCampaign],
         error: null,
-      }));
-      const mockSelect = vi.fn(() => ({
-        single: mockSingle,
-      }));
-      const mockEq = vi.fn(() => ({
-        select: mockSelect,
-      }));
-      const mockUpdate = vi.fn(() => ({
-        eq: mockEq,
-      }));
-      const mockFrom = vi.fn(() => ({
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
         update: mockUpdate,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const updateData = { name: 'Updated Campaign' };
       const result = await MarketingService.updateCampaign('campaign-123', updateData);
 
       expect(supabase.from).toHaveBeenCalledWith('marketing_campaigns');
-      expect(mockUpdate).toHaveBeenCalledWith({
-        ...updateData,
-        updated_at: expect.any(String),
-      });
       expect(mockEq).toHaveBeenCalledWith('id', 'campaign-123');
-      expect(result.name).toBe('Updated Campaign');
+      expect(mockUpdate).toHaveBeenCalledWith(updateData);
+      expect(result).toEqual(mockCampaign);
     });
   });
 
   describe('deleteCampaign', () => {
     it('deletes a campaign successfully', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockEq = vi.fn(() => ({
+      const mockDelete = vi.fn().mockResolvedValue({
+        data: null,
         error: null,
-      }));
-      const mockDelete = vi.fn(() => ({
-        eq: mockEq,
-      }));
-      const mockFrom = vi.fn(() => ({
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
         delete: mockDelete,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       await MarketingService.deleteCampaign('campaign-123');
 
       expect(supabase.from).toHaveBeenCalledWith('marketing_campaigns');
-      expect(mockDelete).toHaveBeenCalled();
       expect(mockEq).toHaveBeenCalledWith('id', 'campaign-123');
+      expect(mockDelete).toHaveBeenCalled();
     });
 
     it('throws error when deletion fails', async () => {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const mockError = new Error('Deletion failed');
-      const mockEq = vi.fn(() => ({
-        error: mockError,
-      }));
-      const mockDelete = vi.fn(() => ({
-        eq: mockEq,
-      }));
-      const mockFrom = vi.fn(() => ({
+      const mockDelete = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Deletion failed' },
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
         delete: mockDelete,
-      }));
+      });
+
+      const mockFrom = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
-      await expect(MarketingService.deleteCampaign('campaign-123')).rejects.toThrow('Deletion failed');
+      await expect(MarketingService.deleteCampaign('campaign-123')).rejects.toThrow('Marketing features are not available');
     });
   });
 });

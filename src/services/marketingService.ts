@@ -41,7 +41,8 @@ export class MarketingService {
                                      promotionalCodesTable.exists;
 
       if (!this.marketingTablesAvailable) {
-        console.warn('Marketing tables not available. Using fallback mode.');
+        // Don't show warning in console for missing tables - this is expected in development
+        // console.warn('Marketing tables not available. Using fallback mode.');
       }
 
       return this.marketingTablesAvailable;
@@ -97,7 +98,8 @@ export class MarketingService {
     const tablesAvailable = await this.checkMarketingTables();
     
     if (!tablesAvailable) {
-      console.warn('Marketing tables not available. Returning empty campaigns list.');
+      // Don't show warning in console for missing tables - this is expected in development
+      // console.warn('Marketing tables not available. Returning empty campaigns list.');
       return [];
     }
 
@@ -222,7 +224,8 @@ export class MarketingService {
     const tablesAvailable = await this.checkMarketingTables();
     
     if (!tablesAvailable) {
-      console.warn('Marketing tables not available. No active campaigns.');
+      // Don't show warning in console for missing tables - this is expected in development
+      // console.warn('Marketing tables not available. No active campaigns.');
       return [];
     }
 
@@ -256,7 +259,8 @@ export class MarketingService {
     const tablesAvailable = await this.checkMarketingTables();
     
     if (!tablesAvailable) {
-      console.warn('Marketing tables not available. Event tracking skipped.');
+      // Don't show warning in console for missing tables - this is expected in development
+      // console.warn('Marketing tables not available. Event tracking skipped.');
       return;
     }
 
@@ -288,7 +292,8 @@ export class MarketingService {
     const tablesAvailable = await this.checkMarketingTables();
     
     if (!tablesAvailable) {
-      console.warn('Marketing tables not available. No analytics data.');
+      // Don't show warning in console for missing tables - this is expected in development
+      // console.warn('Marketing tables not available. No analytics data.');
       return createMarketingFallback();
     }
 

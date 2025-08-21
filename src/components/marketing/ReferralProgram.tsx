@@ -18,7 +18,6 @@ import { ReferralService } from '@/services/referralService';
 import { SocialSharingService } from '@/services/socialSharingService';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { checkTableExists } from '@/utils/databaseUtils';
 
 /**
  * Props for the ReferralProgram component
@@ -49,42 +48,12 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [referralTablesAvailable, setReferralTablesAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkReferralTables = async () => {
-      try {
-        const referralTable = await checkTableExists('referral_program');
-        setReferralTablesAvailable(referralTable.exists);
-        
-        if (!referralTable.exists) {
-          console.warn('Referral program table not available. Component will show error state.');
-          setError('Referral features not available');
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking referral tables:', error);
-        setReferralTablesAvailable(false);
-        setError('Unable to check referral features');
-        setLoading(false);
-        return;
-      }
-    };
-
-    checkReferralTables();
-  }, []);
-
-  useEffect(() => {
-    if (referralTablesAvailable === false) {
-      setLoading(false);
-      return;
-    }
-
-    if (referralTablesAvailable === true && user) {
+    if (user) {
       loadReferralData();
     }
-  }, [referralTablesAvailable, user]);
+  }, [user]);
 
   const loadReferralData = async () => {
     try {
@@ -111,12 +80,12 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       setReferralLink(link);
 
       // Load analytics
-      const analyticsData = await ReferralService.getReferralMetrics(user!.id);
+      const analyticsData = await ReferralService.getReferralAnalytics(user!.id);
       setAnalytics(analyticsData);
 
     } catch (error) {
       console.error('Error loading referral data:', error);
-      setError('Failed to load referral data');
+      setError('Failed to load referral data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -142,12 +111,14 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
   const shareReferral = async (platform: string) => {
     try {
       const shareData = {
-        title: 'Join me on Local Social Hub!',
-        text: 'I\'m using Local Social Hub to connect with my local community. Join me and get 100 credits!',
-        url: referralLink
+        content_type: 'profile',
+        content_id: user!.id,
+        platform: platform as any,
+        share_text: `Join me on The Glocal! Use my referral link: ${referralLink}`,
+        share_url: referralLink
       };
 
-      await SocialSharingService.share(platform, shareData);
+      await SocialSharingService.shareContent(shareData);
       
       // Track share event
       ReferralService.trackReferralClick(referralCode!, platform);
@@ -171,33 +142,6 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
     loadReferralData();
   };
 
-  // Show error state if tables not available
-  if (referralTablesAvailable === false) {
-    return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Gift className="h-5 w-5" />
-            Referral Program
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Referral Features Unavailable</h3>
-            <p className="text-muted-foreground mb-4">
-              The referral program is currently not available. This may be due to missing database tables.
-            </p>
-            <Button onClick={retryLoading} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Try Again
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Show loading state
   if (loading) {
     return (
@@ -209,15 +153,9 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="animate-pulse">
-              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-muted rounded w-1/2"></div>
-            </div>
-            <div className="animate-pulse">
-              <div className="h-10 bg-muted rounded mb-2"></div>
-              <div className="h-10 bg-muted rounded"></div>
-            </div>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
           </div>
         </CardContent>
       </Card>
@@ -244,6 +182,32 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
             <Button onClick={retryLoading} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show create referral code state
+  if (!referralCode) {
+    return (
+      <Card className={className}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Gift className="h-5 w-5" />
+            Referral Program
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Start Earning Rewards</h3>
+            <p className="text-muted-foreground mb-4">
+              You don't have a referral code yet. Create one to start earning rewards!
+            </p>
+            <Button onClick={loadReferralData}>
+              Create Referral Code
             </Button>
           </div>
         </CardContent>
@@ -279,6 +243,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
               size="icon"
               variant="outline"
               onClick={() => copyToClipboard(referralCode!, 'code')}
+              aria-label="Copy referral code"
             >
               <Copy className="h-4 w-4" />
             </Button>
@@ -301,6 +266,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
               size="icon"
               variant="outline"
               onClick={() => copyToClipboard(referralLink, 'link')}
+              aria-label="Copy referral link"
             >
               <Copy className="h-4 w-4" />
             </Button>
@@ -361,13 +327,38 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-orange-600">
                   <DollarSign className="h-5 w-5 inline mr-1" />
-                  {analytics.total_rewards || 0}
+                  ${(analytics.total_rewards || 0).toFixed(2)}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Rewards</div>
               </div>
             </div>
           </div>
         )}
+
+        <Separator />
+
+        {/* Rewards Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Rewards</h3>
+          
+          <div className="grid gap-4">
+            <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+              <Gift className="h-6 w-6 text-green-600 mt-1" />
+              <div>
+                <h4 className="font-semibold">100 Credits</h4>
+                <p className="text-sm text-muted-foreground">per successful referral</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+              <DollarSign className="h-6 w-6 text-blue-600 mt-1" />
+              <div>
+                <h4 className="font-semibold">$10 Bonus</h4>
+                <p className="text-sm text-muted-foreground">after 5 successful referrals</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <Separator />
 

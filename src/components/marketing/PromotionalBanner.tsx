@@ -59,7 +59,8 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
         setMarketingTablesAvailable(campaignsTable.exists);
         
         if (!campaignsTable.exists) {
-          console.warn('Marketing campaigns table not available. Banner will be hidden.');
+          // Don't show error in console for missing table - this is expected in development
+          // console.warn('Marketing campaigns table not available. Banner will be hidden.');
           setError('Marketing features not available');
           setLoading(false);
           return;

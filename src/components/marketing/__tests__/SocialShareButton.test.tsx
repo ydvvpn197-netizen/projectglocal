@@ -35,9 +35,14 @@ describe('SocialShareButton', () => {
 
   it('renders with default props', () => {
     render(
-      <SocialShareButton 
-        content={mockContent}
-        onShare={mockOnShare}
+      <SocialShareButton
+        content={{
+          content_type: 'post',
+          content_id: '123',
+          share_text: 'Check this out!',
+          share_url: 'https://example.com'
+        }}
+        showLabel={true}
       />
     );
 
@@ -154,45 +159,45 @@ describe('SocialShareButton', () => {
 
   it('renders with different variants', () => {
     const { rerender } = render(
-      <SocialShareButton 
+      <SocialShareButton
         content={mockContent}
         variant="outline"
         onShare={mockOnShare}
       />
     );
 
-    expect(screen.getByRole('button')).toHaveClass('outline');
+    expect(screen.getByRole('button')).toHaveClass('border', 'bg-background');
 
     rerender(
-      <SocialShareButton 
+      <SocialShareButton
         content={mockContent}
         variant="ghost"
         onShare={mockOnShare}
       />
     );
 
-    expect(screen.getByRole('button')).toHaveClass('ghost');
+    expect(screen.getByRole('button')).toHaveClass('hover:bg-accent');
   });
 
   it('renders with different sizes', () => {
     const { rerender } = render(
-      <SocialShareButton 
+      <SocialShareButton
         content={mockContent}
         size="sm"
         onShare={mockOnShare}
       />
     );
 
-    expect(screen.getByRole('button')).toHaveClass('sm');
+    expect(screen.getByRole('button')).toHaveClass('h-9', 'px-3', 'text-sm');
 
     rerender(
-      <SocialShareButton 
+      <SocialShareButton
         content={mockContent}
         size="lg"
         onShare={mockOnShare}
       />
     );
 
-    expect(screen.getByRole('button')).toHaveClass('lg');
+    expect(screen.getByRole('button')).toHaveClass('h-11', 'px-8');
   });
 });
