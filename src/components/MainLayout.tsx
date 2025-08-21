@@ -21,6 +21,10 @@ export function MainLayout({ children }: MainLayoutProps) {
     await signOut();
   };
 
+  const handleSignIn = () => {
+    navigate('/signin');
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -50,38 +54,50 @@ export function MainLayout({ children }: MainLayoutProps) {
               
               <div className="flex items-center gap-2">
                 <NetworkStatusIndicator className="mr-2" />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => navigate('/create')}>
-                      Create Post
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/create-event')}>
-                      Create Event
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/community/create-discussion')}>
-                      Start Discussion
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/community/create-group')}>
-                      Create Group
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="ghost" size="icon">
-                  <Bell className="h-4 w-4" />
-                </Button>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">
-                    {user?.email?.split('@')[0]}
-                  </span>
-                  <Button onClick={handleSignOut} variant="outline" size="sm">
-                    Sign Out
+                {user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate('/create')}>
+                        Create Post
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/create-event')}>
+                        Create Event
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/community/create-discussion')}>
+                        Start Discussion
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/community/create-group')}>
+                        Create Group
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                {user && (
+                  <Button variant="ghost" size="icon">
+                    <Bell className="h-4 w-4" />
                   </Button>
+                )}
+                <div className="flex items-center gap-2 text-sm">
+                  {user ? (
+                    <>
+                      <span className="text-muted-foreground">
+                        {user?.email?.split('@')[0]}
+                      </span>
+                      <Button onClick={handleSignOut} variant="outline" size="sm">
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={handleSignIn} variant="outline" size="sm">
+                      Sign In
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
