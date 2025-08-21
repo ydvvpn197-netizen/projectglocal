@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Copy, 
-  Share2, 
   Gift, 
-  Users, 
-  TrendingUp, 
-  DollarSign,
+  Share2, 
   AlertTriangle,
   RefreshCw
 } from 'lucide-react';
@@ -18,6 +13,12 @@ import { ReferralService } from '@/services/referralService';
 import { SocialSharingService } from '@/services/socialSharingService';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useReferralConfig } from '@/hooks/useReferralConfig';
+import { ReferralCodeSection } from './ReferralCodeSection';
+import { ReferralAnalytics } from './ReferralAnalytics';
+import { RewardsInfo } from './RewardsInfo';
+import { HowItWorks } from './HowItWorks';
+import type { ReferralAnalytics as ReferralAnalyticsType } from '@/types/marketing';
 
 /**
  * Props for the ReferralProgram component
@@ -43,9 +44,10 @@ interface ReferralProgramProps {
 export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { config } = useReferralConfig();
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referralLink, setReferralLink] = useState<string>('');
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<ReferralAnalyticsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,14 +65,12 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       // Get or create referral code
       let code = await ReferralService.getUserReferralCode(user!.id);
       if (!code) {
-        // Create new referral program
-        const referral = await ReferralService.createReferral({
-          reward_type: 'credits',
-          reward_amount: 100,
-          reward_currency: 'USD',
-          referral_source: 'web'
-        });
-        code = referral.referral_code;
+        // Don't automatically create - let user choose when to create
+        setReferralCode(null);
+        setReferralLink('');
+        setAnalytics(null);
+        setLoading(false);
+        return;
       }
 
       setReferralCode(code);
@@ -86,6 +86,37 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
     } catch (error) {
       console.error('Error loading referral data:', error);
       setError('Failed to load referral data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createReferralCode = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Create new referral program with configurable values
+      const referral = await ReferralService.createReferral({
+        reward_type: 'credits',
+        reward_amount: config.creditsPerReferral,
+        reward_currency: config.currency,
+        referral_source: 'web'
+      });
+
+      setReferralCode(referral.referral_code);
+
+      // Generate referral link
+      const link = await ReferralService.generateReferralLink(user!.id);
+      setReferralLink(link);
+
+      // Load analytics
+      const analyticsData = await ReferralService.getReferralAnalytics(user!.id);
+      setAnalytics(analyticsData);
+
+    } catch (error) {
+      console.error('Error creating referral code:', error);
+      setError('Failed to create referral code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -206,7 +237,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
             <p className="text-muted-foreground mb-4">
               You don't have a referral code yet. Create one to start earning rewards!
             </p>
-            <Button onClick={loadReferralData}>
+            <Button onClick={createReferralCode}>
               Create Referral Code
             </Button>
           </div>
@@ -227,51 +258,12 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Referral Code */}
-        <div className="space-y-2">
-          <label htmlFor="referral-code" className="text-sm font-medium">
-            Your Referral Code
-          </label>
-          <div className="flex gap-2">
-            <Input
-              id="referral-code"
-              value={referralCode || ''}
-              readOnly
-              className="font-mono"
-            />
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => copyToClipboard(referralCode!, 'code')}
-              aria-label="Copy referral code"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Referral Link */}
-        <div className="space-y-2">
-          <label htmlFor="referral-link" className="text-sm font-medium">
-            Your Referral Link
-          </label>
-          <div className="flex gap-2">
-            <Input
-              id="referral-link"
-              value={referralLink}
-              readOnly
-              className="text-sm"
-            />
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => copyToClipboard(referralLink, 'link')}
-              aria-label="Copy referral link"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        {/* Referral Code Section */}
+        <ReferralCodeSection
+          referralCode={referralCode}
+          referralLink={referralLink}
+          onCopyToClipboard={copyToClipboard}
+        />
 
         {/* Social Sharing */}
         <div className="space-y-2">
@@ -294,116 +286,18 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
 
         <Separator />
 
-        {/* Analytics */}
-        {analytics && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Your Referral Stats
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
-                  {analytics.total_referrals || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Total Referrals</div>
-              </div>
-              
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
-                  {analytics.successful_referrals || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Successful</div>
-              </div>
-              
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
-                  {analytics.conversion_rate?.toFixed(1) || 0}%
-                </div>
-                <div className="text-sm text-muted-foreground">Conversion Rate</div>
-              </div>
-              
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">
-                  <DollarSign className="h-5 w-5 inline mr-1" />
-                  ${(analytics.total_rewards || 0).toFixed(2)}
-                </div>
-                <div className="text-sm text-muted-foreground">Total Rewards</div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Analytics Section */}
+        <ReferralAnalytics analytics={analytics} />
 
         <Separator />
 
         {/* Rewards Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Rewards</h3>
-          
-          <div className="grid gap-4">
-            <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
-              <Gift className="h-6 w-6 text-green-600 mt-1" />
-              <div>
-                <h4 className="font-semibold">100 Credits</h4>
-                <p className="text-sm text-muted-foreground">per successful referral</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
-              <DollarSign className="h-6 w-6 text-blue-600 mt-1" />
-              <div>
-                <h4 className="font-semibold">$10 Bonus</h4>
-                <p className="text-sm text-muted-foreground">after 5 successful referrals</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <RewardsInfo />
 
         <Separator />
 
         {/* How it works */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">How It Works</h3>
-          
-          <div className="grid gap-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                1
-              </div>
-              <div>
-                <h4 className="font-semibold">Share Your Link</h4>
-                <p className="text-sm text-muted-foreground">
-                  Share your unique referral link with friends and family.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                2
-              </div>
-              <div>
-                <h4 className="font-semibold">Friends Sign Up</h4>
-                <p className="text-sm text-muted-foreground">
-                  When they sign up using your link, they get 100 credits.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
-                3
-              </div>
-              <div>
-                <h4 className="font-semibold">Earn Rewards</h4>
-                <p className="text-sm text-muted-foreground">
-                  You earn 100 credits for each successful referral!
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HowItWorks />
       </CardContent>
     </Card>
   );

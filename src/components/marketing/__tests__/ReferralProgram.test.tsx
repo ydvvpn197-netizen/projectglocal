@@ -39,6 +39,32 @@ vi.mock('@/hooks/use-toast', () => ({
   }),
 }));
 
+// Mock the referral config hook
+vi.mock('@/hooks/useReferralConfig', () => ({
+  useReferralConfig: () => ({
+    config: {
+      creditsPerReferral: 100,
+      bonusAfterReferrals: 10,
+      referralsForBonus: 5,
+      referralCodeLength: 8,
+      maxReferralsPerUser: 50,
+      referralExpiryDays: 30,
+      minReferralAmount: 0,
+      currency: 'USD',
+      supportedPlatforms: ['facebook', 'twitter', 'linkedin', 'whatsapp'],
+      defaultShareText: 'Join me on The Glocal! Use my referral link: {referralLink}',
+      analyticsEnabled: true,
+      trackingEnabled: true
+    },
+    loading: false,
+    errors: [],
+    updateConfig: vi.fn(),
+    resetConfig: vi.fn(),
+    isConfigLoaded: true,
+    isValid: true
+  }),
+}));
+
 // Mock clipboard API
 Object.assign(navigator, {
   clipboard: {
@@ -52,6 +78,19 @@ describe('ReferralProgram', () => {
     successful_referrals: 3,
     conversion_rate: 60.0,
     total_rewards: 300.0,
+    average_reward: 100.0,
+    referral_trend: [
+      { date: '2024-01-01', referrals: 1, conversions: 1 },
+      { date: '2024-01-02', referrals: 2, conversions: 1 }
+    ],
+    top_referrers: [
+      {
+        user_id: 'user-123',
+        username: 'testuser',
+        referral_count: 5,
+        total_rewards: 300.0
+      }
+    ]
   };
 
   beforeEach(() => {
@@ -80,12 +119,18 @@ describe('ReferralProgram', () => {
 
   it('renders referral program when user has no referral code', async () => {
     vi.mocked(ReferralService.getUserReferralCode).mockResolvedValue(null);
+    vi.mocked(ReferralService.createReferral).mockResolvedValue({
+      id: 'ref-123',
+      referrer_id: 'user-123',
+      referral_code: 'REF123456',
+      status: 'pending',
+    } as any);
 
     render(<ReferralProgram />);
 
     await waitFor(() => {
       expect(screen.getByText(/You don't have a referral code yet/)).toBeInTheDocument();
-      expect(screen.getByText('Generate Referral Code')).toBeInTheDocument();
+      expect(screen.getByText('Create Referral Code')).toBeInTheDocument();
     });
   });
 
@@ -100,18 +145,31 @@ describe('ReferralProgram', () => {
 
   it('creates referral code when button is clicked', async () => {
     vi.mocked(ReferralService.getUserReferralCode).mockResolvedValue(null);
+    vi.mocked(ReferralService.createReferral).mockResolvedValue({
+      id: 'ref-123',
+      referrer_id: 'user-123',
+      referral_code: 'REF123456',
+      status: 'pending',
+    } as any);
 
     render(<ReferralProgram />);
 
+    // Wait for the component to finish loading and show the "no referral code" state
     await waitFor(() => {
-      expect(screen.getByText('Generate Referral Code')).toBeInTheDocument();
+      expect(screen.getByText('Create Referral Code')).toBeInTheDocument();
     });
 
-    const createButton = screen.getByText('Generate Referral Code');
+    const createButton = screen.getByText('Create Referral Code');
     fireEvent.click(createButton);
 
+    // Wait for the createReferral to be called
     await waitFor(() => {
-      expect(ReferralService.createReferral).toHaveBeenCalledWith('user-123');
+      expect(ReferralService.createReferral).toHaveBeenCalledWith({
+        reward_type: 'credits',
+        reward_amount: 100,
+        reward_currency: 'USD',
+        referral_source: 'web'
+      });
     });
   });
 
@@ -145,15 +203,19 @@ describe('ReferralProgram', () => {
     render(<ReferralProgram />);
 
     await waitFor(() => {
-      expect(screen.getAllByText('Share Your Link')[1]).toBeInTheDocument(); // Use the second occurrence
+      expect(screen.getByDisplayValue('REF123456')).toBeInTheDocument();
     });
 
-    // The social sharing buttons are rendered but may not have text labels
-    const shareButtons = screen.getAllByRole('button').filter(button => 
-      button.getAttribute('aria-label')?.includes('Share on')
-    );
-    
+    const shareButtons = screen.getAllByText(/facebook|twitter|linkedin|whatsapp/i);
     expect(shareButtons.length).toBeGreaterThan(0);
+
+    // Test sharing on first platform
+    fireEvent.click(shareButtons[0]);
+
+    await waitFor(() => {
+      expect(SocialSharingService.shareContent).toHaveBeenCalled();
+      expect(ReferralService.trackReferralClick).toHaveBeenCalled();
+    });
   });
 
   it('displays analytics correctly', async () => {
