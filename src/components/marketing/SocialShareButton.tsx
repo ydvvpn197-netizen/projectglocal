@@ -23,7 +23,7 @@ interface SocialShareButtonProps {
   /** Visual variant of the button */
   variant?: 'default' | 'outline' | 'ghost';
   /** Size of the button */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'lg';
   /** Whether to show platform labels */
   showLabel?: boolean;
   /** Array of social platforms to enable sharing on */
@@ -91,7 +91,7 @@ const platformConfigs = {
 export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
   content,
   variant = 'default',
-  size = 'md',
+  size = 'sm',
   showLabel = false,
   platforms = ['facebook', 'twitter', 'linkedin', 'whatsapp'],
   onShare,
@@ -167,7 +167,6 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     };
     const sizeClasses = {
       sm: "h-9 px-3 text-sm",
-      md: "h-10 px-4 py-2",
       lg: "h-11 px-8"
     };
     
@@ -178,7 +177,7 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
     <div className={`relative ${className}`}>
       <Button
         variant={variant}
-        size={size}
+        size={size === 'lg' ? 'lg' : 'sm'}
         onClick={handleQuickShare}
         disabled={isSharing}
         className={getButtonClasses()}
@@ -247,7 +246,7 @@ export const CustomShareButton: React.FC<SocialShareButtonProps & {
   return (
     <Button
       variant={props.variant}
-      size={props.size}
+      size={props.size === 'lg' ? 'lg' : 'sm'}
       onClick={() => props.platforms?.length === 1 ? 
         SocialSharingService.openShareDialog(props.platforms[0], props.content) : 
         undefined

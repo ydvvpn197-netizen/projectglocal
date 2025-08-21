@@ -142,7 +142,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
   const shareReferral = async (platform: string) => {
     try {
       const shareData = {
-        content_type: 'profile',
+        content_type: 'profile' as const,
         content_id: user!.id,
         platform: platform as any,
         share_text: `Join me on The Glocal! Use my referral link: ${referralLink}`,

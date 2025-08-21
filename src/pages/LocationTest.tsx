@@ -8,7 +8,7 @@ import { LocationDetector } from '@/components/LocationDetector';
 import { LocationSelector } from '@/components/LocationSelector';
 import { LocationFilter } from '@/components/LocationFilter';
 import { LocationTestPanel } from '@/components/LocationTestPanel';
-import NewsFeedTest from '@/components/NewsFeedTest';
+import { NewsFeedTest } from '@/components/NewsFeedTest';
 import { useLocationManager } from '@/hooks/useLocationManager';
 import { formatDistance } from '@/utils/locationUtils';
 

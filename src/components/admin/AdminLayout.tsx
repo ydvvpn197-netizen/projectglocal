@@ -120,7 +120,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {adminUser?.profile?.full_name || 'Admin'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
-                  {adminUser?.profile?.role || 'admin'}
+                  Administrator
                 </p>
               </div>
             </div>
@@ -181,7 +181,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {adminUser?.profile?.full_name || 'Admin'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
-                  {adminUser?.profile?.role || 'admin'}
+                  Administrator
                 </p>
               </div>
             </div>
