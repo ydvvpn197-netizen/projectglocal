@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, User, Plus, Search, MapPin, Sparkles } from "lucide-react";
+import { Bell, User, Plus, Search, MapPin, Sparkles, Settings, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -80,7 +80,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-3">
                 <NetworkStatusIndicator className="mr-2" user={user} />
                 
-                {user && (
+                {user ? (
                   <>
                     {/* Location Indicator */}
                     <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
@@ -129,9 +129,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.avatar_url} alt={user.name || user.email} />
+                            <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
                             <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-                              {getInitials(user.name || user.email)}
+                              {getInitials(user.user_metadata?.full_name || user.email)}
                             </AvatarFallback>
                           </Avatar>
                         </Button>
@@ -139,14 +139,14 @@ export function MainLayout({ children }: MainLayoutProps) {
                       <DropdownMenuContent align="end" className="w-56">
                         <div className="flex items-center justify-start gap-2 p-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.avatar_url} alt={user.name || user.email} />
+                            <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
                             <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-                              {getInitials(user.name || user.email)}
+                              {getInitials(user.user_metadata?.full_name || user.email)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">
-                              {user.name || user.email?.split('@')[0]}
+                              {user.user_metadata?.full_name || user.email?.split('@')[0]}
                             </p>
                             <p className="text-xs leading-none text-muted-foreground">
                               {user.email}
@@ -195,6 +195,3 @@ export function MainLayout({ children }: MainLayoutProps) {
     </SidebarProvider>
   );
 }
-
-// Import missing icons
-import { Settings, LogOut } from "lucide-react";
