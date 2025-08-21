@@ -53,7 +53,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
               
               <div className="flex items-center gap-2">
-                <NetworkStatusIndicator className="mr-2" />
+                <NetworkStatusIndicator className="mr-2" user={user} />
                 {user && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { User } from '@supabase/supabase-js';
 
 interface NetworkStatusProps {
   className?: string;
@@ -45,7 +46,12 @@ export const NetworkStatus: React.FC<NetworkStatusProps> = ({ className }) => {
   );
 };
 
-export const NetworkStatusIndicator: React.FC<{ className?: string }> = ({ className }) => {
+interface NetworkStatusIndicatorProps {
+  className?: string;
+  user?: User | null;
+}
+
+export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({ className, user }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -60,6 +66,11 @@ export const NetworkStatusIndicator: React.FC<{ className?: string }> = ({ class
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Only show the indicator if user is logged in
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className={`flex items-center gap-2 text-sm ${className}`}>
