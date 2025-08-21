@@ -4,6 +4,9 @@ import { PostComment, CreateCommentRequest } from '@/types/community';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
+// Export Comment type for compatibility
+export type Comment = PostComment;
+
 export const useComments = () => {
   const [comments, setComments] = useState<PostComment[]>([]);
   const [userComments, setUserComments] = useState<PostComment[]>([]);
@@ -260,6 +263,7 @@ export const useComments = () => {
     fetchComments,
     fetchUserComments,
     createComment,
+    addComment: createComment, // Add alias for compatibility
     getComment,
     updateComment,
     deleteComment,

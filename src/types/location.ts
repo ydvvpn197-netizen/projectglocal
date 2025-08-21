@@ -43,6 +43,17 @@ export interface NearbyContent {
   location_name?: string;
 }
 
+export interface LocationData {
+  lat: number;
+  lng: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  name?: string;
+  address?: string;
+  formatted_address?: string;
+}
+
 export interface LocationState {
   current: Location | null;
   enabled: boolean;

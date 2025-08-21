@@ -74,9 +74,9 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
         ...formData,
         latitude: currentLocation?.latitude,
         longitude: currentLocation?.longitude,
-        location_city: currentLocation?.city,
-        location_state: currentLocation?.state,
-        location_country: currentLocation?.country
+        location_city: (currentLocation as any)?.city || '',
+        location_state: (currentLocation as any)?.state || '',
+        location_country: (currentLocation as any)?.country || ''
       };
 
       const newPost = await createPost(postData);
@@ -212,8 +212,7 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <MapPin className="h-4 w-4" />
               <span>
-                Location: {currentLocation.city}
-                {currentLocation.state && `, ${currentLocation.state}`}
+                Location: {(currentLocation as any)?.name || 'Unknown'}
               </span>
             </div>
           )}
