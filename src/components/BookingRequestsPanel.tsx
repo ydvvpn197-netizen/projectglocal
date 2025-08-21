@@ -19,8 +19,8 @@ interface BookingRequest {
   event_location: string;
   event_description: string;
   budget_min: number;
-  budget_max: number;
-  contact_info: string;
+  budget_max?: number;
+  contact_info?: string;
   status: string;
   created_at: string;
   client_name: string;
@@ -46,7 +46,20 @@ export const BookingRequestsPanel = () => {
           {
             event: 'INSERT',
             schema: 'public',
-            table: 'artist_bookings'
+            table: 'artist_bookings',
+            filter: `artist_id=eq.${user.id}`
+          },
+          () => {
+            fetchBookingRequests();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'artist_bookings',
+            filter: `artist_id=eq.${user.id}`
           },
           () => {
             fetchBookingRequests();
@@ -64,24 +77,11 @@ export const BookingRequestsPanel = () => {
     if (!user) return;
 
     try {
-      // First, get the artist record for the current user
-      const { data: artistData, error: artistError } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (artistError) {
-        console.error('Artist not found:', artistError);
-        setBookingRequests([]);
-        return;
-      }
-
-      // Fetch booking requests for this artist
+      // Fetch booking requests for this artist (artist_id in artist_bookings references auth.users(id))
       const { data, error } = await supabase
         .from('artist_bookings')
         .select('*')
-        .eq('artist_id', artistData.id)
+        .eq('artist_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -122,39 +122,57 @@ export const BookingRequestsPanel = () => {
     
     try {
       const request = bookingRequests.find(r => r.id === requestId);
-      if (!request) return;
+      if (!request) {
+        console.error('Booking request not found:', requestId);
+        return;
+      }
+
+      console.log('Processing booking action:', { requestId, action, request });
 
       // Update the booking status in the database
       const { error: updateError } = await supabase
         .from('artist_bookings')
         .update({ 
-          status: action === 'accept' ? 'accepted' : 'rejected',
+          status: action === 'accept' ? 'accepted' : 'declined',
           updated_at: new Date().toISOString()
         })
         .eq('id', requestId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating booking status:', updateError);
+        throw updateError;
+      }
 
       // Create notification for the client
-      await supabase
+      const { error: notificationError } = await supabase
         .from('notifications')
         .insert({
           user_id: request.user_id,
-          type: action === 'accept' ? 'booking_accepted' : 'booking_rejected',
-          title: `Booking Request ${action === 'accept' ? 'Accepted' : 'Rejected'}`,
-          message: `Your booking request has been ${action === 'accept' ? 'accepted' : 'rejected'} by the artist.`,
-          data: { booking_id: requestId, artist_id: user?.id }
+          type: action === 'accept' ? 'booking_accepted' : 'booking_declined',
+          title: `Booking Request ${action === 'accept' ? 'Accepted' : 'Declined'}`,
+          message: `Your booking request has been ${action === 'accept' ? 'accepted' : 'declined'} by the artist.`,
+          data: { booking_id: requestId, artist_id: request.artist_id }
         });
+
+      if (notificationError) {
+        console.error('Error creating notification:', notificationError);
+        // Don't throw here, continue with the process
+      }
 
       if (action === 'accept') {
         // Create a chat conversation for accepted bookings
-        await supabase
+        const { error: chatError } = await supabase
           .from('chat_conversations')
           .insert({
             booking_id: requestId,
             client_id: request.user_id,
-            artist_id: user?.id
+            artist_id: request.artist_id
           });
+
+        if (chatError) {
+          console.error('Error creating chat conversation:', chatError);
+          // Don't throw here, continue with the process
+        }
 
         toast({
           title: "Booking Accepted",
@@ -162,8 +180,8 @@ export const BookingRequestsPanel = () => {
         });
       } else {
         toast({
-          title: "Booking Rejected",
-          description: "You've rejected the booking request.",
+          title: "Booking Declined",
+          description: "You've declined the booking request.",
         });
       }
 

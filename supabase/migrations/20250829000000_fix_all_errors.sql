@@ -139,6 +139,9 @@ CREATE POLICY "Users can create bookings" ON public.artist_bookings
 CREATE POLICY "Users can update their own bookings" ON public.artist_bookings
   FOR UPDATE USING (user_id = auth.uid());
 
+CREATE POLICY "Artists can update bookings for them" ON public.artist_bookings
+  FOR UPDATE USING (artist_id = auth.uid());
+
 -- 6. Create RLS policies for chat_conversations
 DROP POLICY IF EXISTS "Users can view their own conversations" ON public.chat_conversations;
 DROP POLICY IF EXISTS "Users can create conversations" ON public.chat_conversations;
