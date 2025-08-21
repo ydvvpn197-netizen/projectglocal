@@ -38,20 +38,43 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     if (!user) {
+      console.log('No user found, skipping fetchPosts');
       setLoading(false);
       return;
     }
 
-    try {
-      // Use the secure function instead of the view
-      const { data, error } = await supabase
-        .rpc('get_posts_with_restricted_contact');
+    console.log('Fetching posts for user:', user.id);
+    console.log('User session:', user);
 
-      if (error) {
-        throw error;
+    try {
+      // Try the direct query approach first since RPC might have authentication issues
+      console.log('Attempting direct query to posts table...');
+      const { data: directData, error: directError } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles:user_id (
+            display_name,
+            username,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (directError) {
+        console.error('Direct query failed:', directError);
+        throw directError;
       }
       
-      setPosts(data as Post[] || []);
+      console.log('Direct query successful, posts found:', directData?.length || 0);
+      
+      // Filter out contact_info for non-owners
+      const filteredData = directData?.map(post => ({
+        ...post,
+        contact_info: post.user_id === user?.id ? post.contact_info : null
+      })) || [];
+      
+      setPosts(filteredData as Post[]);
     } catch (error: any) {
       console.error('Error fetching posts:', error);
       toast({

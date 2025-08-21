@@ -11,7 +11,25 @@ const SUPABASE_PUBLISHABLE_KEY = config.supabase.anonKey;
 // Validate Supabase configuration
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.error('Supabase configuration is missing. Please check your environment variables.');
+  console.error('SUPABASE_URL:', SUPABASE_URL);
+  console.error('SUPABASE_PUBLISHABLE_KEY:', SUPABASE_PUBLISHABLE_KEY ? 'Present' : 'Missing');
   throw new Error('Supabase configuration is required');
+}
+
+// Validate API key format
+if (SUPABASE_PUBLISHABLE_KEY && !SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ')) {
+  console.error('Invalid Supabase API key format. API key should start with "eyJ"');
+  throw new Error('Invalid Supabase API key format');
+}
+
+// Log successful configuration (only in development)
+if (import.meta.env.DEV) {
+  console.log('Supabase client configured successfully');
+  console.log('URL:', SUPABASE_URL);
+  console.log('API Key:', SUPABASE_PUBLISHABLE_KEY ? 'Present' : 'Missing');
+  console.log('API Key length:', SUPABASE_PUBLISHABLE_KEY?.length || 0);
+  console.log('API Key preview:', SUPABASE_PUBLISHABLE_KEY?.substring(0, 20) + '...');
+  console.log('Environment debug:', config.debug);
 }
 
 // Import the supabase client like this:

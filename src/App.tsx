@@ -89,7 +89,7 @@ const App = () => {
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                <Route path="/feed" element={<Feed />} />
+                <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
                 <Route path="/create" element={<CreatePost />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/about" element={<About />} />

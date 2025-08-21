@@ -230,6 +230,12 @@ export class MarketingService {
     }
 
     try {
+      // Check if Supabase client is properly configured
+      if (!supabase.auth || !supabase.from) {
+        console.warn('Supabase client not properly configured');
+        return [];
+      }
+
       const now = new Date().toISOString();
       
       const { data: campaigns, error } = await supabase
@@ -240,7 +246,14 @@ export class MarketingService {
         .gte('end_date', now)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific API key errors
+        if (error.message?.includes('No API key found') || error.message?.includes('apikey')) {
+          console.warn('Supabase API key not configured properly');
+          return [];
+        }
+        throw error;
+      }
 
       return campaigns || [];
     } catch (error) {

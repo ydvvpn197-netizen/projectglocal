@@ -11,6 +11,22 @@ console.log('main.tsx: React import successful', {
   version: React?.version 
 });
 
+// Test Supabase configuration
+import { supabase } from './integrations/supabase/client';
+console.log('main.tsx: Supabase client loaded', {
+  hasAuth: !!supabase.auth,
+  hasFrom: !!supabase.from,
+  url: supabase.supabaseUrl
+});
+
+// Test environment variables
+console.log('main.tsx: Environment variables test', {
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 'Present' : 'Missing',
+  NODE_ENV: import.meta.env.NODE_ENV,
+  MODE: import.meta.env.MODE
+});
+
 // Ensure React is available globally for debugging
 if (typeof window !== 'undefined') {
   (window as any).React = React;

@@ -3,7 +3,15 @@ export const config = {
   // Supabase Configuration
   supabase: {
     url: import.meta.env.VITE_SUPABASE_URL || "https://tepvzhbgobckybyhryuj.supabase.co",
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4"
+    anonKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4"
+  },
+
+  // Debug environment variables (only in development)
+  debug: {
+    envUrl: import.meta.env.VITE_SUPABASE_URL,
+    envKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 'Present' : 'Missing',
+    nodeEnv: import.meta.env.NODE_ENV,
+    mode: import.meta.env.MODE
   },
 
   // Google Maps API Key
