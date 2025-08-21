@@ -50,7 +50,7 @@ const ResetPassword = () => {
       if (!error) {
         setSuccess(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Password reset error:", error);
     } finally {
       setLoading(false);

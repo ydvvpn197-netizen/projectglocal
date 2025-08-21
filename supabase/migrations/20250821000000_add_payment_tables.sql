@@ -14,21 +14,6 @@ CREATE TABLE IF NOT EXISTS public.booking_payments (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create event_orders table for event ticket purchases
-CREATE TABLE IF NOT EXISTS public.event_orders (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  event_id UUID REFERENCES public.events(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  ticket_type TEXT NOT NULL,
-  quantity INTEGER NOT NULL DEFAULT 1,
-  unit_price DECIMAL(10,2) NOT NULL,
-  total_amount DECIMAL(10,2) NOT NULL,
-  payment_intent_id TEXT UNIQUE,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 -- Create user_payment_methods table for saved payment methods
 CREATE TABLE IF NOT EXISTS public.user_payment_methods (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -56,15 +41,11 @@ CREATE TABLE IF NOT EXISTS public.payment_webhooks (
 CREATE INDEX IF NOT EXISTS idx_booking_payments_booking_id ON public.booking_payments(booking_id);
 CREATE INDEX IF NOT EXISTS idx_booking_payments_user_id ON public.booking_payments(user_id);
 CREATE INDEX IF NOT EXISTS idx_booking_payments_payment_intent_id ON public.booking_payments(payment_intent_id);
-CREATE INDEX IF NOT EXISTS idx_event_orders_event_id ON public.event_orders(event_id);
-CREATE INDEX IF NOT EXISTS idx_event_orders_user_id ON public.event_orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_event_orders_payment_intent_id ON public.event_orders(payment_intent_id);
 CREATE INDEX IF NOT EXISTS idx_user_payment_methods_user_id ON public.user_payment_methods(user_id);
 CREATE INDEX IF NOT EXISTS idx_payment_webhooks_stripe_event_id ON public.payment_webhooks(stripe_event_id);
 
 -- Enable Row Level Security
 ALTER TABLE public.booking_payments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.event_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_payment_methods ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payment_webhooks ENABLE ROW LEVEL SECURITY;
 
@@ -78,16 +59,6 @@ CREATE POLICY "Users can create their own booking payments" ON public.booking_pa
 CREATE POLICY "Users can update their own booking payments" ON public.booking_payments
   FOR UPDATE USING (user_id = auth.uid());
 
--- RLS Policies for event_orders
-CREATE POLICY "Users can view their own event orders" ON public.event_orders
-  FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "Users can create their own event orders" ON public.event_orders
-  FOR INSERT WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Users can update their own event orders" ON public.event_orders
-  FOR UPDATE USING (user_id = auth.uid());
-
 -- RLS Policies for user_payment_methods
 CREATE POLICY "Users can view their own payment methods" ON public.user_payment_methods
   FOR SELECT USING (user_id = auth.uid());
@@ -97,20 +68,6 @@ CREATE POLICY "Users can create their own payment methods" ON public.user_paymen
 
 CREATE POLICY "Users can update their own payment methods" ON public.user_payment_methods
   FOR UPDATE USING (user_id = auth.uid());
-
-CREATE POLICY "Users can delete their own payment methods" ON public.user_payment_methods
-  FOR DELETE USING (user_id = auth.uid());
-
--- RLS Policies for payment_webhooks (admin only)
-CREATE POLICY "Only admins can view payment webhooks" ON public.payment_webhooks
-  FOR SELECT USING (auth.uid() IN (
-    SELECT user_id FROM public.profiles WHERE is_admin = true
-  ));
-
-CREATE POLICY "Only admins can insert payment webhooks" ON public.payment_webhooks
-  FOR INSERT WITH CHECK (auth.uid() IN (
-    SELECT user_id FROM public.profiles WHERE is_admin = true
-  ));
 
 -- Functions for payment processing
 

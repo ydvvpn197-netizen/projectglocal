@@ -12,9 +12,10 @@ import { EngagementFeatures } from "@/components/EngagementFeatures";
 import { ReferralProgram } from "@/components/marketing/ReferralProgram";
 import { sanitizeText } from "@/lib/sanitize";
 import { useAuth } from "@/hooks/useAuth";
+import { useFollows } from "@/hooks/useFollows";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { User, MapPin, Calendar, Edit, Camera, MessageCircle } from "lucide-react";
+import { User, MapPin, Calendar, Edit, Camera, MessageCircle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Profile {
@@ -47,6 +48,9 @@ const Profile = () => {
     location_country: "",
     avatar_url: ""
   });
+
+  // Get followers and following counts
+  const { followersCount, followingCount } = useFollows(user?.id);
 
   useEffect(() => {
     if (user) {
@@ -152,12 +156,23 @@ const Profile = () => {
 
     try {
       // Find existing conversation between these two users (not closed)
-      const { data: existing } = await supabase
+      const { data: existing1 } = await supabase
         .from('chat_conversations')
         .select('id, status, client_id, artist_id')
-        .or(`and(client_id.eq.${user.id},artist_id.eq.${profile.user_id}),and(client_id.eq.${profile.user_id},artist_id.eq.${user.id}))`)
+        .eq('client_id', user.id)
+        .eq('artist_id', profile.user_id)
         .not('status', 'eq', 'closed')
         .maybeSingle();
+
+      const { data: existing2 } = await supabase
+        .from('chat_conversations')
+        .select('id, status, client_id, artist_id')
+        .eq('client_id', profile.user_id)
+        .eq('artist_id', user.id)
+        .not('status', 'eq', 'closed')
+        .maybeSingle();
+
+      const existing = existing1 || existing2;
 
       let conversationId = existing?.id;
 
@@ -360,6 +375,21 @@ const Profile = () => {
                           {profile?.created_at 
                             ? new Date(profile.created_at).toLocaleDateString()
                             : "Unknown"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{followersCount}</span> followers
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{followingCount}</span> following
                         </span>
                       </div>
                     </div>

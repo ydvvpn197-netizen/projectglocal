@@ -28,7 +28,7 @@ BEGIN
   
   RETURN public.calculate_distance(user1_lat, user1_lon, user2_lat, user2_lon) <= 50;
 END;
-$function$
+$function$;
 
 -- Add validation for contact_info to prevent sensitive data exposure
 -- Create a function to validate contact information
@@ -56,7 +56,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$function$
+$function$;
 
 -- Apply the validation trigger to posts table
 CREATE TRIGGER validate_contact_info_trigger

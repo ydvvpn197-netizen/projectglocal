@@ -55,7 +55,7 @@ const SignIn = () => {
         await signIn(email, password);
         navigate("/feed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Auth error:", error);
     } finally {
       setLoading(false);
@@ -67,7 +67,7 @@ const SignIn = () => {
     try {
       await signInWithOAuth(provider);
       navigate("/feed");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Social auth error:", error);
     } finally {
       setLoading(false);

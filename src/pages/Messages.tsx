@@ -47,7 +47,7 @@ const Messages = () => {
       const { data, error } = await supabase
         .from('chat_conversations')
         .select('*')
-        .or(`client_id.eq.${user.id},artist_id.eq.${user.id})`)
+        .or(`client_id.eq.${user.id},artist_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;

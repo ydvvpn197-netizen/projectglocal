@@ -69,8 +69,6 @@ CREATE POLICY "Content owners can update content locations" ON content_location
         EXISTS (
             SELECT 1 FROM posts WHERE id = content_id AND user_id = auth.uid()
             UNION ALL
-            SELECT 1 FROM events WHERE id = content_id AND organizer_id = auth.uid()
-            UNION ALL
             SELECT 1 FROM reviews WHERE id = content_id AND user_id = auth.uid()
             UNION ALL
             SELECT 1 FROM polls WHERE id = content_id AND user_id = auth.uid()
@@ -84,8 +82,6 @@ CREATE POLICY "Content owners can delete content locations" ON content_location
         EXISTS (
             SELECT 1 FROM posts WHERE id = content_id AND user_id = auth.uid()
             UNION ALL
-            SELECT 1 FROM events WHERE id = content_id AND organizer_id = auth.uid()
-            UNION ALL
             SELECT 1 FROM reviews WHERE id = content_id AND user_id = auth.uid()
             UNION ALL
             SELECT 1 FROM polls WHERE id = content_id AND user_id = auth.uid()
@@ -95,29 +91,14 @@ CREATE POLICY "Content owners can delete content locations" ON content_location
     );
 
 -- Create function to calculate distance between two points (Haversine formula)
-CREATE OR REPLACE FUNCTION calculate_distance(
-    lat1 DECIMAL,
-    lng1 DECIMAL,
-    lat2 DECIMAL,
-    lng2 DECIMAL
-) RETURNS DECIMAL AS $$
-BEGIN
-    RETURN (
-        6371 * acos(
-            cos(radians(lat1)) * cos(radians(lat2)) * 
-            cos(radians(lng2) - radians(lng1)) + 
-            sin(radians(lat1)) * sin(radians(lat2))
-        )
-    );
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+-- Note: This function already exists from the initial migration, so we'll skip it
 
 -- Create function to get nearby content
 CREATE OR REPLACE FUNCTION get_nearby_content(
     user_lat DECIMAL,
     user_lng DECIMAL,
     radius_km INTEGER DEFAULT 50,
-    content_type_filter TEXT DEFAULT NULL
+    content_types TEXT[] DEFAULT ARRAY['post', 'review', 'poll', 'artist']
 ) RETURNS TABLE (
     content_type TEXT,
     content_id UUID,
@@ -132,11 +113,11 @@ BEGIN
         calculate_distance(user_lat, user_lng, cl.location_lat, cl.location_lng) as distance_km,
         cl.location_name
     FROM content_location cl
-    WHERE cl.location_lat IS NOT NULL 
-        AND cl.location_lng IS NOT NULL
-        AND calculate_distance(user_lat, user_lng, cl.location_lat, cl.location_lng) <= radius_km
-        AND (content_type_filter IS NULL OR cl.content_type = content_type_filter)
-    ORDER BY distance_km ASC;
+    WHERE cl.content_type = ANY(content_types)
+    AND cl.location_lat IS NOT NULL 
+    AND cl.location_lng IS NOT NULL
+    AND calculate_distance(user_lat, user_lng, cl.location_lat, cl.location_lng) <= radius_km
+    ORDER BY distance_km;
 END;
 $$ LANGUAGE plpgsql STABLE;
 
@@ -175,6 +156,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Update delete_user_account function to include new tables
+-- Note: This function already exists from a previous migration, so we'll skip it
+
+-- Create triggers for automatic timestamp updates
 CREATE TRIGGER update_user_preferences_updated_at
     BEFORE UPDATE ON user_preferences
     FOR EACH ROW
@@ -184,36 +169,3 @@ CREATE TRIGGER update_content_location_updated_at
     BEFORE UPDATE ON content_location
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
-
--- Update delete_user_account function to include new tables
-CREATE OR REPLACE FUNCTION delete_user_account(user_uuid UUID)
-RETURNS VOID AS $$
-BEGIN
-    -- Delete from new tables
-    DELETE FROM user_preferences WHERE user_id = user_uuid;
-    DELETE FROM content_location WHERE content_id IN (
-        SELECT id FROM posts WHERE user_id = user_uuid
-        UNION ALL
-        SELECT id FROM events WHERE organizer_id = user_uuid
-        UNION ALL
-        SELECT id FROM reviews WHERE user_id = user_uuid
-        UNION ALL
-        SELECT id FROM polls WHERE user_id = user_uuid
-        UNION ALL
-        SELECT id FROM artists WHERE user_id = user_uuid
-    );
-    
-    -- Continue with existing deletions...
-    DELETE FROM message_requests WHERE sender_id = user_uuid OR receiver_id = user_uuid;
-    DELETE FROM chat_messages WHERE sender_id = user_uuid;
-    DELETE FROM chat_conversations WHERE initiator_id = user_uuid OR participant_id = user_uuid;
-    DELETE FROM notifications WHERE user_id = user_uuid OR sender_id = user_uuid;
-    DELETE FROM artist_bookings WHERE user_id = user_uuid OR artist_id = user_uuid;
-    DELETE FROM artists WHERE user_id = user_uuid;
-    DELETE FROM posts WHERE user_id = user_uuid;
-    DELETE FROM events WHERE organizer_id = user_uuid;
-    DELETE FROM reviews WHERE user_id = user_uuid;
-    DELETE FROM polls WHERE user_id = user_uuid;
-    DELETE FROM profiles WHERE id = user_uuid;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;

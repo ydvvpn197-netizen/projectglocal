@@ -153,23 +153,7 @@ BEGIN
     END IF;
 END $$;
 
--- Create or replace the calculate_distance function
-CREATE OR REPLACE FUNCTION calculate_distance(
-    lat1 DECIMAL,
-    lng1 DECIMAL,
-    lat2 DECIMAL,
-    lng2 DECIMAL
-) RETURNS DECIMAL AS $$
-BEGIN
-    RETURN (
-        6371 * acos(
-            cos(radians(lat1)) * cos(radians(lat2)) * 
-            cos(radians(lng2) - radians(lng1)) + 
-            sin(radians(lat1)) * sin(radians(lat2))
-        )
-    );
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
+-- Note: calculate_distance function already exists from initial migration
 
 -- Create or replace the get_nearby_content function
 CREATE OR REPLACE FUNCTION get_nearby_content(

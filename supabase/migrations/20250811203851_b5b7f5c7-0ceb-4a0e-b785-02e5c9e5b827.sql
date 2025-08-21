@@ -1,12 +1,3 @@
--- Enable RLS on posts_secure view
-ALTER TABLE public.posts_secure ENABLE ROW LEVEL SECURITY;
-
--- Create RLS policies for posts_secure view to match posts table security
-CREATE POLICY "Users can view posts from their area via secure view" 
-ON public.posts_secure 
-FOR SELECT 
-USING ((user_id = auth.uid()) OR public.users_in_same_area(auth.uid(), user_id));
-
 -- Strengthen artist_bookings security - add policy to restrict budget visibility
 CREATE POLICY "Artists can view booking budget details" 
 ON public.artist_bookings 

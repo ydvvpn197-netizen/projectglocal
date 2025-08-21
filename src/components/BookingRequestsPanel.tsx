@@ -39,37 +39,53 @@ export const BookingRequestsPanel = () => {
       fetchBookingRequests();
       
       // Subscribe to real-time updates for new booking requests
-      const channel = supabase
-        .channel('booking-requests')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'artist_bookings',
-            filter: `artist_id=eq.${user.id}`
-          },
-          () => {
-            fetchBookingRequests();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'artist_bookings',
-            filter: `artist_id=eq.${user.id}`
-          },
-          () => {
-            fetchBookingRequests();
-          }
-        )
-        .subscribe();
+      const setupRealtimeSubscription = async () => {
+        // Get the artist record to get the correct artist_id
+        const { data: artistRecord, error: artistError } = await supabase
+          .from('artists')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
 
-      return () => {
-        supabase.removeChannel(channel);
+        if (artistError) {
+          console.error('Error fetching artist record for realtime:', artistError);
+          return;
+        }
+
+        const channel = supabase
+          .channel('booking-requests')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'artist_bookings',
+              filter: `artist_id=eq.${artistRecord.id}`
+            },
+            () => {
+              fetchBookingRequests();
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'artist_bookings',
+              filter: `artist_id=eq.${artistRecord.id}`
+            },
+            () => {
+              fetchBookingRequests();
+            }
+          )
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
       };
+
+      setupRealtimeSubscription();
     }
   }, [user]);
 
@@ -77,11 +93,24 @@ export const BookingRequestsPanel = () => {
     if (!user) return;
 
     try {
-      // Fetch booking requests for this artist (artist_id in artist_bookings references auth.users(id))
+      // First, get the artist record to get the correct artist_id
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (artistError) {
+        console.error('Error fetching artist record:', artistError);
+        setBookingRequests([]);
+        return;
+      }
+
+      // Now fetch booking requests using the correct artist_id
       const { data, error } = await supabase
         .from('artist_bookings')
         .select('*')
-        .eq('artist_id', user.id)
+        .eq('artist_id', artistRecord.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 

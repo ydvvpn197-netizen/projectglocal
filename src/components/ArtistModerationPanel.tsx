@@ -54,11 +54,25 @@ export const ArtistModerationPanel = () => {
     if (!user) return;
 
     try {
+      // Get the artist record to get the correct artist_id
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (artistError) {
+        console.error('Error fetching artist record:', artistError);
+        setPendingRequests([]);
+        setApprovedDiscussions([]);
+        return;
+      }
+
       // Get pending requests
       const { data: pendingData, error: pendingError } = await supabase
         .from('artist_discussions')
         .select('*')
-        .eq('artist_id', user.id)
+        .eq('artist_id', artistRecord.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -68,7 +82,7 @@ export const ArtistModerationPanel = () => {
       const { data: approvedData, error: approvedError } = await supabase
         .from('artist_discussions')
         .select('*')
-        .eq('artist_id', user.id)
+        .eq('artist_id', artistRecord.id)
         .eq('status', 'approved')
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
@@ -119,6 +133,17 @@ export const ArtistModerationPanel = () => {
 
   const handleApproveDiscussion = async (discussionId: string) => {
     try {
+      // Get the artist record to get the correct artist_id
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (artistError) {
+        throw new Error('Artist profile not found');
+      }
+
       const { error } = await supabase
         .from('artist_discussions')
         .update({ status: 'approved' })
@@ -130,7 +155,7 @@ export const ArtistModerationPanel = () => {
       const { error: notificationError } = await supabase
         .from('artist_discussion_moderation_notifications')
         .insert({
-          artist_id: user?.id,
+          artist_id: artistRecord.id,
           discussion_id: discussionId,
           type: 'discussion_approved'
         });
@@ -155,6 +180,17 @@ export const ArtistModerationPanel = () => {
 
   const handleRejectDiscussion = async (discussionId: string) => {
     try {
+      // Get the artist record to get the correct artist_id
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (artistError) {
+        throw new Error('Artist profile not found');
+      }
+
       const { error } = await supabase
         .from('artist_discussions')
         .update({ status: 'rejected' })
@@ -166,7 +202,7 @@ export const ArtistModerationPanel = () => {
       const { error: notificationError } = await supabase
         .from('artist_discussion_moderation_notifications')
         .insert({
-          artist_id: user?.id,
+          artist_id: artistRecord.id,
           discussion_id: discussionId,
           type: 'discussion_rejected'
         });

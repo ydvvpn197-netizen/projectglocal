@@ -10,10 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FollowButton } from "@/components/FollowButton";
-import { Star, MapPin, Clock, MessageCircle, Heart, Calendar } from "lucide-react";
+import { Star, MapPin, Clock, MessageCircle, Heart, Calendar, Users } from "lucide-react";
 import { useNavigate as useRRNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useFollows } from "@/hooks/useFollows";
 import { useToast } from "@/hooks/use-toast";
 
 interface ArtistProfile {
@@ -72,6 +73,9 @@ const ArtistProfile = () => {
   const [budgetMin, setBudgetMin] = useState("");
   const [budgetMax, setBudgetMax] = useState("");
   const [contactInfo, setContactInfo] = useState("");
+
+  // Get followers and following counts for the artist
+  const { followersCount, followingCount } = useFollows(artistId);
 
   useEffect(() => {
     if (artistId) {
@@ -151,10 +155,23 @@ const ArtistProfile = () => {
 
   const fetchDiscussions = async () => {
     try {
+      // We need to get the artist record first to get the correct artist_id
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', artistId)
+        .single();
+
+      if (artistError) {
+        console.error('Error fetching artist record:', artistError);
+        setDiscussions([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('artist_discussions')
         .select('*')
-        .eq('artist_id', artistId)
+        .eq('artist_id', artistRecord.id)
         .eq('status', 'approved')
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
@@ -212,12 +229,23 @@ const ArtistProfile = () => {
     setIsSubmittingDiscussion(true);
 
     try {
+      // Get the artist record to get the correct artist_id
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', artistId)
+        .single();
+
+      if (artistError) {
+        throw new Error('Artist profile not found');
+      }
+
       // Create discussion request
       const { data: discussionData, error: discussionError } = await supabase
         .from('artist_discussions')
         .insert({
           user_id: user.id,
-          artist_id: artistId,
+          artist_id: artistRecord.id,
           title: discussionTitle,
           content: discussionContent,
           status: 'pending'
@@ -231,7 +259,7 @@ const ArtistProfile = () => {
       const { error: notificationError } = await supabase
         .from('artist_discussion_moderation_notifications')
         .insert({
-          artist_id: artistId,
+          artist_id: artistRecord.id,
           discussion_id: discussionData.id,
           type: 'discussion_request'
         });
@@ -245,11 +273,19 @@ const ArtistProfile = () => {
 
       setDiscussionTitle("");
       setDiscussionContent("");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting discussion:', error);
+      let errorMessage = "Failed to submit discussion request";
+      
+      if (error?.code === '23503') {
+        errorMessage = "Artist profile not found or invalid";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to submit discussion request",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -451,6 +487,21 @@ const ArtistProfile = () => {
                   ))}
                 </div>
                 
+                <div className="flex items-center gap-6 mb-4 justify-center md:justify-start text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>
+                      <span className="font-medium text-foreground">{followersCount}</span> followers
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>
+                      <span className="font-medium text-foreground">{followingCount}</span> following
+                    </span>
+                  </div>
+                </div>
+                
                 <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                   <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
                     <DialogTrigger asChild>
@@ -536,12 +587,23 @@ const ArtistProfile = () => {
                       onClick={async () => {
                         try {
                           // Find existing conversation between these two users (not closed)
-                          const { data: existing } = await supabase
+                          const { data: existing1 } = await supabase
                             .from('chat_conversations')
                             .select('id, status, client_id, artist_id')
-                            .or(`and(client_id.eq.${user.id},artist_id.eq.${artistId}),and(client_id.eq.${artistId},artist_id.eq.${user.id}))`)
+                            .eq('client_id', user.id)
+                            .eq('artist_id', artistId)
                             .not('status', 'eq', 'closed')
                             .maybeSingle();
+
+                          const { data: existing2 } = await supabase
+                            .from('chat_conversations')
+                            .select('id, status, client_id, artist_id')
+                            .eq('client_id', artistId)
+                            .eq('artist_id', user.id)
+                            .not('status', 'eq', 'closed')
+                            .maybeSingle();
+
+                          const existing = existing1 || existing2;
 
                           let conversationId = existing?.id;
 
@@ -552,7 +614,7 @@ const ArtistProfile = () => {
                                 booking_id: null,
                                 client_id: user.id,
                                 artist_id: artistId,
-                                status: 'pending'
+                                status: 'active'
                               })
                               .select()
                               .single();
@@ -563,6 +625,11 @@ const ArtistProfile = () => {
                           rrNavigate(`/chat/${conversationId}`);
                         } catch (err) {
                           console.error('Error starting chat:', err);
+                          toast({
+                            title: "Error",
+                            description: "Failed to start chat conversation",
+                            variant: "destructive",
+                          });
                         }
                       }}
                     >
