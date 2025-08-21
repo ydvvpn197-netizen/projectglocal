@@ -10,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/MainLayout";
 import { EngagementFeatures } from "@/components/EngagementFeatures";
 import { ReferralProgram } from "@/components/marketing/ReferralProgram";
+import { ProfilePhotoDialog } from "@/components/ProfilePhotoDialog";
+import { FollowListsDialog } from "@/components/FollowListsDialog";
+import { FeatureTest } from "@/components/FeatureTest";
 import { sanitizeText } from "@/lib/sanitize";
 import { useAuth } from "@/hooks/useAuth";
 import { useFollows } from "@/hooks/useFollows";
@@ -151,6 +154,18 @@ const Profile = () => {
     }
   };
 
+  const handlePhotoUpdated = (newAvatarUrl: string | null) => {
+    // Update the profile state with the new avatar URL
+    if (profile) {
+      setProfile({
+        ...profile,
+        avatar_url: newAvatarUrl || undefined
+      });
+    }
+    // Refresh the profile data
+    fetchProfile();
+  };
+
   const handleMessageUser = async () => {
     if (!user || !profile) return;
 
@@ -277,10 +292,17 @@ const Profile = () => {
                             <Badge variant="secondary">Verified</Badge>
                           )}
                         </div>
-                        <Button variant="outline" size="sm">
-                          <Camera className="h-4 w-4 mr-2" />
-                          Change Photo
-                        </Button>
+                        <ProfilePhotoDialog
+                          currentAvatarUrl={profile?.avatar_url}
+                          displayName={profile?.display_name}
+                          onPhotoUpdated={handlePhotoUpdated}
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              <Camera className="h-4 w-4 mr-2" />
+                              Change Photo
+                            </Button>
+                          }
+                        />
                       </div>
                     </div>
 
@@ -380,18 +402,27 @@ const Profile = () => {
                         </div>
 
                         <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              <span className="font-medium text-foreground">{followersCount}</span> followers
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              <span className="font-medium text-foreground">{followingCount}</span> following
-                            </span>
-                          </div>
+                          <FollowListsDialog
+                            userId={user?.id || ''}
+                            followersCount={followersCount}
+                            followingCount={followingCount}
+                            trigger={
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-1">
+                                  <Users className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm text-muted-foreground">
+                                    <span className="font-medium text-foreground">{followersCount}</span> followers
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Users className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm text-muted-foreground">
+                                    <span className="font-medium text-foreground">{followingCount}</span> following
+                                  </span>
+                                </div>
+                              </div>
+                            }
+                          />
                         </div>
                       </div>
                     )}
@@ -408,6 +439,7 @@ const Profile = () => {
           {/* Engagement Features Sidebar */}
           <div className="space-y-6">
             <EngagementFeatures />
+            <FeatureTest />
           </div>
         </div>
       </div>
