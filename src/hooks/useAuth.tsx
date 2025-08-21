@@ -11,6 +11,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signInWithOAuth: (provider: 'google' | 'facebook') => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{ error: any }>;
+  resetPassword: (token: string, newPassword: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -158,6 +160,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error };
       }
 
+      // If user is created and we have a session, create/update profile
+      if (data?.user && data?.session) {
+        try {
+          const { error: profileError } = await resilientSupabase
+            .from('profiles')
+            .upsert({
+              user_id: data.user.id,
+              username: email.split('@')[0],
+              display_name: firstName && lastName ? `${firstName} ${lastName}` : email.split('@')[0],
+              user_type: userType,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+          }
+        } catch (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+      }
+
       if (data?.user && !data?.session) {
         toast({
           title: "Check your email",
@@ -297,6 +321,109 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      if (!navigator.onLine) {
+        toast({
+          title: "Network Error",
+          description: "Please check your internet connection and try again.",
+          variant: "destructive",
+        });
+        return { error: new Error('Network offline') };
+      }
+
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/password-reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+        },
+        body: JSON.stringify({
+          action: 'request',
+          email: email
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast({
+          title: "Password Reset Failed",
+          description: data.error || "Failed to send password reset email",
+          variant: "destructive",
+        });
+        return { error: new Error(data.error) };
+      }
+
+      toast({
+        title: "Reset Email Sent",
+        description: "Please check your email for password reset instructions.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Password reset request error:', error);
+      toast({
+        title: "Password Reset Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    try {
+      if (!navigator.onLine) {
+        toast({
+          title: "Network Error",
+          description: "Please check your internet connection and try again.",
+          variant: "destructive",
+        });
+        return { error: new Error('Network offline') };
+      }
+
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/password-reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+        },
+        body: JSON.stringify({
+          action: 'reset',
+          token: token,
+          newPassword: newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast({
+          title: "Password Reset Failed",
+          description: data.error || "Failed to reset password",
+          variant: "destructive",
+        });
+        return { error: new Error(data.error) };
+      }
+
+      toast({
+        title: "Password Updated",
+        description: "Your password has been successfully updated.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Password Reset Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -305,7 +432,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signUp,
       signIn,
       signInWithOAuth,
-      signOut
+      signOut,
+      requestPasswordReset,
+      resetPassword
     }}>
       {children}
     </AuthContext.Provider>

@@ -6,14 +6,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { UniformHeader } from "@/components/UniformHeader";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SignIn = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Sign up form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userType, setUserType] = useState<'user' | 'artist'>('user');
+  const [artistSkills, setArtistSkills] = useState<string[]>([]);
+  const [bio, setBio] = useState("");
+  const [hourlyRateMin, setHourlyRateMin] = useState("");
+  const [hourlyRateMax, setHourlyRateMax] = useState("");
+  const [portfolioUrls, setPortfolioUrls] = useState("");
+  
   const { signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
 
@@ -23,11 +37,24 @@ const SignIn = () => {
 
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        await signUp(email, password, firstName, lastName, userType);
+        if (userType === 'artist') {
+          // Navigate to artist onboarding for additional details
+          const artistData = {
+            bio,
+            artistSkills,
+            hourlyRateMin: parseFloat(hourlyRateMin) || 0,
+            hourlyRateMax: parseFloat(hourlyRateMax) || 0,
+            portfolioUrls: portfolioUrls.split(',').map(url => url.trim()).filter(url => url.length > 0)
+          };
+          navigate("/artist-onboarding", { state: { artistData } });
+        } else {
+          navigate("/feed");
+        }
       } else {
         await signIn(email, password);
+        navigate("/feed");
       }
-      navigate("/feed");
     } catch (error: any) {
       console.error("Auth error:", error);
     } finally {
@@ -190,6 +217,14 @@ const SignIn = () => {
                       <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? "Signing In..." : "Sign In"}
                       </Button>
+                      <div className="text-center">
+                        <Link
+                          to="/forgot-password"
+                          className="text-sm text-muted-foreground hover:text-primary"
+                        >
+                          Forgot your password?
+                        </Link>
+                      </div>
                     </form>
                   </TabsContent>
                   
@@ -256,6 +291,109 @@ const SignIn = () => {
                           required
                         />
                       </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="first-name">First Name</Label>
+                          <Input
+                            id="first-name"
+                            type="text"
+                            placeholder="First name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="last-name">Last Name</Label>
+                          <Input
+                            id="last-name"
+                            type="text"
+                            placeholder="Last name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Account Type</Label>
+                        <RadioGroup value={userType} onValueChange={(value: 'user' | 'artist') => setUserType(value)}>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="user" id="user" />
+                            <Label htmlFor="user">Regular User</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="artist" id="artist" />
+                            <Label htmlFor="artist">Artist/Creator</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                      {userType === 'artist' && (
+                        <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
+                          <h4 className="font-medium">Artist Information</h4>
+                          <div className="space-y-2">
+                            <Label htmlFor="artist-skills">Primary Skills</Label>
+                            <Select onValueChange={(value) => setArtistSkills([value])}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select your primary skill" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Music">Music</SelectItem>
+                                <SelectItem value="Photography">Photography</SelectItem>
+                                <SelectItem value="Art">Art</SelectItem>
+                                <SelectItem value="Dance">Dance</SelectItem>
+                                <SelectItem value="Comedy">Comedy</SelectItem>
+                                <SelectItem value="DJ">DJ</SelectItem>
+                                <SelectItem value="Catering">Catering</SelectItem>
+                                <SelectItem value="Decoration">Decoration</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="bio">Bio</Label>
+                            <Textarea
+                              id="bio"
+                              placeholder="Tell us about yourself and your work..."
+                              value={bio}
+                              onChange={(e) => setBio(e.target.value)}
+                              rows={3}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="hourly-rate-min">Min Hourly Rate ($)</Label>
+                              <Input
+                                id="hourly-rate-min"
+                                type="number"
+                                placeholder="50"
+                                value={hourlyRateMin}
+                                onChange={(e) => setHourlyRateMin(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="hourly-rate-max">Max Hourly Rate ($)</Label>
+                              <Input
+                                id="hourly-rate-max"
+                                type="number"
+                                placeholder="200"
+                                value={hourlyRateMax}
+                                onChange={(e) => setHourlyRateMax(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="portfolio-urls">Portfolio URLs (comma separated)</Label>
+                            <Input
+                              id="portfolio-urls"
+                              type="text"
+                              placeholder="https://example.com, https://portfolio.com"
+                              value={portfolioUrls}
+                              onChange={(e) => setPortfolioUrls(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      )}
                       <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? "Creating Account..." : "Create Account"}
                       </Button>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "@/components/MainLayout";
 import { ArtistSkillsForm, ArtistSkillsData } from "@/components/ArtistSkillsForm";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,8 +9,17 @@ import { useToast } from "@/hooks/use-toast";
 const ArtistOnboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [initialData, setInitialData] = useState<ArtistSkillsData | null>(null);
+
+  // Get artist data from sign-up form if available
+  useEffect(() => {
+    if (location.state?.artistData) {
+      setInitialData(location.state.artistData);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (data: ArtistSkillsData) => {
     if (!user) {
@@ -44,7 +53,7 @@ const ArtistOnboarding = () => {
         .from('artists')
         .upsert({
           user_id: user.id,
-          specialty: data.artistSkills && data.artistSkills.length > 0 ? [data.artistSkills[0]] : [],
+          specialty: data.artistSkills && data.artistSkills.length > 0 ? data.artistSkills : [],
           experience_years: 0,
           portfolio_urls: data.portfolioUrls,
           hourly_rate_min: data.hourlyRateMin > 0 ? data.hourlyRateMin : null,
@@ -85,7 +94,11 @@ const ArtistOnboarding = () => {
           </p>
         </div>
 
-        <ArtistSkillsForm onSubmit={handleSubmit} loading={loading} />
+        <ArtistSkillsForm 
+          onSubmit={handleSubmit} 
+          loading={loading} 
+          initialData={initialData}
+        />
       </div>
     </MainLayout>
   );

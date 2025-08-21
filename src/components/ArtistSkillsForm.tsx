@@ -11,6 +11,7 @@ import { Plus, X, DollarSign, Palette } from "lucide-react";
 interface ArtistSkillsFormProps {
   onSubmit: (data: ArtistSkillsData) => void;
   loading?: boolean;
+  initialData?: ArtistSkillsData | null;
 }
 
 export interface ArtistSkillsData {
@@ -30,15 +31,15 @@ const SKILL_CATEGORIES = {
   craft: ["Crafts", "Jewelry Making", "Pottery", "Woodworking", "Textile Art", "Sculpture"]
 };
 
-export const ArtistSkillsForm: React.FC<ArtistSkillsFormProps> = ({ onSubmit, loading }) => {
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+export const ArtistSkillsForm: React.FC<ArtistSkillsFormProps> = ({ onSubmit, loading, initialData }) => {
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(initialData?.artistSkills || []);
   const [customSkill, setCustomSkill] = useState("");
-  const [hourlyRateMin, setHourlyRateMin] = useState("");
-  const [hourlyRateMax, setHourlyRateMax] = useState("");
+  const [hourlyRateMin, setHourlyRateMin] = useState(initialData?.hourlyRateMin?.toString() || "");
+  const [hourlyRateMax, setHourlyRateMax] = useState(initialData?.hourlyRateMax?.toString() || "");
   const [portfolioUrl, setPortfolioUrl] = useState("");
-  const [portfolioUrls, setPortfolioUrls] = useState<string[]>([]);
-  const [bio, setBio] = useState("");
-  const [specialty, setSpecialty] = useState("");
+  const [portfolioUrls, setPortfolioUrls] = useState<string[]>(initialData?.portfolioUrls || []);
+  const [bio, setBio] = useState(initialData?.bio || "");
+  const [specialty, setSpecialty] = useState(initialData?.specialty || "");
 
   const addSkill = (skill: string) => {
     if (!selectedSkills.includes(skill) && selectedSkills.length < 10) {

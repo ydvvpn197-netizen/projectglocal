@@ -23,6 +23,8 @@ const About = lazy(() => import("./pages/About"));
 const LocationSetup = lazy(() => import("./pages/LocationSetup"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ArtistOnboarding = lazy(() => import("./pages/ArtistOnboarding"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Community pages (grouped together)
 const Community = lazy(() => import("./pages/Community"));
@@ -87,6 +89,8 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/signin" element={<SignIn />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                 <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
