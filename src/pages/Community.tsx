@@ -1,488 +1,482 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
+  Search, 
+  Plus, 
   Users, 
   MessageCircle, 
-  Heart, 
-  Share2, 
-  Plus, 
-  BarChart3, 
+  Calendar, 
+  MapPin, 
   Star, 
-  MoreVertical, 
-  Trash2,
+  Filter,
+  Grid3X3,
+  List,
   TrendingUp,
   Flame,
-  Clock,
-  ThumbsUp,
-  Search,
-  Filter
+  Globe,
+  Heart,
+  Share2,
+  MoreHorizontal,
+  Settings,
+  Crown,
+  Shield,
+  Zap
 } from "lucide-react";
-import { MainLayout } from "@/components/MainLayout";
-import { PollCard } from "@/components/PollCard";
-import { ReviewCard } from "@/components/ReviewCard";
-import { WriteReviewDialog } from "@/components/WriteReviewDialog";
-import { CreatePollDialog } from "@/components/CreatePollDialog";
-import { GroupView } from "@/components/GroupView";
-import { useToast } from "@/hooks/use-toast";
-import { useReviews } from "@/hooks/useReviews";
-import { usePolls } from "@/hooks/usePolls";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useDiscussions } from "@/hooks/useDiscussions";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useAuth } from "@/hooks/useAuth";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 
-// New Community Engagement Components
-import { CommunityPostCard } from "@/components/CommunityPostCard";
-import { CommunityGroupCard } from "@/components/CommunityGroupCard";
-import { CreatePostDialog } from "@/components/CreatePostDialog";
-import { CreateGroupDialog } from "@/components/CreateGroupDialog";
-import { VoteButtons } from "@/components/VoteButtons";
+// Sample community data
+const communities = [
+  {
+    id: 1,
+    name: "Local Artists Collective",
+    description: "Supporting and promoting local artists in our community. Share your work, get feedback, and collaborate with fellow creatives.",
+    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
+    members: 234,
+    posts: 156,
+    category: "Arts & Culture",
+    featured: true,
+    verified: true,
+    tags: ["art", "local", "creative", "exhibition"],
+    recentActivity: "New exhibition announced",
+    location: "Downtown",
+    createdAt: "2024-01-15"
+  },
+  {
+    id: 2,
+    name: "Tech Enthusiasts",
+    description: "Discussing the latest in technology and innovation. From startups to established companies, share insights and network.",
+    image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop",
+    members: 189,
+    posts: 89,
+    category: "Technology",
+    featured: false,
+    verified: true,
+    tags: ["tech", "innovation", "startup", "networking"],
+    recentActivity: "Monthly meetup scheduled",
+    location: "Tech District",
+    createdAt: "2024-02-20"
+  },
+  {
+    id: 3,
+    name: "Food Lovers United",
+    description: "Discovering and sharing the best local restaurants, recipes, and culinary experiences in our area.",
+    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
+    members: 456,
+    posts: 234,
+    category: "Food & Dining",
+    featured: true,
+    verified: false,
+    tags: ["food", "restaurants", "recipes", "local"],
+    recentActivity: "New restaurant review posted",
+    location: "Various",
+    createdAt: "2023-11-10"
+  },
+  {
+    id: 4,
+    name: "Outdoor Adventures",
+    description: "Exploring nature trails, parks, and outdoor activities. Perfect for hikers, cyclists, and nature enthusiasts.",
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop",
+    members: 123,
+    posts: 67,
+    category: "Outdoors",
+    featured: false,
+    verified: false,
+    tags: ["outdoors", "hiking", "nature", "fitness"],
+    recentActivity: "Weekend hike organized",
+    location: "Regional Parks",
+    createdAt: "2024-03-05"
+  },
+  {
+    id: 5,
+    name: "Book Club Central",
+    description: "Monthly book discussions, reading challenges, and literary events. All genres welcome!",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
+    members: 78,
+    posts: 45,
+    category: "Education",
+    featured: false,
+    verified: false,
+    tags: ["books", "reading", "literature", "discussion"],
+    recentActivity: "New book selection announced",
+    location: "Library",
+    createdAt: "2024-01-30"
+  },
+  {
+    id: 6,
+    name: "Local Business Network",
+    description: "Connecting local business owners, entrepreneurs, and professionals for networking and collaboration.",
+    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop",
+    members: 345,
+    posts: 178,
+    category: "Business",
+    featured: true,
+    verified: true,
+    tags: ["business", "networking", "entrepreneurs", "local"],
+    recentActivity: "Business mixer event",
+    location: "Business District",
+    createdAt: "2023-09-15"
+  }
+];
 
-// New Community Engagement Hooks
-import { useCommunityGroups } from "@/hooks/useCommunityGroups";
-import { useCommunityPosts } from "@/hooks/useCommunityPosts";
-import { useVoting } from "@/hooks/useVoting";
-import { useComments } from "@/hooks/useComments";
-import { useCommunityPolls } from "@/hooks/useCommunityPolls";
+const categories = [
+  "All Categories",
+  "Arts & Culture",
+  "Technology",
+  "Food & Dining",
+  "Outdoors",
+  "Education",
+  "Business",
+  "Health & Wellness",
+  "Sports",
+  "Music",
+  "Photography"
+];
 
 const Community = () => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  
-  // Legacy hooks (keeping for backward compatibility)
-  const { discussions: recentDiscussions, loading: discussionsLoading, deleteDiscussion } = useDiscussions();
-  const { reviews, loading: reviewsLoading } = useReviews();
-  const { polls, loading: pollsLoading } = usePolls();
-  
-  // New Community Engagement hooks
-  const { 
-    groups, 
-    userGroups, 
-    trendingGroups, 
-    loading: groupsLoading, 
-    fetchGroups, 
-    fetchTrendingGroups 
-  } = useCommunityGroups();
-  
-  const { 
-    posts, 
-    loading: postsLoading, 
-    fetchRankedPosts, 
-    pinPost, 
-    lockPost, 
-    deletePost 
-  } = useCommunityPosts();
-  
-  const { voteOnPost } = useVoting();
-  const { comments, loading: commentsLoading } = useComments();
-  const { polls: communityPolls, loading: communityPollsLoading } = useCommunityPolls();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sortBy, setSortBy] = useState("recent");
 
-  // State
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'hot' | 'top' | 'new' | 'rising'>('hot');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState('posts');
+  const filteredCommunities = communities.filter(community => {
+    const matchesSearch = community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = selectedCategory === "All Categories" || community.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
-  // Fetch data on component mount
-  useEffect(() => {
-    fetchGroups();
-    fetchTrendingGroups();
-    fetchRankedPosts(selectedGroupId, sortBy);
-  }, [selectedGroupId, sortBy]);
-
-  const handleVote = async (postId: string, voteType: number) => {
-    return await voteOnPost(postId, voteType);
-  };
-
-  const handlePin = async (postId: string, isPinned: boolean) => {
-    return await pinPost(postId, isPinned);
-  };
-
-  const handleLock = async (postId: string, isLocked: boolean) => {
-    return await lockPost(postId, isLocked);
-  };
-
-  const handleDelete = async (postId: string) => {
-    return await deletePost(postId);
-  };
-
-  const handleGroupSelect = (groupId: string | null) => {
-    setSelectedGroupId(groupId);
-  };
-
-  const handleSortChange = (newSortBy: 'hot' | 'top' | 'new' | 'rising') => {
-    setSortBy(newSortBy);
-  };
-
-  const handleSearch = () => {
-    // Implement search functionality
-    console.log('Searching for:', searchQuery);
-  };
-
-  const getSortIcon = (sortType: string) => {
-    switch (sortType) {
-      case 'hot':
-        return <Flame className="h-4 w-4" />;
-      case 'top':
-        return <TrendingUp className="h-4 w-4" />;
-      case 'new':
-        return <Clock className="h-4 w-4" />;
-      case 'rising':
-        return <TrendingUp className="h-4 w-4" />;
+  const sortedCommunities = [...filteredCommunities].sort((a, b) => {
+    switch (sortBy) {
+      case "members":
+        return b.members - a.members;
+      case "recent":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "activity":
+        return b.posts - a.posts;
       default:
-        return <Flame className="h-4 w-4" />;
+        return 0;
     }
-  };
+  });
 
-  const categories = [
-    { value: 'all', label: 'All Categories' },
-    { value: 'general', label: 'General' },
-    { value: 'technology', label: 'Technology' },
-    { value: 'entertainment', label: 'Entertainment' },
-    { value: 'sports', label: 'Sports' },
-    { value: 'news', label: 'News' },
-    { value: 'lifestyle', label: 'Lifestyle' },
-    { value: 'education', label: 'Education' },
-    { value: 'business', label: 'Business' }
-  ];
-
-  const sortOptions = [
-    { value: 'hot', label: 'Hot', icon: <Flame className="h-4 w-4" /> },
-    { value: 'top', label: 'Top', icon: <TrendingUp className="h-4 w-4" /> },
-    { value: 'new', label: 'New', icon: <Clock className="h-4 w-4" /> },
-    { value: 'rising', label: 'Rising', icon: <TrendingUp className="h-4 w-4" /> }
-  ];
+  const featuredCommunities = communities.filter(c => c.featured);
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Community</h1>
-            <p className="text-gray-600 mt-1">Connect, share, and engage with your local community</p>
+            <h1 className="text-3xl font-bold text-gradient">Communities</h1>
+            <p className="text-muted-foreground mt-2">
+              Discover and join communities that match your interests
+            </p>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <CreatePostDialog 
-              groupId={selectedGroupId || undefined}
-              trigger={
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Post
-                </Button>
-              }
-            />
-            <CreateGroupDialog 
-              trigger={
-                <Button variant="outline">
-                  <Users className="h-4 w-4 mr-2" />
-                  Create Group
-                </Button>
-              }
-            />
-          </div>
+          <Button className="btn-community" asChild>
+            <Link to="/community/create-group">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Community
+            </Link>
+          </Button>
         </div>
+
+        {/* Featured Communities Spotlight */}
+        {featuredCommunities.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              Featured Communities
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredCommunities.map((community) => (
+                <Card key={community.id} className="community-card-featured group cursor-pointer hover:shadow-community transition-all duration-300">
+                  <div className="relative">
+                    <img 
+                      src={community.image} 
+                      alt={community.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    <div className="absolute top-3 right-3 flex gap-2">
+                      {community.verified && (
+                        <Badge className="bg-blue-500 text-white">
+                          <Shield className="w-3 h-3 mr-1" />
+                          Verified
+                        </Badge>
+                      )}
+                      <Badge className="bg-yellow-500 text-white">
+                        <Star className="w-3 h-3 mr-1" />
+                        Featured
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-lg">{community.name}</h3>
+                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {community.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        {community.members}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        {community.posts}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {community.location}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mb-3">
+                      {community.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button className="w-full btn-community">
+                      <Users className="w-4 h-4 mr-2" />
+                      Join Community
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Search and Filters */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search posts, groups, or discussions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
-          </div>
-          
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-48">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="groups">Groups</TabsTrigger>
-            <TabsTrigger value="discussions">Discussions</TabsTrigger>
-            <TabsTrigger value="polls">Polls</TabsTrigger>
-          </TabsList>
-
-          {/* Posts Tab */}
-          <TabsContent value="posts" className="space-y-6">
-            {/* Sort Options */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {sortOptions.map((option) => (
-                  <Button
-                    key={option.value}
-                    variant={sortBy === option.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleSortChange(option.value as any)}
-                    className="flex items-center gap-2"
-                  >
-                    {option.icon}
-                    {option.label}
-                  </Button>
-                ))}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search communities..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
               
-              <div className="text-sm text-gray-500">
-                {posts.length} posts
-              </div>
-            </div>
-
-            {/* Posts Feed */}
-            <div className="space-y-4">
-              {postsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-500">Loading posts...</div>
-                </div>
-              ) : posts.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <div className="text-gray-500 mb-4">No posts found</div>
-                  <CreatePostDialog 
-                    trigger={
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Your First Post
-                      </Button>
-                    }
-                  />
-                </Card>
-              ) : (
-                posts.map((post) => (
-                  <CommunityPostCard
-                    key={post.id}
-                    post={post}
-                    onVote={handleVote}
-                    onPin={handlePin}
-                    onLock={handleLock}
-                    onDelete={handleDelete}
-                    showGroupInfo={true}
-                  />
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Groups Tab */}
-          <TabsContent value="groups" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {groupsLoading ? (
-                <div className="col-span-full flex items-center justify-center py-12">
-                  <div className="text-gray-500">Loading groups...</div>
-                </div>
-              ) : groups.length === 0 ? (
-                <div className="col-span-full">
-                  <Card className="p-8 text-center">
-                    <div className="text-gray-500 mb-4">No groups found</div>
-                    <CreateGroupDialog 
-                      trigger={
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create Your First Group
-                        </Button>
-                      }
-                    />
-                  </Card>
-                </div>
-              ) : (
-                groups.map((group) => (
-                  <CommunityGroupCard
-                    key={group.id}
-                    group={group}
-                    showJoinButton={true}
-                    showStats={true}
-                  />
-                ))
-              )}
-            </div>
-
-            {/* Trending Groups */}
-            {trendingGroups.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">Trending Groups</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {trendingGroups.slice(0, 6).map((group) => (
-                    <CommunityGroupCard
-                      key={group.id}
-                      group={group}
-                      showJoinButton={true}
-                      showStats={false}
-                    />
+              {/* Category Filter */}
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full lg:w-48">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
                   ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Discussions Tab (Legacy) */}
-          <TabsContent value="discussions" className="space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Recent Discussions</h3>
-              <Button onClick={() => navigate("/community/create-discussion")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Start Discussion
-              </Button>
-            </div>
-
-            {discussionsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">Loading discussions...</div>
-              </div>
-            ) : recentDiscussions.length === 0 ? (
-              <Card className="p-8 text-center">
-                <div className="text-gray-500 mb-4">No discussions yet</div>
-                <Button onClick={() => navigate("/community/create-discussion")}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Start a Discussion
+                </SelectContent>
+              </Select>
+              
+              {/* Sort By */}
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full lg:w-40">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Most Recent</SelectItem>
+                  <SelectItem value="members">Most Members</SelectItem>
+                  <SelectItem value="activity">Most Active</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* View Mode Toggle */}
+              <div className="flex border rounded-lg">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="rounded-r-none"
+                >
+                  <Grid3X3 className="w-4 h-4" />
                 </Button>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {recentDiscussions.slice(0, 5).map((discussion) => (
-                  <Card key={discussion.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={discussion.author_avatar} />
-                              <AvatarFallback>
-                                {discussion.author_name?.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium">{discussion.author_name}</span>
-                            <span className="text-sm text-gray-500">
-                              {new Date(discussion.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <h4 className="font-semibold mb-2">{discussion.title}</h4>
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {discussion.content}
-                          </p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1">
-                            <MessageCircle className="h-4 w-4" />
-                            {discussion.replies_count} replies
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Heart className="h-4 w-4" />
-                            {discussion.likes_count} likes
-                          </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Share
-                            </DropdownMenuItem>
-                            {user?.id === discussion.user_id && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem className="text-red-600">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Discussion</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete this discussion? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteDiscussion(discussion.id)}
-                                      className="bg-red-600 hover:bg-red-700"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="rounded-l-none"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
               </div>
-            )}
-          </TabsContent>
+            </div>
+          </CardContent>
+        </Card>
 
-                     {/* Polls Tab */}
-           <TabsContent value="polls" className="space-y-6">
-             <div className="flex items-center justify-between mb-4">
-               <h3 className="text-lg font-semibold">Community Polls</h3>
-               <CreatePollDialog>
-                 <Button>
-                   <Plus className="h-4 w-4 mr-2" />
-                   Create Poll
-                 </Button>
-               </CreatePollDialog>
-             </div>
+        {/* Communities Grid/List */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              All Communities ({sortedCommunities.length})
+            </h2>
+          </div>
+          
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedCommunities.map((community) => (
+                <Card key={community.id} className="community-card group cursor-pointer hover:shadow-community transition-all duration-300">
+                  <div className="relative">
+                    <img 
+                      src={community.image} 
+                      alt={community.name}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    {community.verified && (
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-blue-500 text-white">
+                          <Shield className="w-3 h-3 mr-1" />
+                          Verified
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-lg">{community.name}</h3>
+                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {community.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        {community.members}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        {community.posts}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {community.location}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mb-3">
+                      {community.tags.slice(0, 2).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button className="w-full btn-community">
+                      <Users className="w-4 h-4 mr-2" />
+                      Join Community
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sortedCommunities.map((community) => (
+                <Card key={community.id} className="community-card group cursor-pointer hover:shadow-community transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex gap-6">
+                      <img 
+                        src={community.image} 
+                        alt={community.name}
+                        className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold text-lg flex items-center gap-2">
+                              {community.name}
+                              {community.verified && (
+                                <Badge className="bg-blue-500 text-white text-xs">
+                                  <Shield className="w-3 h-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {community.description}
+                            </p>
+                          </div>
+                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-6 text-sm text-muted-foreground mb-3">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            {community.members} members
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="w-4 h-4" />
+                            {community.posts} posts
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            {community.location}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(community.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-2">
+                            {community.tags.slice(0, 3).map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                #{tag}
+                              </Badge>
+                            ))}
+                          </div>
+                          <Button className="btn-community">
+                            <Users className="w-4 h-4 mr-2" />
+                            Join Community
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
 
-             {pollsLoading ? (
-               <div className="flex items-center justify-center py-12">
-                 <div className="text-gray-500">Loading polls...</div>
-               </div>
-             ) : polls.length === 0 ? (
-               <Card className="p-8 text-center">
-                 <div className="text-gray-500 mb-4">No polls yet</div>
-                 <CreatePollDialog>
-                   <Button>
-                     <Plus className="h-4 w-4 mr-2" />
-                     Create Your First Poll
-                   </Button>
-                 </CreatePollDialog>
-               </Card>
-             ) : (
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 {polls.slice(0, 6).map((poll) => (
-                   <PollCard key={poll.id} {...poll} />
-                 ))}
-               </div>
-             )}
-           </TabsContent>
-        </Tabs>
+        {/* Empty State */}
+        {sortedCommunities.length === 0 && (
+          <Card className="text-center py-12">
+            <CardContent>
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No communities found</h3>
+              <p className="text-muted-foreground mb-4">
+                Try adjusting your search criteria or create a new community
+              </p>
+              <Button className="btn-community">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Community
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </MainLayout>
   );

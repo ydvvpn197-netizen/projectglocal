@@ -1,463 +1,677 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, MessageCircle, Share, MapPin, Clock, Users, Star, Calendar, Phone, Mail, Copy, Check, MoreVertical, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useState } from "react";
 import { MainLayout } from "@/components/MainLayout";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { usePosts, Post } from "@/hooks/usePosts";
-import { format } from 'date-fns';
-import { useSampleData } from "@/hooks/useSampleData";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Search, 
+  Plus, 
+  Calendar, 
+  MapPin, 
+  Clock, 
+  Users, 
+  Star, 
+  Filter,
+  TrendingUp,
+  Flame,
+  Heart,
+  MessageCircle,
+  Share2,
+  MoreHorizontal,
+  ThumbsUp,
+  ThumbsDown,
+  Bookmark,
+  Image,
+  Video,
+  Award,
+  Trophy,
+  Crown,
+  Shield,
+  Zap,
+  Eye,
+  EyeOff,
+  ArrowUp,
+  ArrowDown,
+  Reply,
+  Send,
+  Smile,
+  Camera,
+  Mic,
+  Paperclip
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { DistanceFilter } from "@/components/DistanceFilter";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "@/hooks/useLocation";
-import { supabase } from "@/integrations/supabase/client";
-import { PostComments } from "@/components/PostComments";
-import { useToast } from "@/hooks/use-toast";
-import { SocialShareButton } from "@/components/marketing/SocialShareButton";
-import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
+
+// Sample feed data
+const feedPosts = [
+  {
+    id: 1,
+    type: "post",
+    author: {
+      name: "Sarah Chen",
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+      verified: true,
+      role: "Community Leader"
+    },
+    content: "Just finished setting up the community garden! 🌱 The tomatoes are looking great and we have some amazing volunteers helping out. Can't wait to see everyone at the harvest party next month!",
+    images: ["https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop"],
+    likes: 45,
+    dislikes: 2,
+    comments: 12,
+    shares: 8,
+    views: 234,
+    timestamp: "2 hours ago",
+    category: "Community",
+    tags: ["gardening", "community", "volunteers"],
+    trending: true
+  },
+  {
+    id: 2,
+    type: "poll",
+    author: {
+      name: "Mike Johnson",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+      verified: false,
+      role: "Member"
+    },
+    question: "What's your favorite local coffee shop?",
+    options: [
+      { id: 1, text: "Downtown Brew", votes: 23, percentage: 46 },
+      { id: 2, text: "Corner Cafe", votes: 15, percentage: 30 },
+      { id: 3, text: "Artisan Roasters", votes: 8, percentage: 16 },
+      { id: 4, text: "Other", votes: 4, percentage: 8 }
+    ],
+    totalVotes: 50,
+    likes: 18,
+    dislikes: 1,
+    comments: 8,
+    shares: 3,
+    views: 156,
+    timestamp: "4 hours ago",
+    category: "Food & Drink",
+    tags: ["coffee", "local", "poll"],
+    trending: false
+  },
+  {
+    id: 3,
+    type: "event",
+    author: {
+      name: "Emma Wilson",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+      verified: true,
+      role: "Event Organizer"
+    },
+    content: "🎵 Local Music Festival is back! This year we're featuring over 30 local artists across 3 stages. Early bird tickets are now available!",
+    event: {
+      title: "Local Music Festival 2024",
+      date: "Dec 15-17, 2024",
+      time: "12:00 PM - 11:00 PM",
+      location: "Central Park",
+      image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop",
+      attendees: 1250,
+      maxAttendees: 2000,
+      price: "$45"
+    },
+    likes: 67,
+    dislikes: 3,
+    comments: 24,
+    shares: 15,
+    views: 456,
+    timestamp: "6 hours ago",
+    category: "Music",
+    tags: ["festival", "music", "local"],
+    trending: true
+  },
+  {
+    id: 4,
+    type: "post",
+    author: {
+      name: "Alex Rodriguez",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+      verified: false,
+      role: "Member"
+    },
+    content: "Just discovered this amazing street art mural downtown! The artist really captured the spirit of our community. Has anyone else seen it?",
+    images: ["https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=600&h=400&fit=crop"],
+    likes: 32,
+    dislikes: 1,
+    comments: 9,
+    shares: 5,
+    views: 189,
+    timestamp: "8 hours ago",
+    category: "Art",
+    tags: ["street art", "mural", "downtown"],
+    trending: false
+  }
+];
+
+const trendingTopics = [
+  { name: "Local Events", count: 156, trending: true },
+  { name: "Community Garden", count: 89, trending: true },
+  { name: "Street Art", count: 67, trending: false },
+  { name: "Coffee Shops", count: 45, trending: false },
+  { name: "Music Festival", count: 123, trending: true }
+];
+
+const sidebarHighlights = [
+  {
+    id: 1,
+    type: "event",
+    title: "Art Exhibition Opening",
+    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&h=150&fit=crop",
+    date: "Dec 10, 2024",
+    attendees: 89
+  },
+  {
+    id: 2,
+    type: "community",
+    title: "Local Artists Collective",
+    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&h=150&fit=crop",
+    members: 234,
+    description: "Supporting local artists"
+  },
+  {
+    id: 3,
+    type: "discussion",
+    title: "Best hiking trails near the city?",
+    author: "NatureExplorer",
+    replies: 32,
+    views: 856
+  }
+];
 
 const Feed = () => {
-  const { posts, loading, toggleLike, deletePost } = usePosts();
-  const { createSamplePosts, loading: sampleLoading } = useSampleData();
-  const { currentLocation, isEnabled: locationEnabled } = useLocation();
-  const [distanceFilter, setDistanceFilter] = useState(50);
-  const [localNews, setLocalNews] = useState<any[]>([]);
-  const [loadingNews, setLoadingNews] = useState(false);
-  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("trending");
+  const [sortBy, setSortBy] = useState("hot");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch local news when component mounts or location changes
-  useEffect(() => {
-    fetchLocalNews();
-  }, [currentLocation, locationEnabled]);
+  const filteredPosts = feedPosts.filter(post => {
+    if (searchQuery) {
+      return post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             post.author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    return true;
+  });
 
-  const fetchLocalNews = async () => {
-    setLoadingNews(true);
-    try {
-      // Determine location to use
-      let locationParam = 'Your Area';
-      let requestBody: any = { location: locationParam };
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    switch (sortBy) {
+      case "hot":
+        return (b.likes - b.dislikes) - (a.likes - a.dislikes);
+      case "new":
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      case "top":
+        return b.likes - a.likes;
+      default:
+        return 0;
+    }
+  });
+
+  const renderPostContent = (post: any) => {
+    switch (post.type) {
+      case "poll":
+        return (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg">{post.question}</h3>
+            <div className="space-y-2">
+              {post.options.map((option: any) => (
+                <div key={option.id} className="relative">
+                  <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                    <span>{option.text}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {option.votes} votes ({option.percentage}%)
+                    </span>
+                  </div>
+                  <div 
+                    className="absolute inset-0 bg-primary/10 rounded-lg pointer-events-none"
+                    style={{ width: `${option.percentage}%` }}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {post.totalVotes} total votes
+            </p>
+          </div>
+        );
       
-      if (locationEnabled && currentLocation) {
-        locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
-        requestBody = {
-          location: locationParam,
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-          radius: distanceFilter
-        };
-      }
-
-      const { data, error } = await supabase.functions.invoke('fetch-local-news', {
-        body: requestBody
-      });
+      case "event":
+        return (
+          <div className="space-y-3">
+            <p>{post.content}</p>
+            <Card className="event-card">
+              <CardContent className="p-4">
+                <div className="flex gap-4">
+                  <img 
+                    src={post.event.image} 
+                    alt={post.event.title}
+                    className="w-20 h-20 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-semibold mb-1">{post.event.title}</h4>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {post.event.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {post.event.time}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {post.event.location}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {post.event.attendees} attending
+                      </span>
+                      <Badge className="badge-event">{post.event.price}</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
       
-      if (error) throw error;
-      setLocalNews(data.news || []);
-    } catch (error) {
-      console.error('Error fetching local news:', error);
-    } finally {
-      setLoadingNews(false);
+      default:
+        return (
+          <div className="space-y-3">
+            <p>{post.content}</p>
+            {post.images && post.images.length > 0 && (
+              <div className="grid grid-cols-1 gap-2">
+                {post.images.map((image: string, index: number) => (
+                  <img 
+                    key={index}
+                    src={image} 
+                    alt="Post content"
+                    className="w-full rounded-lg object-cover max-h-96"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
     }
   };
 
-  const PostCard = ({ post }: { post: Post }) => {
-    const [showComments, setShowComments] = useState(false);
-    const [isLiked, setIsLiked] = useState(false);
-    const [copied, setCopied] = useState(false);
-    const { toast } = useToast();
-    const { user: currentUser } = useAuth();
-
-    const getInitials = (name?: string) => {
-      if (!name) return 'U';
-      return name.split(' ').map(n => n[0]).join('').toUpperCase();
-    };
-
-    const getTimeAgo = (dateString: string) => {
-      try {
-        return format(new Date(dateString), 'MMM d, yyyy');
-      } catch {
-        return 'Unknown date';
-      }
-    };
-
-    const handleLike = async () => {
-      setIsLiked(!isLiked);
-      await toggleLike(post.id);
-    };
-
-    const handleShare = async () => {
-      const postUrl = `${window.location.origin}/post/${post.id}`;
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: post.title || 'Check out this post',
-            text: post.content,
-            url: postUrl,
-          });
-        } else {
-          await navigator.clipboard.writeText(postUrl);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-          toast({
-            title: "Link copied!",
-            description: "Post link has been copied to clipboard."
-          });
-        }
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    };
-
-    const handleDelete = async () => {
-      await deletePost(post.id);
-    };
-
-    return (
-    <Card className="mb-6 shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={post.profiles?.avatar_url || ""} />
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                {getInitials(post.profiles?.display_name || post.profiles?.username)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium text-sm">
-                {post.profiles?.display_name || post.profiles?.username || 'Anonymous'}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                {getTimeAgo(post.created_at)}
-                {(post.location_city || post.event_location) && (
-                  <>
-                    <span>•</span>
-                    <MapPin className="h-3 w-3" />
-                    {post.event_location || `${post.location_city}, ${post.location_state}`}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={
-              post.type === "event" ? "default" : 
-              post.type === "service" ? "secondary" :
-              post.type === "discussion" ? "outline" : "secondary"
-            }>
-              {post.type === "event" ? "Event" : 
-               post.type === "service" ? "Service" :
-               post.type === "discussion" ? "Discussion" : "Post"}
-            </Badge>
-            {currentUser?.id === post.user_id && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Post</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this post? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div>
-          <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
-          <p className="text-muted-foreground">{post.content}</p>
-        </div>
-
-        {/* Event specific info */}
-        {post.type === "event" && post.event_date && (
-          <div className="flex items-center gap-2 text-sm bg-primary/5 p-3 rounded-lg">
-            <Calendar className="h-4 w-4 text-primary" />
-            <span className="font-medium text-primary">
-              {format(new Date(post.event_date), 'PPP p')}
-            </span>
-          </div>
-        )}
-
-        {/* Service specific info */}
-        {post.type === "service" && post.price_range && (
-          <div className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <span className="text-sm font-medium">Service Available</span>
-            </div>
-            <span className="text-sm font-medium text-primary">{post.price_range}</span>
-          </div>
-        )}
-
-        {/* Discussion specific info */}
-        {post.type === "discussion" && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>Community discussion</span>
-          </div>
-        )}
-
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag: string) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Contact Information - Only shown for user's own posts */}
-        {post.contact_info && post.user_id === user?.id && (
-          <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Phone className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-800">Contact Information</span>
-            </div>
-            <p className="text-sm text-amber-700">{post.contact_info}</p>
-            <p className="text-xs text-amber-600 mt-1">
-              ⚠️ This contact information is only visible to you
+  return (
+    <MainLayout>
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gradient">Feed</h1>
+            <p className="text-muted-foreground mt-2">
+              Discover and engage with community content
             </p>
           </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="flex items-center gap-6">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={`gap-2 ${isLiked ? 'text-red-500' : ''}`}
-              onClick={handleLike}
-            >
-              <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-              {post.likes_count || 0}
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="gap-2"
-              onClick={() => setShowComments(!showComments)}
-            >
-              <MessageCircle className="h-4 w-4" />
-              {post.comments_count || 0}
-            </Button>
-            <SocialShareButton
-              content={{
-                content_type: 'post',
-                content_id: post.id,
-                share_text: post.title || 'Check out this post',
-                share_url: `${window.location.origin}/post/${post.id}`
-              }}
-              variant="ghost"
-              size="sm"
-              showLabel={false}
-              platforms={['facebook', 'twitter', 'linkedin', 'whatsapp']}
-              onShare={(platform) => {
-                toast({
-                  title: "Shared successfully!",
-                  description: `Post shared on ${platform}`
-                });
-              }}
-              className="gap-2"
-            />
-          </div>
-          
-          {post.type === "event" && (
-            <Button size="sm">Interested</Button>
-          )}
-          {post.type === "service" && (
-            <Button size="sm">Book Now</Button>
-          )}
-          {post.type === "discussion" && (
-            <Button size="sm" variant="outline">Join</Button>
-          )}
+          <Button className="btn-community">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Post
+          </Button>
         </div>
 
-        {/* Comments Section */}
-        <PostComments 
-          postId={post.id}
-          isOpen={showComments}
-          onClose={() => setShowComments(false)}
-          postOwnerId={post.user_id}
-        />
-      </CardContent>
-    </Card>
-    );
-  };
-
-  if (loading) {
-    return (
-      <MainLayout>
-        <div className="container max-w-4xl mx-auto p-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  return (
-    <ProtectedRoute>
-      <MainLayout>
-      <div className="container max-w-4xl mx-auto p-6">
-        {/* Promotional Banner */}
-        <PromotionalBanner 
-          position="top" 
-          variant="default" 
-          maxCampaigns={2}
-          className="mb-4"
-        />
-        
-        {/* Feed Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold mb-2">Your Local Feed</h1>
-              <p className="text-muted-foreground">
-                Discover what's happening in your community
-                {locationEnabled && currentLocation && (
-                  <span className="block text-sm text-primary mt-1">
-                    📍 Using your real-time location
-                  </span>
-                )}
-              </p>
+        {/* Search and Filters */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search posts, topics, or people..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full lg:w-40">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hot">Hot</SelectItem>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="top">Top</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex items-center gap-3">
-              <DistanceFilter 
-                currentDistance={distanceFilter}
-                onDistanceChange={setDistanceFilter}
-              />
-              {posts.length === 0 && !loading && (
-                <Button 
-                  onClick={createSamplePosts} 
-                  disabled={sampleLoading}
-                  variant="outline"
-                >
-                  {sampleLoading ? "Creating..." : "Add Sample Data"}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Local News Section */}
-        {!loadingNews && localNews.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Local News & Updates</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {localNews.slice(0, 3).map((news, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2">
-                    <Badge variant="secondary" className="w-fit mb-2">{news.category}</Badge>
-                    <CardTitle className="text-base leading-tight">{news.title}</CardTitle>
-                  </CardHeader>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Feed */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Feed Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="trending" className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Trending
+                </TabsTrigger>
+                <TabsTrigger value="latest" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Latest
+                </TabsTrigger>
+                <TabsTrigger value="following" className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Following
+                </TabsTrigger>
+                <TabsTrigger value="local" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Local
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="trending" className="space-y-4">
+                {sortedPosts.filter(post => post.trending).map((post) => (
+                  <Card key={post.id} className="discussion-card">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={post.author.avatar} />
+                            <AvatarFallback>{post.author.name[0]}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold">{post.author.name}</h3>
+                              {post.author.verified && (
+                                <Badge className="bg-blue-500 text-white text-xs">
+                                  <Shield className="w-3 h-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                              {post.trending && (
+                                <Badge className="badge-trending">
+                                  <Flame className="w-3 h-3 mr-1" />
+                                  Trending
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>{post.author.role}</span>
+                              <span>•</span>
+                              <span>{post.timestamp}</span>
+                              <span>•</span>
+                              <span>{post.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {renderPostContent(post)}
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <ArrowUp className="w-4 h-4" />
+                            {post.likes}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <ArrowDown className="w-4 h-4" />
+                            {post.dislikes}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <MessageCircle className="w-4 h-4" />
+                            {post.comments}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <Share2 className="w-4 h-4" />
+                            {post.shares}
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="icon">
+                            <Bookmark className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {post.tags.map((tag: string) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+              
+              <TabsContent value="latest" className="space-y-4">
+                {sortedPosts.map((post) => (
+                  <Card key={post.id} className="discussion-card">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={post.author.avatar} />
+                            <AvatarFallback>{post.author.name[0]}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold">{post.author.name}</h3>
+                              {post.author.verified && (
+                                <Badge className="bg-blue-500 text-white text-xs">
+                                  <Shield className="w-3 h-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>{post.author.role}</span>
+                              <span>•</span>
+                              <span>{post.timestamp}</span>
+                              <span>•</span>
+                              <span>{post.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {renderPostContent(post)}
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <ArrowUp className="w-4 h-4" />
+                            {post.likes}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <ArrowDown className="w-4 h-4" />
+                            {post.dislikes}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <MessageCircle className="w-4 h-4" />
+                            {post.comments}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <Share2 className="w-4 h-4" />
+                            {post.shares}
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="icon">
+                            <Bookmark className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {post.tags.map((tag: string) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+              
+              <TabsContent value="following" className="space-y-4">
+                <Card className="text-center py-12">
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">{news.description}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {new Date(news.publishedAt).toLocaleString()}
+                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-8 h-8 text-muted-foreground" />
                     </div>
+                    <h3 className="text-lg font-semibold mb-2">Follow people to see their posts</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start following community members to see their latest posts here
+                    </p>
+                    <Button className="btn-community">
+                      Discover People
+                    </Button>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              </TabsContent>
+              
+              <TabsContent value="local" className="space-y-4">
+                <Card className="community-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-orange-500" />
+                      Local Highlights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Discover what's happening in your local community. Connect with neighbors, 
+                      find local events, and stay updated with community news.
+                    </p>
+                    <Button className="mt-4 btn-community">
+                      Explore Local
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
-        )}
 
-        {/* Feed Tabs */}
-        <Tabs defaultValue="all" className="mb-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="discussions">Discussions</TabsTrigger>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-          </TabsList>
+          {/* Right Column - Sidebar */}
+          <div className="space-y-6">
+            {/* Trending Topics */}
+            <Card className="trending-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-red-500" />
+                  Trending Topics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {trendingTopics.map((topic, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">#{topic.name}</span>
+                      {topic.trending && (
+                        <Badge className="badge-trending text-xs">
+                          <Flame className="w-3 h-3 mr-1" />
+                          Hot
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-sm text-muted-foreground">{topic.count} posts</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
 
-          <TabsContent value="all" className="mt-6">
-            <div className="space-y-0">
-              {posts.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">No posts yet. Be the first to share!</p>
-                  <Button asChild>
-                    <Link to="/create">Create Your First Post</Link>
-                  </Button>
+            {/* Sidebar Highlights */}
+            <Card className="community-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-500" />
+                  Highlights
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {sidebarHighlights.map((item) => (
+                  <div key={item.id} className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                    <img 
+                      src={item.image} 
+                      alt={item.title}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm">{item.title}</h4>
+                      {item.type === "event" && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          <span>{item.date}</span>
+                          <span>•</span>
+                          <span>{item.attendees} attending</span>
+                        </div>
+                      )}
+                      {item.type === "community" && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Users className="w-3 h-3" />
+                          <span>{item.members} members</span>
+                        </div>
+                      )}
+                      {item.type === "discussion" && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>by {item.author}</span>
+                          <span>•</span>
+                          <span>{item.replies} replies</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Your Activity</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Posts Created</span>
+                  <span className="font-semibold">12</span>
                 </div>
-              ) : (
-                posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="events" className="mt-6">
-            <div className="space-y-0">
-              {posts.filter(post => post.type === "event").map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="services" className="mt-6">
-            <div className="space-y-0">
-              {posts.filter(post => post.type === "service").map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="discussions" className="mt-6">
-            <div className="space-y-0">
-              {posts.filter(post => post.type === "discussion").map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="posts" className="mt-6">
-            <div className="space-y-0">
-              {posts.filter(post => post.type === "post").map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Comments Made</span>
+                  <span className="font-semibold">45</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Posts Liked</span>
+                  <span className="font-semibold">89</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Points Earned</span>
+                  <span className="font-semibold text-primary">1,247</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </MainLayout>
-    </ProtectedRoute>
   );
 };
 

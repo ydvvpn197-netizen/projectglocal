@@ -1,13 +1,16 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, User, Plus } from "lucide-react";
+import { Bell, User, Plus, Search, MapPin, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { Link, useNavigate } from "react-router-dom";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { UniformHeader } from "@/components/UniformHeader";
 import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
 import { NetworkStatus, NetworkStatusIndicator } from "@/components/NetworkStatus";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -16,6 +19,7 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -25,9 +29,18 @@ export function MainLayout({ children }: MainLayoutProps) {
     navigate('/signin');
   };
 
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
@@ -42,73 +55,146 @@ export function MainLayout({ children }: MainLayoutProps) {
             className="z-40"
           />
           
-          {/* Header */}
-          <header className="h-14 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-            <div className="flex items-center justify-between h-full px-4">
-              <div className="flex items-center gap-4">
+          {/* Enhanced Header */}
+          <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-sm">
+            <div className="flex items-center justify-between h-full px-6">
+              <div className="flex items-center gap-6">
                 <SidebarTrigger />
-                <Link to="/" className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gradient">
+                  <Sparkles className="h-6 w-6 text-primary" />
                   Local Social Hub
                 </Link>
               </div>
               
-              <div className="flex items-center gap-2">
+              {/* Enhanced Search Bar */}
+              <div className="flex-1 max-w-2xl mx-8">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search events, communities, discussions..."
+                    className="pl-10 bg-muted/50 border-0 focus:bg-background transition-all duration-200"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
                 <NetworkStatusIndicator className="mr-2" user={user} />
+                
                 {user && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => navigate('/create')}>
-                        Create Post
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/create-event')}>
-                        Create Event
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/community/create-discussion')}>
-                        Start Discussion
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/community/create-group')}>
-                        Create Group
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-                {user && (
-                  <Button variant="ghost" size="icon">
-                    <Bell className="h-4 w-4" />
-                  </Button>
-                )}
-                <div className="flex items-center gap-2 text-sm">
-                  {user ? (
-                    <>
-                      <span className="text-muted-foreground">
-                        {user?.email?.split('@')[0]}
-                      </span>
-                      <Button onClick={handleSignOut} variant="outline" size="sm">
-                        Sign Out
-                      </Button>
-                    </>
-                  ) : (
-                    <Button onClick={handleSignIn} variant="outline" size="sm">
+                  <>
+                    {/* Location Indicator */}
+                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span className="hidden sm:inline">Local</span>
+                    </Button>
+                    
+                    {/* Create Button */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" className="btn-community">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem onClick={() => navigate('/create')} className="gap-3">
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                          Create Post
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/create-event')} className="gap-3">
+                          <div className="w-2 h-2 rounded-full bg-orange-500" />
+                          Create Event
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/community/create-discussion')} className="gap-3">
+                          <div className="w-2 h-2 rounded-full bg-purple-500" />
+                          Start Discussion
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/community/create-group')} className="gap-3">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          Create Group
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    
+                    {/* Notifications */}
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Bell className="h-5 w-5" />
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500">
+                        3
+                      </Badge>
+                    </Button>
+                    
+                    {/* User Menu */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.avatar_url} alt={user.name || user.email} />
+                            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                              {getInitials(user.name || user.email)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <div className="flex items-center justify-start gap-2 p-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.avatar_url} alt={user.name || user.email} />
+                            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                              {getInitials(user.name || user.email)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {user.name || user.email?.split('@')[0]}
+                            </p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/profile')} className="gap-3">
+                          <User className="h-4 w-4" />
+                          Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/settings')} className="gap-3">
+                          <Settings className="h-4 w-4" />
+                          Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleSignOut} className="gap-3 text-red-600">
+                          <LogOut className="h-4 w-4" />
+                          Sign Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" onClick={handleSignIn} size="sm">
                       Sign In
                     </Button>
-                  )}
-                </div>
+                    <Button onClick={handleSignIn} size="sm" className="btn-community">
+                      Get Started
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto">
-            {children}
+          <main className="flex-1 overflow-auto bg-muted/20">
+            <div className="container mx-auto px-4 py-6">
+              {children}
+            </div>
           </main>
         </div>
       </div>
     </SidebarProvider>
   );
 }
+
+// Import missing icons
+import { Settings, LogOut } from "lucide-react";
