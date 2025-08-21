@@ -115,11 +115,14 @@ export function createMarketingFallback() {
  */
 export function createUserPreferencesFallback() {
   return {
-    location_enabled: false,
-    notifications_enabled: true,
+    location_radius_km: 50,
+    location_notifications: true,
+    email_notifications: true,
+    push_notifications: true,
     theme: 'light',
     language: 'en',
-    privacy_level: 'public'
+    timezone: 'UTC',
+    category: 'general'
   };
 }
 

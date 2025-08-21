@@ -41,12 +41,20 @@ const Feed = () => {
     try {
       // Determine location to use
       let locationParam = 'Your Area';
+      let requestBody: any = { location: locationParam };
+      
       if (locationEnabled && currentLocation) {
         locationParam = `${currentLocation.latitude},${currentLocation.longitude}`;
+        requestBody = {
+          location: locationParam,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
+          radius: distanceFilter
+        };
       }
 
       const { data, error } = await supabase.functions.invoke('fetch-local-news', {
-        body: { location: locationParam }
+        body: requestBody
       });
       
       if (error) throw error;

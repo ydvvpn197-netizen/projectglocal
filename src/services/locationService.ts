@@ -34,6 +34,8 @@ export class LocationService {
 
       if (!this.userPreferencesTableAvailable) {
         console.warn('User preferences table not available. Using fallback preferences.');
+      } else {
+        console.log('User preferences table is available and accessible.');
       }
 
       return this.userPreferencesTableAvailable;
@@ -118,7 +120,11 @@ export class LocationService {
         return defaultPreferences;
       }
 
-      return preferences;
+      // Ensure all required fields are present
+      return {
+        ...createUserPreferencesFallback(),
+        ...preferences
+      };
     } catch (error) {
       console.error('Error getting user location preferences:', error);
       return createUserPreferencesFallback();
@@ -146,6 +152,8 @@ export class LocationService {
           user_id: user.id,
           ...preferences,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
@@ -286,7 +294,7 @@ export class LocationService {
         enabled: isEnabled,
         auto_detect: autoDetect,
         radius_km: preferences?.location_radius_km || 50,
-        categories: preferences?.location_categories || [],
+        categories: preferences?.category ? [preferences.category] : [],
         notifications: preferences?.location_notifications || true,
       };
     } catch (error) {
@@ -325,7 +333,7 @@ export class LocationService {
       if (settings.radius_km !== undefined || settings.categories !== undefined || settings.notifications !== undefined) {
         await this.saveUserLocationPreferences({
           location_radius_km: settings.radius_km,
-          location_categories: settings.categories,
+          category: settings.categories?.[0] || 'general',
           location_notifications: settings.notifications,
         });
       }

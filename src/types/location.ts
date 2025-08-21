@@ -10,8 +10,13 @@ export interface LocationPreferences {
   id?: string;
   user_id: string;
   location_radius_km: number;
-  location_categories: string[];
   location_notifications: boolean;
+  email_notifications?: boolean;
+  push_notifications?: boolean;
+  theme?: string;
+  language?: string;
+  timezone?: string;
+  category?: string;
   created_at?: string;
   updated_at?: string;
 }
