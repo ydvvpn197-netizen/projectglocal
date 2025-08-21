@@ -89,9 +89,9 @@ const TrendingContentItem = ({ content }: { content: TrendingContentType }) => {
               </div>
             </div>
 
-            {content.tags && content.tags.length > 0 && (
-              <div className="flex gap-1 mt-2">
-                {content.tags.slice(0, 3).map((tag, index) => (
+          {content.metadata?.tags && Array.isArray(content.metadata.tags) && (
+            <div className="flex gap-1 mt-2">
+              {content.metadata.tags.slice(0, 3).map((tag: string, index: number) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {tag}
                   </Badge>
