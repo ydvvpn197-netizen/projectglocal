@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
         "font-src 'self' data:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in http://localhost:* http://127.0.0.1:*; " +
         "frame-ancestors 'none';"
     }
   },
