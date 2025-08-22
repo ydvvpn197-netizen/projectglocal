@@ -165,7 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const { error: profileError } = await resilientSupabase
             .from('profiles')
-            .upsert({
+            .insert({
               user_id: data.user.id,
               username: email.split('@')[0],
               display_name: firstName && lastName ? `${firstName} ${lastName}` : email.split('@')[0],
@@ -332,11 +332,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/password-reset`, {
+      const response = await fetch(`https://tepvzhbgobckybyhryuj.supabase.co/functions/v1/password-reset`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4`,
         },
         body: JSON.stringify({
           action: 'request',
@@ -383,11 +383,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/password-reset`, {
+      const response = await fetch(`https://tepvzhbgobckybyhryuj.supabase.co/functions/v1/password-reset`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4`,
         },
         body: JSON.stringify({
           action: 'reset',

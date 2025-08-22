@@ -16,7 +16,7 @@ import { supabase } from './integrations/supabase/client';
 console.log('main.tsx: Supabase client loaded', {
   hasAuth: !!supabase.auth,
   hasFrom: !!supabase.from,
-  url: supabase.supabaseUrl
+  url: 'https://tepvzhbgobckybyhryuj.supabase.co'
 });
 
 // Test environment variables

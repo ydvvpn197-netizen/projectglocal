@@ -178,7 +178,7 @@ export const SearchSuggestions = ({
                     <div className="flex-1 text-left">
                       <div className="font-medium">{search.query}</div>
                       <div className="text-xs text-muted-foreground">
-                        {search.resultsCount} results • {new Date(search.createdAt).toLocaleDateString()}
+                        {search.resultCount} results • {new Date(search.timestamp).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
@@ -218,6 +218,7 @@ export const SearchSuggestions = ({
                   id: `category-${category.type}`,
                   text: category.label,
                   type: 'category',
+                  score: 0.8,
                   relevance: 0.5
                 })}
               >
