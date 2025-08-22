@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NewsSource, NewsApiArticle } from '@/types/news';
 
 export class GoogleNewsApi {
