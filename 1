@@ -1,0 +1,72 @@
+[1mdiff --git a/src/hooks/useAuth.tsx b/src/hooks/useAuth.tsx[m
+[1mindex 85873ab..5d524c6 100644[m
+[1m--- a/src/hooks/useAuth.tsx[m
+[1m+++ b/src/hooks/useAuth.tsx[m
+[36m@@ -1,4 +1,11 @@[m
+ import * as React from 'react';[m
+[32m+[m
+[32m+[m[32m// Ensure React is available before destructuring[m
+[32m+[m[32mif (!React || typeof React.createContext !== 'function') {[m
+[32m+[m[32m  console.error('React createContext not available in useAuth:', { React, createContext: React?.createContext });[m
+[32m+[m[32m  throw new Error('React createContext is not available in useAuth');[m
+[32m+[m[32m}[m
+[32m+[m
+ const { createContext, useContext, useEffect, useState } = React;[m
+ import { User, Session } from '@supabase/supabase-js';[m
+ import { supabase, resilientSupabase } from '@/integrations/supabase/client';[m
+[1mdiff --git a/src/main.tsx b/src/main.tsx[m
+[1mindex 8133e58..221ca8e 100644[m
+[1m--- a/src/main.tsx[m
+[1m+++ b/src/main.tsx[m
+[36m@@ -34,26 +34,28 @@[m [mif (typeof window !== 'undefined') {[m
+ }[m
+ [m
+ // Verify React is available before rendering[m
+[31m-if (!React || !React.createContext) {[m
+[31m-  console.error('React is not properly loaded:', React);[m
+[31m-  throw new Error('React is not properly loaded');[m
+[32m+[m[32mif (!React || typeof React.createContext !== 'function') {[m
+[32m+[m[32m  console.error('React is not properly loaded:', { React, createContext: React?.createContext });[m
+[32m+[m[32m  throw new Error('React createContext is not available - React may not be fully loaded');[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Ensure React is fully loaded before creating any components[m
+[32m+[m[32mif (!React || typeof React.createContext !== 'function') {[m
+[32m+[m[32m  console.error('React createContext not available:', { React, createContext: React?.createContext });[m
+[32m+[m[32m  throw new Error('React createContext is not available');[m
+ }[m
+ [m
+ // Create a simple React app wrapper to ensure React is loaded[m
+ const AppWrapper = () => {[m
+[31m-  // Double-check React is available[m
+[31m-  if (!React || !React.createContext) {[m
+[31m-    console.error('React not available in AppWrapper');[m
+[31m-    return <div>Loading...</div>;[m
+[32m+[m[32m  // Triple-check React is available[m
+[32m+[m[32m  if (!React || typeof React.createContext !== 'function') {[m
+[32m+[m[32m    console.error('React not available in AppWrapper:', { React, createContext: React?.createContext });[m
+[32m+[m[32m    return React.createElement('div', null, 'Loading...');[m
+   }[m
+   [m
+   console.log('AppWrapper: React is available, rendering app');[m
+   [m
+[31m-  return ([m
+[31m-    <ErrorBoundary>[m
+[31m-      <App />[m
+[31m-    </ErrorBoundary>[m
+[31m-  );[m
+[32m+[m[32m  return React.createElement(ErrorBoundary, null, React.createElement(App, null));[m
+ };[m
+ [m
+ // Initialize the app[m
+[1mdiff --git a/vite.config.ts b/vite.config.ts[m
+[1mindex abce41b..608d36a 100644[m
+[1m--- a/vite.config.ts[m
+[1m+++ b/vite.config.ts[m
+[36m@@ -127,5 +127,6 @@[m [mexport default defineConfig(({ mode }) => ({[m
+       'class-variance-authority',[m
+       'tailwind-merge',[m
+     ],[m
+[32m+[m[32m    force: true, // Force re-optimization to ensure React is properly loaded[m
+   },[m
+ }));[m
