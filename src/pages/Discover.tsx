@@ -64,22 +64,63 @@ const Discover = () => {
       setLoading(true);
       
       // Fetch local news from Supabase Edge Function
-      if (currentLocation) {
-        const { data: newsData } = await supabase.functions.invoke('fetch-local-news', {
-          body: {
-            latitude: currentLocation.latitude,
-            longitude: currentLocation.longitude,
-            radius: 50 // 50km radius
-          }
-        });
-        
-        if (newsData) {
-          setLocalNews(newsData.slice(0, 5)); // Show top 5 news items
+      // Always try to fetch news, even without location
+      const { data: newsData, error: newsError } = await supabase.functions.invoke('fetch-local-news', {
+        body: {
+          location: currentLocation ? 'Your Area' : 'Local Area',
+          latitude: currentLocation?.latitude,
+          longitude: currentLocation?.longitude,
+          radius: 50 // 50km radius
         }
+      });
+      
+      if (newsError) {
+        console.error('Error fetching news:', newsError);
+        // Set mock news as fallback
+        setLocalNews([
+          {
+            title: "Local Community Updates",
+            description: "Stay connected with your local community and discover what's happening around you.",
+            url: "#",
+            source: "Local News",
+            publishedAt: new Date().toISOString(),
+            category: "General"
+          },
+          {
+            title: "Community Events This Week",
+            description: "Find exciting events and activities happening in your neighborhood this week.",
+            url: "#",
+            source: "Community Events",
+            publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            category: "Events"
+          }
+        ]);
+      } else if (newsData && newsData.news) {
+        setLocalNews(newsData.news.slice(0, 5)); // Show top 5 news items
+      } else {
+        // Fallback to mock news
+        setLocalNews([
+          {
+            title: "Local Community Updates",
+            description: "Stay connected with your local community and discover what's happening around you.",
+            url: "#",
+            source: "Local News",
+            publishedAt: new Date().toISOString(),
+            category: "General"
+          },
+          {
+            title: "Community Events This Week",
+            description: "Find exciting events and activities happening in your neighborhood this week.",
+            url: "#",
+            source: "Community Events",
+            publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            category: "Events"
+          }
+        ]);
       }
 
       // Fetch nearby events
-      if (currentLocation) {
+      try {
         const { data: events } = await supabase
           .from('events')
           .select('*')
@@ -98,6 +139,20 @@ const Discover = () => {
             price: event.price ? `$${event.price}` : 'Free'
           })));
         }
+      } catch (eventError) {
+        console.error('Error fetching events:', eventError);
+        // Set mock events as fallback
+        setNearbyEvents([
+          {
+            id: '1',
+            title: 'Community Meetup',
+            description: 'Join us for a friendly community gathering',
+            location: 'Local Community Center',
+            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            category: 'Community',
+            price: 'Free'
+          }
+        ]);
       }
     } catch (error) {
       console.error('Error fetching local content:', error);
@@ -292,42 +347,96 @@ const Discover = () => {
           <TabsContent value="news" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Local News</h2>
-              <Button variant="outline" onClick={() => window.open('https://news.google.com', '_blank')}>
-                More News
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={fetchLocalContent}
+                  disabled={loading}
+                  size="sm"
+                >
+                  {loading ? 'Loading...' : 'Refresh'}
+                </Button>
+                <Button variant="outline" onClick={() => window.open('https://news.google.com', '_blank')}>
+                  More News
+                </Button>
+              </div>
             </div>
             
-            <div className="space-y-4">
-              {localNews.map((news, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="text-xs">
-                            {news.category}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{news.source}</span>
-                        </div>
-                        <h3 className="font-semibold mb-2">{news.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {news.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(news.publishedAt), 'MMM dd, yyyy')}
-                          </span>
-                          <Button variant="outline" size="sm" onClick={() => window.open(news.url, '_blank')}>
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            Read
-                          </Button>
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-5 bg-muted rounded w-16"></div>
+                            <div className="h-4 bg-muted rounded w-20"></div>
+                          </div>
+                          <div className="h-5 bg-muted rounded w-3/4 mb-2"></div>
+                          <div className="h-4 bg-muted rounded w-full mb-3"></div>
+                          <div className="flex items-center justify-between">
+                            <div className="h-4 bg-muted rounded w-20"></div>
+                            <div className="h-8 bg-muted rounded w-16"></div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : localNews.length > 0 ? (
+              <div className="space-y-4">
+                {localNews.map((news, index) => (
+                  <Card key={index} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              {news.category}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{news.source}</span>
+                          </div>
+                          <h3 className="font-semibold mb-2">{news.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {news.description}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(news.publishedAt), 'MMM dd, yyyy')}
+                            </span>
+                            <Button variant="outline" size="sm" onClick={() => window.open(news.url, '_blank')}>
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Read
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MapPin className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">No Local News Available</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Enable location services to get personalized local news, or check back later for updates.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={fetchLocalContent}
+                    disabled={loading}
+                  >
+                    {loading ? 'Loading...' : 'Refresh News'}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>

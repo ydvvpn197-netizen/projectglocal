@@ -26,12 +26,15 @@ import {
 } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useEvents } from "@/hooks/useEvents";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { EventCard } from "@/components/EventCard";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample data for the enhanced homepage
 const trendingEvent = {
@@ -76,39 +79,6 @@ const trendingDiscussions = [
   }
 ];
 
-const upcomingEvents = [
-  {
-    id: 1,
-    title: "Art Exhibition Opening",
-    date: "Dec 10, 2024",
-    time: "6:00 PM",
-    location: "Downtown Gallery",
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=300&h=200&fit=crop",
-    attendees: 89,
-    category: "Art"
-  },
-  {
-    id: 2,
-    title: "Community Garden Workshop",
-    date: "Dec 12, 2024",
-    time: "2:00 PM",
-    location: "Community Center",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop",
-    attendees: 45,
-    category: "Community"
-  },
-  {
-    id: 3,
-    title: "Local Food Market",
-    date: "Dec 14, 2024",
-    time: "10:00 AM",
-    location: "Farmers Market Square",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop",
-    attendees: 156,
-    category: "Food"
-  }
-];
-
 const communitySpotlight = [
   {
     id: 1,
@@ -147,10 +117,54 @@ const quickActions = [
 
 const Index = () => {
   const { user } = useAuth();
+  const { events, loading, toggleAttendance } = useEvents();
+  const { toast } = useToast();
 
   if (!user) {
     return <Navigate to="/signin" replace />;
   }
+
+  // Filter upcoming events (events with future dates)
+  const upcomingEvents = events
+    .filter(event => {
+      try {
+        const eventDate = new Date(event.event_date);
+        const today = new Date();
+        return eventDate >= today;
+      } catch {
+        return false;
+      }
+    })
+    .sort((a, b) => {
+      try {
+        const dateA = new Date(a.event_date);
+        const dateB = new Date(b.event_date);
+        return dateA.getTime() - dateB.getTime();
+      } catch {
+        return 0;
+      }
+    })
+    .slice(0, 5); // Show only the next 5 events
+
+  const handleAttendEvent = async (eventId: string) => {
+    await toggleAttendance(eventId);
+  };
+
+  const handleLikeEvent = (eventId: string) => {
+    // TODO: Implement like functionality
+    toast({
+      title: "Feature Coming Soon",
+      description: "Event liking functionality will be available soon!",
+    });
+  };
+
+  const handleShareEvent = (eventId: string) => {
+    // TODO: Implement share functionality
+    toast({
+      title: "Feature Coming Soon",
+      description: "Event sharing functionality will be available soon!",
+    });
+  };
 
   return (
     <MainLayout>
@@ -160,10 +174,10 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30" />
           <div className="relative p-8 md:p-12 text-white">
             <div className="max-w-4xl">
-                             <Badge className="mb-4 bg-orange-500 hover:bg-orange-600">
-                 <Flame className="w-3 h-3 mr-1" />
-                 Featured Event
-               </Badge>
+              <Badge className="mb-4 bg-orange-500 hover:bg-orange-600">
+                <Flame className="w-3 h-3 mr-1" />
+                Featured Event
+              </Badge>
               <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
                 {trendingEvent.title}
               </h1>
@@ -229,10 +243,10 @@ const Index = () => {
                   <TrendingUp className="w-4 h-4" />
                   Trending
                 </TabsTrigger>
-                                 <TabsTrigger value="local" className="flex items-center gap-2">
-                   <Flame className="w-4 h-4" />
-                   Local
-                 </TabsTrigger>
+                <TabsTrigger value="local" className="flex items-center gap-2">
+                  <Flame className="w-4 h-4" />
+                  Local
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="trending" className="space-y-4">
@@ -252,10 +266,10 @@ const Index = () => {
                           </CardDescription>
                         </div>
                       </div>
-                                             <Badge className="badge-trending">
-                         <Flame className="w-3 h-3 mr-1" />
-                         Trending
-                       </Badge>
+                      <Badge className="badge-trending">
+                        <Flame className="w-3 h-3 mr-1" />
+                        Trending
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -276,53 +290,80 @@ const Index = () => {
 
                 {/* Upcoming Events */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Upcoming Events</h3>
-                  {upcomingEvents.map((event) => (
-                    <Card key={event.id} className="event-card">
-                      <CardContent className="p-4">
-                        <div className="flex gap-4">
-                          <img 
-                            src={event.image} 
-                            alt={event.title}
-                            className="w-20 h-20 rounded-lg object-cover"
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-semibold mb-1">{event.title}</h4>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {event.date}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {event.time}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {event.location}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <Badge className="badge-event">{event.category}</Badge>
-                              <span className="text-sm text-muted-foreground">
-                                {event.attendees} attending
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Upcoming Events ({upcomingEvents.length})</h3>
+                    <Link to="/events">
+                      <Button variant="outline" size="sm">
+                        View All Events
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {[...Array(3)].map((_, i) => (
+                        <Card key={i} className="animate-pulse">
+                          <div className="h-48 bg-muted rounded-t-lg"></div>
+                          <CardContent className="p-4">
+                            <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-muted rounded w-full mb-2"></div>
+                            <div className="h-3 bg-muted rounded w-2/3"></div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : upcomingEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {upcomingEvents.map((event) => (
+                        <EventCard
+                          key={event.id}
+                          event={event}
+                          onAttend={handleAttendEvent}
+                          onBook={(eventId) => {
+                            toast({
+                              title: "Feature Coming Soon",
+                              description: "Event booking functionality will be available soon!",
+                            });
+                          }}
+                          onLike={handleLikeEvent}
+                          onChat={(eventId, organizerId) => {
+                            toast({
+                              title: "Feature Coming Soon",
+                              description: "Chat functionality will be available soon!",
+                            });
+                          }}
+                          verified={Math.random() > 0.7} // Randomly show some as verified for demo
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-8 text-center">
+                        <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold mb-2">No Upcoming Events</h3>
+                        <p className="text-muted-foreground mb-4">
+                          There are no upcoming events in your area. Be the first to create one!
+                        </p>
+                        <Link to="/create-event">
+                          <Button className="btn-event">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Event
+                          </Button>
+                        </Link>
                       </CardContent>
                     </Card>
-                  ))}
+                  )}
                 </div>
               </TabsContent>
               
               <TabsContent value="local" className="space-y-4">
                 <Card className="community-card">
                   <CardHeader>
-                                         <CardTitle className="flex items-center gap-2">
-                       <Flame className="w-5 h-5 text-orange-500" />
-                       Local Highlights
-                     </CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Flame className="w-5 h-5 text-orange-500" />
+                      Local Highlights
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">

@@ -26,6 +26,8 @@ export interface Event {
   updated_at: string;
   attendees_count: number;
   user_attending: boolean;
+  organizer_name?: string;
+  organizer_avatar?: string;
 }
 
 export interface CreateEventData {

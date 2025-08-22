@@ -34,6 +34,7 @@ const CreateGroup = lazy(() => import("./pages/CreateGroup"));
 // Event pages (grouped together)
 const Events = lazy(() => import("./pages/Events"));
 const CreateEvent = lazy(() => import("./pages/CreateEvent"));
+const EventDetails = lazy(() => import("./pages/EventDetails"));
 
 // Artist pages (grouped together)
 const BookArtist = lazy(() => import("./pages/BookArtist"));
@@ -43,6 +44,7 @@ const ArtistProfile = lazy(() => import("./pages/ArtistProfile"));
 // User pages (grouped together)
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 
 // Chat pages (grouped together)
 const Chat = lazy(() => import("./pages/Chat"));
@@ -101,6 +103,7 @@ const App = () => {
                 <Route path="/community/create-discussion" element={<CreateDiscussion />} />
                 <Route path="/community/create-group" element={<CreateGroup />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/event/:eventId" element={<EventDetails />} />
                 <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                 <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
                 <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
@@ -109,6 +112,7 @@ const App = () => {
                 <Route path="/chat/:conversationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
                 <Route path="/artist/:artistId" element={<ArtistProfile />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/profile/:userId" element={<UserProfile />} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/location-test" element={<ProtectedRoute><LocationTest /></ProtectedRoute>} />
                 <Route path="/news" element={<NewsFeed />} />

@@ -31,14 +31,14 @@ serve(async (req) => {
       newsItems = await fetchRealNews(location, latitude, longitude, radius);
     } catch (error) {
       console.error('Error fetching real news, falling back to mock data:', error);
-      newsItems = getMockNews(location);
+      newsItems = getMockNews(location || 'Your Area');
     }
 
     const shuffledNews = newsItems.sort(() => Math.random() - 0.5);
     
     return new Response(JSON.stringify({ 
       news: shuffledNews,
-      location: location,
+      location: location || 'Your Area',
       lastUpdated: new Date().toISOString(),
       source: 'real-time'
     }), {
