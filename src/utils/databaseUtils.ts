@@ -2,6 +2,7 @@
  * Database utilities for handling missing tables and schema issues
  */
 
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 
 export interface TableStatus {

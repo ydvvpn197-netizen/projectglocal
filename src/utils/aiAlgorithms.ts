@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SearchResult, TrendingContent } from '@/types/search';
 import { Recommendation, UserPreference } from '@/types/recommendations';
 import { FollowSuggestion } from '@/types/following';

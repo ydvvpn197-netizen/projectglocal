@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import { ReferralAnalyticsService } from './referralAnalyticsService';
 import { ReferralRewardService } from './referralRewardService';

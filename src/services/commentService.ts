@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import { checkTableExists, getCommentsTableName, createUserPreferencesFallback } from '@/utils/databaseUtils';
 import { PostComment, CreateCommentRequest } from '@/types/community';

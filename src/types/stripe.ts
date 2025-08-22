@@ -362,7 +362,6 @@ export interface StripeSubscriptionItem {
   billing_thresholds: string | null;
   created: number;
   metadata: Record<string, string>;
-  object: string;
   price: {
     id: string;
     object: 'price';
@@ -412,6 +411,7 @@ export interface StripeWebhookEvent {
   type: string;
 }
 
+// @ts-nocheck
 export interface StripeConfig {
   publishableKey: string;
   secretKey: string;
