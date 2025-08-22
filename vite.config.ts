@@ -127,5 +127,6 @@ export default defineConfig(({ mode }) => ({
       'class-variance-authority',
       'tailwind-merge',
     ],
+    force: true, // Force re-optimization to ensure React is properly loaded
   },
 }));

@@ -34,26 +34,28 @@ if (typeof window !== 'undefined') {
 }
 
 // Verify React is available before rendering
-if (!React || !React.createContext) {
-  console.error('React is not properly loaded:', React);
-  throw new Error('React is not properly loaded');
+if (!React || typeof React.createContext !== 'function') {
+  console.error('React is not properly loaded:', { React, createContext: React?.createContext });
+  throw new Error('React createContext is not available - React may not be fully loaded');
+}
+
+// Ensure React is fully loaded before creating any components
+if (!React || typeof React.createContext !== 'function') {
+  console.error('React createContext not available:', { React, createContext: React?.createContext });
+  throw new Error('React createContext is not available');
 }
 
 // Create a simple React app wrapper to ensure React is loaded
 const AppWrapper = () => {
-  // Double-check React is available
-  if (!React || !React.createContext) {
-    console.error('React not available in AppWrapper');
-    return <div>Loading...</div>;
+  // Triple-check React is available
+  if (!React || typeof React.createContext !== 'function') {
+    console.error('React not available in AppWrapper:', { React, createContext: React?.createContext });
+    return React.createElement('div', null, 'Loading...');
   }
   
   console.log('AppWrapper: React is available, rendering app');
   
-  return (
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  );
+  return React.createElement(ErrorBoundary, null, React.createElement(App, null));
 };
 
 // Initialize the app

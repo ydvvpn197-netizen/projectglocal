@@ -1,4 +1,11 @@
 import * as React from 'react';
+
+// Ensure React is available before destructuring
+if (!React || typeof React.createContext !== 'function') {
+  console.error('React createContext not available in useAuth:', { React, createContext: React?.createContext });
+  throw new Error('React createContext is not available in useAuth');
+}
+
 const { createContext, useContext, useEffect, useState } = React;
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, resilientSupabase } from '@/integrations/supabase/client';
