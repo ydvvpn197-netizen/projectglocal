@@ -1,9 +1,9 @@
-# .htaccess file for theglocal.in SPA deployment with relative paths
+# .htaccess file for GitHub Pages SPA deployment
 
 # Enable rewrite engine
 RewriteEngine On
 
-# Handle Angular and React Router (SPA) - works with relative paths
+# Handle React Router (SPA) for GitHub Pages
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.html [QSA,L]
