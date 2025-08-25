@@ -33,6 +33,23 @@
     <title>The Glocal — Local Social Hub</title>
     <meta name="description" content="Discover local events, connect with your community, and book talented artists near you." />
     <link rel="canonical" href="https://theglocal.in/" />
+    
+    <!-- React Fallback - Ensure React is available -->
+    <script>
+      // Fallback to ensure React is available
+      if (typeof React === 'undefined') {
+        console.warn('React not loaded, attempting to load from CDN...');
+        var script = document.createElement('script');
+        script.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
+        script.crossOrigin = '';
+        document.head.appendChild(script);
+        
+        var script2 = document.createElement('script');
+        script2.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
+        script2.crossOrigin = '';
+        document.head.appendChild(script2);
+      }
+    </script>
 
     <!-- Performance: Preconnect to Supabase -->
     <link rel="preconnect" href="https://tepvzhbgobckybyhryuj.supabase.co" crossorigin />

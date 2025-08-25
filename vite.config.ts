@@ -32,11 +32,11 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Ensure React and React-DOM are always bundled together and loaded first
+        manualChunks: (id: string) => {
+          // Ensure React loads first by putting it in the main bundle
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query')) {
-              return 'react-vendor';
+              return undefined; // Put React in the main bundle
             }
             if (id.includes('@supabase')) {
               return 'supabase-vendor';
