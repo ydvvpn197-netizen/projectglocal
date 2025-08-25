@@ -28,8 +28,14 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ['react', 'react-dom'], // Prevent duplicate React instances
   },
   build: {
+    // Ensure build is reliable
+    target: 'es2015',
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
