@@ -196,7 +196,7 @@ export class PointsService {
   }
 
   // Manually add points (for testing or admin purposes)
-  static async addPoints(
+  static async addPointsWithReference(
     userId: string,
     points: number,
     transactionType: PointTransactionType,
