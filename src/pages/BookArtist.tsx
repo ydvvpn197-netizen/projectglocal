@@ -11,6 +11,7 @@ import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { notificationService } from "@/services/notificationService";
 import { CalendarIcon, Star, Users, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -165,21 +166,24 @@ const BookArtist = () => {
 
       if (bookingError) throw bookingError;
 
-      // Notify the artist
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: selectedArtist.user_id,
-          type: 'booking_request',
-          title: 'New Booking Request',
-          message: `You have a new booking request for ${sanitizedData.eventType} on ${format(bookingDate, 'PPP')}`,
-          data: {
-            booking_id: bookingRow.id,
-            client_id: user.id,
+      // Notify the artist using the notification service
+      try {
+        await notificationService.createBookingRequestNotification(
+          selectedArtist.user_id,
+          user.id,
+          {
+            id: bookingRow.id,
             event_type: sanitizedData.eventType,
-            event_date: bookingDate.toISOString()
+            event_date: bookingDate.toISOString(),
+            event_location: sanitizedData.location,
+            budget_min: budgetMinParsed,
+            budget_max: budgetMaxParsed
           }
-        });
+        );
+      } catch (notificationError) {
+        console.error('Error creating booking notification:', notificationError);
+        // Don't fail the booking if notification fails
+      }
 
       toast({
         title: "Booking Request Sent!",

@@ -49,7 +49,7 @@ interface UserSettings {
 const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const { deleteAccount, isDeleting } = useAccountDeletion();
+  const { deleteAccount, testEdgeFunction, isDeleting } = useAccountDeletion();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -431,62 +431,72 @@ const Settings = () => {
                     </p>
                   </div>
                   
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Account
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2">
-                          <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={testEdgeFunction}
+                      className="text-xs"
+                    >
+                      Test Function
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
                           Delete Account
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your account and remove all your data from our servers including:
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <ul className="list-disc list-inside space-y-1">
-                          <li>Your profile and personal information</li>
-                          <li>All your posts and comments</li>
-                          <li>Chat conversations and messages</li>
-                          <li>Event bookings and artist profiles</li>
-                          <li>Follow relationships and notifications</li>
-                          <li>All other account data</li>
-                        </ul>
-                      </div>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                            Delete Account
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete your account and remove all your data from our servers including:
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <ul className="list-disc list-inside space-y-1">
+                            <li>Your profile and personal information</li>
+                            <li>All your posts and comments</li>
+                            <li>Chat conversations and messages</li>
+                            <li>Event bookings and artist profiles</li>
+                            <li>Follow relationships and notifications</li>
+                            <li>All other account data</li>
+                          </ul>
+                        </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="deleteConfirmation" className="text-sm font-medium">
-                          Type "DELETE" to confirm
-                        </Label>
-                        <Input
-                          id="deleteConfirmation"
-                          value={deleteConfirmation}
-                          onChange={(e) => setDeleteConfirmation(e.target.value)}
-                          placeholder="DELETE"
-                          className="border-destructive/50 focus:border-destructive"
-                        />
-                      </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="deleteConfirmation" className="text-sm font-medium">
+                            Type "DELETE" to confirm
+                          </Label>
+                          <Input
+                            id="deleteConfirmation"
+                            value={deleteConfirmation}
+                            onChange={(e) => setDeleteConfirmation(e.target.value)}
+                            placeholder="DELETE"
+                            className="border-destructive/50 focus:border-destructive"
+                          />
+                        </div>
 
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setDeleteConfirmation("")}>
-                          Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteAccount}
-                          disabled={deleteConfirmation !== "DELETE" || isDeleting}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          {isDeleting ? "Deleting..." : "Delete Account"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setDeleteConfirmation("")}>
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteAccount}
+                            disabled={deleteConfirmation !== "DELETE" || isDeleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {isDeleting ? "Deleting..." : "Delete Account"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -45,6 +45,8 @@ const ArtistProfile = lazy(() => import("./pages/ArtistProfile"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 
 // Chat pages (grouped together)
 const Chat = lazy(() => import("./pages/Chat"));
@@ -59,6 +61,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 // Test pages
 const LocationTest = lazy(() => import("./pages/LocationTest"));
 const NewsFeed = lazy(() => import("./pages/NewsFeed"));
+const TestNotifications = lazy(() => import("./pages/TestNotifications"));
+const SocialMediaTest = lazy(() => import("./pages/SocialMediaTestPage"));
+const PostDetail = lazy(() => import("./pages/PostDetailPage"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -108,14 +113,19 @@ const App = () => {
                 <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
                 <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
                 <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
+                <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
                 <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                 <Route path="/chat/:conversationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
                 <Route path="/artist/:artistId" element={<ArtistProfile />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/profile/:userId" element={<UserProfile />} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
                 <Route path="/location-test" element={<ProtectedRoute><LocationTest /></ProtectedRoute>} />
                 <Route path="/news" element={<NewsFeed />} />
+                <Route path="/test-notifications" element={<ProtectedRoute><TestNotifications /></ProtectedRoute>} />
+                <Route path="/social-media-test" element={<ProtectedRoute><SocialMediaTest /></ProtectedRoute>} />
+                <Route path="/post/:postId" element={<PostDetail />} />
                 
                 {/* Admin routes */}
                 <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

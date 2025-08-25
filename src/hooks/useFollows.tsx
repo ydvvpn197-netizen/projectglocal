@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { notificationService } from '@/services/notificationService';
 
 export interface Follow {
   id: string;
@@ -115,6 +116,14 @@ export const useFollows = (userId?: string) => {
           });
 
         if (error) throw error;
+
+        // Create notification for the user being followed
+        try {
+          await notificationService.createNewFollowerNotification(user.id, userId);
+        } catch (notificationError) {
+          console.error('Error creating follow notification:', notificationError);
+          // Don't fail the follow operation if notification fails
+        }
 
         setIsFollowing(true);
         setFollowersCount(prev => prev + 1);

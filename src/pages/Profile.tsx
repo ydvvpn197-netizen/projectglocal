@@ -45,6 +45,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
+import { UserPointsDisplay } from "@/components/UserPointsDisplay";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -401,8 +402,7 @@ const Profile = () => {
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{stats.points}</div>
-                <div className="text-sm text-muted-foreground">Points Earned</div>
+                <UserPointsDisplay compact={true} showDetails={false} />
               </CardContent>
             </Card>
           </div>

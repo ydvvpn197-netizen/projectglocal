@@ -43,7 +43,7 @@ import {
   Mic,
   Paperclip
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Sample feed data
 const feedPosts = [
@@ -185,6 +185,7 @@ const sidebarHighlights = [
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState("trending");
+  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState("hot");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -311,7 +312,10 @@ const Feed = () => {
               Discover and engage with community content
             </p>
           </div>
-          <Button className="btn-community">
+          <Button 
+            className="btn-community"
+            onClick={() => navigate('/create')}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Create Post
           </Button>

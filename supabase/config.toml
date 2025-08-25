@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.fetch-local-events]
 verify_jwt = false
+
+[functions.delete-user-account]
+verify_jwt = true

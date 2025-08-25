@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from './useLocation';
+import { PointsService } from '@/services/pointsService';
 
 export interface Event {
   id: string;
@@ -140,6 +141,21 @@ export const useEvents = () => {
 
       if (error) throw error;
 
+      // Get the created event ID to award points
+      const { data: createdEvent } = await supabase
+        .from('events')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('title', eventData.title)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (createdEvent) {
+        // Award points for organizing event
+        await PointsService.handleEventOrganization(createdEvent.id, user.id);
+      }
+
       toast({
         title: "Success",
         description: "Event created successfully!",
@@ -202,6 +218,9 @@ export const useEvents = () => {
           title: "Success",
           description: "You're now attending this event!",
         });
+
+        // Award points for attending event
+        await PointsService.handleEventAttendance(eventId, user.id);
       }
 
       fetchEvents(); // Refresh events

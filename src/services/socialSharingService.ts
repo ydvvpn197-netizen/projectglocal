@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import { social } from '@/config/environment';
+import { PointsService } from './pointsService';
 import type {
   SocialShare,
   ShareContentData,
@@ -70,6 +71,14 @@ export class SocialSharingService {
 
     // Track the share event
     await this.trackShareEvent(share);
+
+    // Award points for sharing (if it's a post)
+    if (data.content_type === 'post' && data.content_id) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await PointsService.handlePostSharing(data.content_id, user.id);
+      }
+    }
 
     return share;
   }

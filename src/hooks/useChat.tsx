@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { notificationService } from "@/services/notificationService";
 
 export interface ChatMessage {
   id: string;
@@ -122,15 +123,12 @@ export const useChat = (conversationId?: string) => {
     if (conversation?.status === 'pending') {
       const recipientId = user.id === conversation?.client_id ? conversation?.artist_id : conversation?.client_id;
       if (recipientId) {
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: recipientId,
-            type: 'message_request',
-            title: 'New chat request',
-            message: 'Someone wants to chat with you. Approve to start the conversation.',
-            data: { conversation_id: conversationId }
-          });
+        try {
+          await notificationService.createMessageRequestNotification(user.id, recipientId, conversationId);
+        } catch (notificationError) {
+          console.error('Error creating message request notification:', notificationError);
+          // Don't fail the message if notification fails
+        }
       }
     }
   };

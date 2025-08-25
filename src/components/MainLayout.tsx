@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, User, Plus, Search, MapPin, Sparkles, Settings, LogOut } from "lucide-react";
+import { User, Plus, Search, MapPin, Sparkles, Settings, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -9,8 +9,9 @@ import { UniformHeader } from "@/components/UniformHeader";
 import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
 import { NetworkStatus, NetworkStatusIndicator } from "@/components/NetworkStatus";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { NotificationBell } from "@/components/NotificationBell";
+import { TestNotificationButton } from "@/components/TestNotificationButton";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -117,12 +118,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                     </DropdownMenu>
                     
                     {/* Notifications */}
-                    <Button variant="ghost" size="icon" className="relative">
-                      <Bell className="h-5 w-5" />
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500">
-                        3
-                      </Badge>
-                    </Button>
+                    <NotificationBell />
+                    
+                    {/* Test Button - Remove this in production */}
+                    <TestNotificationButton />
                     
                     {/* User Menu */}
                     <DropdownMenu>

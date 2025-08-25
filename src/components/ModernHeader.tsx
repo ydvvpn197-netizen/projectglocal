@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
-  Bell, 
   User, 
   Plus, 
   Menu,
@@ -23,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface ModernHeaderProps {
   showSearch?: boolean;
@@ -163,12 +162,7 @@ export function ModernHeader({
                 )}
 
                 {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
-                    3
-                  </Badge>
-                </Button>
+                <NotificationBell />
 
                 {/* User Menu */}
                 <DropdownMenu>

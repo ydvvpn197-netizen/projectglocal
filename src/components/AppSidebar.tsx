@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 import {
   Sidebar,
@@ -24,8 +26,16 @@ const mainItems = [
   { title: "Book Artists", url: "/book-artist", icon: Palette },
 ];
 
-const userItems = [
+const artistItems = [
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
+  { title: "News Feed", url: "/news", icon: Newspaper },
+  { title: "Profile", url: "/profile", icon: User },
+  { title: "Settings", url: "/settings", icon: Settings },
+];
+
+const regularUserItems = [
+  { title: "My Dashboard", url: "/user-dashboard", icon: User },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "News Feed", url: "/news", icon: Newspaper },
   { title: "Profile", url: "/profile", icon: User },
@@ -38,9 +48,31 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const [isArtist, setIsArtist] = useState(false);
 
   const isActive = (path: string) => currentPath === path;
   const isMainGroupExpanded = mainItems.some((item) => isActive(item.url));
+  
+  // Check if user is an artist
+  useEffect(() => {
+    const checkUserType = async () => {
+      if (user) {
+        try {
+          const { data } = await supabase
+            .from('artists')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+          setIsArtist(!!data);
+        } catch (error) {
+          setIsArtist(false);
+        }
+      }
+    };
+    checkUserType();
+  }, [user]);
+
+  const userItems = isArtist ? artistItems : regularUserItems;
   const isUserGroupExpanded = userItems.some((item) => isActive(item.url));
   
   const getNavClass = ({ isActive }: { isActive: boolean }) =>

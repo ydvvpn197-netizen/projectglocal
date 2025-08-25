@@ -24,6 +24,15 @@ const NotificationIcon = memo(({ type }: { type: string }) => {
       review_reply: '💭',
       group_invite: '👋',
       event_update: '🔄',
+      discussion_request: '💭',
+      discussion_approved: '✅',
+      discussion_rejected: '❌',
+      event_created: '📅',
+      event_updated: '🔄',
+      event_cancelled: '❌',
+      payment_received: '💰',
+      payment_failed: '⚠️',
+      system_announcement: '📢',
     };
     return icons[type] || '🔔';
   }, [type]);
@@ -111,9 +120,18 @@ export const NotificationBell = memo(() => {
       new_follower: '/profile',
       event_reminder: '/events',
       event_update: '/events',
+      event_created: '/events',
+      event_updated: '/events',
+      event_cancelled: '/events',
       poll_result: '/community',
       review_reply: '/community',
       group_invite: '/community',
+      discussion_request: '/artist-dashboard',
+      discussion_approved: '/community',
+      discussion_rejected: '/community',
+      payment_received: '/artist-dashboard',
+      payment_failed: '/artist-dashboard',
+      system_announcement: '/',
     };
     
     const route = routeMap[notification.type];
@@ -159,7 +177,7 @@ export const NotificationBell = memo(() => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <DropdownMenuItem onClick={() => navigate('/notification-settings')}>
                   Notification Settings
                 </DropdownMenuItem>
               </DropdownMenuContent>

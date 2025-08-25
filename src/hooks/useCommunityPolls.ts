@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PollService } from '@/services/pollService';
+import { PointsService } from '@/services/pointsService';
 import { CommunityPoll, CreatePollRequest, PollVoteRequest } from '@/types/community';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -86,6 +87,9 @@ export const useCommunityPolls = () => {
       const newPoll = await PollService.createPoll(pollData);
       
       if (newPoll) {
+        // Award points for creating poll
+        await PointsService.handlePollCreation(newPoll.id, user.id);
+        
         toast({
           title: "Success",
           description: "Poll created successfully!",

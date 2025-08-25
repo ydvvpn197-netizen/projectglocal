@@ -9,6 +9,7 @@ import { Calendar, MapPin, DollarSign, User, MessageCircle, Check, X, Clock } fr
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { notificationService } from "@/services/notificationService";
 import { format } from "date-fns";
 
 interface BookingRequest {
@@ -172,20 +173,12 @@ export const BookingRequestsPanel = () => {
         throw updateError;
       }
 
-      // Create notification for the client
-      const { error: notificationError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: request.user_id,
-          type: action === 'accept' ? 'booking_accepted' : 'booking_declined',
-          title: `Booking Request ${action === 'accept' ? 'Accepted' : 'Declined'}`,
-          message: `Your booking request has been ${action === 'accept' ? 'accepted' : 'declined'} by the artist.`,
-          data: { booking_id: requestId, artist_id: request.artist_id }
-        });
-
-      if (notificationError) {
-        console.error('Error creating notification:', notificationError);
-        // Don't throw here, continue with the process
+      // Create notification for the client using the notification service
+      try {
+        await notificationService.createBookingResponseNotification(requestId, action);
+      } catch (notificationError) {
+        console.error('Error creating booking response notification:', notificationError);
+        // Don't fail the booking action if notification fails
       }
 
       if (action === 'accept') {

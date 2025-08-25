@@ -10,18 +10,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { 
   Shield, 
   User, 
   Settings, 
   LogOut, 
-  Bell, 
   Menu,
   X,
   Home
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { NotificationBell } from '@/components/NotificationBell';
 
 interface AdminHeaderProps {
   title?: string;
@@ -118,15 +117,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         {/* Right side - User menu and notifications */}
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="h-5 w-5" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs"
-            >
-              3
-            </Badge>
-          </Button>
+          <NotificationBell />
 
           {/* User menu */}
           {adminUser && (

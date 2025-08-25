@@ -9,6 +9,54 @@ export const VOTE_TYPES = {
 
 export type VoteType = typeof VOTE_TYPES[keyof typeof VOTE_TYPES];
 
+// Point system types
+export interface UserPoints {
+  id: string;
+  user_id: string;
+  total_points: number;
+  rank: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PointTransaction {
+  id: string;
+  user_id: string;
+  points: number;
+  transaction_type: PointTransactionType;
+  reference_id?: string;
+  reference_type?: 'post' | 'comment' | 'event' | 'poll';
+  description?: string;
+  created_at: string;
+}
+
+export type PointTransactionType = 
+  | 'post_like_received'
+  | 'post_like_given'
+  | 'comment_like_received'
+  | 'comment_like_given'
+  | 'post_created'
+  | 'comment_created'
+  | 'event_organized'
+  | 'event_attended'
+  | 'post_shared'
+  | 'poll_created'
+  | 'poll_voted'
+  | 'post_deleted'
+  | 'comment_deleted'
+  | 'event_deleted'
+  | 'poll_deleted';
+
+export interface CommunityLeaderboardEntry {
+  id: string;
+  user_id: string;
+  display_name?: string;
+  avatar_url?: string;
+  total_points: number;
+  rank: number;
+  last_updated: string;
+}
+
 export interface CommunityGroup {
   id: string;
   name: string;
@@ -201,6 +249,21 @@ export interface PostFilters {
 
 export interface PostSortOptions {
   sort_by: 'hot' | 'top' | 'new' | 'rising';
+  limit?: number;
+  offset?: number;
+}
+
+// Point system request types
+export interface LeaderboardFilters {
+  limit?: number;
+  offset?: number;
+  min_points?: number;
+}
+
+export interface PointHistoryFilters {
+  transaction_type?: PointTransactionType;
+  date_from?: string;
+  date_to?: string;
   limit?: number;
   offset?: number;
 }

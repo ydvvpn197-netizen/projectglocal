@@ -6,7 +6,7 @@ import { useToast } from './use-toast';
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'booking_request' | 'booking_accepted' | 'booking_declined' | 'message_request' | 'new_follower' | 'event_reminder' | 'poll_result' | 'review_reply' | 'group_invite' | 'event_update';
+  type: 'booking_request' | 'booking_accepted' | 'booking_declined' | 'message_request' | 'new_follower' | 'event_reminder' | 'poll_result' | 'review_reply' | 'group_invite' | 'event_update' | 'discussion_request' | 'discussion_approved' | 'discussion_rejected' | 'event_created' | 'event_updated' | 'event_cancelled' | 'payment_received' | 'payment_failed' | 'system_announcement';
   title: string;
   message: string;
   data?: any;

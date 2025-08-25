@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CommunityLeaderboard } from "@/components/CommunityLeaderboard";
+import { PointsTestPanel } from "@/components/PointsTestPanel";
 import { 
   Search, 
   Plus, 
@@ -186,6 +188,24 @@ const Community = () => {
             </Link>
           </Button>
         </div>
+
+        {/* Community Leaderboard */}
+        <section className="space-y-4">
+          <CommunityLeaderboard 
+            className="mb-8"
+            showTitle={true}
+            defaultLimit={5}
+            showFilters={true}
+            showUserPosition={true}
+          />
+        </section>
+
+        {/* Points Test Panel (Development Only) */}
+        {process.env.NODE_ENV === 'development' && (
+          <section className="space-y-4">
+            <PointsTestPanel />
+          </section>
+        )}
 
         {/* Featured Communities Spotlight */}
         {featuredCommunities.length > 0 && (

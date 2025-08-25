@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFollows } from "@/hooks/useFollows";
 import { useToast } from "@/hooks/use-toast";
+import { notificationService } from "@/services/notificationService";
 
 interface ArtistProfile {
   id: string;
@@ -255,16 +256,13 @@ const ArtistProfile = () => {
 
       if (discussionError) throw discussionError;
 
-      // Create moderation notification for artist
-      const { error: notificationError } = await supabase
-        .from('artist_discussion_moderation_notifications')
-        .insert({
-          artist_id: artistRecord.id,
-          discussion_id: discussionData.id,
-          type: 'discussion_request'
-        });
-
-      if (notificationError) throw notificationError;
+      // Create moderation notification for artist using the notification service
+      try {
+        await notificationService.createDiscussionRequestNotification(artistId, discussionData);
+      } catch (notificationError) {
+        console.error('Error creating discussion request notification:', notificationError);
+        // Don't fail the discussion submission if notification fails
+      }
 
       toast({
         title: "Discussion submitted",
