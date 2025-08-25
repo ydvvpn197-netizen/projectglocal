@@ -4,7 +4,15 @@ import { Toaster as Sonner, toast } from "sonner"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  // Add error handling for theme provider
+  let theme = "system";
+  try {
+    const themeContext = useTheme();
+    theme = themeContext.theme || "system";
+  } catch (error) {
+    console.warn('Theme provider not available, using system theme:', error);
+    theme = "system";
+  }
 
   return (
     <Sonner

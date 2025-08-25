@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ThemeProvider } from "next-themes";
 const { lazy } = React;
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { app } from '@/config/environment';
@@ -88,64 +89,74 @@ const App = () => {
   // useRoutePreloader();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter basename={app.baseUrl}>
-            <LazyLoader fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
-                <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-                <Route path="/create" element={<CreatePost />} />
-                <Route path="/discover" element={<Discover />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/community/:groupId" element={<CommunityDetail />} />
-                <Route path="/community/create-discussion" element={<CreateDiscussion />} />
-                <Route path="/community/create-group" element={<CreateGroup />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/event/:eventId" element={<EventDetails />} />
-                <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
-                <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
-                <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
-                <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
-                <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-                <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-                <Route path="/chat/:conversationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-                <Route path="/artist/:artistId" element={<ArtistProfile />} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/profile/:userId" element={<UserProfile />} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
-                <Route path="/location-test" element={<ProtectedRoute><LocationTest /></ProtectedRoute>} />
-                <Route path="/news" element={<NewsFeed />} />
-                <Route path="/test-notifications" element={<ProtectedRoute><TestNotifications /></ProtectedRoute>} />
-                <Route path="/social-media-test" element={<ProtectedRoute><SocialMediaTest /></ProtectedRoute>} />
-                <Route path="/community-test" element={<ProtectedRoute><CommunityTest /></ProtectedRoute>} />
-                <Route path="/post/:postId" element={<PostDetail />} />
-                
-                {/* Admin routes */}
-                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-                <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
-                <Route path="/admin/moderation" element={<ProtectedRoute><ContentModeration /></ProtectedRoute>} />
-                <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                <Route path="/admin/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
-                
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </LazyLoader>
-          </BrowserRouter>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter basename={app.baseUrl}>
+              <LazyLoader fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/signin" element={<SignIn />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
+                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                  <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+                  <Route path="/create" element={<CreatePost />} />
+                  <Route path="/discover" element={<Discover />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/community/:groupId" element={<CommunityDetail />} />
+                  <Route path="/community/create-discussion" element={<CreateDiscussion />} />
+                  <Route path="/community/create-group" element={<CreateGroup />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/event/:eventId" element={<EventDetails />} />
+                  <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+                  <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
+                  <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
+                  
+                  {/* User routes */}
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/user/:userId" element={<UserProfile />} />
+                  <Route path="/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                  
+                  {/* Artist routes */}
+                  <Route path="/artist/:artistId" element={<ArtistProfile />} />
+                  <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
+                  
+                  {/* Chat routes */}
+                  <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  
+                  {/* Test routes */}
+                  <Route path="/test/location" element={<LocationTest />} />
+                  <Route path="/test/news" element={<NewsFeed />} />
+                  <Route path="/test/notifications" element={<TestNotifications />} />
+                  <Route path="/test/social" element={<SocialMediaTest />} />
+                  <Route path="/test/post/:postId" element={<PostDetail />} />
+                  <Route path="/test/community" element={<CommunityTest />} />
+                  
+                  {/* Admin routes */}
+                  <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+                  <Route path="/admin/moderation" element={<ProtectedRoute><ContentModeration /></ProtectedRoute>} />
+                  <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                  <Route path="/admin/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
+                  
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </LazyLoader>
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
