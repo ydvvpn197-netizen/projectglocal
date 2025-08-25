@@ -33,11 +33,17 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
-          // Put React and core dependencies in the main bundle to avoid loading issues
+          // Ensure React and core dependencies are NEVER chunked - always in main bundle
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return undefined; // Keep React in main bundle
+            // React and core dependencies must stay in main bundle
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('react-router-dom') ||
+                id.includes('@tanstack/react-query')) {
+              return undefined; // Keep in main bundle
             }
+            
+            // Specific vendor chunks
             if (id.includes('@supabase')) {
               return 'supabase-vendor';
             }
@@ -59,7 +65,8 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('clsx') || id.includes('class-variance-authority') || id.includes('tailwind-merge')) {
               return 'utils-vendor';
             }
-            // Other node_modules
+            
+            // All other node_modules go to vendor chunk
             return 'vendor';
           }
           // Route-based chunks
@@ -111,6 +118,7 @@ export default defineConfig(({ mode }) => ({
       'react',
       'react-dom',
       'react-router-dom',
+      '@tanstack/react-query',
       '@supabase/supabase-js',
       'date-fns',
       'lucide-react',
@@ -119,5 +127,9 @@ export default defineConfig(({ mode }) => ({
       'tailwind-merge',
     ],
     force: true, // Force re-optimization to ensure React is properly loaded
+    esbuildOptions: {
+      // Ensure React is properly handled
+      jsx: 'automatic',
+    }
   },
 }));
