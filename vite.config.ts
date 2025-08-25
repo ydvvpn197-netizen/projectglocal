@@ -5,8 +5,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Set base URL for production deployment - use relative paths for GitHub Pages
-  base: mode === 'production' ? './' : './',
+  // Set base URL for production deployment - use repository name for GitHub Pages
+  base: mode === 'production' ? '/projectglocal/' : './',
   
   server: {
     host: "::",
