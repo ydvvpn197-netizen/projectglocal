@@ -26,8 +26,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check Node.js version
+        run: node --version && npm --version
+
       - name: Build project
-        run: npm run build:prod
+        run: |
+          echo "Starting build process..."
+          npm run build:prod
+          echo "Build completed successfully"
+        env:
+          NODE_ENV: production
+          CI: true
 
       - name: Create CNAME file
         run: echo "theglocal.in" > dist/CNAME
