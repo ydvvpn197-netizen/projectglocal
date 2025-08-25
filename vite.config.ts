@@ -5,8 +5,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Set base URL for production deployment - use repository name for GitHub Pages
-  base: mode === 'production' ? '/projectglocal/' : './',
+  // Set base URL for production deployment - use relative paths for GitHub Pages
+  base: './',
   
   server: {
     host: "::",
@@ -24,13 +24,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'production' && visualizer({
-      filename: 'dist/bundle-analysis.html',
-      open: true,
-      gzipSize: true,
-      brotliSize: true,
-    }),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
