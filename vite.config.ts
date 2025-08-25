@@ -5,8 +5,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Set base URL for production deployment - use relative paths
-  base: './',
+  // Set base URL for production deployment - use domain for production
+  base: mode === 'production' ? 'https://theglocal.in/' : './',
   
   server: {
     host: "::",
@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
         "font-src 'self' data:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in http://localhost:* http://127.0.0.1:*; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*; " +
         "frame-ancestors 'none';"
     }
   },

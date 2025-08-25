@@ -38,20 +38,21 @@ export const useCommunityGroups = () => {
 
   // Fetch user's groups
   const fetchUserGroups = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user found, skipping user groups fetch');
+      return;
+    }
 
     try {
+      console.log('Fetching user groups for user:', user.id);
       const data = await CommunityService.getUserGroups(user.id);
       setUserGroups(data);
     } catch (error) {
       console.error('Error fetching user groups:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch your groups",
-        variant: "destructive",
-      });
+      // Don't show toast for user groups fetch errors as they might be expected
+      // when user is not authenticated or has no groups
     }
-  }, [user, toast]);
+  }, [user]);
 
   // Fetch trending groups
   const fetchTrendingGroups = useCallback(async (limit: number = 10) => {
@@ -117,17 +118,7 @@ export const useCommunityGroups = () => {
     }
 
     try {
-      // Check if user is already a member
-      const isMember = await CommunityService.isGroupMember(groupId, user.id);
-      if (isMember) {
-        toast({
-          title: "Already a member",
-          description: "You are already a member of this group",
-          variant: "default",
-        });
-        return true;
-      }
-
+      console.log('Attempting to join group:', groupId, 'for user:', user.id);
       const success = await CommunityService.addGroupMember(groupId, user.id);
       
       if (success) {
@@ -245,49 +236,27 @@ export const useCommunityGroups = () => {
     }
   }, [toast]);
 
-  // Get groups by category
-  const getGroupsByCategory = useCallback(async (category: string): Promise<CommunityGroup[]> => {
-    try {
-      return await CommunityService.getGroupsByCategory(category);
-    } catch (error) {
-      console.error('Error fetching groups by category:', error);
-      return [];
-    }
-  }, []);
-
-  // Get groups by location
-  const getGroupsByLocation = useCallback(async (location: {
-    city?: string;
-    state?: string;
-    country?: string;
-  }): Promise<CommunityGroup[]> => {
-    try {
-      return await CommunityService.getGroupsByLocation(location);
-    } catch (error) {
-      console.error('Error fetching groups by location:', error);
-      return [];
-    }
-  }, []);
-
   // Initialize data
   useEffect(() => {
-    fetchGroups();
-    fetchTrendingGroups();
-  }, [fetchGroups, fetchTrendingGroups]);
+    const initializeData = async () => {
+      try {
+        await fetchGroups();
+        await fetchUserGroups();
+        await fetchTrendingGroups();
+      } catch (error) {
+        console.error('Error initializing community data:', error);
+      }
+    };
 
-  useEffect(() => {
-    fetchUserGroups();
-  }, [fetchUserGroups]);
+    initializeData();
+  }, [fetchGroups, fetchUserGroups, fetchTrendingGroups]);
 
   return {
-    // State
     groups,
     userGroups,
     trendingGroups,
     loading,
     creating,
-    
-    // Actions
     fetchGroups,
     fetchUserGroups,
     fetchTrendingGroups,
@@ -297,7 +266,5 @@ export const useCommunityGroups = () => {
     isGroupMember,
     getUserRole,
     searchGroups,
-    getGroupsByCategory,
-    getGroupsByLocation,
   };
 };

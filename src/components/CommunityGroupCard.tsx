@@ -75,13 +75,17 @@ export const CommunityGroupCard = ({
     setLoading(true);
     try {
       if (isMember) {
-        await leaveGroup(group.id);
-        setIsMember(false);
-        setUserRole(null);
+        const result = await leaveGroup(group.id);
+        if (result) {
+          setIsMember(false);
+          setUserRole(null);
+        }
       } else {
-        await joinGroup(group.id);
-        setIsMember(true);
-        setUserRole('member');
+        const result = await joinGroup(group.id);
+        if (result) {
+          setIsMember(true);
+          setUserRole('member');
+        }
       }
     } catch (error) {
       console.error('Error handling join/leave:', error);
@@ -235,10 +239,16 @@ export const CommunityGroupCard = ({
         {/* User Role Badge */}
         {userRole && (
           <div className="flex items-center gap-2">
-            <Badge className={getRoleBadge(userRole).color}>
-              <getRoleBadge(userRole).icon className="w-3 h-3 mr-1" />
-              {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-            </Badge>
+            {(() => {
+              const roleBadge = getRoleBadge(userRole);
+              const IconComponent = roleBadge.icon;
+              return (
+                <Badge className={roleBadge.color}>
+                  <IconComponent className="w-3 h-3 mr-1" />
+                  {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                </Badge>
+              );
+            })()}
           </div>
         )}
 

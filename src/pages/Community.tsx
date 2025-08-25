@@ -11,6 +11,8 @@ import { CommunityLeaderboard } from "@/components/CommunityLeaderboard";
 import { CommunityFeaturesTest } from "@/components/CommunityFeaturesTest";
 import { useCommunityGroups } from "@/hooks/useCommunityGroups";
 import { useLocation } from "@/hooks/useLocation";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
   Plus, 
@@ -35,6 +37,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { CommunityService } from "@/services/communityService";
 
 const categories = [
   "All Categories",
@@ -55,15 +58,31 @@ const Community = () => {
   const navigate = useNavigate();
   const { groups, loading, fetchGroups, joinGroup, isGroupMember } = useCommunityGroups();
   const { currentLocation } = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("recent");
+  const [joiningGroup, setJoiningGroup] = useState<string | null>(null);
 
   // Fetch communities on component mount
   useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+    const loadCommunities = async () => {
+      try {
+        await fetchGroups();
+      } catch (error) {
+        console.error('Error loading communities:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load communities. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadCommunities();
+  }, [fetchGroups, toast]);
 
   // Filter communities based on search and category
   const filteredCommunities = groups.filter(community => {
@@ -92,12 +111,69 @@ const Community = () => {
 
   // Handle join community
   const handleJoinCommunity = async (groupId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to join communities",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (joiningGroup === groupId) {
+      return; // Prevent double-clicking
+    }
+
     try {
-      await joinGroup(groupId);
-      // Refresh the communities list
-      fetchGroups();
-    } catch (error) {
+      setJoiningGroup(groupId);
+      console.log('Attempting to join group:', groupId);
+      
+      // First validate the group and user
+      const validation = await CommunityService.validateGroupForJoining(groupId, user.id);
+      console.log('Validation result:', validation);
+      
+      if (!validation.isValid) {
+        console.error('Validation failed:', validation.errors);
+        toast({
+          title: "Cannot Join Community",
+          description: validation.errors.join(', '),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const success = await joinGroup(groupId);
+      
+      if (success) {
+        // Refresh the communities list
+        await fetchGroups();
+      }
+    } catch (error: any) {
       console.error('Error joining community:', error);
+      
+      let errorMessage = "Failed to join community. Please try again.";
+      
+      if (error?.message) {
+        if (error.message.includes('Group not found')) {
+          errorMessage = "This community no longer exists.";
+        } else if (error.message.includes('Invalid group or user ID')) {
+          errorMessage = "Invalid community or user information.";
+        } else if (error.message.includes('Cannot join private group')) {
+          errorMessage = "This is a private community.";
+        } else if (error.message.includes('already a member')) {
+          errorMessage = "You are already a member of this community.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningGroup(null);
     }
   };
 
@@ -154,6 +230,56 @@ const Community = () => {
         {process.env.NODE_ENV === 'development' && (
           <section className="space-y-4">
             <CommunityFeaturesTest />
+            
+            {/* Debug Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Debug Panel</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const debugInfo = await CommunityService.debugGroupIssues();
+                      console.log('Debug Info:', debugInfo);
+                      toast({
+                        title: "Debug Info",
+                        description: `Found ${debugInfo.summary?.totalGroups || 0} groups, ${debugInfo.summary?.totalMembers || 0} members. Check console for details.`,
+                      });
+                    } catch (error) {
+                      console.error('Debug error:', error);
+                    }
+                  }}
+                >
+                  Debug Groups
+                </Button>
+                
+                {groups.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const firstGroup = groups[0];
+                        const validation = await CommunityService.validateGroupForJoining(firstGroup.id, user?.id || '');
+                        console.log('Validation for first group:', validation);
+                        toast({
+                          title: "Group Validation",
+                          description: validation.isValid ? 'Group is valid' : `Issues: ${validation.errors.join(', ')}`,
+                          variant: validation.isValid ? "default" : "destructive",
+                        });
+                      } catch (error) {
+                        console.error('Validation error:', error);
+                      }
+                    }}
+                  >
+                    Validate First Group
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </section>
         )}
 
@@ -166,7 +292,11 @@ const Community = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredCommunities.map((community) => (
-                <Card key={community.id} className="community-card-featured group cursor-pointer hover:shadow-community transition-all duration-300">
+                <Card 
+                  key={community.id} 
+                  className="community-card-featured group cursor-pointer hover:shadow-community transition-all duration-300"
+                  onClick={() => navigate(`/community/${community.id}`)}
+                >
                   <div className="relative">
                     <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg flex items-center justify-center">
                       <Users className="w-16 h-16 text-white opacity-80" />
@@ -181,7 +311,15 @@ const Community = () => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-lg">{community.name}</h3>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Handle more options
+                        }}
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </div>
@@ -191,29 +329,33 @@ const Community = () => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {community.member_count || 0}
+                        {community.member_count || 0} members
                       </span>
                       <span className="flex items-center gap-1">
                         <MessageCircle className="w-4 h-4" />
-                        {community.post_count || 0}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {community.location_city || "Local"}
+                        {community.post_count || 0} posts
                       </span>
                     </div>
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex items-center justify-between">
                       <Badge variant="secondary" className="text-xs">
                         #{community.category}
                       </Badge>
+                      <Button 
+                        className="w-full btn-community"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoinCommunity(community.id);
+                        }}
+                        disabled={joiningGroup === community.id}
+                      >
+                        {joiningGroup === community.id ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Users className="w-4 h-4 mr-2" />
+                        )}
+                        {joiningGroup === community.id ? 'Joining...' : 'Join Community'}
+                      </Button>
                     </div>
-                    <Button 
-                      className="w-full btn-community"
-                      onClick={() => handleJoinCommunity(community.id)}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      Join Community
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -221,13 +363,12 @@ const Community = () => {
           </section>
         )}
 
-        {/* Search and Filters */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Search and Filter Section */}
+        <section className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search communities..."
                   value={searchQuery}
@@ -235,11 +376,11 @@ const Community = () => {
                   className="pl-10"
                 />
               </div>
-              
-              {/* Category Filter */}
+            </div>
+            <div className="flex gap-2">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full lg:w-48">
-                  <SelectValue placeholder="Category" />
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
@@ -249,11 +390,9 @@ const Community = () => {
                   ))}
                 </SelectContent>
               </Select>
-              
-              {/* Sort By */}
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full lg:w-40">
-                  <SelectValue placeholder="Sort by" />
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="recent">Most Recent</SelectItem>
@@ -261,9 +400,7 @@ const Community = () => {
                   <SelectItem value="activity">Most Active</SelectItem>
                 </SelectContent>
               </Select>
-              
-              {/* View Mode Toggle */}
-              <div className="flex border rounded-lg">
+              <div className="flex border rounded-md">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
@@ -282,21 +419,26 @@ const Community = () => {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        {/* Communities Grid/List */}
+        {/* Communities List */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">
-              All Communities ({sortedCommunities.length})
-            </h2>
+            <h2 className="text-xl font-semibold">All Communities</h2>
+            <div className="text-sm text-muted-foreground">
+              {sortedCommunities.length} communities found
+            </div>
           </div>
-          
+
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedCommunities.map((community) => (
-                <Card key={community.id} className="community-card group cursor-pointer hover:shadow-community transition-all duration-300">
+                <Card 
+                  key={community.id} 
+                  className="community-card group cursor-pointer hover:shadow-community transition-all duration-300"
+                  onClick={() => navigate(`/community/${community.id}`)}
+                >
                   <div className="relative">
                     <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg flex items-center justify-center">
                       <Users className="w-16 h-16 text-white opacity-80" />
@@ -305,7 +447,15 @@ const Community = () => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-lg">{community.name}</h3>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Handle more options
+                        }}
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </div>
@@ -315,29 +465,33 @@ const Community = () => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {community.member_count || 0}
+                        {community.member_count || 0} members
                       </span>
                       <span className="flex items-center gap-1">
                         <MessageCircle className="w-4 h-4" />
-                        {community.post_count || 0}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {community.location_city || "Local"}
+                        {community.post_count || 0} posts
                       </span>
                     </div>
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex items-center justify-between">
                       <Badge variant="secondary" className="text-xs">
                         #{community.category}
                       </Badge>
+                      <Button 
+                        className="w-full btn-community"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoinCommunity(community.id);
+                        }}
+                        disabled={joiningGroup === community.id}
+                      >
+                        {joiningGroup === community.id ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Users className="w-4 h-4 mr-2" />
+                        )}
+                        {joiningGroup === community.id ? 'Joining...' : 'Join Community'}
+                      </Button>
                     </div>
-                    <Button 
-                      className="w-full btn-community"
-                      onClick={() => handleJoinCommunity(community.id)}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      Join Community
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -345,7 +499,11 @@ const Community = () => {
           ) : (
             <div className="space-y-4">
               {sortedCommunities.map((community) => (
-                <Card key={community.id} className="community-card group cursor-pointer hover:shadow-community transition-all duration-300">
+                <Card 
+                  key={community.id} 
+                  className="community-card group cursor-pointer hover:shadow-community transition-all duration-300"
+                  onClick={() => navigate(`/community/${community.id}`)}
+                >
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -361,7 +519,15 @@ const Community = () => {
                               {community.description || "No description available"}
                             </p>
                           </div>
-                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Handle more options
+                            }}
+                          >
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </div>
@@ -391,10 +557,18 @@ const Community = () => {
                           </div>
                           <Button 
                             className="btn-community"
-                            onClick={() => handleJoinCommunity(community.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinCommunity(community.id);
+                            }}
+                            disabled={joiningGroup === community.id}
                           >
-                            <Users className="w-4 h-4 mr-2" />
-                            Join Community
+                            {joiningGroup === community.id ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Users className="w-4 h-4 mr-2" />
+                            )}
+                            {joiningGroup === community.id ? 'Joining...' : 'Join Community'}
                           </Button>
                         </div>
                       </div>

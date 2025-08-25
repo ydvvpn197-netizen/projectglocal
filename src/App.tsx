@@ -28,6 +28,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Community pages (grouped together)
 const Community = lazy(() => import("./pages/Community"));
+const CommunityDetail = lazy(() => import("./pages/CommunityDetail"));
 const CreateDiscussion = lazy(() => import("./pages/CreateDiscussion"));
 const CreateGroup = lazy(() => import("./pages/CreateGroup"));
 
@@ -106,6 +107,7 @@ const App = () => {
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/community" element={<Community />} />
+                <Route path="/community/:groupId" element={<CommunityDetail />} />
                 <Route path="/community/create-discussion" element={<CreateDiscussion />} />
                 <Route path="/community/create-group" element={<CreateGroup />} />
                 <Route path="/events" element={<Events />} />
