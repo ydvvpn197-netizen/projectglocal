@@ -117,6 +117,17 @@ export const useCommunityGroups = () => {
     }
 
     try {
+      // Check if user is already a member
+      const isMember = await CommunityService.isGroupMember(groupId, user.id);
+      if (isMember) {
+        toast({
+          title: "Already a member",
+          description: "You are already a member of this group",
+          variant: "default",
+        });
+        return true;
+      }
+
       const success = await CommunityService.addGroupMember(groupId, user.id);
       
       if (success) {
@@ -133,11 +144,20 @@ export const useCommunityGroups = () => {
       } else {
         throw new Error('Failed to join group');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining group:', error);
+      
+      // Handle specific error cases
+      let errorMessage = "Failed to join group";
+      if (error?.code === '23505') {
+        errorMessage = "You are already a member of this group";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to join group",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;

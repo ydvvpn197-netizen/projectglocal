@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CommunityLeaderboard } from "@/components/CommunityLeaderboard";
-import { PointsTestPanel } from "@/components/PointsTestPanel";
+import { CommunityFeaturesTest } from "@/components/CommunityFeaturesTest";
+import { useCommunityGroups } from "@/hooks/useCommunityGroups";
+import { useLocation } from "@/hooks/useLocation";
 import { 
   Search, 
   Plus, 
@@ -29,103 +31,10 @@ import {
   Settings,
   Crown,
   Shield,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react";
-import { Link } from "react-router-dom";
-
-// Sample community data
-const communities = [
-  {
-    id: 1,
-    name: "Local Artists Collective",
-    description: "Supporting and promoting local artists in our community. Share your work, get feedback, and collaborate with fellow creatives.",
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=300&fit=crop",
-    members: 234,
-    posts: 156,
-    category: "Arts & Culture",
-    featured: true,
-    verified: true,
-    tags: ["art", "local", "creative", "exhibition"],
-    recentActivity: "New exhibition announced",
-    location: "Downtown",
-    createdAt: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "Tech Enthusiasts",
-    description: "Discussing the latest in technology and innovation. From startups to established companies, share insights and network.",
-    image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop",
-    members: 189,
-    posts: 89,
-    category: "Technology",
-    featured: false,
-    verified: true,
-    tags: ["tech", "innovation", "startup", "networking"],
-    recentActivity: "Monthly meetup scheduled",
-    location: "Tech District",
-    createdAt: "2024-02-20"
-  },
-  {
-    id: 3,
-    name: "Food Lovers United",
-    description: "Discovering and sharing the best local restaurants, recipes, and culinary experiences in our area.",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
-    members: 456,
-    posts: 234,
-    category: "Food & Dining",
-    featured: true,
-    verified: false,
-    tags: ["food", "restaurants", "recipes", "local"],
-    recentActivity: "New restaurant review posted",
-    location: "Various",
-    createdAt: "2023-11-10"
-  },
-  {
-    id: 4,
-    name: "Outdoor Adventures",
-    description: "Exploring nature trails, parks, and outdoor activities. Perfect for hikers, cyclists, and nature enthusiasts.",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop",
-    members: 123,
-    posts: 67,
-    category: "Outdoors",
-    featured: false,
-    verified: false,
-    tags: ["outdoors", "hiking", "nature", "fitness"],
-    recentActivity: "Weekend hike organized",
-    location: "Regional Parks",
-    createdAt: "2024-03-05"
-  },
-  {
-    id: 5,
-    name: "Book Club Central",
-    description: "Monthly book discussions, reading challenges, and literary events. All genres welcome!",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
-    members: 78,
-    posts: 45,
-    category: "Education",
-    featured: false,
-    verified: false,
-    tags: ["books", "reading", "literature", "discussion"],
-    recentActivity: "New book selection announced",
-    location: "Library",
-    createdAt: "2024-01-30"
-  },
-  {
-    id: 6,
-    name: "Local Business Network",
-    description: "Connecting local business owners, entrepreneurs, and professionals for networking and collaboration.",
-    image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop",
-    members: 345,
-    posts: 178,
-    category: "Business",
-    featured: true,
-    verified: true,
-    tags: ["business", "networking", "entrepreneurs", "local"],
-    recentActivity: "Business mixer event",
-    location: "Business District",
-    createdAt: "2023-09-15"
-  }
-];
+import { Link, useNavigate } from "react-router-dom";
 
 const categories = [
   "All Categories",
@@ -138,37 +47,78 @@ const categories = [
   "Health & Wellness",
   "Sports",
   "Music",
-  "Photography"
+  "Photography",
+  "General"
 ];
 
 const Community = () => {
+  const navigate = useNavigate();
+  const { groups, loading, fetchGroups, joinGroup, isGroupMember } = useCommunityGroups();
+  const { currentLocation } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("recent");
 
-  const filteredCommunities = communities.filter(community => {
+  // Fetch communities on component mount
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
+
+  // Filter communities based on search and category
+  const filteredCommunities = groups.filter(community => {
     const matchesSearch = community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                         (community.description && community.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategory === "All Categories" || community.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+  // Sort communities
   const sortedCommunities = [...filteredCommunities].sort((a, b) => {
     switch (sortBy) {
       case "members":
-        return b.members - a.members;
+        return (b.member_count || 0) - (a.member_count || 0);
       case "recent":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       case "activity":
-        return b.posts - a.posts;
+        return (b.post_count || 0) - (a.post_count || 0);
       default:
         return 0;
     }
   });
 
-  const featuredCommunities = communities.filter(c => c.featured);
+  // Get featured communities (communities with more than 10 members)
+  const featuredCommunities = groups.filter(c => (c.member_count || 0) > 10);
+
+  // Handle join community
+  const handleJoinCommunity = async (groupId: string) => {
+    try {
+      await joinGroup(groupId);
+      // Refresh the communities list
+      fetchGroups();
+    } catch (error) {
+      console.error('Error joining community:', error);
+    }
+  };
+
+  // Handle create community success
+  const handleCreateCommunitySuccess = () => {
+    // Refresh the communities list when a new community is created
+    fetchGroups();
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading communities...</span>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -182,7 +132,7 @@ const Community = () => {
             </p>
           </div>
           <Button className="btn-community" asChild>
-            <Link to="/community/create-group">
+            <Link to="/community/create-group" onClick={handleCreateCommunitySuccess}>
               <Plus className="w-4 h-4 mr-2" />
               Create Community
             </Link>
@@ -203,7 +153,7 @@ const Community = () => {
         {/* Points Test Panel (Development Only) */}
         {process.env.NODE_ENV === 'development' && (
           <section className="space-y-4">
-            <PointsTestPanel />
+            <CommunityFeaturesTest />
           </section>
         )}
 
@@ -218,18 +168,10 @@ const Community = () => {
               {featuredCommunities.map((community) => (
                 <Card key={community.id} className="community-card-featured group cursor-pointer hover:shadow-community transition-all duration-300">
                   <div className="relative">
-                    <img 
-                      src={community.image} 
-                      alt={community.name}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
+                    <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg flex items-center justify-center">
+                      <Users className="w-16 h-16 text-white opacity-80" />
+                    </div>
                     <div className="absolute top-3 right-3 flex gap-2">
-                      {community.verified && (
-                        <Badge className="bg-blue-500 text-white">
-                          <Shield className="w-3 h-3 mr-1" />
-                          Verified
-                        </Badge>
-                      )}
                       <Badge className="bg-yellow-500 text-white">
                         <Star className="w-3 h-3 mr-1" />
                         Featured
@@ -244,30 +186,31 @@ const Community = () => {
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {community.description}
+                      {community.description || "No description available"}
                     </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {community.members}
+                        {community.member_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <MessageCircle className="w-4 h-4" />
-                        {community.posts}
+                        {community.post_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        {community.location}
+                        {community.location_city || "Local"}
                       </span>
                     </div>
                     <div className="flex gap-2 mb-3">
-                      {community.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          #{tag}
-                        </Badge>
-                      ))}
+                      <Badge variant="secondary" className="text-xs">
+                        #{community.category}
+                      </Badge>
                     </div>
-                    <Button className="w-full btn-community">
+                    <Button 
+                      className="w-full btn-community"
+                      onClick={() => handleJoinCommunity(community.id)}
+                    >
                       <Users className="w-4 h-4 mr-2" />
                       Join Community
                     </Button>
@@ -355,19 +298,9 @@ const Community = () => {
               {sortedCommunities.map((community) => (
                 <Card key={community.id} className="community-card group cursor-pointer hover:shadow-community transition-all duration-300">
                   <div className="relative">
-                    <img 
-                      src={community.image} 
-                      alt={community.name}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                    {community.verified && (
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-blue-500 text-white">
-                          <Shield className="w-3 h-3 mr-1" />
-                          Verified
-                        </Badge>
-                      </div>
-                    )}
+                    <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg flex items-center justify-center">
+                      <Users className="w-16 h-16 text-white opacity-80" />
+                    </div>
                   </div>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
@@ -377,30 +310,31 @@ const Community = () => {
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {community.description}
+                      {community.description || "No description available"}
                     </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
                       <span className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {community.members}
+                        {community.member_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <MessageCircle className="w-4 h-4" />
-                        {community.posts}
+                        {community.post_count || 0}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
-                        {community.location}
+                        {community.location_city || "Local"}
                       </span>
                     </div>
                     <div className="flex gap-2 mb-3">
-                      {community.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          #{tag}
-                        </Badge>
-                      ))}
+                      <Badge variant="secondary" className="text-xs">
+                        #{community.category}
+                      </Badge>
                     </div>
-                    <Button className="w-full btn-community">
+                    <Button 
+                      className="w-full btn-community"
+                      onClick={() => handleJoinCommunity(community.id)}
+                    >
                       <Users className="w-4 h-4 mr-2" />
                       Join Community
                     </Button>
@@ -414,25 +348,17 @@ const Community = () => {
                 <Card key={community.id} className="community-card group cursor-pointer hover:shadow-community transition-all duration-300">
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      <img 
-                        src={community.image} 
-                        alt={community.name}
-                        className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
-                      />
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Users className="w-12 h-12 text-white opacity-80" />
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-semibold text-lg flex items-center gap-2">
                               {community.name}
-                              {community.verified && (
-                                <Badge className="bg-blue-500 text-white text-xs">
-                                  <Shield className="w-3 h-3 mr-1" />
-                                  Verified
-                                </Badge>
-                              )}
                             </h3>
                             <p className="text-sm text-muted-foreground mb-2">
-                              {community.description}
+                              {community.description || "No description available"}
                             </p>
                           </div>
                           <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -442,30 +368,31 @@ const Community = () => {
                         <div className="flex items-center gap-6 text-sm text-muted-foreground mb-3">
                           <span className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
-                            {community.members} members
+                            {community.member_count || 0} members
                           </span>
                           <span className="flex items-center gap-1">
                             <MessageCircle className="w-4 h-4" />
-                            {community.posts} posts
+                            {community.post_count || 0} posts
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
-                            {community.location}
+                            {community.location_city || "Local"}
                           </span>
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(community.createdAt).toLocaleDateString()}
+                            {new Date(community.created_at).toLocaleDateString()}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex gap-2">
-                            {community.tags.slice(0, 3).map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                #{tag}
-                              </Badge>
-                            ))}
+                            <Badge variant="secondary" className="text-xs">
+                              #{community.category}
+                            </Badge>
                           </div>
-                          <Button className="btn-community">
+                          <Button 
+                            className="btn-community"
+                            onClick={() => handleJoinCommunity(community.id)}
+                          >
                             <Users className="w-4 h-4 mr-2" />
                             Join Community
                           </Button>
@@ -490,9 +417,11 @@ const Community = () => {
               <p className="text-muted-foreground mb-4">
                 Try adjusting your search criteria or create a new community
               </p>
-              <Button className="btn-community">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Community
+              <Button className="btn-community" asChild>
+                <Link to="/community/create-group">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Community
+                </Link>
               </Button>
             </CardContent>
           </Card>

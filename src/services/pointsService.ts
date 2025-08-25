@@ -26,6 +26,31 @@ export class PointsService {
     }
   }
 
+  // Add points to a user
+  static async addPoints(
+    userId: string, 
+    points: number, 
+    transactionType: PointTransactionType, 
+    description?: string, 
+    metadata?: any
+  ): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('add_user_points', {
+        p_user_id: userId,
+        p_points: points,
+        p_transaction_type: transactionType,
+        p_description: description || '',
+        p_metadata: metadata || null
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error adding points:', error);
+      return false;
+    }
+  }
+
   // Get current user's points
   static async getCurrentUserPoints(): Promise<UserPoints | null> {
     try {
@@ -58,11 +83,61 @@ export class PointsService {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Database error fetching leaderboard:', error);
+        // If leaderboard table is empty, try to get from user_points as fallback
+        return await this.getLeaderboardFallback(filters);
+      }
 
       return data || [];
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      // Try fallback method
+      return await this.getLeaderboardFallback(filters);
+    }
+  }
+
+  // Fallback method to get leaderboard from user_points table
+  private static async getLeaderboardFallback(filters?: LeaderboardFilters): Promise<CommunityLeaderboardEntry[]> {
+    try {
+      let query = supabase
+        .from('user_points')
+        .select(`
+          user_id,
+          total_points,
+          rank,
+          profiles:user_id (
+            display_name,
+            avatar_url
+          )
+        `)
+        .order('total_points', { ascending: false });
+
+      if (filters?.limit) {
+        query = query.limit(filters.limit);
+      }
+      if (filters?.offset) {
+        query = query.range(filters.offset, filters.offset + (filters.limit || 100) - 1);
+      }
+      if (filters?.min_points) {
+        query = query.gte('total_points', filters.min_points);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Transform the data to match CommunityLeaderboardEntry format
+      return (data || []).map(entry => ({
+        id: entry.user_id,
+        user_id: entry.user_id,
+        display_name: entry.profiles?.display_name,
+        avatar_url: entry.profiles?.avatar_url,
+        total_points: entry.total_points,
+        rank: entry.rank,
+        last_updated: new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('Error fetching leaderboard fallback:', error);
       return [];
     }
   }

@@ -64,6 +64,7 @@ const NewsFeed = lazy(() => import("./pages/NewsFeed"));
 const TestNotifications = lazy(() => import("./pages/TestNotifications"));
 const SocialMediaTest = lazy(() => import("./pages/SocialMediaTestPage"));
 const PostDetail = lazy(() => import("./pages/PostDetailPage"));
+const CommunityTest = lazy(() => import("./pages/CommunityTest"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -125,6 +126,7 @@ const App = () => {
                 <Route path="/news" element={<NewsFeed />} />
                 <Route path="/test-notifications" element={<ProtectedRoute><TestNotifications /></ProtectedRoute>} />
                 <Route path="/social-media-test" element={<ProtectedRoute><SocialMediaTest /></ProtectedRoute>} />
+                <Route path="/community-test" element={<ProtectedRoute><CommunityTest /></ProtectedRoute>} />
                 <Route path="/post/:postId" element={<PostDetail />} />
                 
                 {/* Admin routes */}

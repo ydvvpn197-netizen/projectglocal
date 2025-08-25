@@ -118,8 +118,15 @@ export class CommunityService {
   // Membership Management
   static async addGroupMember(groupId: string, userId: string, role: 'admin' | 'moderator' | 'member' = 'member'): Promise<boolean> {
     try {
+      // Check if user is already a member
+      const isMember = await this.isGroupMember(groupId, userId);
+      if (isMember) {
+        console.log('User is already a member of this group');
+        return true; // Return true since they're already a member
+      }
+
       const { error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .insert({
           group_id: groupId,
           user_id: userId,
@@ -140,7 +147,7 @@ export class CommunityService {
   static async removeGroupMember(groupId: string, userId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .delete()
         .eq('group_id', groupId)
         .eq('user_id', userId);
@@ -159,7 +166,7 @@ export class CommunityService {
   static async getGroupMembers(groupId: string): Promise<GroupMember[]> {
     try {
       const { data, error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .select(`
           *,
           profiles:user_id (
@@ -186,7 +193,7 @@ export class CommunityService {
   static async getUserGroups(userId: string): Promise<CommunityGroup[]> {
     try {
       const { data, error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .select(`
           community_groups (*)
         `)
@@ -204,7 +211,7 @@ export class CommunityService {
   static async isGroupMember(groupId: string, userId: string): Promise<boolean> {
     try {
       const { data, error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .select('id')
         .eq('group_id', groupId)
         .eq('user_id', userId)
@@ -221,7 +228,7 @@ export class CommunityService {
   static async getUserRole(groupId: string, userId: string): Promise<'admin' | 'moderator' | 'member' | null> {
     try {
       const { data, error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .select('role')
         .eq('group_id', groupId)
         .eq('user_id', userId)
@@ -239,7 +246,7 @@ export class CommunityService {
   private static async updateGroupMemberCount(groupId: string): Promise<void> {
     try {
       const { count, error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .select('*', { count: 'exact', head: true })
         .eq('group_id', groupId);
 

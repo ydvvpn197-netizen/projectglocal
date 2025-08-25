@@ -9,18 +9,24 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Users } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "@/hooks/useLocation";
+import { CommunityService } from "@/services/communityService";
+import { CreateGroupRequest } from "@/types/community";
 
 const CreateGroup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentLocation } = useLocation();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateGroupRequest>({
     name: "",
     description: "",
-    category: ""
+    category: "General",
+    is_public: true,
+    allow_anonymous_posts: false,
+    require_approval: false
   });
 
   const categories = [
@@ -56,42 +62,37 @@ const CreateGroup = () => {
 
     setLoading(true);
     try {
-      // Create the group
-      const { data: group, error: groupError } = await supabase
-        .from('groups')
-        .insert({
-          name: formData.name.trim(),
-          description: formData.description.trim(),
-          category: formData.category,
-          created_by: user.id
-        })
-        .select()
-        .single();
+      // Prepare group data with location information
+      const groupData: CreateGroupRequest = {
+        ...formData,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        latitude: currentLocation?.latitude,
+        longitude: currentLocation?.longitude,
+        location_city: (currentLocation as any)?.city || '',
+        location_state: (currentLocation as any)?.state || '',
+        location_country: (currentLocation as any)?.country || ''
+      };
 
-      if (groupError) throw groupError;
+      // Create the group using CommunityService
+      const newGroup = await CommunityService.createGroup(groupData);
 
-      // Add creator as admin member
-      const { error: memberError } = await supabase
-        .from('group_members')
-        .insert({
-          group_id: group.id,
-          user_id: user.id,
-          role: 'admin'
+      if (newGroup) {
+        toast({
+          title: "Success!",
+          description: "Your community has been created successfully.",
         });
 
-      if (memberError) throw memberError;
-
-      toast({
-        title: "Success!",
-        description: "Your group has been created successfully.",
-      });
-
-      navigate("/community");
+        // Navigate back to community page
+        navigate("/community");
+      } else {
+        throw new Error("Failed to create community");
+      }
     } catch (error) {
       console.error('Error creating group:', error);
       toast({
         title: "Error",
-        description: "Failed to create group. Please try again.",
+        description: "Failed to create community. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -99,7 +100,7 @@ const CreateGroup = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof CreateGroupRequest, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -123,7 +124,7 @@ const CreateGroup = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Users className="h-6 w-6 text-primary" />
-              <CardTitle className="text-2xl">Create a Group</CardTitle>
+              <CardTitle className="text-2xl">Create a Community</CardTitle>
             </div>
             <CardDescription>
               Start a new community group to connect with like-minded people in your area
@@ -132,10 +133,10 @@ const CreateGroup = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Group Name *</Label>
+                <Label htmlFor="name">Community Name *</Label>
                 <Input
                   id="name"
-                  placeholder="Enter group name"
+                  placeholder="Enter community name"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   maxLength={50}
@@ -149,7 +150,7 @@ const CreateGroup = () => {
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe what your group is about..."
+                  placeholder="Describe what your community is about..."
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   rows={4}
@@ -176,12 +177,65 @@ const CreateGroup = () => {
                 </Select>
               </div>
 
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">Group Visibility</h3>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_public"
+                    checked={formData.is_public}
+                    onChange={(e) => handleInputChange("is_public", e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="is_public">Public Community</Label>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Your group will be visible to people in your local area based on their location settings. 
+                  Public communities are visible to everyone and anyone can join
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="allow_anonymous_posts"
+                    checked={formData.allow_anonymous_posts}
+                    onChange={(e) => handleInputChange("allow_anonymous_posts", e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="allow_anonymous_posts">Allow Anonymous Posts</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Members can post anonymously in this community
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="require_approval"
+                    checked={formData.require_approval}
+                    onChange={(e) => handleInputChange("require_approval", e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="require_approval">Require Post Approval</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Posts must be approved by moderators before appearing
+                </p>
+              </div>
+
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">Community Visibility</h3>
+                <p className="text-sm text-muted-foreground">
+                  Your community will be visible to people in your local area based on their location settings. 
                   This helps create relevant local communities.
                 </p>
+                {currentLocation && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Location: {currentLocation.city}, {currentLocation.state}
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">
@@ -198,7 +252,7 @@ const CreateGroup = () => {
                   disabled={loading || !formData.name.trim() || !formData.description.trim() || !formData.category}
                   className="flex-1"
                 >
-                  {loading ? "Creating..." : "Create Group"}
+                  {loading ? "Creating..." : "Create Community"}
                 </Button>
               </div>
             </form>

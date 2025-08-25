@@ -4,66 +4,39 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { usePoints } from '@/hooks/usePoints';
+import { useCommunityGroups } from '@/hooks/useCommunityGroups';
+import { useToast } from '@/hooks/use-toast';
+import { PointTransactionType } from '@/types/community';
 import { 
-  Zap, 
   Plus, 
   Minus, 
-  TestTube, 
+  Users, 
+  Trophy, 
+  Zap, 
   RefreshCw,
-  Trophy,
-  Medal,
-  Star
+  TestTube
 } from 'lucide-react';
-import { usePoints } from '@/hooks/usePoints';
-import { PointsService } from '@/services/pointsService';
-import { PointTransactionType } from '@/types/community';
-import { useToast } from '@/hooks/use-toast';
-
-const TRANSACTION_TYPES: { value: PointTransactionType; label: string; points: number }[] = [
-  { value: 'post_created', label: 'Post Created', points: 2 },
-  { value: 'comment_created', label: 'Comment Created', points: 1 },
-  { value: 'post_like_received', label: 'Post Like Received', points: 1 },
-  { value: 'comment_like_received', label: 'Comment Like Received', points: 1 },
-  { value: 'event_organized', label: 'Event Organized', points: 10 },
-  { value: 'event_attended', label: 'Event Attended', points: 1 },
-  { value: 'post_shared', label: 'Post Shared', points: 2 },
-  { value: 'poll_created', label: 'Poll Created', points: 2 },
-  { value: 'poll_voted', label: 'Poll Voted', points: 1 },
-];
 
 export const PointsTestPanel = () => {
-  const { 
-    userPoints, 
-    loading, 
-    error, 
-    refreshUserPoints,
-    addPoints 
-  } = usePoints();
-  
+  const { userPoints, addPoints, refreshUserPoints, refreshLeaderboard } = usePoints();
+  const { groups, joinGroup, leaveGroup, fetchGroups } = useCommunityGroups();
   const { toast } = useToast();
   
-  const [selectedType, setSelectedType] = useState<PointTransactionType>('post_created');
-  const [customPoints, setCustomPoints] = useState('');
-  const [customDescription, setCustomDescription] = useState('');
-  const [testing, setTesting] = useState(false);
+  const [pointsToAdd, setPointsToAdd] = useState(10);
+  const [transactionType, setTransactionType] = useState<PointTransactionType>('post_created');
+  const [description, setDescription] = useState('Test points');
 
   const handleAddPoints = async () => {
-    if (!userPoints) return;
-
-    setTesting(true);
     try {
-      const points = parseInt(customPoints) || TRANSACTION_TYPES.find(t => t.value === selectedType)?.points || 1;
-      const description = customDescription || `Test: ${TRANSACTION_TYPES.find(t => t.value === selectedType)?.label}`;
-      
-      const success = await addPoints(points, selectedType, undefined, undefined, description);
-      
+      const success = await addPoints(pointsToAdd, transactionType, undefined, undefined, description);
       if (success) {
         toast({
-          title: "Points Added",
-          description: `Added ${points} points for ${description}`,
+          title: "Success",
+          description: `Added ${pointsToAdd} points!`,
         });
         await refreshUserPoints();
+        await refreshLeaderboard();
       } else {
         toast({
           title: "Error",
@@ -78,216 +51,197 @@ export const PointsTestPanel = () => {
         description: "Failed to add points",
         variant: "destructive",
       });
-    } finally {
-      setTesting(false);
     }
   };
 
-  const handleRefreshPoints = async () => {
-    setTesting(true);
+  const handleJoinGroup = async (groupId: string) => {
     try {
-      await refreshUserPoints();
-      toast({
-        title: "Refreshed",
-        description: "Points data refreshed",
-      });
+      const success = await joinGroup(groupId);
+      if (success) {
+        await fetchGroups();
+      }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to refresh points",
-        variant: "destructive",
-      });
-    } finally {
-      setTesting(false);
+      console.error('Error joining group:', error);
     }
   };
 
-  const getRankIcon = (rank: number) => {
-    if (rank <= 3) {
-      return <Trophy className="w-4 h-4 text-yellow-500" />;
-    } else if (rank <= 10) {
-      return <Medal className="w-4 h-4 text-gray-400" />;
-    } else if (rank <= 50) {
-      return <Star className="w-4 h-4 text-blue-500" />;
+  const handleLeaveGroup = async (groupId: string) => {
+    try {
+      const success = await leaveGroup(groupId);
+      if (success) {
+        await fetchGroups();
+      }
+    } catch (error) {
+      console.error('Error leaving group:', error);
     }
-    return <Zap className="w-4 h-4 text-gray-500" />;
   };
-
-  if (loading) {
-    return (
-      <Card className="points-test-panel">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TestTube className="w-5 h-5" />
-            Points System Test Panel
-          </CardTitle>
-          <CardDescription>Testing and debugging the points system</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-muted-foreground" />
-            <p className="mt-2 text-muted-foreground">Loading points data...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error || !userPoints) {
-    return (
-      <Card className="points-test-panel">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TestTube className="w-5 h-5" />
-            Points System Test Panel
-          </CardTitle>
-          <CardDescription>Testing and debugging the points system</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <Zap className="w-8 h-8 mx-auto text-red-500" />
-            <p className="mt-2 text-red-500">Failed to load points data</p>
-            <Button onClick={handleRefreshPoints} className="mt-4">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
-    <Card className="points-test-panel">
+    <Card className="border-orange-200 bg-orange-50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-orange-800">
           <TestTube className="w-5 h-5" />
-          Points System Test Panel
+          Development Test Panel
         </CardTitle>
-        <CardDescription>Testing and debugging the points system</CardDescription>
+        <CardDescription>
+          Test community features and points system (Development Only)
+        </CardDescription>
       </CardHeader>
-      
       <CardContent className="space-y-6">
-        {/* Current Points Display */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              {getRankIcon(userPoints.rank)}
-              <span className="font-bold text-2xl text-orange-600">
-                {userPoints.total_points.toLocaleString()}
-              </span>
+        {/* Points Testing */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            Points System Test
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="points">Points to Add</Label>
+              <Input
+                id="points"
+                type="number"
+                value={pointsToAdd}
+                onChange={(e) => setPointsToAdd(parseInt(e.target.value) || 0)}
+                min="1"
+                max="1000"
+              />
             </div>
-            <div className="text-sm text-orange-700">Total Points</div>
+            
+            <div>
+              <Label htmlFor="type">Transaction Type</Label>
+              <Select value={transactionType} onValueChange={(value: PointTransactionType) => setTransactionType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="post_created">Post Created</SelectItem>
+                  <SelectItem value="comment_created">Comment Created</SelectItem>
+                  <SelectItem value="event_attended">Event Attended</SelectItem>
+                  <SelectItem value="event_organized">Event Organized</SelectItem>
+                  <SelectItem value="poll_created">Poll Created</SelectItem>
+                  <SelectItem value="post_shared">Post Shared</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Test description"
+              />
+            </div>
           </div>
           
-          <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="font-bold text-2xl text-blue-600">
-              #{userPoints.rank}
-            </div>
-            <div className="text-sm text-blue-700">Community Rank</div>
-          </div>
-        </div>
-
-        {/* Test Controls */}
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="transaction-type">Transaction Type</Label>
-            <Select value={selectedType} onValueChange={(value: PointTransactionType) => setSelectedType(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TRANSACTION_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{type.label}</span>
-                      <Badge variant="secondary" className="ml-2">
-                        +{type.points}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="custom-points">Custom Points (optional)</Label>
-            <Input
-              id="custom-points"
-              type="number"
-              placeholder="Leave empty to use default"
-              value={customPoints}
-              onChange={(e) => setCustomPoints(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="custom-description">Custom Description (optional)</Label>
-            <Input
-              id="custom-description"
-              placeholder="Leave empty to use default"
-              value={customDescription}
-              onChange={(e) => setCustomDescription(e.target.value)}
-            />
-          </div>
-
           <div className="flex gap-2">
-            <Button 
-              onClick={handleAddPoints} 
-              disabled={testing}
-              className="flex-1"
-            >
-              {testing ? (
-                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4 mr-2" />
-              )}
+            <Button onClick={handleAddPoints} className="bg-orange-600 hover:bg-orange-700">
+              <Plus className="w-4 h-4 mr-2" />
               Add Points
             </Button>
-            
-            <Button 
-              onClick={handleRefreshPoints} 
-              disabled={testing}
-              variant="outline"
-            >
-              <RefreshCw className="w-4 h-4" />
+            <Button onClick={refreshUserPoints} variant="outline">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Points
             </Button>
           </div>
+          
+          {userPoints && (
+            <div className="p-4 bg-white rounded-lg border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Current Points</p>
+                  <p className="text-2xl font-bold text-orange-600">{userPoints.total_points}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Rank</p>
+                  <p className="text-2xl font-bold text-blue-600">#{userPoints.rank}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Quick Test Buttons */}
-        <div>
-          <Label className="text-sm font-medium">Quick Tests</Label>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {TRANSACTION_TYPES.slice(0, 6).map((type) => (
-              <Button
-                key={type.value}
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedType(type.value);
-                  setCustomPoints('');
-                  setCustomDescription('');
-                }}
-                className="justify-start"
-              >
-                <Zap className="w-3 h-3 mr-1" />
-                {type.label}
-              </Button>
+        {/* Community Groups Testing */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Community Groups Test
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {groups.slice(0, 6).map((group) => (
+              <div key={group.id} className="p-4 bg-white rounded-lg border">
+                <h4 className="font-semibold text-sm">{group.name}</h4>
+                <p className="text-xs text-gray-600 mb-2">{group.category}</p>
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                  <span>{group.member_count} members</span>
+                  <span>{group.location_city}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleJoinGroup(group.id)}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    Join
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleLeaveGroup(group.id)}
+                    className="flex-1"
+                  >
+                    Leave
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
+          
+          <Button onClick={fetchGroups} variant="outline" className="w-full">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh Groups
+          </Button>
         </div>
 
-        {/* System Status */}
-        <div className="pt-4 border-t">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Last Updated:</span>
-            <span>{new Date(userPoints.updated_at).toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Points ID:</span>
-            <span className="font-mono text-xs">{userPoints.id.slice(0, 8)}...</span>
+        {/* Quick Actions */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            Quick Actions
+          </h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Button 
+              size="sm" 
+              onClick={() => addPoints(50, 'post_created', undefined, undefined, 'Quick test')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              +50 Points
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => addPoints(100, 'event_organized', undefined, undefined, 'Quick test')}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              +100 Points
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => addPoints(25, 'poll_created', undefined, undefined, 'Quick test')}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              +25 Points
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => addPoints(10, 'post_shared', undefined, undefined, 'Quick test')}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              +10 Points
+            </Button>
           </div>
         </div>
       </CardContent>
