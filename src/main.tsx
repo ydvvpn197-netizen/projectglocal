@@ -4,8 +4,19 @@ import App from './App.tsx'
 import './index.css'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
+// Ensure React is globally available
+if (typeof window !== 'undefined') {
+  (window as any).React = React;
+}
+
 // Enhanced React availability check with retry mechanism
 const ensureReactLoaded = () => {
+  // Wait for React to be available
+  if (typeof window !== 'undefined' && !window.React) {
+    // Try to get React from global scope
+    window.React = React;
+  }
+  
   if (!React) {
     throw new Error('React is not loaded');
   }
@@ -22,11 +33,17 @@ const ensureReactLoaded = () => {
     throw new Error('React.useEffect is not available');
   }
   
+  // Additional check for createRoot
+  if (typeof createRoot !== 'function') {
+    throw new Error('createRoot is not available');
+  }
+  
   console.log('✅ React is properly loaded:', {
     version: React.version,
     createContext: typeof React.createContext,
     useState: typeof React.useState,
-    useEffect: typeof React.useEffect
+    useEffect: typeof React.useEffect,
+    createRoot: typeof createRoot
   });
 };
 

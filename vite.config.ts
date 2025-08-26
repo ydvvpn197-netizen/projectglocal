@@ -39,13 +39,23 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
-          // Ensure React and core dependencies are NEVER chunked - always in main bundle
+          // CRITICAL: React and core dependencies must NEVER be chunked
           if (id.includes('node_modules')) {
-            // React and core dependencies must stay in main bundle
+            // React and all React-related dependencies must stay in main bundle
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router-dom') ||
-                id.includes('@tanstack/react-query')) {
+                id.includes('@tanstack/react-query') ||
+                id.includes('next-themes') ||
+                id.includes('@radix-ui/react-context-menu') ||
+                id.includes('@radix-ui/react-dialog') ||
+                id.includes('@radix-ui/react-dropdown-menu') ||
+                id.includes('@radix-ui/react-hover-card') ||
+                id.includes('@radix-ui/react-popover') ||
+                id.includes('@radix-ui/react-select') ||
+                id.includes('@radix-ui/react-tabs') ||
+                id.includes('@radix-ui/react-toast') ||
+                id.includes('@radix-ui/react-tooltip')) {
               return undefined; // Keep in main bundle
             }
             
@@ -125,6 +135,16 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@tanstack/react-query',
+      'next-themes',
+      '@radix-ui/react-context-menu',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-hover-card',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
       '@supabase/supabase-js',
       'date-fns',
       'lucide-react',
