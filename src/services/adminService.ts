@@ -1,4 +1,4 @@
-// @ts-nocheck
+// Admin service for managing users, content, and system settings
 import { supabase } from '@/integrations/supabase/client';
 import { 
   AdminUser, 

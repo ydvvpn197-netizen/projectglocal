@@ -1,4 +1,3 @@
-We just implemented the feature described in the attached plan.
 
 Please do a thorough code review:
 
