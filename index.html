@@ -61,6 +61,20 @@
         </div>
       </noscript>
     </div>
+    
+    <!-- Error handling for script loading -->
+    <script type="text/javascript">
+      window.addEventListener('error', function(e) {
+        if (e.message && e.message.includes('ot')) {
+          console.warn('Detected potential initialization issue, attempting recovery...');
+          // Try to reload the page after a short delay
+          setTimeout(function() {
+            window.location.reload();
+          }, 2000);
+        }
+      });
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

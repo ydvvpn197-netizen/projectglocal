@@ -47,9 +47,30 @@ const ensureReactLoaded = () => {
   });
 };
 
+// Wait for all modules to be loaded
+const waitForModules = () => {
+  return new Promise((resolve) => {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      resolve();
+      return;
+    }
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolve);
+    } else {
+      resolve();
+    }
+  });
+};
+
 // Initialize the app with error handling and retry
-const initializeApp = (retryCount = 0) => {
+const initializeApp = async (retryCount = 0) => {
   try {
+    // Wait for modules to be loaded
+    await waitForModules();
+    
     // Ensure React is loaded
     ensureReactLoaded();
     
@@ -73,9 +94,9 @@ const initializeApp = (retryCount = 0) => {
     console.error('❌ Error initializing app:', error);
     
     // Retry mechanism for React loading issues
-    if (retryCount < 3 && error.message.includes('React')) {
+    if (retryCount < 3 && (error.message.includes('React') || error.message.includes('ot'))) {
       console.log(`🔄 Retrying app initialization (attempt ${retryCount + 1}/3)...`);
-      setTimeout(() => initializeApp(retryCount + 1), 1000);
+      setTimeout(() => initializeApp(retryCount + 1), 1000 * (retryCount + 1));
     } else {
       console.error('❌ Failed to initialize app after retries');
       // Show fallback content
@@ -87,6 +108,9 @@ const initializeApp = (retryCount = 0) => {
               <h1>The Glocal</h1>
               <p>Loading application...</p>
               <p style="color: #666; font-size: 0.9rem;">If this persists, please refresh the page.</p>
+              <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #6D28D9; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Refresh Page
+              </button>
             </div>
           </div>
         `;
@@ -95,9 +119,5 @@ const initializeApp = (retryCount = 0) => {
   }
 };
 
-// Start the app when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initializeApp());
-} else {
-  initializeApp();
-}
+// Start the app
+initializeApp();

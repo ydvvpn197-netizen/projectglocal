@@ -39,65 +39,61 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
-          // CRITICAL: React and core dependencies must NEVER be chunked
+          // Simplified chunking strategy to prevent initialization issues
           if (id.includes('node_modules')) {
-            // React and all React-related dependencies must stay in main bundle
+            // Keep React and core dependencies in main bundle
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router-dom') ||
                 id.includes('@tanstack/react-query') ||
-                id.includes('next-themes') ||
-                id.includes('@radix-ui/react-context-menu') ||
-                id.includes('@radix-ui/react-dialog') ||
-                id.includes('@radix-ui/react-dropdown-menu') ||
-                id.includes('@radix-ui/react-hover-card') ||
-                id.includes('@radix-ui/react-popover') ||
-                id.includes('@radix-ui/react-select') ||
-                id.includes('@radix-ui/react-tabs') ||
-                id.includes('@radix-ui/react-toast') ||
-                id.includes('@radix-ui/react-tooltip')) {
+                id.includes('next-themes')) {
               return undefined; // Keep in main bundle
             }
             
-            // Specific vendor chunks
-            if (id.includes('@supabase')) {
-              return 'supabase-vendor';
-            }
-            if (id.includes('@radix-ui')) {
+            // Group UI libraries together
+            if (id.includes('@radix-ui') || 
+                id.includes('lucide-react') ||
+                id.includes('clsx') || 
+                id.includes('class-variance-authority') || 
+                id.includes('tailwind-merge')) {
               return 'ui-vendor';
             }
-            if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
+            
+            // Group form libraries together
+            if (id.includes('react-hook-form') || 
+                id.includes('@hookform/resolvers') || 
+                id.includes('zod')) {
               return 'form-vendor';
             }
-            if (id.includes('date-fns') || id.includes('react-day-picker')) {
+            
+            // Group date libraries together
+            if (id.includes('date-fns') || 
+                id.includes('react-day-picker')) {
               return 'date-vendor';
             }
+            
+            // Group chart libraries together
             if (id.includes('recharts')) {
               return 'chart-vendor';
             }
-            if (id.includes('lucide-react')) {
-              return 'icons-vendor';
-            }
-            if (id.includes('clsx') || id.includes('class-variance-authority') || id.includes('tailwind-merge')) {
-              return 'utils-vendor';
+            
+            // Supabase gets its own chunk
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
             }
             
-            // All other node_modules go to vendor chunk
+            // All other node_modules go to a single vendor chunk
             return 'vendor';
           }
-          // Route-based chunks
+          
+          // Route-based chunks (simplified)
           if (id.includes('src/pages/')) {
-            const pageName = id.split('/').pop()?.replace('.tsx', '');
-            if (pageName) {
-              return `page-${pageName.toLowerCase()}`;
-            }
+            return 'pages';
           }
-          // Component chunks
+          
+          // Component chunks (simplified)
           if (id.includes('src/components/')) {
-            const componentName = id.split('/').pop()?.replace('.tsx', '');
-            if (componentName) {
-              return `component-${componentName.toLowerCase()}`;
-            }
+            return 'components';
           }
         },
         chunkFileNames: (chunkInfo) => {
@@ -125,7 +121,15 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
+        // Prevent variable hoisting issues
+        hoist_funs: false,
+        hoist_vars: false,
+        hoist_props: false,
       },
+      mangle: {
+        // Prevent mangling of certain variables that might cause issues
+        reserved: ['ot', 'React', 'createRoot', 'render']
+      }
     },
     sourcemap: mode === 'development',
   },
