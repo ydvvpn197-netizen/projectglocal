@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { ThemeProvider } from "next-themes";
+import { EnhancedThemeProvider } from "@/components/ui/EnhancedThemeProvider";
 const { lazy } = React;
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { app } from '@/config/environment';
@@ -14,7 +14,7 @@ import { app } from '@/config/environment';
 
 // Lazy load pages with better chunking
 // Core pages (loaded immediately)
-const Index = lazy(() => import("./pages/Index"));
+const Index = lazy(() => import("./pages/EnhancedIndex").then(module => ({ default: module.EnhancedIndex })));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Discover = lazy(() => import("./pages/Discover"));
@@ -89,7 +89,7 @@ const App = () => {
   // useRoutePreloader();
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <EnhancedThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AuthProvider>
