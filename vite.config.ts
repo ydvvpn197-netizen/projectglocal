@@ -39,15 +39,17 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id: string) => {
-          // Simplified chunking strategy to prevent initialization issues
+          // CRITICAL FIX: Keep React and all React-related code in main bundle
           if (id.includes('node_modules')) {
-            // Keep React and core dependencies in main bundle
+            // ALWAYS keep React, React-DOM, and React Router in main bundle
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router-dom') ||
                 id.includes('@tanstack/react-query') ||
-                id.includes('next-themes')) {
-              return undefined; // Keep in main bundle
+                id.includes('next-themes') ||
+                id.includes('react-hook-form') ||
+                id.includes('@hookform/resolvers')) {
+              return undefined; // Keep in main bundle - CRITICAL for React initialization
             }
             
             // Group UI libraries together
@@ -59,10 +61,8 @@ export default defineConfig(({ mode }) => ({
               return 'ui-vendor';
             }
             
-            // Group form libraries together
-            if (id.includes('react-hook-form') || 
-                id.includes('@hookform/resolvers') || 
-                id.includes('zod')) {
+            // Group form libraries together (but keep react-hook-form in main)
+            if (id.includes('zod')) {
               return 'form-vendor';
             }
             
@@ -121,14 +121,16 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
-        // Prevent variable hoisting issues
+        // Prevent variable hoisting issues that can cause React initialization problems
         hoist_funs: false,
         hoist_vars: false,
         hoist_props: false,
+        // Prevent function inlining that might break React initialization
+        inline: false,
       },
       mangle: {
-        // Prevent mangling of certain variables that might cause issues
-        reserved: ['ot', 'React', 'createRoot', 'render']
+        // Prevent mangling of React-related variables
+        reserved: ['React', 'createRoot', 'render', 'createContext', 'useState', 'useEffect', 'useRef', 'useCallback', 'useMemo', 'useReducer', 'useContext', 'useLayoutEffect', 'useImperativeHandle', 'useDebugValue', 'useDeferredValue', 'useTransition', 'useId', 'useSyncExternalStore', 'useInsertionEffect']
       }
     },
     sourcemap: mode === 'development',
@@ -140,6 +142,8 @@ export default defineConfig(({ mode }) => ({
       'react-router-dom',
       '@tanstack/react-query',
       'next-themes',
+      'react-hook-form',
+      '@hookform/resolvers',
       '@radix-ui/react-context-menu',
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',

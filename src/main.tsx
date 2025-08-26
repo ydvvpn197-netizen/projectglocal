@@ -4,9 +4,11 @@ import App from './App.tsx'
 import './index.css'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
-// Ensure React is globally available
+// CRITICAL FIX: Ensure React is globally available immediately
 if (typeof window !== 'undefined') {
   (window as any).React = React;
+  // Also ensure createRoot is available globally
+  (window as any).createRoot = createRoot;
 }
 
 // Enhanced React availability check with retry mechanism
@@ -65,11 +67,22 @@ const waitForModules = () => {
   });
 };
 
+// CRITICAL FIX: Add a small delay to ensure all modules are properly loaded
+const waitForReactInitialization = () => {
+  return new Promise((resolve) => {
+    // Give a small delay to ensure React is fully initialized
+    setTimeout(resolve, 100);
+  });
+};
+
 // Initialize the app with error handling and retry
 const initializeApp = async (retryCount = 0) => {
   try {
     // Wait for modules to be loaded
     await waitForModules();
+    
+    // CRITICAL: Wait for React initialization
+    await waitForReactInitialization();
     
     // Ensure React is loaded
     ensureReactLoaded();
@@ -94,7 +107,7 @@ const initializeApp = async (retryCount = 0) => {
     console.error('❌ Error initializing app:', error);
     
     // Retry mechanism for React loading issues
-    if (retryCount < 3 && (error.message.includes('React') || error.message.includes('ot'))) {
+    if (retryCount < 3 && (error.message.includes('React') || error.message.includes('ot') || error.message.includes('Cannot access'))) {
       console.log(`🔄 Retrying app initialization (attempt ${retryCount + 1}/3)...`);
       setTimeout(() => initializeApp(retryCount + 1), 1000 * (retryCount + 1));
     } else {
@@ -118,6 +131,17 @@ const initializeApp = async (retryCount = 0) => {
     }
   }
 };
+
+// CRITICAL FIX: Add error handler for React initialization issues
+window.addEventListener('error', function(e) {
+  if (e.message && (e.message.includes('Cannot access') || e.message.includes('React') || e.message.includes('ot'))) {
+    console.warn('Detected React initialization issue, attempting recovery...');
+    // Try to reload the page after a short delay
+    setTimeout(function() {
+      window.location.reload();
+    }, 2000);
+  }
+});
 
 // Start the app
 initializeApp();
