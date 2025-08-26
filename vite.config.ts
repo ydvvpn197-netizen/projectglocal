@@ -41,41 +41,32 @@ export default defineConfig(({ mode }) => ({
         manualChunks: (id: string) => {
           // CRITICAL FIX: Keep React and all React-related code in main bundle
           if (id.includes('node_modules')) {
-            // ALWAYS keep React, React-DOM, and React Router in main bundle
+            // ALWAYS keep React, React-DOM, React Router, and ANY React-dependent libraries in main bundle
             if (id.includes('react') || 
                 id.includes('react-dom') || 
                 id.includes('react-router-dom') ||
                 id.includes('@tanstack/react-query') ||
                 id.includes('next-themes') ||
                 id.includes('react-hook-form') ||
-                id.includes('@hookform/resolvers')) {
+                id.includes('@hookform/resolvers') ||
+                id.includes('sonner') ||
+                id.includes('@radix-ui') ||
+                id.includes('lucide-react') ||
+                id.includes('clsx') ||
+                id.includes('class-variance-authority') ||
+                id.includes('tailwind-merge') ||
+                id.includes('date-fns') ||
+                id.includes('react-day-picker') ||
+                id.includes('recharts') ||
+                id.includes('@floating-ui') ||
+                id.includes('@tanstack/react-query') ||
+                id.includes('@remix-run/router')) {
               return undefined; // Keep in main bundle - CRITICAL for React initialization
             }
             
-            // Group UI libraries together
-            if (id.includes('@radix-ui') || 
-                id.includes('lucide-react') ||
-                id.includes('clsx') || 
-                id.includes('class-variance-authority') || 
-                id.includes('tailwind-merge')) {
-              return 'ui-vendor';
-            }
+            // UI libraries are now kept in main bundle to prevent React initialization issues
             
-            // Group form libraries together (but keep react-hook-form in main)
-            if (id.includes('zod')) {
-              return 'form-vendor';
-            }
-            
-            // Group date libraries together
-            if (id.includes('date-fns') || 
-                id.includes('react-day-picker')) {
-              return 'date-vendor';
-            }
-            
-            // Group chart libraries together
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
-            }
+            // All React-dependent libraries are now kept in main bundle
             
             // Supabase gets its own chunk
             if (id.includes('@supabase')) {
