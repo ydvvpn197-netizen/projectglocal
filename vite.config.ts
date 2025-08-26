@@ -60,13 +60,14 @@ export default defineConfig(({ mode }) => ({
                 id.includes('recharts') ||
                 id.includes('@floating-ui') ||
                 id.includes('@tanstack/react-query') ||
-                id.includes('@remix-run/router')) {
+                id.includes('@remix-run/router') ||
+                id.includes('useLayoutEffect') ||
+                id.includes('useEffect') ||
+                id.includes('useState') ||
+                id.includes('createContext') ||
+                id.includes('createRoot')) {
               return undefined; // Keep in main bundle - CRITICAL for React initialization
             }
-            
-            // UI libraries are now kept in main bundle to prevent React initialization issues
-            
-            // All React-dependent libraries are now kept in main bundle
             
             // Supabase gets its own chunk
             if (id.includes('@supabase')) {
