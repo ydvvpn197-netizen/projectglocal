@@ -156,7 +156,7 @@ const App = () => {
           </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>
-    </ThemeProvider>
+    </EnhancedThemeProvider>
   );
 };
 
