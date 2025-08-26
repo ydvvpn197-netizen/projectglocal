@@ -38,56 +38,8 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: (id: string) => {
-          // CRITICAL FIX: Keep React and all React-related code in main bundle
-          if (id.includes('node_modules')) {
-            // ALWAYS keep React, React-DOM, React Router, and ANY React-dependent libraries in main bundle
-            if (id.includes('react') || 
-                id.includes('react-dom') || 
-                id.includes('react-router-dom') ||
-                id.includes('@tanstack/react-query') ||
-                id.includes('next-themes') ||
-                id.includes('react-hook-form') ||
-                id.includes('@hookform/resolvers') ||
-                id.includes('sonner') ||
-                id.includes('@radix-ui') ||
-                id.includes('lucide-react') ||
-                id.includes('clsx') ||
-                id.includes('class-variance-authority') ||
-                id.includes('tailwind-merge') ||
-                id.includes('date-fns') ||
-                id.includes('react-day-picker') ||
-                id.includes('recharts') ||
-                id.includes('@floating-ui') ||
-                id.includes('@tanstack/react-query') ||
-                id.includes('@remix-run/router') ||
-                id.includes('useLayoutEffect') ||
-                id.includes('useEffect') ||
-                id.includes('useState') ||
-                id.includes('createContext') ||
-                id.includes('createRoot')) {
-              return undefined; // Keep in main bundle - CRITICAL for React initialization
-            }
-            
-            // Supabase gets its own chunk
-            if (id.includes('@supabase')) {
-              return 'supabase-vendor';
-            }
-            
-            // All other node_modules go to a single vendor chunk
-            return 'vendor';
-          }
-          
-          // Route-based chunks (simplified)
-          if (id.includes('src/pages/')) {
-            return 'pages';
-          }
-          
-          // Component chunks (simplified)
-          if (id.includes('src/components/')) {
-            return 'components';
-          }
-        },
+        // CRITICAL FIX: Disable chunk splitting completely to prevent React timing issues
+        manualChunks: undefined,
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
           return `js/[name]-[hash].js`;
@@ -107,7 +59,7 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000, // Increased to allow larger main bundle
     minify: 'terser',
     terserOptions: {
       compress: {
