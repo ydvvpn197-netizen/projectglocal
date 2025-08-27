@@ -45,7 +45,7 @@ import {
   Coffee,
   Car,
   Building,
-  Tree,
+  Leaf,
   Mountain,
   Beach,
   City,
@@ -225,7 +225,7 @@ const categories = [
   { name: 'Food', icon: <Coffee className="h-4 w-4" />, color: 'bg-orange-500' },
   { name: 'Technology', icon: <Code className="h-4 w-4" />, color: 'bg-blue-500' },
   { name: 'Arts', icon: <Palette className="h-4 w-4" />, color: 'bg-pink-500' },
-  { name: 'Outdoors', icon: <Tree className="h-4 w-4" />, color: 'bg-green-500' },
+  { name: 'Outdoors', icon: <Leaf className="h-4 w-4" />, color: 'bg-green-500' },
   { name: 'Business', icon: <Building className="h-4 w-4" />, color: 'bg-gray-500' },
 ];
 
