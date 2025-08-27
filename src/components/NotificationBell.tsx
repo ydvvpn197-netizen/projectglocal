@@ -9,11 +9,11 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 // Memoized notification icon component
 const NotificationIcon = memo(({ type, isGeneral }: { type: string; isGeneral: boolean }) => {
-  const icon = useMemo(() => {
+  const getIcon = () => {
     if (isGeneral) {
       const generalIcons: Record<string, string> = {
         announcement: '📢',
@@ -46,9 +46,9 @@ const NotificationIcon = memo(({ type, isGeneral }: { type: string; isGeneral: b
       };
       return personalIcons[type] || '🔔';
     }
-  }, [type, isGeneral]);
+  };
 
-  return <span className="text-2xl">{icon}</span>;
+  return <span className="text-2xl">{getIcon()}</span>;
 });
 
 NotificationIcon.displayName = 'NotificationIcon';
@@ -67,16 +67,16 @@ const NotificationItem = memo(({
   onNavigate: (notification: any) => void;
   isGeneral?: boolean;
 }) => {
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     onNavigate(notification);
-  }, [notification, onNavigate]);
+  };
 
-  const handleDelete = useCallback((e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isGeneral) {
       onDelete(notification.id);
     }
-  }, [notification.id, onDelete, isGeneral]);
+  };
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
@@ -90,11 +90,11 @@ const NotificationItem = memo(({
 
   return (
     <div
-      className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors hover:bg-muted/50 ${
+      className={`p-3 rounded-lg mb-2 cursor-pointer transition-all hover:bg-accent/50 ${
         isGeneral 
-          ? `bg-muted/30 ${getPriorityColor(notification.priority)} border-l-4`
+          ? `bg-card ${getPriorityColor(notification.priority)} border-l-4`
           : notification.read 
-            ? 'bg-muted/30' 
+            ? 'bg-muted/50' 
             : 'bg-primary/5 border-l-4 border-l-primary'
       }`}
       onClick={handleClick}
@@ -102,11 +102,13 @@ const NotificationItem = memo(({
       <div className="flex items-start gap-3">
         <NotificationIcon type={notification.type} isGeneral={isGeneral} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">{notification.title}</h4>
+          <div className="flex items-center justify-between mb-1">
+            <h4 className="font-medium text-sm truncate">{notification.title}</h4>
             <div className="flex items-center gap-1">
               {!isGeneral && !notification.read && (
-                <div className="w-2 h-2 rounded-full bg-primary" />
+                <Badge variant="default" className="text-xs px-1 py-0">
+                  New
+                </Badge>
               )}
               {!isGeneral && (
                 <Button
@@ -120,32 +122,27 @@ const NotificationItem = memo(({
               )}
             </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
             {notification.message}
           </p>
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              {format(new Date(notification.created_at), 'MMM dd, HH:mm')}
+              {format(new Date(notification.created_at), 'MMM dd • HH:mm')}
             </p>
-            {isGeneral && notification.priority && (
-              <Badge variant="outline" className="text-xs">
-                {notification.priority}
-              </Badge>
+            {notification.action_text && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNavigate(notification);
+                }}
+              >
+                {notification.action_text}
+              </Button>
             )}
           </div>
-          {notification.action_text && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2 w-full"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate(notification);
-              }}
-            >
-              {notification.action_text}
-            </Button>
-          )}
         </div>
       </div>
     </div>
@@ -155,30 +152,39 @@ const NotificationItem = memo(({
 NotificationItem.displayName = 'NotificationItem';
 
 export const NotificationBell = memo(() => {
-  const { 
-    generalNotifications, 
-    personalNotifications, 
-    counts, 
-    loading, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification 
-  } = useNotifications();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Use the notifications hook with error handling
+  const {
+    generalNotifications,
+    personalNotifications,
+    counts,
+    loading,
+    error,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    refresh
+  } = useNotifications();
 
+  // Handle notification click
   const handleNotificationClick = useCallback(async (notification: any) => {
     if (!notification.isGeneral) {
-      await markAsRead(notification.id);
+      try {
+        await markAsRead(notification.id);
+      } catch (error) {
+        console.warn('Error marking notification as read:', error);
+      }
     }
     
-    // Navigate based on notification type and action_url
     if (notification.action_url) {
       navigate(notification.action_url);
+      setIsOpen(false);
       return;
     }
 
-    // Default navigation based on notification type
     const routeMap: Record<string, string> = {
       booking_request: '/artist-dashboard',
       booking_accepted: '/artist-dashboard',
@@ -209,22 +215,53 @@ export const NotificationBell = memo(() => {
     if (route) {
       navigate(route);
     }
+    setIsOpen(false);
   }, [markAsRead, navigate]);
 
+  // Handle delete notification
   const handleDelete = useCallback((id: string) => {
-    deleteNotification(id);
+    try {
+      deleteNotification(id);
+    } catch (error) {
+      console.warn('Error deleting notification:', error);
+    }
   }, [deleteNotification]);
 
-  const hasNotifications = generalNotifications.length > 0 || personalNotifications.length > 0;
+  // Get combined notifications for display
+  const allNotifications = useMemo(() => {
+    try {
+      const combined = [
+        ...generalNotifications.map(notification => ({
+          ...notification,
+          isGeneral: true,
+          read: false // General notifications are never "read" in the traditional sense
+        })),
+        ...personalNotifications.map(notification => ({
+          ...notification,
+          isGeneral: false
+        }))
+      ];
+
+      return combined.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    } catch (error) {
+      console.warn('Error combining notifications:', error);
+      return [];
+    }
+  }, [generalNotifications, personalNotifications]);
+
+  // Don't render if no user (this should be handled by NotificationButton for non-logged-in users)
+  if (!user) return null;
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="sm" className="relative">
+          <Bell className="h-4 w-4" />
           {counts.total > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
               {counts.total > 99 ? '99+' : counts.total}
@@ -232,63 +269,110 @@ export const NotificationBell = memo(() => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">Notifications</h3>
-          <div className="flex items-center gap-2">
-            {user && counts.personal > 0 && (
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                Mark all read
+      <PopoverContent className="w-80 p-0" align="end">
+        <div className="p-4 border-b">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">Notifications</h3>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refresh}
+                disabled={loading}
+                className="h-8 w-8 p-0"
+              >
+                <span className="sr-only">Refresh</span>
+                <svg className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
               </Button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
+              {counts.personal > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={markAllAsRead}
+                  className="h-8 w-8 p-0"
+                >
+                  <Check className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate('/notification-settings')}>
-                  Notification Settings
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate('/notification-settings')}>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/notifications')}>
+                    View All
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
-        
-        {loading ? (
-          <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-          </div>
-        ) : !hasNotifications ? (
-          <div className="p-8 text-center text-muted-foreground">
-            <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="font-medium">No notifications</p>
-            <p className="text-sm">You're all caught up!</p>
-          </div>
-        ) : (
-          <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">All ({counts.total})</TabsTrigger>
-              {user && <TabsTrigger value="personal">Personal ({counts.personal})</TabsTrigger>}
-              <TabsTrigger value="general">General ({counts.general})</TabsTrigger>
-            </TabsList>
-            
-            <ScrollArea className="h-96">
-              <TabsContent value="all" className="p-2">
-                {generalNotifications.map((notification) => (
+
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="all" className="text-xs">
+              All ({allNotifications.length})
+            </TabsTrigger>
+            <TabsTrigger value="personal" className="text-xs">
+              Personal ({personalNotifications.length})
+            </TabsTrigger>
+            <TabsTrigger value="general" className="text-xs">
+              General ({generalNotifications.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all" className="p-4">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground mb-2">Unable to load notifications</p>
+                <Button variant="outline" size="sm" onClick={refresh}>
+                  Try Again
+                </Button>
+              </div>
+            ) : allNotifications.length === 0 ? (
+              <div className="text-center py-8">
+                <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No notifications</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-64">
+                {allNotifications.map((notification) => (
                   <NotificationItem
-                    key={`general-${notification.id}`}
+                    key={`${notification.isGeneral ? 'general' : 'personal'}-${notification.id}`}
                     notification={notification}
                     onMarkAsRead={markAsRead}
                     onDelete={handleDelete}
                     onNavigate={handleNotificationClick}
-                    isGeneral={true}
+                    isGeneral={notification.isGeneral}
                   />
                 ))}
+              </ScrollArea>
+            )}
+          </TabsContent>
+
+          <TabsContent value="personal" className="p-4">
+            {personalNotifications.length === 0 ? (
+              <div className="text-center py-8">
+                <User className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No personal notifications</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-64">
                 {personalNotifications.map((notification) => (
                   <NotificationItem
-                    key={`personal-${notification.id}`}
+                    key={notification.id}
                     notification={notification}
                     onMarkAsRead={markAsRead}
                     onDelete={handleDelete}
@@ -296,65 +380,32 @@ export const NotificationBell = memo(() => {
                     isGeneral={false}
                   />
                 ))}
-              </TabsContent>
-              
-              {user && (
-                <TabsContent value="personal" className="p-2">
-                  {personalNotifications.length === 0 ? (
-                    <div className="p-4 text-center text-muted-foreground">
-                      <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No personal notifications</p>
-                    </div>
-                  ) : (
-                    personalNotifications.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkAsRead={markAsRead}
-                        onDelete={handleDelete}
-                        onNavigate={handleNotificationClick}
-                        isGeneral={false}
-                      />
-                    ))
-                  )}
-                </TabsContent>
-              )}
-              
-              <TabsContent value="general" className="p-2">
-                {generalNotifications.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    <Megaphone className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No general notifications</p>
-                  </div>
-                ) : (
-                  generalNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onDelete={handleDelete}
-                      onNavigate={handleNotificationClick}
-                      isGeneral={true}
-                    />
-                  ))
-                )}
-              </TabsContent>
-            </ScrollArea>
-          </Tabs>
-        )}
-        
-        {hasNotifications && (
-          <div className="p-3 border-t bg-muted/30">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full"
-              onClick={() => navigate('/notifications')}
-            >
-              View all notifications
-            </Button>
-          </div>
-        )}
+              </ScrollArea>
+            )}
+          </TabsContent>
+
+          <TabsContent value="general" className="p-4">
+            {generalNotifications.length === 0 ? (
+              <div className="text-center py-8">
+                <Megaphone className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No general notifications</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-64">
+                {generalNotifications.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsRead}
+                    onDelete={handleDelete}
+                    onNavigate={handleNotificationClick}
+                    isGeneral={true}
+                  />
+                ))}
+              </ScrollArea>
+            )}
+          </TabsContent>
+        </Tabs>
       </PopoverContent>
     </Popover>
   );

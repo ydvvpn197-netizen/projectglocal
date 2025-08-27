@@ -53,7 +53,7 @@ export const useNotifications = () => {
 
   // Mark notification as read
   const markAsRead = useCallback(async (notificationId: string) => {
-    if (!user?.id) return false;
+    if (!user?.id) return;
 
     try {
       const success = await notificationService.markAsRead(notificationId, user.id);
@@ -72,16 +72,14 @@ export const useNotifications = () => {
           }
         }));
       }
-      return success;
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      return false;
     }
   }, [user?.id]);
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
-    if (!user?.id) return false;
+    if (!user?.id) return;
 
     try {
       const success = await notificationService.markAllAsRead(user.id);
@@ -98,16 +96,14 @@ export const useNotifications = () => {
           }
         }));
       }
-      return success;
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-      return false;
     }
   }, [user?.id]);
 
   // Delete notification
   const deleteNotification = useCallback(async (notificationId: string) => {
-    if (!user?.id) return false;
+    if (!user?.id) return;
 
     try {
       const success = await notificationService.deleteNotification(notificationId, user.id);
@@ -124,10 +120,8 @@ export const useNotifications = () => {
           }
         }));
       }
-      return success;
     } catch (error) {
       console.error('Error deleting notification:', error);
-      return false;
     }
   }, [user?.id]);
 
