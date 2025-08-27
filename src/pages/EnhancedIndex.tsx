@@ -47,8 +47,7 @@ import {
   Building,
   Leaf,
   Mountain,
-  Beach,
-  City,
+
   HeartHandshake,
   Lightbulb,
   Rocket,
@@ -252,6 +251,14 @@ export const EnhancedIndex: React.FC = () => {
     }
   };
 
+  const handleNotificationClick = () => {
+    if (user) {
+      navigate('/notifications');
+    } else {
+      navigate('/signin');
+    }
+  };
+
   const nextEvent = () => {
     setCurrentEventIndex((prev) => (prev + 1) % trendingEvents.length);
   };
@@ -287,6 +294,7 @@ export const EnhancedIndex: React.FC = () => {
         variant="glass"
         showSearch={false}
         notifications={3}
+        onNotificationClick={handleNotificationClick}
       />
       
       {/* Hero Section */}

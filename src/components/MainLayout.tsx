@@ -11,6 +11,7 @@ import { NetworkStatus, NetworkStatusIndicator } from "@/components/NetworkStatu
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NotificationButton } from "@/components/NotificationButton";
 import { TestNotificationButton } from "@/components/TestNotificationButton";
 
 interface MainLayoutProps {
@@ -118,7 +119,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                     </DropdownMenu>
                     
                     {/* Notifications */}
-                    <NotificationBell />
+                    {user ? <NotificationBell /> : <NotificationButton />}
                     
                     {/* Test Button - Remove this in production */}
                     <TestNotificationButton />

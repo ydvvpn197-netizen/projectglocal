@@ -56,6 +56,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useEnhancedTheme } from '@/components/ui/EnhancedThemeProvider';
 import { useToast } from '@/hooks/use-toast';
+import { NotificationButton } from '@/components/NotificationButton';
 
 interface NavigationItem {
   label: string;
@@ -376,22 +377,14 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
 
             {/* Notifications */}
             {showNotifications && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="relative"
-                onClick={onNotificationClick}
-              >
-                <Bell className="h-4 w-4" />
-                {notifications > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs"
-                  >
-                    {notifications > 99 ? '99+' : notifications}
-                  </Badge>
-                )}
-              </Button>
+              user ? (
+                <NotificationButton notifications={notifications} />
+              ) : (
+                <NotificationButton 
+                  notifications={notifications} 
+                  onClick={onNotificationClick}
+                />
+              )
             )}
 
             {/* Theme Toggle */}

@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NotificationButton } from "@/components/NotificationButton";
 
 interface ModernHeaderProps {
   showSearch?: boolean;
@@ -162,7 +163,7 @@ export function ModernHeader({
                 )}
 
                 {/* Notifications */}
-                <NotificationBell />
+                {user ? <NotificationBell /> : <NotificationButton />}
 
                 {/* User Menu */}
                 <DropdownMenu>

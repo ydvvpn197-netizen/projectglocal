@@ -12,6 +12,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NotificationButton } from "@/components/NotificationButton";
 import { useState, memo } from "react";
 // import { useHoverPreload } from "@/hooks/useRoutePreloader";
 
@@ -201,7 +202,7 @@ export function UniformHeader({
             )}
 
             {/* Notification Bell */}
-            {user && <NotificationBell />}
+            {user ? <NotificationBell /> : <NotificationButton />}
 
             {/* Auth Buttons */}
             {showAuthButtons && !user && (

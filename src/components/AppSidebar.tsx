@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
+import { NotificationButton } from "@/components/NotificationButton";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -92,7 +93,7 @@ export function AppSidebar() {
                 <MapPin className="h-5 w-5 text-primary" />
                 Local Social Hub
               </h2>
-              {user && <NotificationBell />}
+              {user ? <NotificationBell /> : <NotificationButton />}
             </div>
           </div>
         )}
