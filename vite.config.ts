@@ -87,7 +87,6 @@ export default defineConfig(({ mode }) => ({
       '@tanstack/react-query',
       'next-themes',
       'react-hook-form',
-      '@hookform/resolvers',
       '@radix-ui/react-context-menu',
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
