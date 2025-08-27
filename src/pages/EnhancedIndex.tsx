@@ -57,6 +57,7 @@ import {
   ArrowUpRight,
   ChevronRight,
   ChevronLeft,
+  Info,
 } from 'lucide-react';
 
 // Enhanced sample data
