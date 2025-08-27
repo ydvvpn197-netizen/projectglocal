@@ -48,6 +48,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 
 // Chat pages (grouped together)
@@ -122,7 +123,8 @@ const App = () => {
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/user/:userId" element={<UserProfile />} />
-                  <Route path="/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
                   
                   {/* Artist routes */}
