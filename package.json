@@ -2,7 +2,7 @@
   "name": "theglocal",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://ydvvpn197-netizen.github.io",
+  "homepage": "https://theglocal.in",
   "type": "module",
   "scripts": {
     "dev": "vite",
