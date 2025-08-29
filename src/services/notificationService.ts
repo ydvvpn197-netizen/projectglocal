@@ -87,8 +87,31 @@ class NotificationService {
 
   // General notifications - only for authenticated users
   async getGeneralNotifications(limit = 10): Promise<GeneralNotification[]> {
-    // Return empty array for non-authenticated users
-    return [];
+    try {
+      const isAvailable = await this.checkDatabaseAvailability();
+      if (!isAvailable) {
+        return fallbackGeneralNotifications;
+      }
+
+      const { data, error } = await supabase
+        .from('general_notifications')
+        .select('*')
+        .eq('is_active', true)
+        .lte('created_at', new Date().toISOString())
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.warn('Error fetching general notifications:', error);
+        return fallbackGeneralNotifications;
+      }
+
+      return data || fallbackGeneralNotifications;
+    } catch (error) {
+      console.warn('Error fetching general notifications:', error);
+      return fallbackGeneralNotifications;
+    }
   }
 
   // Personal notifications for logged-in users only
@@ -372,6 +395,27 @@ class NotificationService {
       console.warn('Error setting up notification subscriptions:', error);
       return () => {}; // Return empty unsubscribe function
     }
+  }
+
+  // Create a personal notification (for test notifications and general use)
+  async createNotification(notificationData: {
+    user_id: string;
+    type: PersonalNotification['type'];
+    title: string;
+    message: string;
+    data?: Record<string, any>;
+    action_url?: string;
+    action_text?: string;
+  }): Promise<string | null> {
+    return this.createPersonalNotification(
+      notificationData.user_id,
+      notificationData.title,
+      notificationData.message,
+      notificationData.type,
+      notificationData.data,
+      notificationData.action_url,
+      notificationData.action_text
+    );
   }
 
   // Convenience methods for creating specific types of notifications

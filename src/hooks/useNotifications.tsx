@@ -199,6 +199,34 @@ export const useNotifications = () => {
     }
   }, [user?.id]);
 
+  // Create a new notification
+  const createNotification = useCallback(async (notificationData: {
+    user_id: string;
+    type: any;
+    title: string;
+    message: string;
+    data?: Record<string, any>;
+    action_url?: string;
+    action_text?: string;
+  }) => {
+    if (!user?.id) {
+      console.warn('Cannot create notification: user not logged in');
+      return;
+    }
+
+    try {
+      const notificationId = await notificationService.createNotification(notificationData);
+      if (notificationId) {
+        // Refresh notifications to show the new one
+        await loadNotifications();
+        return notificationId;
+      }
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw error;
+    }
+  }, [user?.id, loadNotifications]);
+
   // Subscribe to real-time updates
   useEffect(() => {
     // Load initial notifications
@@ -321,6 +349,7 @@ export const useNotifications = () => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    createNotification,
     refresh,
     refreshCounts,
 
