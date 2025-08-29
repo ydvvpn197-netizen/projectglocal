@@ -295,7 +295,7 @@ export const EnhancedIndex: React.FC = () => {
       <EnhancedNavigation 
         variant="glass"
         showSearch={false}
-        notifications={user ? counts.total : 0}
+        notifications={user ? counts.personal : 0}
         onNotificationClick={handleNotificationClick}
       />
       
