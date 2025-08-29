@@ -380,10 +380,11 @@ const Events = () => {
         }
       case "popularity":
         return (b.attendees_count || b.attendees || 0) - (a.attendees_count || a.attendees || 0);
-      case "price":
+      case "price": {
         const priceA = a.price === "Free" ? 0 : (typeof a.price === 'string' ? parseInt(a.price.replace("$", "")) : a.price);
         const priceB = b.price === "Free" ? 0 : (typeof b.price === 'string' ? parseInt(b.price.replace("$", "")) : b.price);
         return priceA - priceB;
+      }
       default:
         return 0;
     }

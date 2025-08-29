@@ -191,10 +191,11 @@ export class SearchAlgorithms {
             return (a.distance || 0) - (b.distance || 0);
           case 'date':
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          case 'popularity':
+          case 'popularity': {
             const aEngagement = a.engagement ? a.engagement.likes + a.engagement.comments : 0;
             const bEngagement = b.engagement ? b.engagement.likes + b.engagement.comments : 0;
             return bEngagement - aEngagement;
+          }
           case 'rating':
             return (b.rating || 0) - (a.rating || 0);
           default:

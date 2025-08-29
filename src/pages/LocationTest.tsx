@@ -229,6 +229,6 @@ export function LocationTest() {
       </div>
     </MainLayout>
   );
-};
+}
 
 export default LocationTest;
