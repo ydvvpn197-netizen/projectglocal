@@ -67,24 +67,28 @@ const heroFeatures = [
     title: 'Connect Locally',
     description: 'Build meaningful relationships with your neighbors',
     color: 'from-blue-500 to-cyan-500',
+    route: '/feed',
   },
   {
     icon: <Calendar className="h-6 w-6" />,
     title: 'Discover Events',
     description: 'Find and create amazing local events',
     color: 'from-purple-500 to-pink-500',
+    route: '/events',
   },
   {
     icon: <Star className="h-6 w-6" />,
     title: 'Book Artists',
     description: 'Support local talent and book amazing performances',
     color: 'from-orange-500 to-red-500',
+    route: '/book-artist',
   },
   {
     icon: <Globe className="h-6 w-6" />,
     title: 'Explore Community',
     description: 'Join groups and discussions that matter to you',
     color: 'from-green-500 to-emerald-500',
+    route: '/community',
   },
 ];
 
@@ -349,19 +353,28 @@ export const EnhancedIndex: React.FC = () => {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16"
             >
               {heroFeatures.map((feature, index) => (
-                <AnimatedCard
+                <Link
                   key={index}
-                  variant="glass"
-                  className="text-center p-6"
-                  entranceAnimation="slide"
-                  delay={index * 100}
+                  to={feature.route}
+                  className="block transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 rounded-xl"
                 >
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-4`}>
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </AnimatedCard>
+                  <AnimatedCard
+                    variant="glass"
+                    className="text-center p-6 cursor-pointer hover:shadow-lg transition-all duration-200"
+                    entranceAnimation="slide"
+                    delay={index * 100}
+                  >
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-4`}>
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <div className="mt-4 flex items-center justify-center text-primary text-sm font-medium">
+                      <span>Explore</span>
+                      <ArrowUpRight className="h-4 w-4 ml-1" />
+                    </div>
+                  </AnimatedCard>
+                </Link>
               ))}
             </motion.div>
           </motion.div>
