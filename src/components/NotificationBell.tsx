@@ -157,6 +157,7 @@ export const NotificationBell = memo(() => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isRefreshingCounts, setIsRefreshingCounts] = useState(false);
   
   // Use the notifications hook with error handling
   const {
@@ -169,6 +170,7 @@ export const NotificationBell = memo(() => {
     markAllAsRead,
     deleteNotification,
     refresh,
+    refreshCounts,
     isAuthenticated
   } = useNotifications();
 
@@ -271,15 +273,38 @@ export const NotificationBell = memo(() => {
     total: Math.max(0, counts.total || 0)
   };
 
+  // Refresh counts when popover opens
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+    if (open && isAuthenticated) {
+      // Refresh counts when opening the notification dropdown
+      setIsRefreshingCounts(true);
+      refreshCounts().finally(() => setIsRefreshingCounts(false));
+    }
+  }, [isAuthenticated, refreshCounts]);
+
+  // Handle manual count refresh
+  const handleRefreshCounts = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setIsRefreshingCounts(true);
+    try {
+      await refreshCounts();
+    } finally {
+      setIsRefreshingCounts(false);
+    }
+  }, [isAuthenticated, refreshCounts]);
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="h-4 w-4" />
           {validCounts.total > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+              className={`absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs ${
+                isRefreshingCounts ? 'animate-pulse' : ''
+              }`}
             >
               {validCounts.total > 99 ? '99+' : validCounts.total}
             </Badge>
@@ -297,6 +322,7 @@ export const NotificationBell = memo(() => {
                 onClick={refresh}
                 disabled={loading}
                 className="h-8 w-8 p-0"
+                title="Refresh notifications and counts"
               >
                 <span className="sr-only">Refresh</span>
                 <svg className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,10 +335,23 @@ export const NotificationBell = memo(() => {
                   size="sm"
                   onClick={markAllAsRead}
                   className="h-8 w-8 p-0"
+                  title="Mark all as read"
                 >
                   <Check className="h-4 w-4" />
                 </Button>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRefreshCounts}
+                disabled={isRefreshingCounts}
+                className="h-8 w-8 p-0"
+                title="Sync notification counts"
+              >
+                <svg className={`h-4 w-4 ${isRefreshingCounts ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

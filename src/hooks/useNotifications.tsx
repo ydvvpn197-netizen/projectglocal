@@ -70,19 +70,32 @@ export const useNotifications = () => {
     try {
       const success = await notificationService.markAsRead(notificationId, user.id);
       if (success) {
-        setState(prev => ({
-          ...prev,
-          personalNotifications: prev.personalNotifications.map(notification =>
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Marked notification as read:', notificationId);
+        }
+        setState(prev => {
+          const updatedNotifications = prev.personalNotifications.map(notification =>
             notification.id === notificationId
               ? { ...notification, read: true }
               : notification
-          ),
-          counts: {
-            ...prev.counts,
-            personal: Math.max(0, prev.counts.personal - 1),
-            total: Math.max(0, prev.counts.total - 1)
+          );
+          
+          // Recalculate personal count based on unread notifications
+          const newPersonalCount = updatedNotifications.filter(n => !n.read).length;
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Updated personal count:', newPersonalCount);
           }
-        }));
+          
+          return {
+            ...prev,
+            personalNotifications: updatedNotifications,
+            counts: {
+              ...prev.counts,
+              personal: newPersonalCount,
+              total: prev.counts.general + newPersonalCount
+            }
+          };
+        });
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -99,17 +112,24 @@ export const useNotifications = () => {
     try {
       const success = await notificationService.markAllAsRead(user.id);
       if (success) {
-        setState(prev => ({
-          ...prev,
-          personalNotifications: prev.personalNotifications.map(notification =>
+        setState(prev => {
+          const updatedNotifications = prev.personalNotifications.map(notification =>
             ({ ...notification, read: true })
-          ),
-          counts: {
-            ...prev.counts,
-            personal: 0,
-            total: prev.counts.general
-          }
-        }));
+          );
+          
+          // Recalculate personal count (should be 0 after marking all as read)
+          const newPersonalCount = updatedNotifications.filter(n => !n.read).length;
+          
+          return {
+            ...prev,
+            personalNotifications: updatedNotifications,
+            counts: {
+              ...prev.counts,
+              personal: newPersonalCount,
+              total: prev.counts.general + newPersonalCount
+            }
+          };
+        });
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -126,17 +146,30 @@ export const useNotifications = () => {
     try {
       const success = await notificationService.deleteNotification(notificationId, user.id);
       if (success) {
-        setState(prev => ({
-          ...prev,
-          personalNotifications: prev.personalNotifications.filter(
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🗑️ Deleted notification:', notificationId);
+        }
+        setState(prev => {
+          const filteredNotifications = prev.personalNotifications.filter(
             notification => notification.id !== notificationId
-          ),
-          counts: {
-            ...prev.counts,
-            personal: Math.max(0, prev.counts.personal - 1),
-            total: Math.max(0, prev.counts.total - 1)
+          );
+          
+          // Recalculate personal count based on remaining unread notifications
+          const newPersonalCount = filteredNotifications.filter(n => !n.read).length;
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Updated personal count after deletion:', newPersonalCount);
           }
-        }));
+          
+          return {
+            ...prev,
+            personalNotifications: filteredNotifications,
+            counts: {
+              ...prev.counts,
+              personal: newPersonalCount,
+              total: prev.counts.general + newPersonalCount
+            }
+          };
+        });
       }
     } catch (error) {
       console.error('Error deleting notification:', error);
@@ -148,6 +181,24 @@ export const useNotifications = () => {
     loadNotifications();
   }, [loadNotifications]);
 
+  // Refresh counts from database to ensure accuracy
+  const refreshCounts = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const countsData = await notificationService.getNotificationCounts(user.id);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Refreshing notification counts:', countsData);
+      }
+      setState(prev => ({
+        ...prev,
+        counts: countsData
+      }));
+    } catch (error) {
+      console.error('Error refreshing notification counts:', error);
+    }
+  }, [user?.id]);
+
   // Subscribe to real-time updates
   useEffect(() => {
     // Load initial notifications
@@ -157,6 +208,11 @@ export const useNotifications = () => {
     if (!user?.id) {
       return;
     }
+
+    // Set up periodic count refresh to ensure accuracy (every 30 seconds)
+    const countRefreshInterval = setInterval(() => {
+      refreshCounts();
+    }, 30000);
 
     // Subscribe to real-time updates for logged-in users
     const unsubscribe = notificationService.subscribeToNotifications(user.id, (payload) => {
@@ -184,32 +240,54 @@ export const useNotifications = () => {
         }
       } else if (payload.eventType === 'UPDATE') {
         if (payload.table === 'personal_notifications') {
-          setState(prev => ({
-            ...prev,
-            personalNotifications: prev.personalNotifications.map(notification =>
+          setState(prev => {
+            const updatedNotifications = prev.personalNotifications.map(notification =>
               notification.id === payload.new.id ? payload.new : notification
-            )
-          }));
+            );
+            
+            // Recalculate personal count based on unread notifications
+            const newPersonalCount = updatedNotifications.filter(n => !n.read).length;
+            
+            return {
+              ...prev,
+              personalNotifications: updatedNotifications,
+              counts: {
+                ...prev.counts,
+                personal: newPersonalCount,
+                total: prev.counts.general + newPersonalCount
+              }
+            };
+          });
         }
       } else if (payload.eventType === 'DELETE') {
         if (payload.table === 'personal_notifications') {
-          setState(prev => ({
-            ...prev,
-            personalNotifications: prev.personalNotifications.filter(
+          setState(prev => {
+            const filteredNotifications = prev.personalNotifications.filter(
               notification => notification.id !== payload.old.id
-            ),
-            counts: {
-              ...prev.counts,
-              personal: Math.max(0, prev.counts.personal - 1),
-              total: Math.max(0, prev.counts.total - 1)
-            }
-          }));
+            );
+            
+            // Recalculate personal count based on remaining unread notifications
+            const newPersonalCount = filteredNotifications.filter(n => !n.read).length;
+            
+            return {
+              ...prev,
+              personalNotifications: filteredNotifications,
+              counts: {
+                ...prev.counts,
+                personal: newPersonalCount,
+                total: prev.counts.general + newPersonalCount
+              }
+            };
+          });
         }
       }
     });
 
-    return unsubscribe;
-  }, [user?.id, loadNotifications]);
+    return () => {
+      unsubscribe();
+      clearInterval(countRefreshInterval);
+    };
+  }, [user?.id, loadNotifications, refreshCounts]);
 
   // Get combined notifications for display
   const getAllNotifications = useCallback(() => {
@@ -244,6 +322,7 @@ export const useNotifications = () => {
     markAllAsRead,
     deleteNotification,
     refresh,
+    refreshCounts,
 
     // Computed values
     hasUnread: state.counts.total > 0,
