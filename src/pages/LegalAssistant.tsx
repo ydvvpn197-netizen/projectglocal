@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +24,7 @@ import { LegalDocumentForm } from '@/components/legal/LegalDocumentForm';
 import { legalAssistantService, LegalDraft } from '@/services/legalAssistantService';
 
 const LegalAssistant: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
 
@@ -170,22 +172,34 @@ const LegalAssistant: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    <div className="p-3 border rounded-lg">
+                    <button 
+                      onClick={() => navigate('/rental-agreement')}
+                      className="w-full p-3 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-left"
+                    >
                       <h4 className="font-medium text-sm">Rental Agreement</h4>
                       <p className="text-xs text-gray-500 mt-1">Standard residential lease</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
+                    </button>
+                    <button 
+                      onClick={() => navigate('/employment-contract')}
+                      className="w-full p-3 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-left"
+                    >
                       <h4 className="font-medium text-sm">Employment Contract</h4>
                       <p className="text-xs text-gray-500 mt-1">Work agreement template</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
+                    </button>
+                    <button 
+                      onClick={() => navigate('/nda')}
+                      className="w-full p-3 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-left"
+                    >
                       <h4 className="font-medium text-sm">NDA</h4>
                       <p className="text-xs text-gray-500 mt-1">Confidentiality agreement</p>
-                    </div>
-                    <div className="p-3 border rounded-lg">
+                    </button>
+                    <button 
+                      onClick={() => navigate('/service-agreement')}
+                      className="w-full p-3 border rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-left"
+                    >
                       <h4 className="font-medium text-sm">Service Agreement</h4>
                       <p className="text-xs text-gray-500 mt-1">Service provider contract</p>
-                    </div>
+                    </button>
                   </div>
                   
                   <Separator />

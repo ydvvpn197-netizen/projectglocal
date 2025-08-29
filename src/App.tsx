@@ -62,6 +62,12 @@ const CreatePost = lazy(() => import("./pages/CreatePost"));
 const LegalAssistant = lazy(() => import("./pages/LegalAssistant"));
 const LifeWish = lazy(() => import("./pages/LifeWish"));
 
+// Document type pages
+const RentalAgreement = lazy(() => import("./pages/RentalAgreement"));
+const EmploymentContract = lazy(() => import("./pages/EmploymentContract"));
+const NDA = lazy(() => import("./pages/NDA"));
+const ServiceAgreement = lazy(() => import("./pages/ServiceAgreement"));
+
 // Error pages
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -115,6 +121,12 @@ const App = () => {
                   {/* New Features routes */}
                   <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
                   <Route path="/life-wish" element={<ProtectedRoute><LifeWish /></ProtectedRoute>} />
+                  
+                  {/* Document type routes */}
+                  <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />
+                  <Route path="/employment-contract" element={<ProtectedRoute><EmploymentContract /></ProtectedRoute>} />
+                  <Route path="/nda" element={<ProtectedRoute><NDA /></ProtectedRoute>} />
+                  <Route path="/service-agreement" element={<ProtectedRoute><ServiceAgreement /></ProtectedRoute>} />
                   
                   <Route path="/discover" element={<Discover />} />
                   <Route path="/about" element={<About />} />
