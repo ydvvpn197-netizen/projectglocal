@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { MainLayout } from '@/components/MainLayout';
 
 const employmentContractSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -150,207 +151,270 @@ EMPLOYEE SIGNATURE: _________________ DATE: _______________
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/legal-assistant')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Legal Assistant
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Employment Contract</h1>
-          <p className="text-muted-foreground">Create a work agreement template</p>
+    <MainLayout>
+      <div className="container mx-auto p-6 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <FileText className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Employment Contract</h1>
+              <p className="text-gray-600">Create a comprehensive employment agreement</p>
+            </div>
+          </div>
+
+          <Alert className="bg-green-50 border-green-200">
+            <AlertTriangle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              <strong>Important:</strong> This is a template for general use. Please review with a legal professional 
+              to ensure it meets your specific needs and complies with local employment laws.
+            </AlertDescription>
+          </Alert>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Contract Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(generateDocument)} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Document Title</Label>
-                <Input
-                  id="title"
-                  {...form.register('title')}
-                  placeholder="Employment Contract"
-                />
-                {form.formState.errors.title && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.title.message}</p>
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Form Section */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit className="w-5 h-5" />
+                  Contract Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={form.handleSubmit(generateDocument)} className="space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Contract Title</Label>
+                      <Controller
+                        name="title"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="Employment Contract" />
+                        )}
+                      />
+                      {form.formState.errors.title && (
+                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.title.message}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="employer_name">Employer Name</Label>
+                        <Controller
+                          name="employer_name"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Enter employer's name" />
+                          )}
+                        />
+                        {form.formState.errors.employer_name && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.employer_name.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="employee_name">Employee Name</Label>
+                        <Controller
+                          name="employee_name"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Enter employee's name" />
+                          )}
+                        />
+                        {form.formState.errors.employee_name && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.employee_name.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="position">Position/Job Title</Label>
+                        <Controller
+                          name="position"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Enter job title" />
+                          )}
+                        />
+                        {form.formState.errors.position && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.position.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="start_date">Start Date</Label>
+                        <Controller
+                          name="start_date"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} type="date" />
+                          )}
+                        />
+                        {form.formState.errors.start_date && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.start_date.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="salary">Annual Salary ($)</Label>
+                        <Controller
+                          name="salary"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} type="number" placeholder="0.00" />
+                          )}
+                        />
+                        {form.formState.errors.salary && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.salary.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="additional_terms">Additional Terms (Optional)</Label>
+                        <Controller
+                          name="additional_terms"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Textarea {...field} placeholder="Any additional terms or conditions..." rows={4} />
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      type="submit" 
+                      disabled={isGenerating}
+                      className="flex-1"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Generate Document
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Preview Section */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Document Preview
+                  </CardTitle>
+                  {previewMode && (
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleExport('pdf')}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        PDF
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleExport('docx')}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        DOCX
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {previewMode ? (
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800">
+                      {generatedContent}
+                    </pre>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Fill out the form and click "Generate Document" to see a preview</p>
+                  </div>
                 )}
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="employer_name">Employer Name</Label>
-                  <Input
-                    id="employer_name"
-                    {...form.register('employer_name')}
-                    placeholder="Company Name"
-                  />
-                  {form.formState.errors.employer_name && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.employer_name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="employee_name">Employee Name</Label>
-                  <Input
-                    id="employee_name"
-                    {...form.register('employee_name')}
-                    placeholder="John Doe"
-                  />
-                  {form.formState.errors.employee_name && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.employee_name.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="position">Position/Job Title</Label>
-                  <Input
-                    id="position"
-                    {...form.register('position')}
-                    placeholder="Software Engineer"
-                  />
-                  {form.formState.errors.position && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.position.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="start_date">Start Date</Label>
-                  <Input
-                    id="start_date"
-                    {...form.register('start_date')}
-                    placeholder="January 1, 2024"
-                  />
-                  {form.formState.errors.start_date && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.start_date.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="salary">Annual Salary</Label>
-                <Input
-                  id="salary"
-                  {...form.register('salary')}
-                  placeholder="75000"
-                  type="number"
-                />
-                {form.formState.errors.salary && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.salary.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="additional_terms">Additional Terms (Optional)</Label>
-                <Textarea
-                  id="additional_terms"
-                  {...form.register('additional_terms')}
-                  placeholder="Any additional terms or conditions..."
-                  rows={3}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={form.handleSubmit(handleSaveDraft)}
-                  className="flex-1"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Draft
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isGenerating}
-                  className="flex-1"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4 mr-2" />
-                      Generate Document
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Document Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {previewMode ? (
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm font-mono">{generatedContent}</pre>
+            {/* Features Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="w-5 h-5" />
+                  Document Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Comprehensive employment terms</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Confidentiality and non-compete clauses</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Intellectual property protection</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Benefits and compensation terms</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Performance review framework</span>
+                  </div>
                 </div>
                 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleExport('pdf')}
-                    className="flex-1"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleExport('docx')}
-                    className="flex-1"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export DOCX
-                  </Button>
+                <Separator />
+                
+                <div className="text-xs text-gray-500 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span>Review with legal professional</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Download className="w-3 h-3" />
+                    <span>Export to PDF or DOCX</span>
+                  </div>
                 </div>
-
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This is a template document. Please review with a legal professional before use.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Fill out the form and generate your document to see a preview here.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

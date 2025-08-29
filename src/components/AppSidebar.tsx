@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart, FileText, Shield, Briefcase } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
@@ -32,6 +32,13 @@ const newFeaturesItems = [
   { title: "Life Wishes", url: "/life-wish", icon: Heart },
 ];
 
+const legalDocumentsItems = [
+  { title: "Rental Agreement", url: "/rental-agreement", icon: FileText },
+  { title: "Employment Contract", url: "/employment-contract", icon: Briefcase },
+  { title: "NDA", url: "/nda", icon: Shield },
+  { title: "Service Agreement", url: "/service-agreement", icon: FileText },
+];
+
 const artistItems = [
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
   { title: "Messages", url: "/messages", icon: MessageSquare },
@@ -59,6 +66,7 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const isMainGroupExpanded = mainItems.some((item) => isActive(item.url));
   const isNewFeaturesGroupExpanded = newFeaturesItems.some((item) => isActive(item.url));
+  const isLegalDocumentsGroupExpanded = legalDocumentsItems.some((item) => isActive(item.url));
   
   // Check if user is an artist
   useEffect(() => {
@@ -139,6 +147,25 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {newFeaturesItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} end className={getNavClass}>
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Legal Documents Navigation */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Legal Documents</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {legalDocumentsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavClass}>

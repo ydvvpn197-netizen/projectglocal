@@ -98,7 +98,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                           Create
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuContent align="end" className="w-64">
                         <DropdownMenuItem onClick={() => navigate('/create')} className="gap-3">
                           <div className="w-2 h-2 rounded-full bg-blue-500" />
                           Create Post
@@ -114,6 +114,15 @@ export function MainLayout({ children }: MainLayoutProps) {
                         <DropdownMenuItem onClick={() => navigate('/community/create-group')} className="gap-3">
                           <div className="w-2 h-2 rounded-full bg-green-500" />
                           Create Group
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/legal-assistant')} className="gap-3">
+                          <div className="w-2 h-2 rounded-full bg-red-500" />
+                          Legal Assistant
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/life-wish')} className="gap-3">
+                          <div className="w-2 h-2 rounded-full bg-pink-500" />
+                          Life Wish
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

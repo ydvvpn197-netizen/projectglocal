@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { MainLayout } from '@/components/MainLayout';
 
 const rentalAgreementSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -99,12 +100,22 @@ PROPERTY ADDRESS: ${data.property_address}
 7. MAINTENANCE AND REPAIRS
    - Tenant shall maintain the Property in good condition
    - Landlord shall make necessary repairs within reasonable time
+   - Emergency repairs: Tenant may make emergency repairs and deduct from rent
 
-8. INSURANCE
-   - Tenant is encouraged to obtain renter's insurance
-   - Landlord maintains property insurance
+8. SECURITY DEPOSIT
+   - Amount: $${Math.round(parseFloat(data.rent_amount) * 1.5)}
+   - Returned within 30 days of lease termination
+   - Deductions may be made for damages beyond normal wear and tear
 
-This Agreement constitutes the entire understanding between the parties and supersedes all prior agreements.
+9. PETS AND SMOKING
+   - Pets: Not allowed unless specified in writing
+   - Smoking: Not allowed on the premises
+
+10. INSURANCE
+    - Tenant is responsible for personal property insurance
+    - Landlord maintains property insurance
+
+This agreement is governed by the laws of the state where the property is located.
 
 LANDLORD SIGNATURE: _________________ DATE: _______________
 TENANT SIGNATURE: _________________ DATE: _______________
@@ -120,223 +131,285 @@ TENANT SIGNATURE: _________________ DATE: _______________
     }
   };
 
-  const handleSaveDraft = async (data: FormData) => {
-    try {
-      // Save draft logic would go here
-      toast.success('Draft saved successfully!');
-    } catch (error) {
-      toast.error('Failed to save draft');
-    }
+  const onSubmit = (data: FormData) => {
+    generateDocument(data);
   };
 
-  const handleExport = (format: 'pdf' | 'docx') => {
-    // Export logic would go here
-    toast.success(`Document exported as ${format.toUpperCase()}`);
+  const downloadDocument = (format: 'pdf' | 'docx') => {
+    // Simulate download
+    const element = document.createElement('a');
+    const file = new Blob([generatedContent], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `rental-agreement.${format}`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success(`${format.toUpperCase()} downloaded successfully!`);
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/legal-assistant')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Legal Assistant
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Rental Agreement</h1>
-          <p className="text-muted-foreground">Create a standard residential lease agreement</p>
+    <MainLayout>
+      <div className="container mx-auto p-6 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FileText className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Rental Agreement</h1>
+              <p className="text-gray-600">Create a comprehensive rental agreement for residential properties</p>
+            </div>
+          </div>
+
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertTriangle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              <strong>Important:</strong> This is a template for general use. Please review with a legal professional 
+              to ensure it meets your specific needs and complies with local laws.
+            </AlertDescription>
+          </Alert>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Agreement Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(generateDocument)} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Document Title</Label>
-                <Input
-                  id="title"
-                  {...form.register('title')}
-                  placeholder="Rental Agreement"
-                />
-                {form.formState.errors.title && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.title.message}</p>
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Form Section */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit className="w-5 h-5" />
+                  Agreement Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Agreement Title</Label>
+                      <Controller
+                        name="title"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="Rental Agreement" />
+                        )}
+                      />
+                      {form.formState.errors.title && (
+                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.title.message}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="landlord_name">Landlord Name</Label>
+                        <Controller
+                          name="landlord_name"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Enter landlord's full name" />
+                          )}
+                        />
+                        {form.formState.errors.landlord_name && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.landlord_name.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="tenant_name">Tenant Name</Label>
+                        <Controller
+                          name="tenant_name"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Enter tenant's full name" />
+                          )}
+                        />
+                        {form.formState.errors.tenant_name && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.tenant_name.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="property_address">Property Address</Label>
+                      <Controller
+                        name="property_address"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Textarea {...field} placeholder="Enter complete property address" rows={3} />
+                        )}
+                      />
+                      {form.formState.errors.property_address && (
+                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.property_address.message}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="rent_amount">Monthly Rent ($)</Label>
+                        <Controller
+                          name="rent_amount"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} type="number" placeholder="0.00" />
+                          )}
+                        />
+                        {form.formState.errors.rent_amount && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.rent_amount.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="lease_term">Lease Term</Label>
+                        <Controller
+                          name="lease_term"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Input {...field} placeholder="e.g., 12 months" />
+                          )}
+                        />
+                        {form.formState.errors.lease_term && (
+                          <p className="text-sm text-red-600 mt-1">{form.formState.errors.lease_term.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="additional_terms">Additional Terms (Optional)</Label>
+                      <Controller
+                        name="additional_terms"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Textarea {...field} placeholder="Any additional terms or conditions..." rows={4} />
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      type="submit" 
+                      disabled={isGenerating}
+                      className="flex-1"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-4 h-4 mr-2" />
+                          Generate Document
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Preview Section */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Document Preview
+                  </CardTitle>
+                  {previewMode && (
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => downloadDocument('pdf')}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        PDF
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => downloadDocument('docx')}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        DOCX
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {previewMode ? (
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800">
+                      {generatedContent}
+                    </pre>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Fill out the form and click "Generate Document" to see a preview</p>
+                  </div>
                 )}
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="landlord_name">Landlord Name</Label>
-                  <Input
-                    id="landlord_name"
-                    {...form.register('landlord_name')}
-                    placeholder="John Doe"
-                  />
-                  {form.formState.errors.landlord_name && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.landlord_name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="tenant_name">Tenant Name</Label>
-                  <Input
-                    id="tenant_name"
-                    {...form.register('tenant_name')}
-                    placeholder="Jane Smith"
-                  />
-                  {form.formState.errors.tenant_name && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.tenant_name.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="property_address">Property Address</Label>
-                <Textarea
-                  id="property_address"
-                  {...form.register('property_address')}
-                  placeholder="123 Main St, City, State 12345"
-                  rows={2}
-                />
-                {form.formState.errors.property_address && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.property_address.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="rent_amount">Monthly Rent Amount</Label>
-                  <Input
-                    id="rent_amount"
-                    {...form.register('rent_amount')}
-                    placeholder="1500"
-                    type="number"
-                  />
-                  {form.formState.errors.rent_amount && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.rent_amount.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="lease_term">Lease Term</Label>
-                  <Input
-                    id="lease_term"
-                    {...form.register('lease_term')}
-                    placeholder="12 months"
-                  />
-                  {form.formState.errors.lease_term && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.lease_term.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="additional_terms">Additional Terms (Optional)</Label>
-                <Textarea
-                  id="additional_terms"
-                  {...form.register('additional_terms')}
-                  placeholder="Any additional terms or conditions..."
-                  rows={3}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={form.handleSubmit(handleSaveDraft)}
-                  className="flex-1"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Draft
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isGenerating}
-                  className="flex-1"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4 mr-2" />
-                      Generate Document
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Document Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {previewMode ? (
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm font-mono">{generatedContent}</pre>
+            {/* Features Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="w-5 h-5" />
+                  Document Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Comprehensive rental terms</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Security deposit calculation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Payment and utility terms</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Maintenance responsibilities</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm">Pet and smoking policies</span>
+                  </div>
                 </div>
                 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleExport('pdf')}
-                    className="flex-1"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleExport('docx')}
-                    className="flex-1"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export DOCX
-                  </Button>
+                <Separator />
+                
+                <div className="text-xs text-gray-500 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span>Review with legal professional</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Download className="w-3 h-3" />
+                    <span>Export to PDF or DOCX</span>
+                  </div>
                 </div>
-
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This is a template document. Please review with a legal professional before use.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Fill out the form and generate your document to see a preview here.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
