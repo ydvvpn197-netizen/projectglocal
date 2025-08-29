@@ -128,7 +128,6 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       label: 'Events',
       href: '/events',
       icon: <Calendar className="h-4 w-4" />,
-      badge: 3,
       mobile: true,
     },
     {

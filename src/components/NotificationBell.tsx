@@ -264,17 +264,24 @@ export const NotificationBell = memo(() => {
     return null;
   }
 
+  // Ensure counts are valid numbers
+  const validCounts = {
+    general: Math.max(0, counts.general || 0),
+    personal: Math.max(0, counts.personal || 0),
+    total: Math.max(0, counts.total || 0)
+  };
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="h-4 w-4" />
-          {counts.total > 0 && (
+          {validCounts.total > 0 && (
             <Badge
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
-              {counts.total > 99 ? '99+' : counts.total}
+              {validCounts.total > 99 ? '99+' : validCounts.total}
             </Badge>
           )}
         </Button>
@@ -296,7 +303,7 @@ export const NotificationBell = memo(() => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </Button>
-              {isAuthenticated && counts.personal > 0 && (
+              {isAuthenticated && validCounts.personal > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -331,10 +338,10 @@ export const NotificationBell = memo(() => {
               All ({allNotifications.length})
             </TabsTrigger>
             <TabsTrigger value="personal" className="text-xs">
-              Personal ({personalNotifications.length})
+              Personal ({validCounts.personal})
             </TabsTrigger>
             <TabsTrigger value="general" className="text-xs">
-              General ({generalNotifications.length})
+              General ({validCounts.general})
             </TabsTrigger>
           </TabsList>
 

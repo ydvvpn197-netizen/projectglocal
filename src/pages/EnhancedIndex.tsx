@@ -59,6 +59,7 @@ import {
   ChevronLeft,
   Info,
 } from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
 
 // Enhanced sample data
 const heroFeatures = [
@@ -233,6 +234,7 @@ export const EnhancedIndex: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { counts } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('events');
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
@@ -293,7 +295,7 @@ export const EnhancedIndex: React.FC = () => {
       <EnhancedNavigation 
         variant="glass"
         showSearch={false}
-        notifications={3}
+        notifications={user ? counts.total : 0}
         onNotificationClick={handleNotificationClick}
       />
       
