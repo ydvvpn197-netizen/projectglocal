@@ -17,16 +17,25 @@ import {
   Scale,
   BookOpen,
   Users,
-  Clock
+  Clock,
+  Briefcase
 } from 'lucide-react';
 import { LegalAssistantChat } from '@/components/legal/LegalAssistantChat';
 import { LegalDocumentForm } from '@/components/legal/LegalDocumentForm';
 import { legalAssistantService, LegalDraft } from '@/services/legalAssistantService';
 import { MainLayout } from '@/components/MainLayout';
 
+// Legal document types with their icons and routes
+const legalDocumentTypes = [
+  { title: "Rental Agreement", url: "/rental-agreement", icon: FileText, description: "Create rental and lease agreements" },
+  { title: "Employment Contract", url: "/employment-contract", icon: Briefcase, description: "Generate employment contracts" },
+  { title: "NDA", url: "/nda", icon: Shield, description: "Non-disclosure agreements" },
+  { title: "Service Agreement", url: "/service-agreement", icon: FileText, description: "Service provider contracts" },
+];
+
 export const LegalAssistant: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('documents');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
 
   // Fetch drafts for the dashboard
@@ -79,6 +88,32 @@ export const LegalAssistant: React.FC = () => {
               It is not a substitute for professional legal advice. Always consult with a qualified attorney for your specific legal needs.
             </AlertDescription>
           </Alert>
+        </div>
+
+        {/* Legal Document Types Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Legal Documents</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {legalDocumentTypes.map((docType) => (
+              <Card 
+                key={docType.title} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => navigate(docType.url)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <docType.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{docType.title}</h3>
+                      <p className="text-sm text-gray-500">{docType.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {/* Main Content */}
