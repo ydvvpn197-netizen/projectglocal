@@ -1,0 +1,81 @@
+You are tasked with extending the existing application by adding two new features while keeping all current functionality intact. Implement them in a modular, scalable, and non-breaking way.
+👉 You must think and act as a Product Manager (value + journey), Developer (architecture + scalability), and End User (trust + simplicity) while building. Deliver a production-ready implementation of both features without breaking the current app.
+
+Feature 1: AI Legal Assistant
+
+Goal: Allow users to ask legal questions and generate professional drafts/opinions.
+
+Requirements:
+
+Provide two input options:
+
+Chatbox (real-time conversation).
+
+Structured form (for specific document requests like rental agreements, contracts, etc.).
+
+Backend should:
+
+Use an LLM pipeline with references to authentic sources (legal papers, public datasets, or APIs).
+
+Produce a reviewable draft (shown in preview/markdown).
+
+On user confirmation → generate final draft in Word (.docx) and PDF (.pdf) formats.
+
+Attach disclaimers to every output (“Not a substitute for licensed legal advice”).
+
+Must store chat history and drafts for later review.
+
+Ensure sensitive data is anonymized and securely logged.
+
+Build this as a separate, modular service so future integrations (case law APIs, Indian Bare Acts DB, etc.) can be added.
+
+Feature 2: Life Wish – “What I Want to Be Remembered As”
+
+Goal: Let users write a personal note about their legacy.
+
+Requirements:
+
+Create a new Life Wish section in user profile.
+
+User can write a freeform note (e.g., “I want to be remembered as someone who brought joy to others”).
+
+Users choose visibility:
+
+Public → shown on profile / community memorial space.
+
+Private → stored securely, visible only to them or designated family.
+
+Features must include create, edit, update, and delete options.
+
+Stretch goal: allow multiple wishes (timeline/journal style).
+
+Technical must-haves:
+
+Encrypt notes and store them securely.
+
+UI should feel emotional, respectful, and minimalistic (like a digital memory book, not just a form).
+
+Add optional sharing (with explicit consent).
+
+General Build Guidance
+
+Do not overwrite or break any existing feature. Build these as new modules/components.
+
+Follow clean frontend/backend separation.
+
+Deliverables:
+
+UI components → chatbox, forms, Life Wish editor.
+
+Backend APIs → draft generation, PDF/Word export, Life Wish storage.
+
+Security → encryption for private notes, safe handling of legal data.
+
+Storage → database schema updates for drafts and Life Wishes.
+
+User Experience Goals:
+
+AI Legal Assistant → professional, supportive, reliable.
+
+Life Wish → emotional, safe, personal, and privacy-first.
+
