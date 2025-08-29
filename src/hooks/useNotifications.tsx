@@ -25,30 +25,30 @@ export const useNotifications = () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
-      // Always load general notifications (available to all users)
-      const generalNotifications = await notificationService.getGeneralNotifications();
-      
-      let personalNotifications: PersonalNotification[] = [];
-      let counts: NotificationCounts;
-
-      if (user?.id) {
-        // Load personal notifications and counts only for logged-in users
-        const [personalData, countsData] = await Promise.all([
-          notificationService.getPersonalNotifications(user.id),
-          notificationService.getNotificationCounts(user.id)
-        ]);
-        personalNotifications = personalData;
-        counts = countsData;
-      } else {
-        // For non-logged-in users, only show general notifications
-        counts = await notificationService.getNotificationCounts();
+      // For non-authenticated users, return empty data
+      if (!user?.id) {
+        setState(prev => ({
+          ...prev,
+          generalNotifications: [],
+          personalNotifications: [],
+          counts: { general: 0, personal: 0, total: 0 },
+          loading: false
+        }));
+        return;
       }
+
+      // Load notifications only for authenticated users
+      const [generalNotifications, personalData, countsData] = await Promise.all([
+        notificationService.getGeneralNotifications(),
+        notificationService.getPersonalNotifications(user.id),
+        notificationService.getNotificationCounts(user.id)
+      ]);
 
       setState(prev => ({
         ...prev,
         generalNotifications,
-        personalNotifications,
-        counts,
+        personalNotifications: personalData,
+        counts: countsData,
         loading: false
       }));
     } catch (error) {

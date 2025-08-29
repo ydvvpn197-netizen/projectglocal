@@ -85,33 +85,10 @@ class NotificationService {
     }
   }
 
-  // General notifications for all users (including non-logged-in)
+  // General notifications - only for authenticated users
   async getGeneralNotifications(limit = 10): Promise<GeneralNotification[]> {
-    try {
-      const isAvailable = await this.checkDatabaseAvailability();
-      if (!isAvailable) {
-        return fallbackGeneralNotifications.slice(0, limit);
-      }
-
-      const { data, error } = await supabase
-        .from('general_notifications')
-        .select('*')
-        .eq('is_active', true)
-        .lte('created_at', new Date().toISOString())
-        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-        .order('priority', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (error) {
-        console.warn('Error fetching general notifications, using fallback:', error);
-        return fallbackGeneralNotifications.slice(0, limit);
-      }
-      return data || fallbackGeneralNotifications.slice(0, limit);
-    } catch (error) {
-      console.warn('Error fetching general notifications, using fallback:', error);
-      return fallbackGeneralNotifications.slice(0, limit);
-    }
+    // Return empty array for non-authenticated users
+    return [];
   }
 
   // Personal notifications for logged-in users only
@@ -144,22 +121,31 @@ class NotificationService {
     }
   }
 
-  // Get unread counts for both types
+  // Get unread counts - return zero for non-authenticated users
   async getNotificationCounts(userId?: string): Promise<NotificationCounts> {
+    // For non-authenticated users, return zero counts
+    if (!userId) {
+      return {
+        general: 0,
+        personal: 0,
+        total: 0
+      };
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
         return {
-          general: fallbackGeneralNotifications.length,
+          general: 0,
           personal: 0,
-          total: fallbackGeneralNotifications.length
+          total: 0
         };
       }
 
       let generalCount = 0;
       let personalCount = 0;
 
-      // Get general notification count (active notifications)
+      // Get general notification count (active notifications) - only for authenticated users
       try {
         const { count: generalCountResult } = await supabase
           .from('general_notifications')
@@ -171,23 +157,21 @@ class NotificationService {
         generalCount = generalCountResult || 0;
       } catch (error) {
         console.warn('Error counting general notifications:', error);
-        generalCount = fallbackGeneralNotifications.length;
+        generalCount = 0;
       }
 
-      // Get personal notification count if user is logged in
-      if (userId) {
-        try {
-          const { count: personalCountResult } = await supabase
-            .from('personal_notifications')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', userId)
-            .eq('read', false);
+      // Get personal notification count for logged-in users
+      try {
+        const { count: personalCountResult } = await supabase
+          .from('personal_notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('read', false);
 
-          personalCount = personalCountResult || 0;
-        } catch (error) {
-          console.warn('Error counting personal notifications:', error);
-          personalCount = 0;
-        }
+        personalCount = personalCountResult || 0;
+      } catch (error) {
+        console.warn('Error counting personal notifications:', error);
+        personalCount = 0;
       }
 
       return {
@@ -198,9 +182,9 @@ class NotificationService {
     } catch (error) {
       console.warn('Error getting notification counts:', error);
       return {
-        general: fallbackGeneralNotifications.length,
+        general: 0,
         personal: 0,
-        total: fallbackGeneralNotifications.length
+        total: 0
       };
     }
   }

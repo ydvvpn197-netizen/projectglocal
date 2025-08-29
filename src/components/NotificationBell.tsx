@@ -259,7 +259,11 @@ export const NotificationBell = memo(() => {
     }
   }, [generalNotifications, personalNotifications]);
 
-  // Show notification bell for all users (general notifications are available to everyone)
+  // Don't render anything for non-authenticated users
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -309,125 +313,32 @@ export const NotificationBell = memo(() => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {isAuthenticated ? (
-                    <>
-                      <DropdownMenuItem onClick={() => navigate('/notification-settings')}>
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/notifications')}>
-                        View All
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem onClick={() => navigate('/signin')}>
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Sign In
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem onClick={() => navigate('/notification-settings')}>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/notifications')}>
+                    View All
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
         </div>
 
-        {isAuthenticated ? (
-          <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all" className="text-xs">
-                All ({allNotifications.length})
-              </TabsTrigger>
-              <TabsTrigger value="personal" className="text-xs">
-                Personal ({personalNotifications.length})
-              </TabsTrigger>
-              <TabsTrigger value="general" className="text-xs">
-                General ({generalNotifications.length})
-              </TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="all" className="text-xs">
+              All ({allNotifications.length})
+            </TabsTrigger>
+            <TabsTrigger value="personal" className="text-xs">
+              Personal ({personalNotifications.length})
+            </TabsTrigger>
+            <TabsTrigger value="general" className="text-xs">
+              General ({generalNotifications.length})
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="all" className="p-4">
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
-                  <p className="text-sm text-muted-foreground">Loading...</p>
-                </div>
-              ) : error ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground mb-2">Unable to load notifications</p>
-                  <Button variant="outline" size="sm" onClick={refresh}>
-                    Try Again
-                  </Button>
-                </div>
-              ) : allNotifications.length === 0 ? (
-                <div className="text-center py-8">
-                  <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No notifications</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-64">
-                  {allNotifications.map((notification) => (
-                    <NotificationItem
-                      key={`${notification.isGeneral ? 'general' : 'personal'}-${notification.id}`}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onDelete={handleDelete}
-                      onNavigate={handleNotificationClick}
-                      isGeneral={notification.isGeneral}
-                      isAuthenticated={isAuthenticated}
-                    />
-                  ))}
-                </ScrollArea>
-              )}
-            </TabsContent>
-
-            <TabsContent value="personal" className="p-4">
-              {personalNotifications.length === 0 ? (
-                <div className="text-center py-8">
-                  <User className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No personal notifications</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-64">
-                  {personalNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onDelete={handleDelete}
-                      onNavigate={handleNotificationClick}
-                      isGeneral={false}
-                      isAuthenticated={isAuthenticated}
-                    />
-                  ))}
-                </ScrollArea>
-              )}
-            </TabsContent>
-
-            <TabsContent value="general" className="p-4">
-              {generalNotifications.length === 0 ? (
-                <div className="text-center py-8">
-                  <Megaphone className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No general notifications</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-64">
-                  {generalNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onDelete={handleDelete}
-                      onNavigate={handleNotificationClick}
-                      isGeneral={true}
-                      isAuthenticated={isAuthenticated}
-                    />
-                  ))}
-                </ScrollArea>
-              )}
-            </TabsContent>
-          </Tabs>
-        ) : (
-          // Non-authenticated users only see general notifications
-          <div className="p-4">
+          <TabsContent value="all" className="p-4">
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
@@ -440,42 +351,74 @@ export const NotificationBell = memo(() => {
                   Try Again
                 </Button>
               </div>
-            ) : generalNotifications.length === 0 ? (
+            ) : allNotifications.length === 0 ? (
               <div className="text-center py-8">
                 <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">No notifications</p>
               </div>
             ) : (
-              <>
-                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <LogIn className="h-4 w-4" />
-                    <p className="text-sm font-medium">Sign in for personal notifications</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Get notified about bookings, messages, and more when you sign in.
-                  </p>
-                  <Button size="sm" onClick={() => navigate('/signin')}>
-                    Sign In
-                  </Button>
-                </div>
-                <ScrollArea className="h-64">
-                  {generalNotifications.map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onMarkAsRead={markAsRead}
-                      onDelete={handleDelete}
-                      onNavigate={handleNotificationClick}
-                      isGeneral={true}
-                      isAuthenticated={false}
-                    />
-                  ))}
-                </ScrollArea>
-              </>
+              <ScrollArea className="h-64">
+                {allNotifications.map((notification) => (
+                  <NotificationItem
+                    key={`${notification.isGeneral ? 'general' : 'personal'}-${notification.id}`}
+                    notification={notification}
+                    onMarkAsRead={markAsRead}
+                    onDelete={handleDelete}
+                    onNavigate={handleNotificationClick}
+                    isGeneral={notification.isGeneral}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </ScrollArea>
             )}
-          </div>
-        )}
+          </TabsContent>
+
+          <TabsContent value="personal" className="p-4">
+            {personalNotifications.length === 0 ? (
+              <div className="text-center py-8">
+                <User className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No personal notifications</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-64">
+                {personalNotifications.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsRead}
+                    onDelete={handleDelete}
+                    onNavigate={handleNotificationClick}
+                    isGeneral={false}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </ScrollArea>
+            )}
+          </TabsContent>
+
+          <TabsContent value="general" className="p-4">
+            {generalNotifications.length === 0 ? (
+              <div className="text-center py-8">
+                <Megaphone className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No general notifications</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-64">
+                {generalNotifications.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsRead}
+                    onDelete={handleDelete}
+                    onNavigate={handleNotificationClick}
+                    isGeneral={true}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </ScrollArea>
+            )}
+          </TabsContent>
+        </Tabs>
       </PopoverContent>
     </Popover>
   );
