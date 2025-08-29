@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
@@ -25,6 +25,11 @@ const mainItems = [
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
   { title: "Book Artists", url: "/book-artist", icon: Palette },
+];
+
+const newFeaturesItems = [
+  { title: "Legal Assistant", url: "/legal-assistant", icon: Scale },
+  { title: "Life Wishes", url: "/life-wish", icon: Heart },
 ];
 
 const artistItems = [
@@ -53,6 +58,7 @@ export function AppSidebar() {
 
   const isActive = (path: string) => currentPath === path;
   const isMainGroupExpanded = mainItems.some((item) => isActive(item.url));
+  const isNewFeaturesGroupExpanded = newFeaturesItems.some((item) => isActive(item.url));
   
   // Check if user is an artist
   useEffect(() => {
@@ -114,6 +120,25 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} end className={getNavClass}>
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* New Features Navigation */}
+        <SidebarGroup>
+          <SidebarGroupLabel>New Features</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {newFeaturesItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavClass}>

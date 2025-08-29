@@ -58,6 +58,10 @@ const Messages = lazy(() => import("./pages/Messages"));
 // Content creation pages (grouped together)
 const CreatePost = lazy(() => import("./pages/CreatePost"));
 
+// New Features pages
+const LegalAssistant = lazy(() => import("./pages/LegalAssistant"));
+const LifeWish = lazy(() => import("./pages/LifeWish"));
+
 // Error pages
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -107,6 +111,11 @@ const App = () => {
                   <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                   <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
                   <Route path="/create" element={<CreatePost />} />
+                  
+                  {/* New Features routes */}
+                  <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
+                  <Route path="/life-wish" element={<ProtectedRoute><LifeWish /></ProtectedRoute>} />
+                  
                   <Route path="/discover" element={<Discover />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/community" element={<Community />} />
