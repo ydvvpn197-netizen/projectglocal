@@ -7,6 +7,7 @@ import { EnhancedNavigation } from '@/components/ui/EnhancedNavigation';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { AdvancedButton } from '@/components/ui/AdvancedButton';
 import { SmartInput } from '@/components/ui/SmartInput';
+import { DynamicStats } from '@/components/DynamicStats';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -213,12 +214,7 @@ const communitySpotlight = [
   },
 ];
 
-const stats = [
-  { label: 'Active Users', value: '12,847', icon: <Users className="h-5 w-5" />, change: '+12%' },
-  { label: 'Events Created', value: '1,234', icon: <Calendar className="h-5 w-5" />, change: '+8%' },
-  { label: 'Communities', value: '456', icon: <Globe className="h-5 w-5" />, change: '+15%' },
-  { label: 'Artists', value: '789', icon: <Star className="h-5 w-5" />, change: '+23%' },
-];
+// Stats are now handled by DynamicStats component
 
 const categories = [
   { name: 'Music', icon: <Music className="h-4 w-4" />, color: 'bg-purple-500' },
@@ -380,25 +376,8 @@ export const EnhancedIndex: React.FC = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8"
           >
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="text-center"
-              >
-                <div className="flex items-center justify-center mb-2">
-                  {stat.icon}
-                </div>
-                <div className="text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-                <div className="text-xs text-green-600 flex items-center justify-center mt-1">
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                  {stat.change}
-                </div>
-              </motion.div>
-            ))}
+            <DynamicStats refreshInterval={30000} />
           </motion.div>
         </div>
       </section>
