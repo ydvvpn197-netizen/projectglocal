@@ -25,14 +25,23 @@ export const useNotifications = () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
-      const [generalNotifications, counts] = await Promise.all([
-        notificationService.getGeneralNotifications(),
-        notificationService.getNotificationCounts(user?.id)
-      ]);
-
+      // Always load general notifications (available to all users)
+      const generalNotifications = await notificationService.getGeneralNotifications();
+      
       let personalNotifications: PersonalNotification[] = [];
+      let counts: NotificationCounts;
+
       if (user?.id) {
-        personalNotifications = await notificationService.getPersonalNotifications(user.id);
+        // Load personal notifications and counts only for logged-in users
+        const [personalData, countsData] = await Promise.all([
+          notificationService.getPersonalNotifications(user.id),
+          notificationService.getNotificationCounts(user.id)
+        ]);
+        personalNotifications = personalData;
+        counts = countsData;
+      } else {
+        // For non-logged-in users, only show general notifications
+        counts = await notificationService.getNotificationCounts();
       }
 
       setState(prev => ({
@@ -51,9 +60,12 @@ export const useNotifications = () => {
     }
   }, [user?.id]);
 
-  // Mark notification as read
+  // Mark notification as read (only for logged-in users)
   const markAsRead = useCallback(async (notificationId: string) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.warn('Cannot mark notification as read: user not logged in');
+      return;
+    }
 
     try {
       const success = await notificationService.markAsRead(notificationId, user.id);
@@ -77,9 +89,12 @@ export const useNotifications = () => {
     }
   }, [user?.id]);
 
-  // Mark all notifications as read
+  // Mark all notifications as read (only for logged-in users)
   const markAllAsRead = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.warn('Cannot mark all notifications as read: user not logged in');
+      return;
+    }
 
     try {
       const success = await notificationService.markAllAsRead(user.id);
@@ -101,9 +116,12 @@ export const useNotifications = () => {
     }
   }, [user?.id]);
 
-  // Delete notification
+  // Delete notification (only for logged-in users)
   const deleteNotification = useCallback(async (notificationId: string) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.warn('Cannot delete notification: user not logged in');
+      return;
+    }
 
     try {
       const success = await notificationService.deleteNotification(notificationId, user.id);
@@ -132,16 +150,15 @@ export const useNotifications = () => {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    if (!user?.id) {
-      // For non-logged-in users, only load general notifications
-      loadNotifications();
-      return;
-    }
-
     // Load initial notifications
     loadNotifications();
 
-    // Subscribe to real-time updates
+    // Only subscribe to real-time updates if user is logged in
+    if (!user?.id) {
+      return;
+    }
+
+    // Subscribe to real-time updates for logged-in users
     const unsubscribe = notificationService.subscribeToNotifications(user.id, (payload) => {
       if (payload.eventType === 'INSERT') {
         if (payload.table === 'personal_notifications') {
@@ -231,6 +248,7 @@ export const useNotifications = () => {
     // Computed values
     hasUnread: state.counts.total > 0,
     hasUnreadPersonal: state.counts.personal > 0,
-    hasGeneralNotifications: state.counts.general > 0
+    hasGeneralNotifications: state.counts.general > 0,
+    isAuthenticated: !!user?.id
   };
 };

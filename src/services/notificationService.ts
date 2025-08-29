@@ -85,7 +85,7 @@ class NotificationService {
     }
   }
 
-  // General notifications for non-logged-in users
+  // General notifications for all users (including non-logged-in)
   async getGeneralNotifications(limit = 10): Promise<GeneralNotification[]> {
     try {
       const isAvailable = await this.checkDatabaseAvailability();
@@ -114,8 +114,12 @@ class NotificationService {
     }
   }
 
-  // Personal notifications for logged-in users
+  // Personal notifications for logged-in users only
   async getPersonalNotifications(userId: string, limit = 20): Promise<PersonalNotification[]> {
+    if (!userId) {
+      return [];
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
@@ -201,8 +205,12 @@ class NotificationService {
     }
   }
 
-  // Mark notification as read
+  // Mark notification as read (only for logged-in users)
   async markAsRead(notificationId: string, userId: string): Promise<boolean> {
+    if (!userId) {
+      return false;
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
@@ -226,8 +234,12 @@ class NotificationService {
     }
   }
 
-  // Mark all notifications as read
+  // Mark all notifications as read (only for logged-in users)
   async markAllAsRead(userId: string): Promise<boolean> {
+    if (!userId) {
+      return false;
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
@@ -251,8 +263,12 @@ class NotificationService {
     }
   }
 
-  // Delete notification
+  // Delete notification (only for logged-in users)
   async deleteNotification(notificationId: string, userId: string): Promise<boolean> {
+    if (!userId) {
+      return false;
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
@@ -276,7 +292,7 @@ class NotificationService {
     }
   }
 
-  // Create personal notification
+  // Create personal notification (only for logged-in users)
   async createPersonalNotification(
     userId: string,
     title: string,
@@ -286,6 +302,11 @@ class NotificationService {
     actionUrl?: string,
     actionText?: string
   ): Promise<string | null> {
+    if (!userId) {
+      console.warn('Cannot create notification: no user ID provided');
+      return null;
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
@@ -318,8 +339,13 @@ class NotificationService {
     }
   }
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates (only for logged-in users)
   subscribeToNotifications(userId: string, callback: (payload: any) => void) {
+    if (!userId) {
+      console.warn('Cannot subscribe to notifications: no user ID provided');
+      return () => {}; // Return empty unsubscribe function
+    }
+
     try {
       const isAvailable = this.isDatabaseAvailable;
       if (!isAvailable) {
@@ -362,6 +388,80 @@ class NotificationService {
       console.warn('Error setting up notification subscriptions:', error);
       return () => {}; // Return empty unsubscribe function
     }
+  }
+
+  // Convenience methods for creating specific types of notifications
+  async createBookingRequestNotification(artistId: string, clientId: string, bookingData: any): Promise<string | null> {
+    return this.createPersonalNotification(
+      artistId,
+      'New Booking Request',
+      `You have a new booking request for ${bookingData.event_type} on ${new Date(bookingData.event_date).toLocaleDateString()}`,
+      'booking_request',
+      { bookingData, clientId },
+      '/artist-dashboard',
+      'View Request'
+    );
+  }
+
+  async createBookingResponseNotification(clientId: string, artistId: string, status: 'accepted' | 'declined', bookingData: any): Promise<string | null> {
+    const action = status === 'accepted' ? 'accepted' : 'declined';
+    return this.createPersonalNotification(
+      clientId,
+      `Booking ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+      `Your booking request for ${bookingData.event_type} has been ${action}`,
+      `booking_${status}` as PersonalNotification['type'],
+      { bookingData, artistId },
+      '/bookings',
+      'View Details'
+    );
+  }
+
+  async createNewFollowerNotification(userId: string, followerId: string): Promise<string | null> {
+    return this.createPersonalNotification(
+      userId,
+      'New Follower',
+      'You have a new follower!',
+      'new_follower',
+      { followerId },
+      '/profile',
+      'View Profile'
+    );
+  }
+
+  async createMessageRequestNotification(userId: string, senderId: string, conversationId: string): Promise<string | null> {
+    return this.createPersonalNotification(
+      userId,
+      'New Message',
+      'You have received a new message',
+      'message_request',
+      { senderId, conversationId },
+      '/messages',
+      'View Message'
+    );
+  }
+
+  async createEventReminderNotification(userId: string, eventData: any): Promise<string | null> {
+    return this.createPersonalNotification(
+      userId,
+      'Event Reminder',
+      `Don't forget about ${eventData.title} tomorrow!`,
+      'event_reminder',
+      { eventData },
+      `/events/${eventData.id}`,
+      'View Event'
+    );
+  }
+
+  async createDiscussionRequestNotification(artistId: string, userId: string, discussionData: any): Promise<string | null> {
+    return this.createPersonalNotification(
+      artistId,
+      'New Discussion Request',
+      'Someone has requested to start a discussion with you',
+      'discussion_request',
+      { discussionData, userId },
+      '/artist-dashboard',
+      'Review Request'
+    );
   }
 }
 

@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { MainLayout } from '@/components/MainLayout';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { Bell, Mail, Smartphone, Clock, Save, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Bell, Mail, Smartphone, Save, RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface NotificationSettings {
-  id: string;
-  user_id: string;
   email_notifications: boolean;
   push_notifications: boolean;
   booking_notifications: boolean;
@@ -27,224 +24,151 @@ interface NotificationSettings {
   quiet_hours_enabled: boolean;
   quiet_hours_start: string;
   quiet_hours_end: string;
-  created_at: string;
-  updated_at: string;
 }
 
-const NotificationSettings = () => {
+const defaultSettings: NotificationSettings = {
+  email_notifications: true,
+  push_notifications: true,
+  booking_notifications: true,
+  message_notifications: true,
+  follower_notifications: true,
+  event_notifications: true,
+  discussion_notifications: true,
+  payment_notifications: true,
+  system_notifications: true,
+  marketing_notifications: false,
+  quiet_hours_enabled: false,
+  quiet_hours_start: '22:00',
+  quiet_hours_end: '08:00',
+};
+
+export default function NotificationSettings() {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [settings, setSettings] = useState<NotificationSettings | null>(null);
+  const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
+  // Load user's notification settings
   useEffect(() => {
-    if (user) {
-      fetchSettings();
-    }
-  }, [user]);
+    const loadSettings = async () => {
+      if (!user?.id) return;
 
-  const fetchSettings = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_notification_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        throw error;
-      }
-
-      if (data) {
-        setSettings(data);
-      } else {
-        // Create default settings
-        const defaultSettings = {
-          user_id: user.id,
-          email_notifications: true,
-          push_notifications: true,
-          booking_notifications: true,
-          message_notifications: true,
-          follower_notifications: true,
-          event_notifications: true,
-          discussion_notifications: true,
-          payment_notifications: true,
-          system_notifications: true,
-          marketing_notifications: false,
-          quiet_hours_enabled: false,
-          quiet_hours_start: '22:00',
-          quiet_hours_end: '08:00',
-        };
-
-        const { data: newSettings, error: createError } = await supabase
+      try {
+        const { data, error } = await supabase
           .from('user_notification_settings')
-          .insert(defaultSettings)
-          .select()
+          .select('*')
+          .eq('user_id', user.id)
           .single();
 
-        if (createError) throw createError;
-        setSettings(newSettings);
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Error loading notification settings:', error);
+          toast.error('Failed to load notification settings');
+        }
+
+        if (data) {
+          setSettings({
+            ...defaultSettings,
+            ...data,
+          });
+        }
+      } catch (error) {
+        console.error('Error loading notification settings:', error);
+        toast.error('Failed to load notification settings');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching notification settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load notification settings",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const updateSetting = (key: keyof NotificationSettings, value: any) => {
-    if (!settings) return;
-    setSettings(prev => prev ? { ...prev, [key]: value } : null);
-  };
+    loadSettings();
+  }, [user?.id]);
 
+  // Save settings to database
   const saveSettings = async () => {
-    if (!user || !settings) return;
+    if (!user?.id) return;
 
     setSaving(true);
     try {
       const { error } = await supabase
         .from('user_notification_settings')
         .upsert({
+          user_id: user.id,
           ...settings,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      toast({
-        title: "Settings Saved",
-        description: "Your notification preferences have been updated",
-      });
+      setHasChanges(false);
+      toast.success('Notification settings saved successfully');
     } catch (error) {
       console.error('Error saving notification settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save notification settings",
-        variant: "destructive",
-      });
+      toast.error('Failed to save notification settings');
     } finally {
       setSaving(false);
     }
   };
 
-  const resetToDefaults = async () => {
-    if (!user) return;
-
-    setSaving(true);
-    try {
-      const defaultSettings = {
-        user_id: user.id,
-        email_notifications: true,
-        push_notifications: true,
-        booking_notifications: true,
-        message_notifications: true,
-        follower_notifications: true,
-        event_notifications: true,
-        discussion_notifications: true,
-        payment_notifications: true,
-        system_notifications: true,
-        marketing_notifications: false,
-        quiet_hours_enabled: false,
-        quiet_hours_start: '22:00',
-        quiet_hours_end: '08:00',
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase
-        .from('user_notification_settings')
-        .upsert(defaultSettings);
-
-      if (error) throw error;
-
-      setSettings(prev => prev ? { ...prev, ...defaultSettings } : null);
-      toast({
-        title: "Settings Reset",
-        description: "Notification settings have been reset to defaults",
-      });
-    } catch (error) {
-      console.error('Error resetting notification settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reset notification settings",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
+  // Handle setting changes
+  const handleSettingChange = (key: keyof NotificationSettings, value: boolean | string) => {
+    setSettings(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+    setHasChanges(true);
   };
 
-  if (loading) {
+  // Reset to defaults
+  const resetToDefaults = () => {
+    setSettings(defaultSettings);
+    setHasChanges(true);
+  };
+
+  if (!user) {
     return (
-      <MainLayout>
-        <div className="container mx-auto py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-muted rounded"></div>
-              <div className="h-4 bg-muted rounded w-5/6"></div>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">Sign in to manage notifications</h2>
+            <p className="text-muted-foreground mb-4">
+              You need to be signed in to customize your notification preferences.
+            </p>
+            <Button onClick={() => window.location.href = '/signin'}>
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
-  if (!settings) {
+  if (loading) {
     return (
-      <MainLayout>
-        <div className="container mx-auto py-8">
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-center text-muted-foreground">
-                Failed to load notification settings
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading notification settings...</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="container mx-auto py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Notification Settings</h1>
-            <p className="text-muted-foreground">
-              Manage how and when you receive notifications
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={resetToDefaults}
-              disabled={saving}
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Reset to Defaults
-            </Button>
-            <Button
-              onClick={saveSettings}
-              disabled={saving}
-              className="flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              {saving ? 'Saving...' : 'Save Settings'}
-            </Button>
-          </div>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Notification Settings</h1>
+        <p className="text-muted-foreground">
+          Customize how and when you receive notifications from The Glocal.
+        </p>
+      </div>
 
-        {/* Notification Channels */}
+      <div className="space-y-6">
+        {/* Channel Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -257,36 +181,42 @@ const NotificationSettings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email Notifications
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive notifications via email
-                </p>
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <Label htmlFor="email-notifications" className="font-medium">
+                    Email Notifications
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications via email
+                  </p>
+                </div>
               </div>
               <Switch
+                id="email-notifications"
                 checked={settings.email_notifications}
-                onCheckedChange={(checked) => updateSetting('email_notifications', checked)}
+                onCheckedChange={(checked) => handleSettingChange('email_notifications', checked)}
               />
             </div>
 
             <Separator />
 
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="flex items-center gap-2">
-                  <Smartphone className="h-4 w-4" />
-                  Push Notifications
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive notifications in your browser
-                </p>
+              <div className="flex items-center gap-3">
+                <Smartphone className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <Label htmlFor="push-notifications" className="font-medium">
+                    Push Notifications
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications in your browser
+                  </p>
+                </div>
               </div>
               <Switch
+                id="push-notifications"
                 checked={settings.push_notifications}
-                onCheckedChange={(checked) => updateSetting('push_notifications', checked)}
+                onCheckedChange={(checked) => handleSettingChange('push_notifications', checked)}
               />
             </div>
           </CardContent>
@@ -301,108 +231,132 @@ const NotificationSettings = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Booking Notifications</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="booking-notifications" className="font-medium">
+                    Booking Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    New booking requests, acceptances, and declines
+                    New booking requests and updates
                   </p>
                 </div>
                 <Switch
+                  id="booking-notifications"
                   checked={settings.booking_notifications}
-                  onCheckedChange={(checked) => updateSetting('booking_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('booking_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Message Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="message-notifications" className="font-medium">
+                    Message Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     New messages and chat requests
                   </p>
                 </div>
                 <Switch
+                  id="message-notifications"
                   checked={settings.message_notifications}
-                  onCheckedChange={(checked) => updateSetting('message_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('message_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Follower Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="follower-notifications" className="font-medium">
+                    Follower Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    New followers and follow activity
+                    New followers and profile activity
                   </p>
                 </div>
                 <Switch
+                  id="follower-notifications"
                   checked={settings.follower_notifications}
-                  onCheckedChange={(checked) => updateSetting('follower_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('follower_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Event Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="event-notifications" className="font-medium">
+                    Event Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    Event updates, reminders, and new events
+                    Event updates and reminders
                   </p>
                 </div>
                 <Switch
+                  id="event-notifications"
                   checked={settings.event_notifications}
-                  onCheckedChange={(checked) => updateSetting('event_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('event_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Discussion Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="discussion-notifications" className="font-medium">
+                    Discussion Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    Discussion requests and community activity
+                    Discussion requests and replies
                   </p>
                 </div>
                 <Switch
+                  id="discussion-notifications"
                   checked={settings.discussion_notifications}
-                  onCheckedChange={(checked) => updateSetting('discussion_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('discussion_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Payment Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="payment-notifications" className="font-medium">
+                    Payment Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    Payment confirmations and transaction updates
+                    Payment confirmations and issues
                   </p>
                 </div>
                 <Switch
+                  id="payment-notifications"
                   checked={settings.payment_notifications}
-                  onCheckedChange={(checked) => updateSetting('payment_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('payment_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>System Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="system-notifications" className="font-medium">
+                    System Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    Important system updates and announcements
+                    Important system updates
                   </p>
                 </div>
                 <Switch
+                  id="system-notifications"
                   checked={settings.system_notifications}
-                  onCheckedChange={(checked) => updateSetting('system_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('system_notifications', checked)}
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Marketing Notifications</Label>
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor="marketing-notifications" className="font-medium">
+                    Marketing Notifications
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    Promotional content and special offers
+                    Promotional content and offers
                   </p>
                 </div>
                 <Switch
+                  id="marketing-notifications"
                   checked={settings.marketing_notifications}
-                  onCheckedChange={(checked) => updateSetting('marketing_notifications', checked)}
+                  onCheckedChange={(checked) => handleSettingChange('marketing_notifications', checked)}
                 />
               </div>
             </div>
@@ -412,43 +366,55 @@ const NotificationSettings = () => {
         {/* Quiet Hours */}
         <Card>
           <CardHeader>
-            <CardTitle>Quiet Hours</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Quiet Hours
+            </CardTitle>
             <CardDescription>
               Set times when you don't want to receive notifications
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Enable Quiet Hours</Label>
+              <div>
+                <Label htmlFor="quiet-hours-enabled" className="font-medium">
+                  Enable Quiet Hours
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Pause notifications during specific hours
                 </p>
               </div>
               <Switch
+                id="quiet-hours-enabled"
                 checked={settings.quiet_hours_enabled}
-                onCheckedChange={(checked) => updateSetting('quiet_hours_enabled', checked)}
+                onCheckedChange={(checked) => handleSettingChange('quiet_hours_enabled', checked)}
               />
             </div>
 
             {settings.quiet_hours_enabled && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Start Time</Label>
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <Label htmlFor="quiet-hours-start" className="text-sm font-medium">
+                    Start Time
+                  </Label>
                   <input
+                    id="quiet-hours-start"
                     type="time"
                     value={settings.quiet_hours_start}
-                    onChange={(e) => updateSetting('quiet_hours_start', e.target.value)}
-                    className="w-full px-3 py-2 border border-input rounded-md"
+                    onChange={(e) => handleSettingChange('quiet_hours_start', e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border rounded-md"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>End Time</Label>
+                <div>
+                  <Label htmlFor="quiet-hours-end" className="text-sm font-medium">
+                    End Time
+                  </Label>
                   <input
+                    id="quiet-hours-end"
                     type="time"
                     value={settings.quiet_hours_end}
-                    onChange={(e) => updateSetting('quiet_hours_end', e.target.value)}
-                    className="w-full px-3 py-2 border border-input rounded-md"
+                    onChange={(e) => handleSettingChange('quiet_hours_end', e.target.value)}
+                    className="mt-1 w-full px-3 py-2 border rounded-md"
                   />
                 </div>
               </div>
@@ -456,58 +422,48 @@ const NotificationSettings = () => {
           </CardContent>
         </Card>
 
-        {/* Notification Preview */}
+        {/* Actions */}
         <Card>
-          <CardHeader>
-            <CardTitle>Notification Preview</CardTitle>
-            <CardDescription>
-              See how your notifications will appear
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="p-3 rounded-lg border bg-muted/30">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🎯</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-sm">New Booking Request</h4>
-                      <Badge variant="outline" className="text-xs">booking_request</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      John Doe has requested to book you for a wedding event.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Just now
-                    </p>
-                  </div>
-                </div>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {hasChanges && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Unsaved Changes
+                  </Badge>
+                )}
               </div>
-
-              <div className="p-3 rounded-lg border bg-primary/5 border-l-4 border-l-primary">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">👥</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-sm">New Follower</h4>
-                      <Badge variant="outline" className="text-xs">new_follower</Badge>
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Jane Smith started following you.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      2 minutes ago
-                    </p>
-                  </div>
-                </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={resetToDefaults}
+                  disabled={saving}
+                >
+                  Reset to Defaults
+                </Button>
+                <Button
+                  onClick={saveSettings}
+                  disabled={!hasChanges || saving}
+                  className="flex items-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Save Settings
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   );
-};
-
-export default NotificationSettings;
+}
