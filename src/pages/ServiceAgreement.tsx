@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { MainLayout } from '@/components/MainLayout';
 
 const serviceAgreementSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -156,194 +157,196 @@ CLIENT SIGNATURE: _________________ DATE: _______________
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/legal-assistant')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Legal Assistant
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Service Agreement</h1>
-          <p className="text-muted-foreground">Create a service provider contract</p>
+    <MainLayout>
+      <div className="container mx-auto py-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/legal-assistant')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Legal Assistant
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Service Agreement</h1>
+            <p className="text-muted-foreground">Create a service provider contract</p>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Agreement Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(generateDocument)} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Document Title</Label>
-                <Input
-                  id="title"
-                  {...form.register('title')}
-                  placeholder="Service Agreement"
-                />
-                {form.formState.errors.title && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.title.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Agreement Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={form.handleSubmit(generateDocument)} className="space-y-4">
                 <div>
-                  <Label htmlFor="service_provider">Service Provider</Label>
+                  <Label htmlFor="title">Document Title</Label>
                   <Input
-                    id="service_provider"
-                    {...form.register('service_provider')}
-                    placeholder="Company or Individual Name"
+                    id="title"
+                    {...form.register('title')}
+                    placeholder="Service Agreement"
                   />
-                  {form.formState.errors.service_provider && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.service_provider.message}</p>
+                  {form.formState.errors.title && (
+                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.title.message}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="service_provider">Service Provider</Label>
+                    <Input
+                      id="service_provider"
+                      {...form.register('service_provider')}
+                      placeholder="Company or Individual Name"
+                    />
+                    {form.formState.errors.service_provider && (
+                      <p className="text-sm text-red-500 mt-1">{form.formState.errors.service_provider.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="client">Client</Label>
+                    <Input
+                      id="client"
+                      {...form.register('client')}
+                      placeholder="Client Name"
+                    />
+                    {form.formState.errors.client && (
+                      <p className="text-sm text-red-500 mt-1">{form.formState.errors.client.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="services">Services Description</Label>
+                  <Textarea
+                    id="services"
+                    {...form.register('services')}
+                    placeholder="Describe the services to be provided in detail..."
+                    rows={3}
+                  />
+                  {form.formState.errors.services && (
+                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.services.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="client">Client</Label>
-                  <Input
-                    id="client"
-                    {...form.register('client')}
-                    placeholder="Client Name"
+                  <Label htmlFor="payment_terms">Payment Terms</Label>
+                  <Textarea
+                    id="payment_terms"
+                    {...form.register('payment_terms')}
+                    placeholder="Describe payment schedule, amounts, and methods..."
+                    rows={3}
                   />
-                  {form.formState.errors.client && (
-                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.client.message}</p>
+                  {form.formState.errors.payment_terms && (
+                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.payment_terms.message}</p>
                   )}
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="services">Services Description</Label>
-                <Textarea
-                  id="services"
-                  {...form.register('services')}
-                  placeholder="Describe the services to be provided in detail..."
-                  rows={3}
-                />
-                {form.formState.errors.services && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.services.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="payment_terms">Payment Terms</Label>
-                <Textarea
-                  id="payment_terms"
-                  {...form.register('payment_terms')}
-                  placeholder="Describe payment schedule, amounts, and methods..."
-                  rows={3}
-                />
-                {form.formState.errors.payment_terms && (
-                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.payment_terms.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="additional_terms">Additional Terms (Optional)</Label>
-                <Textarea
-                  id="additional_terms"
-                  {...form.register('additional_terms')}
-                  placeholder="Any additional terms or conditions..."
-                  rows={3}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={form.handleSubmit(handleSaveDraft)}
-                  className="flex-1"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Draft
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isGenerating}
-                  className="flex-1"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4 mr-2" />
-                      Generate Document
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Document Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {previewMode ? (
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm font-mono">{generatedContent}</pre>
+                <div>
+                  <Label htmlFor="additional_terms">Additional Terms (Optional)</Label>
+                  <Textarea
+                    id="additional_terms"
+                    {...form.register('additional_terms')}
+                    placeholder="Any additional terms or conditions..."
+                    rows={3}
+                  />
                 </div>
-                
+
+                <Separator />
+
                 <div className="flex gap-2">
                   <Button
+                    type="button"
                     variant="outline"
-                    onClick={() => handleExport('pdf')}
+                    onClick={form.handleSubmit(handleSaveDraft)}
                     className="flex-1"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export PDF
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Draft
                   </Button>
                   <Button
-                    variant="outline"
-                    onClick={() => handleExport('docx')}
+                    type="submit"
+                    disabled={isGenerating}
                     className="flex-1"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    Export DOCX
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Generate Document
+                      </>
+                    )}
                   </Button>
                 </div>
+              </form>
+            </CardContent>
+          </Card>
 
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    This is a template document. Please review with a legal professional before use.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Fill out the form and generate your document to see a preview here.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* Preview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                Document Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {previewMode ? (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <pre className="whitespace-pre-wrap text-sm font-mono">{generatedContent}</pre>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleExport('pdf')}
+                      className="flex-1"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleExport('docx')}
+                      className="flex-1"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export DOCX
+                    </Button>
+                  </div>
+
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      This is a template document. Please review with a legal professional before use.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Fill out the form and generate your document to see a preview here.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
