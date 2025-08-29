@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,8 +28,30 @@ const SignIn = () => {
   const [hourlyRateMax, setHourlyRateMax] = useState("");
   const [portfolioUrls, setPortfolioUrls] = useState("");
   
-  const { signIn, signUp, signInWithOAuth } = useAuth();
+  const { user, session, loading: authLoading, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect authenticated users away from sign-in page
+  useEffect(() => {
+    if (!authLoading && user && session) {
+      console.log('User is already authenticated, redirecting to feed');
+      navigate('/feed', { replace: true });
+    }
+  }, [user, session, authLoading, navigate]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Don't render sign-in form if user is authenticated
+  if (user && session) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,23 +59,27 @@ const SignIn = () => {
 
     try {
       if (isSignUp) {
-        await signUp(email, password, firstName, lastName, userType);
-        if (userType === 'artist') {
-          // Navigate to artist onboarding for additional details
-          const artistData = {
-            bio,
-            artistSkills,
-            hourlyRateMin: parseFloat(hourlyRateMin) || 0,
-            hourlyRateMax: parseFloat(hourlyRateMax) || 0,
-            portfolioUrls: portfolioUrls.split(',').map(url => url.trim()).filter(url => url.length > 0)
-          };
-          navigate("/artist-onboarding", { state: { artistData } });
-        } else {
-          navigate("/feed");
+        const { error } = await signUp(email, password, firstName, lastName, userType);
+        if (!error) {
+          if (userType === 'artist') {
+            // Navigate to artist onboarding for additional details
+            const artistData = {
+              bio,
+              artistSkills,
+              hourlyRateMin: parseFloat(hourlyRateMin) || 0,
+              hourlyRateMax: parseFloat(hourlyRateMax) || 0,
+              portfolioUrls: portfolioUrls.split(',').map(url => url.trim()).filter(url => url.length > 0)
+            };
+            navigate("/artist-onboarding", { state: { artistData } });
+          } else {
+            navigate("/feed");
+          }
         }
       } else {
-        await signIn(email, password);
-        navigate("/feed");
+        const { error } = await signIn(email, password);
+        if (!error) {
+          navigate("/feed");
+        }
       }
     } catch (error: unknown) {
       console.error("Auth error:", error);
@@ -65,8 +91,10 @@ const SignIn = () => {
   const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
     setLoading(true);
     try {
-      await signInWithOAuth(provider);
-      navigate("/feed");
+      const { error } = await signInWithOAuth(provider);
+      if (!error) {
+        navigate("/feed");
+      }
     } catch (error: unknown) {
       console.error("Social auth error:", error);
     } finally {

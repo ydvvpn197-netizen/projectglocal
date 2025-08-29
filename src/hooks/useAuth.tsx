@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, resilientSupabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { clearAuthData, checkForStaleAuthData } from '@/utils/clearAuthData';
 
 interface AuthContextType {
   user: User | null;
@@ -13,6 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ error: any }>;
   resetPassword: (token: string, newPassword: string) => Promise<{ error: any }>;
+  clearAuthData: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +33,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Initializing authentication...');
         
+        // Check for stale auth data and clear it if necessary
+        if (checkForStaleAuthData()) {
+          console.log('Stale authentication data detected, clearing...');
+          clearAuthData();
+          if (isMounted) {
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
+        
         // Check if we're online
         if (!navigator.onLine) {
           console.warn('Network is offline, using cached session');
@@ -46,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             } catch (e) {
               console.error('Failed to parse cached session:', e);
+              // Clear invalid cached data
+              clearAuthData();
             }
           }
           return;
@@ -55,7 +71,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (error) {
           console.error('Error getting session:', error);
-          // Don't throw, just continue without session
+          // Clear any stale session data
+          if (isMounted) {
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
+        
+        // Validate session is still valid
+        if (session && session.expires_at) {
+          const expiresAt = new Date(session.expires_at * 1000);
+          if (expiresAt < new Date()) {
+            console.log('Session has expired, clearing auth state');
+            if (isMounted) {
+              setSession(null);
+              setUser(null);
+              setLoading(false);
+            }
+            return;
+          }
         }
         
         if (isMounted) {
@@ -306,6 +342,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           variant: "destructive"
         });
       } else {
+        // Clear all auth-related data
+        setUser(null);
+        setSession(null);
+        localStorage.removeItem('supabase.auth.token');
+        localStorage.removeItem('supabase.auth.expires_at');
+        localStorage.removeItem('supabase.auth.refresh_token');
+        
         toast({
           title: "Signed out",
           description: "You have been successfully signed out."
@@ -313,6 +356,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       console.error('Sign out error:', error);
+      // Force clear auth state even if there's an error
+      setUser(null);
+      setSession(null);
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('supabase.auth.expires_at');
+      localStorage.removeItem('supabase.auth.refresh_token');
+      
       toast({
         title: "Sign out failed",
         description: error.message || "An unexpected error occurred",
@@ -424,6 +474,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const handleClearAuthData = () => {
+    clearAuthData();
+    setUser(null);
+    setSession(null);
+    toast({
+      title: "Auth Data Cleared",
+      description: "Authentication data has been cleared. Please sign in again.",
+    });
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -434,7 +494,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signInWithOAuth,
       signOut,
       requestPasswordReset,
-      resetPassword
+      resetPassword,
+      clearAuthData: handleClearAuthData
     }}>
       {children}
     </AuthContext.Provider>
