@@ -25,7 +25,7 @@ import { LifeWishEditor } from '@/components/lifeWish/LifeWishEditor';
 import { LifeWishCard, MemorialLifeWishCard, CompactLifeWishCard } from '@/components/lifeWish/LifeWishCard';
 import { lifeWishService, LifeWish } from '@/services/lifeWishService';
 import { toast } from 'sonner';
-import { MainLayout } from '@/components/MainLayout';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const LifeWishPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('my-wishes');
@@ -108,8 +108,6 @@ const LifeWishPage: React.FC = () => {
   const handleCreateWish = (wishData: any) => {
     createWishMutation.mutate(wishData);
   };
-
-
 
   const handleDeleteWish = (wishId: string) => {
     if (confirm('Are you sure you want to delete this life wish? This action cannot be undone.')) {
@@ -204,7 +202,7 @@ const LifeWishPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">My Wishes</p>
-                                         <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
                   </div>
                   <Heart className="w-8 h-8 text-pink-600" />
                 </div>
@@ -216,7 +214,7 @@ const LifeWishPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Public Wishes</p>
-                                         <p className="text-2xl font-bold text-gray-900">{stats?.public || 0}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.public || 0}</p>
                   </div>
                   <Globe className="w-8 h-8 text-blue-600" />
                 </div>
@@ -228,7 +226,7 @@ const LifeWishPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Shared With Me</p>
-                                         <p className="text-2xl font-bold text-gray-900">{stats?.shared || 0}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.shared || 0}</p>
                   </div>
                   <Users className="w-8 h-8 text-green-600" />
                 </div>
@@ -240,7 +238,7 @@ const LifeWishPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Total Views</p>
-                                         <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
                   </div>
                   <Eye className="w-8 h-8 text-purple-600" />
                 </div>
