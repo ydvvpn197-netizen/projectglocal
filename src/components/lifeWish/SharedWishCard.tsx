@@ -175,7 +175,7 @@ export const SharedWishCard: React.FC<SharedWishCardProps> = ({
                   </div>
                   {sharedBy && (
                     <div className="text-sm text-gray-600">
-                      Shared by <span className="font-medium">{sharedBy.display_name || sharedBy.username || 'Unknown User'</span>
+                      Shared by <span className="font-medium">{sharedBy.display_name || sharedBy.username || 'Unknown User'}</span>
                       {sharedAt && ` ${formatDate(sharedAt)}`}
                     </div>
                   )}
