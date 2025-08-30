@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { LifeWishEditor } from '@/components/lifeWish/LifeWishEditor';
 import { LifeWishCard, MemorialLifeWishCard, CompactLifeWishCard } from '@/components/lifeWish/LifeWishCard';
+import { SharedWishCard } from '@/components/lifeWish/SharedWishCard';
 import { lifeWishService, LifeWish } from '@/services/lifeWishService';
 import { toast } from 'sonner';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
@@ -110,14 +111,13 @@ const LifeWishPage: React.FC = () => {
   };
 
   const handleDeleteWish = (wishId: string) => {
-    if (confirm('Are you sure you want to delete this life wish? This action cannot be undone.')) {
-      deleteWishMutation.mutate(wishId);
-    }
+    deleteWishMutation.mutate(wishId);
   };
 
   const handleShareWish = (wish: LifeWish) => {
-    // This would open a share dialog
-    toast.info('Share functionality coming soon');
+    // Refresh the shared wishes after sharing
+    refetchSharedWishes();
+    toast.success('Life wish shared successfully');
   };
 
   const getVisibilityIcon = (visibility: string) => {
@@ -327,6 +327,8 @@ const LifeWishPage: React.FC = () => {
                         showUserInfo={false}
                         onEdit={() => setEditingWish(wish)}
                         onDelete={() => handleDeleteWish(wish.id)}
+                        onShare={handleShareWish}
+                        isOwner={true}
                       />
                     ))}
                   </div>
@@ -443,10 +445,10 @@ const LifeWishPage: React.FC = () => {
                 ) : (
                   <div className="space-y-6">
                     {sharedWishes.map((wish) => (
-                      <LifeWishCard
+                      <SharedWishCard
                         key={wish.id}
                         wish={wish}
-                        showUserInfo={true}
+                        onShare={handleShareWish}
                       />
                     ))}
                   </div>

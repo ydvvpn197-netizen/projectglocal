@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
   Heart, 
   Lock, 
@@ -21,6 +22,8 @@ import {
 } from 'lucide-react';
 import { LifeWish } from '@/services/lifeWishService';
 import { formatDistanceToNow } from 'date-fns';
+import { LifeWishShareDialog } from './LifeWishShareDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LifeWishCardProps {
   wish: LifeWish;
@@ -43,6 +46,10 @@ export const LifeWishCard: React.FC<LifeWishCardProps> = ({
 }) => {
   const [showFullContent, setShowFullContent] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { user } = useAuth();
+  
+  // Determine if current user is the owner
+  const isCurrentUserOwner = user?.id === wish.user_id;
 
   const getVisibilityIcon = (visibility: string) => {
     switch (visibility) {
@@ -84,10 +91,6 @@ export const LifeWishCard: React.FC<LifeWishCardProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this life wish? This action cannot be undone.')) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await onDelete?.(wish.id);
@@ -144,7 +147,7 @@ export const LifeWishCard: React.FC<LifeWishCardProps> = ({
           </div>
 
           {/* Action Menu */}
-          {isOwner && (
+          {(isOwner || isCurrentUserOwner) && (
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Dialog>
                 <DialogTrigger asChild>
@@ -197,26 +200,46 @@ export const LifeWishCard: React.FC<LifeWishCardProps> = ({
                 </Button>
               )}
 
-              {onShare && (
+              {/* Share Button */}
+              <LifeWishShareDialog wish={wish} onShare={() => onShare?.(wish)}>
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => onShare(wish)}
                 >
                   <Share2 className="w-4 h-4" />
                 </Button>
-              )}
+              </LifeWishShareDialog>
 
               {onDelete && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Life Wish</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{wish.title}"? This action cannot be undone and will permanently remove this life wish.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </div>
           )}
