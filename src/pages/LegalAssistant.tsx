@@ -23,7 +23,7 @@ import {
 import { LegalAssistantChat } from '@/components/legal/LegalAssistantChat';
 import { LegalDocumentForm } from '@/components/legal/LegalDocumentForm';
 import { legalAssistantService, LegalDraft } from '@/services/legalAssistantService';
-import { MainLayout } from '@/components/MainLayout';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 // Legal document types with their icons and routes
 const legalDocumentTypes = [
