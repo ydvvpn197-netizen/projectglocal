@@ -149,7 +149,7 @@ const LifeWishPage: React.FC = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
@@ -478,7 +478,7 @@ const LifeWishPage: React.FC = () => {
           </Dialog>
         )}
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

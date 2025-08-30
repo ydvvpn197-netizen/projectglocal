@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -104,7 +104,7 @@ const CreateDiscussion = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -221,7 +221,7 @@ const CreateDiscussion = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

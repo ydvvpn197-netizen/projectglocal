@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { EnhancedThemeProvider } from "@/components/ui/EnhancedThemeProvider";
+import { ResponsiveLayout } from "./components/ResponsiveLayout";
 const { lazy } = React;
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { app } from '@/config/environment';

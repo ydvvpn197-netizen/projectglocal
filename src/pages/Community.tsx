@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -185,19 +185,19 @@ const Community = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
             <span>Loading communities...</span>
           </div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -601,7 +601,7 @@ const Community = () => {
           </Card>
         )}
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

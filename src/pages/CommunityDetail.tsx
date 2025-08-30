@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -259,20 +259,20 @@ const CommunityDetail = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
             <span>Loading community...</span>
           </div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   if (!group) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">Community not found</h2>
@@ -283,12 +283,12 @@ const CommunityDetail = () => {
             </Button>
           </div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -665,7 +665,7 @@ const CommunityDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

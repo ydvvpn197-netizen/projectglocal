@@ -148,7 +148,7 @@ TENANT SIGNATURE: _________________ DATE: _______________
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto p-6 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
@@ -409,7 +409,7 @@ TENANT SIGNATURE: _________________ DATE: _______________
           </div>
         </div>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

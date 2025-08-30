@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { ArtistSkillsForm, ArtistSkillsData } from "@/components/ArtistSkillsForm";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,7 +85,7 @@ const ArtistOnboarding = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold">Complete Your Artist Profile</h1>
@@ -100,7 +100,7 @@ const ArtistOnboarding = () => {
           initialData={initialData}
         />
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

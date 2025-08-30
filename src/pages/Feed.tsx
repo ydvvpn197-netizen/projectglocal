@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -302,18 +302,18 @@ const Feed = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gradient">Feed</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gradient">Feed</h1>
+            <p className="text-muted-foreground mt-1 lg:mt-2 text-sm lg:text-base">
               Discover and engage with community content
             </p>
           </div>
           <Button 
-            className="btn-community"
+            className="btn-community w-full sm:w-auto"
             onClick={() => navigate('/create')}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -350,27 +350,31 @@ const Feed = () => {
         </Card>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column - Feed */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
             {/* Feed Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="trending" className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Trending
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+                <TabsTrigger value="trending" className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4" />
+                  <span className="hidden sm:inline">Trending</span>
+                  <span className="sm:hidden">Hot</span>
                 </TabsTrigger>
-                <TabsTrigger value="latest" className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Latest
+                <TabsTrigger value="latest" className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <Clock className="w-3 h-3 lg:w-4 lg:h-4" />
+                  <span className="hidden sm:inline">Latest</span>
+                  <span className="sm:hidden">New</span>
                 </TabsTrigger>
-                <TabsTrigger value="following" className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Following
+                <TabsTrigger value="following" className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <Users className="w-3 h-3 lg:w-4 lg:h-4" />
+                  <span className="hidden sm:inline">Following</span>
+                  <span className="sm:hidden">Follow</span>
                 </TabsTrigger>
-                <TabsTrigger value="local" className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Local
+                <TabsTrigger value="local" className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                  <MapPin className="w-3 h-3 lg:w-4 lg:h-4" />
+                  <span className="hidden sm:inline">Local</span>
+                  <span className="sm:hidden">Near</span>
                 </TabsTrigger>
               </TabsList>
               
@@ -675,7 +679,7 @@ const Feed = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

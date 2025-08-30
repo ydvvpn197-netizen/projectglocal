@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, ExternalLink, RefreshCw, Calendar, Clock } from "lucide-react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,7 +158,7 @@ export default function NewsFeed() {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto px-4 py-6">
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -267,6 +267,6 @@ export default function NewsFeed() {
           </Card>
         )}
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useChat } from "@/hooks/useChat";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ const Chat = () => {
   const { loading, conversation, messages, sendMessage, isOwnMessage } = useChat(conversationId);
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
@@ -78,7 +78,7 @@ const Chat = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

@@ -59,17 +59,18 @@ export function MainLayout({ children }: MainLayoutProps) {
           
           {/* Enhanced Header */}
           <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-sm">
-            <div className="flex items-center justify-between h-full px-6">
-              <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between h-full px-4 lg:px-6">
+              <div className="flex items-center gap-4 lg:gap-6">
                 <SidebarTrigger />
-                <Link to="/" className="flex items-center gap-2 font-bold text-xl text-gradient">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                  Local Social Hub
+                <Link to="/" className="flex items-center gap-2 font-bold text-lg lg:text-xl text-gradient">
+                  <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
+                  <span className="hidden sm:inline">Local Social Hub</span>
+                  <span className="sm:hidden">LSH</span>
                 </Link>
               </div>
               
               {/* Enhanced Search Bar */}
-              <div className="flex-1 max-w-2xl mx-8">
+              <div className="flex-1 max-w-2xl mx-4 lg:mx-8 hidden lg:block">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -79,13 +80,13 @@ export function MainLayout({ children }: MainLayoutProps) {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <NetworkStatusIndicator className="mr-2" user={user} />
+              <div className="flex items-center gap-2 lg:gap-3">
+                <NetworkStatusIndicator className="mr-2 hidden lg:block" user={user} />
                 
                 {user ? (
                   <>
                     {/* Location Indicator */}
-                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground hidden lg:flex">
                       <MapPin className="h-4 w-4" />
                       <span className="hidden sm:inline">Local</span>
                     </Button>
@@ -95,7 +96,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                       <DropdownMenuTrigger asChild>
                         <Button size="sm" className="btn-community">
                           <Plus className="h-4 w-4 mr-2" />
-                          Create
+                          <span className="hidden sm:inline">Create</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-64">
@@ -139,7 +140,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-                            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-xs">
                               {getInitials(user.user_metadata?.full_name || user.email)}
                             </AvatarFallback>
                           </Avatar>
@@ -181,11 +182,12 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={handleSignIn} size="sm">
+                    <Button variant="ghost" onClick={handleSignIn} size="sm" className="hidden sm:flex">
                       Sign In
                     </Button>
                     <Button onClick={handleSignIn} size="sm" className="btn-community">
-                      Get Started
+                      <span className="hidden sm:inline">Get Started</span>
+                      <span className="sm:hidden">Sign In</span>
                     </Button>
                   </div>
                 )}
@@ -195,7 +197,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
           {/* Main Content */}
           <main className="flex-1 overflow-auto bg-muted/20">
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-4 py-4 lg:py-6">
               {children}
             </div>
           </main>

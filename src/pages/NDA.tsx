@@ -143,7 +143,7 @@ RECEIVING PARTY SIGNATURE: _________________ DATE: _______________
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -331,7 +331,7 @@ RECEIVING PARTY SIGNATURE: _________________ DATE: _______________
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAccountDeletion } from "@/hooks/useAccountDeletion";
@@ -169,16 +169,16 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col gap-4">
@@ -503,7 +503,7 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

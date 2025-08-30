@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { CalendarIcon, Clock, MapPin, Users, DollarSign, Tag } from "lucide-react";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
@@ -80,7 +80,7 @@ const CreateEvent = () => {
   ];
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-6 w-6 text-primary" />
@@ -256,7 +256,7 @@ const CreateEvent = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

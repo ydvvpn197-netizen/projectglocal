@@ -109,7 +109,7 @@ const TestNotifications = () => {
 
   if (!user) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="container mx-auto py-8">
           <Card>
             <CardContent className="p-6">
@@ -119,12 +119,12 @@ const TestNotifications = () => {
             </CardContent>
           </Card>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -299,7 +299,7 @@ const TestNotifications = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

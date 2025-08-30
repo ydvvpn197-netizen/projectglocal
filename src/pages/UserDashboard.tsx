@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { ClientBookingsPanel } from "@/components/ClientBookingsPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,18 +85,18 @@ const UserDashboard = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="container max-w-6xl mx-auto p-6">
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
@@ -279,7 +279,7 @@ const UserDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

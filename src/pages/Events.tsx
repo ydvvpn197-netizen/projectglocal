@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -400,7 +400,7 @@ const Events = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -755,7 +755,7 @@ const Events = () => {
           />
         )}
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

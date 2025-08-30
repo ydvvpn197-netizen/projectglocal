@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +128,7 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="space-y-6">
           <div className="animate-pulse">
             <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
@@ -140,13 +140,13 @@ const UserProfile = () => {
             </div>
           </div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   if (!profileUser) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">User Not Found</h2>
           <p className="text-muted-foreground mb-6">
@@ -157,14 +157,14 @@ const UserProfile = () => {
             Back to Events
           </Button>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   const isOwnProfile = currentUser?.id === userId;
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-6">
         {/* Back Button */}
         <Button 
@@ -527,7 +527,7 @@ const UserProfile = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

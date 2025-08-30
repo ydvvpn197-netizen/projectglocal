@@ -1,11 +1,11 @@
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Sparkles, Shield, Globe, Zap, Heart } from "lucide-react";
 
 const About = () => {
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container max-w-4xl mx-auto p-6 space-y-8">
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-bold">About Local Social Hub</h1>
@@ -86,7 +86,7 @@ const About = () => {
           </Badge>
         </div>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

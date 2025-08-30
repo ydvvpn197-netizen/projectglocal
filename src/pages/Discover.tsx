@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map, Sparkles, UserPlus } from "lucide-react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
@@ -255,7 +255,7 @@ const Discover = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto px-4 py-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Discover Local</h1>
@@ -440,7 +440,7 @@ const Discover = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

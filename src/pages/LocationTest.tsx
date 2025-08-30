@@ -43,7 +43,7 @@ export function LocationTest() {
   };
 
     return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-2">Location Features Test</h1>
@@ -227,7 +227,7 @@ export function LocationTest() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 }
 

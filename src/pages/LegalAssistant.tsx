@@ -67,7 +67,7 @@ export const LegalAssistant: React.FC = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
@@ -273,7 +273,7 @@ export const LegalAssistant: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

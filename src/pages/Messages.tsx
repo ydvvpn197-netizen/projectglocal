@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect, useState } from "react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ const Messages = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="container max-w-4xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Messages</h1>
@@ -191,7 +191,7 @@ const Messages = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

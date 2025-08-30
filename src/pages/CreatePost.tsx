@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useState } from "react";
 import { X, Plus, MapPin, Calendar, DollarSign, Users, Clock, Tag } from "lucide-react";
@@ -88,7 +88,7 @@ const CreatePost = () => {
 
   return (
     <ProtectedRoute>
-      <MainLayout>
+      <ResponsiveLayout>
       <div className="container max-w-3xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold mb-2">Create New Post</h1>
@@ -541,7 +541,7 @@ const CreatePost = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
     </ProtectedRoute>
   );
 };

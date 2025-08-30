@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Users } from "lucide-react";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "@/hooks/useLocation";
@@ -105,7 +105,7 @@ const CreateGroup = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -259,7 +259,7 @@ const CreateGroup = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

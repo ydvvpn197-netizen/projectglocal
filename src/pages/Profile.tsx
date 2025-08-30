@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -195,20 +195,20 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
             <span>Loading profile...</span>
           </div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   if (!profile) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
           <p className="text-muted-foreground mb-6">
@@ -218,7 +218,7 @@ const Profile = () => {
             Refresh Page
           </Button>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
@@ -228,7 +228,7 @@ const Profile = () => {
     .join(', ') || 'Location not set';
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8">
         {/* Profile Header */}
         <Card className="relative overflow-hidden">
@@ -666,7 +666,7 @@ const Profile = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

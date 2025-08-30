@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -420,27 +420,27 @@ const ArtistProfile = () => {
 
   if (loading) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   if (!artist) {
     return (
-      <MainLayout>
+      <ResponsiveLayout>
         <div className="text-center py-16">
           <h2 className="text-2xl font-bold mb-4">Artist not found</h2>
           <Button onClick={() => navigate('/book-artist')}>Browse Artists</Button>
         </div>
-      </MainLayout>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8 max-w-4xl mx-auto">
         {/* Artist Header */}
         <Card>
@@ -767,7 +767,7 @@ const ArtistProfile = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

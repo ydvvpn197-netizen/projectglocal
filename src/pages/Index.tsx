@@ -27,7 +27,7 @@ import {
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEvents";
-import { MainLayout } from "@/components/MainLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -167,7 +167,7 @@ const Index = () => {
   };
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="space-y-8">
         {/* Hero Banner - Featured Event */}
         <section className="hero-section rounded-2xl overflow-hidden relative">
@@ -464,7 +464,7 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
 

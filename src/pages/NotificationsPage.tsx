@@ -231,7 +231,7 @@ export const NotificationsPage: React.FC = () => {
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   return (
-    <MainLayout>
+    <ResponsiveLayout>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -450,6 +450,6 @@ export const NotificationsPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </ResponsiveLayout>
   );
 };
