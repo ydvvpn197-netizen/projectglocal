@@ -38,12 +38,9 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        // CRITICAL FIX: Disable chunk splitting completely to prevent React timing issues
+        // Simplified chunk naming for better compatibility
         manualChunks: undefined,
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
-          return `js/[name]-[hash].js`;
-        },
+        chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (!assetInfo.name) return 'assets/[name]-[hash].[ext]';
@@ -59,17 +56,16 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    chunkSizeWarningLimit: 2000, // Increased to allow larger main bundle
+    chunkSizeWarningLimit: 2000,
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
-        // Prevent variable hoisting issues that can cause React initialization problems
+        // Simplified terser options for better compatibility
         hoist_funs: false,
         hoist_vars: false,
         hoist_props: false,
-        // Prevent function inlining that might break React initialization
         inline: false,
       },
       mangle: {
@@ -103,9 +99,8 @@ export default defineConfig(({ mode }) => ({
       'class-variance-authority',
       'tailwind-merge',
     ],
-    force: true, // Force re-optimization to ensure React is properly loaded
+    force: true,
     esbuildOptions: {
-      // Ensure React is properly handled
       jsx: 'automatic',
     }
   },

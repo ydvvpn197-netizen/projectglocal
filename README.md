@@ -93,6 +93,45 @@ npm run test:coverage
 
 ## 🚀 Deployment
 
+### GitHub Pages Deployment
+
+The project is configured for deployment to GitHub Pages with a custom domain (`theglocal.in`).
+
+#### Quick Deploy
+```bash
+# Deploy to GitHub Pages
+npm run deploy:github
+
+# Or use the simple deployment script
+npm run deploy:simple
+```
+
+#### Manual Deployment Steps
+1. **Build the project:**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy to GitHub Pages:**
+   ```bash
+   npx gh-pages -d dist
+   ```
+
+3. **Wait for deployment** (usually 2-5 minutes)
+
+#### Deployment Configuration
+- **Custom Domain**: `theglocal.in`
+- **Build Output**: `dist/` directory
+- **SPA Routing**: Configured for single-page application routing
+- **404 Handling**: Automatic redirects for all routes
+
+#### Troubleshooting
+If you see "Something went wrong" errors:
+1. Ensure the build completed successfully
+2. Check that all assets are properly referenced
+3. Verify the custom domain is configured in GitHub Pages settings
+4. Clear browser cache and try again
+
 ### Production Build
 ```bash
 npm run build
