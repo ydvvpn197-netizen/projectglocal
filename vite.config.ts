@@ -24,6 +24,10 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
   ],
+  css: {
+    postcss: './postcss.config.js',
+    devSourcemap: true,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -36,6 +40,7 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         // Simplified chunk naming for better compatibility

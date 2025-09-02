@@ -14,6 +14,12 @@ if (!React || typeof React.createContext !== 'function') {
   throw new Error('React is not properly loaded');
 }
 
+// Ensure CSS is loaded
+const linkElement = document.createElement('link');
+linkElement.rel = 'stylesheet';
+linkElement.href = '/src/index.css';
+document.head.appendChild(linkElement);
+
 // Simple app initialization
 const rootElement = document.getElementById("root");
 if (!rootElement) {
