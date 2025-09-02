@@ -2,54 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Relaxed but safe CSP for Vite + Supabase in development -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="The Glocal" />
+    <meta name="theme-color" content="#6D28D9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1F2937" media="(prefers-color-scheme: dark)" />
     
-    <!-- GitHub Pages SPA Routing -->
+    <!-- SPA Routing Fix - MUST BE FIRST -->
     <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
-      // This script checks to see if a redirect is present in the query string,
-      // converts it back into the correct url and adds it to the
-      // browser's history using window.history.replaceState(...),
-      // which won't cause the browser to attempt to load the new url.
-      // When the single page app is loaded further down in this file,
-      // the correct url will be waiting in the browser's history for
-      // the single page app to route accordingly.
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
+      // Fix for SPA routing on custom domain hosting
+      // This ensures that direct URL access works properly
+      (function() {
+        // Check if we're accessing a route that should be handled by the SPA
+        var currentPath = window.location.pathname;
+        var isRoot = currentPath === '/' || currentPath === '/index.html';
+        
+        // If we're not at root and the path doesn't contain a file extension,
+        // this is likely a client-side route that should be handled by React Router
+        if (!isRoot && !currentPath.includes('.')) {
+          // Store the intended path for React Router to handle
+          window.__SPA_INITIAL_PATH__ = currentPath;
+          
+          // Optionally, you can redirect to root and let React Router handle it
+          // window.location.replace('/');
         }
-      }(window.location))
+      })();
     </script>
+    
+    <!-- CSP for Vite + Supabase - allows connections to Supabase -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*;">
     
     <title>Glocal</title>
     <meta name="description" content="Discover local events, connect with your community, and book talented artists near you." />
     <link rel="canonical" href="https://theglocal.in/" />
     
-    <!-- React Fallback - Ensure React is available -->
-    <script>
-      // Fallback to ensure React is available
-      if (typeof React === 'undefined') {
-        console.warn('React not loaded, attempting to load from CDN...');
-        var script = document.createElement('script');
-        script.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
-        script.crossOrigin = '';
-        document.head.appendChild(script);
-        
-        var script2 = document.createElement('script');
-        script2.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
-        script2.crossOrigin = '';
-        document.head.appendChild(script2);
-      }
-    </script>
+    <!-- Prevent favicon from loading -->
+    <link rel="icon" href="data:," />
 
     <!-- Performance: Preconnect to Supabase -->
     <link rel="preconnect" href="https://tepvzhbgobckybyhryuj.supabase.co" crossorigin />
@@ -65,6 +55,9 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Load main application script -->
+    <script type="module" src="/src/main.tsx"></script>
   </head>
 
   <body>
@@ -78,6 +71,5 @@
         </div>
       </noscript>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

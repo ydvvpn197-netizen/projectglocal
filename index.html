@@ -9,6 +9,28 @@
     <meta name="apple-mobile-web-app-title" content="The Glocal" />
     <meta name="theme-color" content="#6D28D9" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1F2937" media="(prefers-color-scheme: dark)" />
+    
+    <!-- SPA Routing Fix - MUST BE FIRST -->
+    <script type="text/javascript">
+      // Fix for SPA routing on custom domain hosting
+      // This ensures that direct URL access works properly
+      (function() {
+        // Check if we're accessing a route that should be handled by the SPA
+        var currentPath = window.location.pathname;
+        var isRoot = currentPath === '/' || currentPath === '/index.html';
+        
+        // If we're not at root and the path doesn't contain a file extension,
+        // this is likely a client-side route that should be handled by React Router
+        if (!isRoot && !currentPath.includes('.')) {
+          // Store the intended path for React Router to handle
+          window.__SPA_INITIAL_PATH__ = currentPath;
+          
+          // Optionally, you can redirect to root and let React Router handle it
+          // window.location.replace('/');
+        }
+      })();
+    </script>
+    
     <!-- CSP for Vite + Supabase - allows connections to Supabase -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*;">
     
@@ -49,29 +71,5 @@
         </div>
       </noscript>
     </div>
-    
-    <!-- GitHub Pages SPA Routing -->
-    <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
-      // This script checks to see if a redirect is present in the query string,
-      // converts it back into the correct url and adds it to the
-      // browser's history using window.history.replaceState(...),
-      // which won't cause the browser to attempt to load the new url.
-      // When the single page app is loaded further down in this file,
-      // the correct url will be waiting in the browser's history for
-      // the single page app to route accordingly.
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
-    </script>
   </body>
 </html>
