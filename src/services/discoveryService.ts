@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingContent } from '@/types/search';
 import { TrendingAlgorithms } from '@/utils/trendingAlgorithms';

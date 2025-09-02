@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { supabase } from '@/integrations/supabase/client';
 import { SearchQuery, SearchResult, SearchFilter } from '@/types/search';
 import { SearchAlgorithms } from '@/utils/searchAlgorithms';

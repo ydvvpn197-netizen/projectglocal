@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { supabase } from '@/integrations/supabase/client';
 import { social } from '@/config/environment';
 import { PointsService } from './pointsService';

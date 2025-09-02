@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { supabase } from '@/integrations/supabase/client';
 import { checkTableExists, getCommentsTableName, createUserPreferencesFallback } from '@/utils/databaseUtils';
 import { PostComment, CreateCommentRequest } from '@/types/community';
@@ -468,7 +468,7 @@ export class CommentService {
   // Get comment depth (for UI rendering)
   static getCommentDepth(comment: PostComment): number {
     let depth = 0;
-    let currentComment = comment;
+    const currentComment = comment;
     
     while (currentComment.parent_id) {
       depth++;

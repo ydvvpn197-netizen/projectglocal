@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { useEffect, useState } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

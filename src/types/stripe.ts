@@ -411,7 +411,7 @@ export interface StripeWebhookEvent {
   type: string;
 }
 
-// @ts-nocheck
+
 export interface StripeConfig {
   publishableKey: string;
   secretKey: string;

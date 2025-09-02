@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { supabase } from '@/integrations/supabase/client';
 import { PostVote, CommentVote, VoteRequest, VOTE_TYPES } from '@/types/community';
 import { VoteValidation, AntiSpamMeasures } from '@/types/engagement';

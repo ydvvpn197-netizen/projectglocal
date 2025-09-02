@@ -63,7 +63,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       setError(null);
 
       // Get or create referral code
-      let code = await ReferralService.getUserReferralCode(user!.id);
+      const code = await ReferralService.getUserReferralCode(user!.id);
       if (!code) {
         // Don't automatically create - let user choose when to create
         setReferralCode(null);

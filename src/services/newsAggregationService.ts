@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { supabase } from '@/integrations/supabase/client';
 import { 
   NewsSource, 
@@ -35,7 +35,7 @@ export class NewsAggregationService {
     let totalArticlesFetched = 0;
     let totalArticlesProcessed = 0;
     let totalArticlesStored = 0;
-    let duplicatesRemoved = 0;
+    const duplicatesRemoved = 0;
     let processingErrors = 0;
     const sourcesProcessed: string[] = [];
 

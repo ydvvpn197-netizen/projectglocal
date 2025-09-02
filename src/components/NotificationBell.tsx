@@ -261,11 +261,6 @@ export const NotificationBell = memo(() => {
     }
   }, [generalNotifications, personalNotifications]);
 
-  // Don't render anything for non-authenticated users
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Ensure counts are valid numbers
   const validCounts = {
     general: Math.max(0, counts.general || 0),
@@ -293,6 +288,11 @@ export const NotificationBell = memo(() => {
       setIsRefreshingCounts(false);
     }
   }, [isAuthenticated, refreshCounts]);
+
+  // Don't render anything for non-authenticated users
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
