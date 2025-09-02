@@ -9,8 +9,8 @@
     <meta name="apple-mobile-web-app-title" content="The Glocal" />
     <meta name="theme-color" content="#6D28D9" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1F2937" media="(prefers-color-scheme: dark)" />
-    <!-- Relaxed but safe CSP for Vite + Supabase in development -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; worker-src 'self' blob:;">
+    <!-- CSP for Vite + Supabase - allows connections to Supabase -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*;">
     
     <title>Glocal</title>
     <meta name="description" content="Discover local events, connect with your community, and book talented artists near you." />
