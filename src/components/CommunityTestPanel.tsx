@@ -11,7 +11,7 @@ interface TestResult {
   test: string;
   status: 'success' | 'error' | 'pending';
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 export const CommunityTestPanel: React.FC = () => {
@@ -20,7 +20,7 @@ export const CommunityTestPanel: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const addResult = (test: string, status: 'success' | 'error' | 'pending', message: string, data?: any) => {
+  const addResult = (test: string, status: 'success' | 'error' | 'pending', message: string, data?: unknown) => {
     setResults(prev => [...prev, { test, status, message, data }]);
   };
 
@@ -42,8 +42,9 @@ export const CommunityTestPanel: React.FC = () => {
       try {
         const leaderboard = await PointsService.getLeaderboard({ limit: 5 });
         addResult('Leaderboard Fetch', 'success', `Fetched ${leaderboard.length} leaderboard entries`, leaderboard);
-      } catch (error: any) {
-        addResult('Leaderboard Fetch', 'error', `Failed to fetch leaderboard: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addResult('Leaderboard Fetch', 'error', `Failed to fetch leaderboard: ${errorMessage}`);
       }
 
       // Test 3: Test community groups fetching
@@ -51,8 +52,9 @@ export const CommunityTestPanel: React.FC = () => {
       try {
         const groups = await CommunityService.getGroups();
         addResult('Community Groups Fetch', 'success', `Fetched ${groups.length} community groups`, groups);
-      } catch (error: any) {
-        addResult('Community Groups Fetch', 'error', `Failed to fetch groups: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addResult('Community Groups Fetch', 'error', `Failed to fetch groups: ${errorMessage}`);
       }
 
       // Test 4: Test user groups fetching
@@ -60,8 +62,9 @@ export const CommunityTestPanel: React.FC = () => {
       try {
         const userGroups = await CommunityService.getUserGroups(user.id);
         addResult('User Groups Fetch', 'success', `User is member of ${userGroups.length} groups`, userGroups);
-      } catch (error: any) {
-        addResult('User Groups Fetch', 'error', `Failed to fetch user groups: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addResult('User Groups Fetch', 'error', `Failed to fetch user groups: ${errorMessage}`);
       }
 
       // Test 5: Test points system
@@ -69,8 +72,9 @@ export const CommunityTestPanel: React.FC = () => {
       try {
         const userPoints = await PointsService.getUserPoints(user.id);
         addResult('Points System', 'success', `User has ${userPoints?.total_points || 0} points`, userPoints);
-      } catch (error: any) {
-        addResult('Points System', 'error', `Failed to get user points: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addResult('Points System', 'error', `Failed to get user points: ${errorMessage}`);
       }
 
       // Test 6: Test adding points
@@ -82,12 +86,14 @@ export const CommunityTestPanel: React.FC = () => {
         } else {
           addResult('Add Points', 'error', 'Failed to add points');
         }
-      } catch (error: any) {
-        addResult('Add Points', 'error', `Failed to add points: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        addResult('Add Points', 'error', `Failed to add points: ${errorMessage}`);
       }
 
-    } catch (error: any) {
-      addResult('General Error', 'error', `Unexpected error: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      addResult('General Error', 'error', `Unexpected error: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
