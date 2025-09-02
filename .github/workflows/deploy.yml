@@ -20,26 +20,77 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Check Node.js version
-        run: node --version && npm --version
+        run: |
+          echo "Node.js version:"
+          node --version
+          echo "npm version:"
+          npm --version
+
+      - name: Clear npm cache
+        run: npm cache clean --force
+
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          npm ci --prefer-offline --no-audit
+          echo "Dependencies installed successfully"
+
+      - name: Verify dependencies
+        run: |
+          echo "Checking for missing dependencies..."
+          npm ls --depth=0
+
+      - name: Type check
+        run: |
+          echo "Running TypeScript type check..."
+          npm run type-check
+          echo "Type check completed"
+
+      - name: Lint check
+        run: |
+          echo "Running ESLint..."
+          npm run lint
+          echo "Lint check completed"
 
       - name: Build project
         run: |
-          echo "Starting build process..."
+          echo "Starting production build process..."
           npm run build:prod
           echo "Build completed successfully"
+          echo "Build output contents:"
+          ls -la dist/
         env:
           NODE_ENV: production
           CI: true
 
+      - name: Verify build output
+        run: |
+          echo "Verifying build output..."
+          if [ ! -f "dist/index.html" ]; then
+            echo "ERROR: dist/index.html not found!"
+            exit 1
+          fi
+          if [ ! -d "dist/js" ]; then
+            echo "ERROR: dist/js directory not found!"
+            exit 1
+          fi
+          if [ ! -d "dist/css" ]; then
+            echo "ERROR: dist/css directory not found!"
+            exit 1
+          fi
+          echo "Build output verification passed"
+
       - name: Create CNAME file
-        run: echo "theglocal.in" > dist/CNAME
+        run: |
+          echo "Creating CNAME file..."
+          echo "theglocal.in" > dist/CNAME
+          echo "CNAME file created:"
+          cat dist/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

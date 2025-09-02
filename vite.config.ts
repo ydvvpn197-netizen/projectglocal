@@ -41,7 +41,19 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     emptyOutDir: true,
     cssCodeSplit: true,
+    // Add better error handling for production builds
     rollupOptions: {
+      onwarn(warning, warn) {
+        // Suppress warnings about circular dependencies in production
+        if (mode === 'production' && warning.code === 'CIRCULAR_DEPENDENCY') {
+          return;
+        }
+        // Suppress warnings about unused exports in production
+        if (mode === 'production' && warning.code === 'UNUSED_EXTERNAL_IMPORT') {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         // Simplified chunk naming for better compatibility
         manualChunks: undefined,
@@ -109,4 +121,6 @@ export default defineConfig(({ mode }) => ({
       jsx: 'automatic',
     }
   },
+  // Add better error handling for build failures
+  logLevel: mode === 'production' ? 'error' : 'info',
 }));

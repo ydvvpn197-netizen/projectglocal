@@ -10,7 +10,7 @@
     "build": "tsc && vite build",
     "build:dev": "vite build --mode development",
     "build:analyze": "ANALYZE=true npm run build",
-    "build:prod": "vite build --mode production",
+    "build:prod": "tsc --noEmit && vite build --mode production",
     "build:optimized": "npm run build:prod && npm run analyze:bundle",
     "preview": "vite preview",
     "preview:prod": "npm run build:prod && npm run preview",
