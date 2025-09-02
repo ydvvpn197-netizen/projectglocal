@@ -149,7 +149,7 @@ export default function Notifications() {
           <div>
             <h1 className="text-3xl font-bold mb-2">Notifications</h1>
             <p className="text-muted-foreground">
-              Manage and view all your notifications from The Glocal.
+              Manage and view all your notifications from Glocal.
             </p>
           </div>
           <div className="flex items-center gap-2">

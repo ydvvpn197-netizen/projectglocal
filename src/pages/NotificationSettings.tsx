@@ -163,7 +163,7 @@ export default function NotificationSettings() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Notification Settings</h1>
         <p className="text-muted-foreground">
-          Customize how and when you receive notifications from The Glocal.
+          Customize how and when you receive notifications from Glocal.
         </p>
       </div>
 

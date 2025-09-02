@@ -711,7 +711,7 @@ export const EnhancedIndex: React.FC = () => {
               variants={itemVariants}
               className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
             >
-              Join thousands of people who are already building stronger communities through The Glocal.
+              Join thousands of people who are already building stronger communities through Glocal.
             </motion.p>
             <motion.div
               variants={itemVariants}

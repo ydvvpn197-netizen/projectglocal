@@ -145,7 +145,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
         content_type: 'profile' as const,
         content_id: user!.id,
         platform: platform as any,
-        share_text: `Join me on The Glocal! Use my referral link: ${referralLink}`,
+        share_text: `Join me on Glocal! Use my referral link: ${referralLink}`,
         share_url: referralLink
       };
 

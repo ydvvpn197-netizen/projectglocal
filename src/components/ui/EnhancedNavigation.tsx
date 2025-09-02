@@ -280,7 +280,7 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
                 <Sparkles className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                The Glocal
+                Glocal
               </span>
             </motion.div>
           </Link>
