@@ -6,7 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 
 // Ensure React is available globally for debugging
 if (typeof window !== 'undefined') {
-  (window as any).React = React;
+  (window as Window & { React: typeof React }).React = React;
 }
 
 // Simple React availability check

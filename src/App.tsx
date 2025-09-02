@@ -11,7 +11,7 @@ import { ResponsiveLayout } from "./components/ResponsiveLayout";
 const { lazy } = React;
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { app } from '@/config/environment';
-import { AuthDebug } from "./components/AuthDebug";
+
 // import { useRoutePreloader } from "./hooks/useRoutePreloader";
 
 // Lazy load pages with better chunking
@@ -164,7 +164,6 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </LazyLoader>
-              <AuthDebug />
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
