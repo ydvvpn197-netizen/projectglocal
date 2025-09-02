@@ -116,8 +116,8 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 font-bold text-lg text-gradient">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="hidden xs:inline">Local Social Hub</span>
-            <span className="xs:hidden">LSH</span>
+                              <span className="hidden xs:inline">Glocal</span>
+                          <span className="xs:hidden">G</span>
           </Link>
           
           {/* Right side actions */}

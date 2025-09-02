@@ -112,7 +112,7 @@ const SignIn = () => {
           <div className="space-y-6">
             <div className="space-y-2">
               <h1 className="text-4xl font-bold">
-                Welcome to Local Social Hub
+                Welcome to Glocal
               </h1>
               <p className="text-xl text-muted-foreground">
                 Connect with your local community, discover events, and find amazing artists in your area.

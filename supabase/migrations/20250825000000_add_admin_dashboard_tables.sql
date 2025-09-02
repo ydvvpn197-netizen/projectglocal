@@ -540,7 +540,7 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Insert default system settings
 INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public) VALUES
-('platform_name', '"Local Social Hub"', 'string', 'Platform display name', true),
+('platform_name', '"Glocal"', 'string', 'Platform display name', true),
 ('platform_description', '"Connect with your local community"', 'string', 'Platform description', true),
 ('maintenance_mode', 'false', 'boolean', 'Enable maintenance mode', false),
 ('registration_enabled', 'true', 'boolean', 'Allow new user registrations', false),

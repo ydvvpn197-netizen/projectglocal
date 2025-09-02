@@ -99,7 +99,7 @@ export function AppSidebar() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-sidebar-foreground flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-primary" />
-                Local Social Hub
+                Glocal
               </h2>
               {user ? <NotificationBell /> : <NotificationButton />}
             </div>

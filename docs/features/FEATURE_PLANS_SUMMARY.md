@@ -1,7 +1,7 @@
-# Local Social Hub - Feature Plans Summary
+# Glocal - Feature Plans Summary
 
 ## Overview
-This document provides a comprehensive overview of all feature plans for the Local Social Hub platform. Each feature plan includes detailed technical requirements, implementation phases, and specific file structures needed for development.
+This document provides a comprehensive overview of all feature plans for the Glocal platform. Each feature plan includes detailed technical requirements, implementation phases, and specific file structures needed for development.
 
 ## Core Features
 

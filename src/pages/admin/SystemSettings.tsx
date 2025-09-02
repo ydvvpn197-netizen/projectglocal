@@ -153,7 +153,7 @@ const SystemSettings: React.FC = () => {
                       <Label htmlFor="platform_name">Platform Name</Label>
                       <Input
                         id="platform_name"
-                        value={getSettingValue('platform_name', 'Local Social Hub')}
+                        value={getSettingValue('platform_name', 'Glocal')}
                         onChange={(e) => handleSettingChange('platform_name', e.target.value)}
                         placeholder="Enter platform name"
                       />

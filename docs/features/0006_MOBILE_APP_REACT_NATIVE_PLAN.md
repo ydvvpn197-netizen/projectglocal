@@ -1,7 +1,7 @@
 # Feature 0006: Mobile App Development (React Native)
 
 ## Brief Description
-Develop a React Native mobile application to provide native mobile experience for the Local Social Hub platform. The app will include all core features from the web platform with mobile-optimized UI/UX, push notifications, offline capabilities, and native device integrations like location services, camera, and social sharing.
+Develop a React Native mobile application to provide native mobile experience for the Glocal platform. The app will include all core features from the web platform with mobile-optimized UI/UX, push notifications, offline capabilities, and native device integrations like location services, camera, and social sharing.
 
 ## Technical Requirements
 

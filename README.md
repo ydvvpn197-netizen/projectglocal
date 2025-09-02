@@ -1,4 +1,4 @@
-# The Glocal - Local Social Hub
+# Glocal
 
 A comprehensive local community platform that connects neighbors, promotes local events, and enables artist bookings with integrated marketing features.
 

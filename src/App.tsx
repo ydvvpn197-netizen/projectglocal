@@ -73,13 +73,8 @@ const ServiceAgreement = lazy(() => import("./pages/ServiceAgreement"));
 // Error pages
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Test pages
-const LocationTest = lazy(() => import("./pages/LocationTest"));
-const NewsFeed = lazy(() => import("./pages/NewsFeed"));
-const TestNotifications = lazy(() => import("./pages/TestNotifications"));
-const SocialMediaTest = lazy(() => import("./pages/SocialMediaTestPage"));
-const PostDetail = lazy(() => import("./pages/PostDetailPage"));
-const CommunityTest = lazy(() => import("./pages/CommunityTest"));
+// Test pages - Removed for production
+// const PostDetail = lazy(() => import("./pages/PostDetailPage"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));

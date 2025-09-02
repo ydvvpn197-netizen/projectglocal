@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
-import { TestNotificationButton } from "@/components/TestNotificationButton";
+
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -64,8 +64,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <SidebarTrigger />
                 <Link to="/" className="flex items-center gap-2 font-bold text-lg lg:text-xl text-gradient">
                   <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
-                  <span className="hidden sm:inline">Local Social Hub</span>
-                  <span className="sm:hidden">LSH</span>
+                  <span className="hidden sm:inline">Glocal</span>
+                  <span className="sm:hidden">G</span>
                 </Link>
               </div>
               
@@ -131,8 +131,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                     {/* Notifications */}
                     {user ? <NotificationBell /> : <NotificationButton />}
                     
-                    {/* Test Button - Remove this in production */}
-                    <TestNotificationButton />
+
                     
                     {/* User Menu */}
                     <DropdownMenu>

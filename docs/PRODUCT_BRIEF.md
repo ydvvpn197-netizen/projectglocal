@@ -1,8 +1,8 @@
-# Local Social Hub - Product Brief
+# Glocal - Product Brief
 
 ## Project Overview
 
-**Local Social Hub** is a comprehensive community platform that combines the best features of Reddit, BookMyShow, and local discovery apps to create a hyper-local social networking experience. The platform enables users to discover, engage, and connect with their local community through news, events, artist bookings, community discussions, and location-based content.
+**Glocal** is a comprehensive community platform that combines the best features of Reddit, BookMyShow, and local discovery apps to create a hyper-local social networking experience. The platform enables users to discover, engage, and connect with their local community through news, events, artist bookings, community discussions, and location-based content.
 
 **Core Value Proposition**: A one-stop platform where users can access everything local - from news and events to community discussions and artist bookings - all personalized based on their location and interests.
 

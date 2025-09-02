@@ -8,7 +8,7 @@ const About = () => {
     <ResponsiveLayout>
       <div className="container max-w-4xl mx-auto p-6 space-y-8">
         <div className="text-center space-y-3">
-          <h1 className="text-4xl font-bold">About Local Social Hub</h1>
+          <h1 className="text-4xl font-bold">About Glocal</h1>
           <p className="text-muted-foreground text-lg">
             Where local communities connect, discover, and create — together.
           </p>
@@ -20,7 +20,7 @@ const About = () => {
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
             <p>
-              Local Social Hub is built to bring neighborhoods to life online. We help you discover nearby events,
+              Glocal is built to bring neighborhoods to life online. We help you discover nearby events,
               hire talented local artists, join meaningful conversations, and stay informed with location-based news — all in one place.
             </p>
             <p>
