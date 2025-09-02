@@ -153,14 +153,6 @@ const App = () => {
                   <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
                   <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                   
-                  {/* Test routes */}
-                  <Route path="/test/location" element={<LocationTest />} />
-                  <Route path="/test/news" element={<NewsFeed />} />
-                  <Route path="/test/notifications" element={<TestNotifications />} />
-                  <Route path="/test/social" element={<SocialMediaTest />} />
-                  <Route path="/test/post/:postId" element={<PostDetail />} />
-                  <Route path="/test/community" element={<CommunityTest />} />
-                  
                   {/* Admin routes */}
                   <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                   <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
