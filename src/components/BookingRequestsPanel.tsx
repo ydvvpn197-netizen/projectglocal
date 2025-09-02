@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,62 +35,7 @@ export const BookingRequestsPanel = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchBookingRequests();
-      
-      // Subscribe to real-time updates for new booking requests
-      const setupRealtimeSubscription = async () => {
-        // Get the artist record to get the correct artist_id
-        const { data: artistRecord, error: artistError } = await supabase
-          .from('artists')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (artistError) {
-          console.error('Error fetching artist record for realtime:', artistError);
-          return;
-        }
-
-        const channel = supabase
-          .channel('booking-requests')
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'artist_bookings',
-              filter: `artist_id=eq.${artistRecord.id}`
-            },
-            () => {
-              fetchBookingRequests();
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'artist_bookings',
-              filter: `artist_id=eq.${artistRecord.id}`
-            },
-            () => {
-              fetchBookingRequests();
-            }
-          )
-          .subscribe();
-
-        return () => {
-          supabase.removeChannel(channel);
-        };
-      };
-
-      setupRealtimeSubscription();
-    }
-  }, [user]);
-
-  const fetchBookingRequests = async () => {
+  const fetchBookingRequests = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -145,7 +90,62 @@ export const BookingRequestsPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchBookingRequests();
+      
+      // Subscribe to real-time updates for new booking requests
+      const setupRealtimeSubscription = async () => {
+        // Get the artist record to get the correct artist_id
+        const { data: artistRecord, error: artistError } = await supabase
+          .from('artists')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (artistError) {
+          console.error('Error fetching artist record for realtime:', artistError);
+          return;
+        }
+
+        const channel = supabase
+          .channel('booking-requests')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'artist_bookings',
+              filter: `artist_id=eq.${artistRecord.id}`
+            },
+            () => {
+              fetchBookingRequests();
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'artist_bookings',
+              filter: `artist_id=eq.${artistRecord.id}`
+            },
+            () => {
+              fetchBookingRequests();
+            }
+          )
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
+      };
+
+      setupRealtimeSubscription();
+    }
+  }, [user, fetchBookingRequests]);
 
   const handleBookingAction = async (requestId: string, action: 'accept' | 'reject') => {
     setActionLoading(requestId);

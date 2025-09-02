@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,34 +32,7 @@ export const ClientBookingsPanel = () => {
   const [bookings, setBookings] = useState<ClientBooking[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchClientBookings();
-      
-      // Subscribe to real-time updates for booking status changes
-      const channel = supabase
-        .channel('client-bookings')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'artist_bookings',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            fetchClientBookings();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
-
-  const fetchClientBookings = async () => {
+  const fetchClientBookings = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -101,7 +74,34 @@ export const ClientBookingsPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchClientBookings();
+      
+      // Subscribe to real-time updates for booking status changes
+      const channel = supabase
+        .channel('client-bookings')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'artist_bookings',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            fetchClientBookings();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user, fetchClientBookings]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

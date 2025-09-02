@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,13 +44,7 @@ export const ArtistModerationPanel = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
 
-  useEffect(() => {
-    if (user) {
-      fetchModerationData();
-    }
-  }, [user]);
-
-  const fetchModerationData = async () => {
+  const fetchModerationData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -95,7 +89,7 @@ export const ArtistModerationPanel = () => {
         ...(approvedData?.map(d => d.user_id) || [])
       ];
 
-      let profilesMap: Record<string, any> = {};
+      let profilesMap: Record<string, { user_id: string; display_name: string; avatar_url: string }> = {};
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
           .from('profiles')
@@ -129,7 +123,13 @@ export const ArtistModerationPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchModerationData();
+    }
+  }, [user, fetchModerationData]);
 
   const handleApproveDiscussion = async (discussionId: string) => {
     try {

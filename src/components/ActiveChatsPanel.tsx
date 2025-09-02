@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,33 +32,7 @@ export const ActiveChatsPanel = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      fetchConversations();
-      
-      // Subscribe to real-time updates for new messages
-      const channel = supabase
-        .channel('chat-conversations')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'chat_conversations'
-          },
-          () => {
-            fetchConversations();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
-
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -114,7 +88,34 @@ export const ActiveChatsPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+      
+      // Subscribe to real-time updates for new messages
+      const channel = supabase
+        .channel('active-conversations')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'chat_conversations',
+            filter: `artist_id=eq.${user.id}`
+          },
+          () => {
+            fetchConversations();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user, fetchConversations]);
 
   const openChat = (conversationId: string) => {
     navigate(`/chat/${conversationId}`);

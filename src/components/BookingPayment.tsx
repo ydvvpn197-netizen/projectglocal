@@ -27,7 +27,7 @@ interface Booking {
 
 interface BookingPaymentProps {
   booking: Booking;
-  onPaymentSuccess?: (result: any) => void;
+  onPaymentSuccess?: (result: { success: boolean; transactionId?: string }) => void;
   onPaymentError?: (error: string) => void;
   onCancel?: () => void;
   className?: string;
@@ -82,7 +82,7 @@ export function BookingPayment({
     clearError();
   };
 
-  const handlePaymentSuccess = (result: any) => {
+  const handlePaymentSuccess = (result: { success: boolean; transactionId?: string }) => {
     setShowPaymentForm(false);
     onPaymentSuccess?.(result);
   };

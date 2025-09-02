@@ -121,7 +121,7 @@ const SearchFilters = memo(({
   filters: SearchFilter;
   updateFilters: (filters: Partial<SearchFilter>) => void;
   resetFilters: () => void;
-  categories: any;
+  categories: Record<string, string[]>;
 }) => {
   return (
     <Card>

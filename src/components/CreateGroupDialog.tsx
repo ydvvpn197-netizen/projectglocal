@@ -59,11 +59,11 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
     try {
       const groupData: CreateGroupRequest = {
         ...formData,
-        latitude: currentLocation?.latitude,
-        longitude: currentLocation?.longitude,
-        location_city: (currentLocation as any)?.city || '',
-        location_state: (currentLocation as any)?.state || '',
-        location_country: (currentLocation as any)?.country || ''
+        latitude: currentLocation?.lat,
+        longitude: currentLocation?.lng,
+        location_city: currentLocation?.name || '',
+        location_state: currentLocation?.address || '',
+        location_country: currentLocation?.formatted_address || ''
       };
 
       const newGroup = await createGroup(groupData);
@@ -90,7 +90,7 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof CreateGroupRequest, value: any) => {
+  const handleInputChange = (field: keyof CreateGroupRequest, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
