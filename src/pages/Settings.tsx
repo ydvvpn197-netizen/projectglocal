@@ -2,29 +2,28 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useAccountDeletion } from "@/hooks/useAccountDeletion";
-import { supabase } from "@/integrations/supabase/client";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import { LocationSettings } from "@/components/LocationSettings";
+import { ProfileSettings } from "@/components/ProfileSettings";
+import { NotificationSettings } from "@/components/NotificationSettings";
+import { PrivacySettings } from "@/components/PrivacySettings";
+import { SecuritySettings } from "@/components/SecuritySettings";
 import { 
   Settings as SettingsIcon, 
   User, 
   Bell, 
   Shield, 
-  Moon, 
-  MapPin, 
-  Smartphone,
   LogOut,
   Trash2,
   Mail,
-  Lock,
-  AlertTriangle
+  AlertTriangle,
+  Save,
+  RefreshCw
 } from "lucide-react";
 import {
   AlertDialog,
@@ -38,102 +37,27 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface UserSettings {
-  real_time_location_enabled: boolean;
-  email_notifications: boolean;
-  push_notifications: boolean;
-  privacy_profile: boolean;
-  dark_mode: boolean;
-}
-
 const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { deleteAccount, testEdgeFunction, isDeleting } = useAccountDeletion();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const {
+    settings,
+    loading,
+    saving,
+    hasChanges,
+    handleSettingChange,
+    saveAllChanges,
+    changePassword,
+    changeEmail,
+    resetSettingsToDefaults
+  } = useUserSettings();
+
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
-  const [settings, setSettings] = useState<UserSettings>({
-    real_time_location_enabled: false,
-    email_notifications: true,
-    push_notifications: true,
-    privacy_profile: false,
-    dark_mode: false,
-  });
-
-  const [emailSettings, setEmailSettings] = useState({
-    email: user?.email || "",
+  const [emailData, setEmailData] = useState({
+    newEmail: "",
     currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
   });
-
-  useEffect(() => {
-    if (user) {
-      fetchSettings();
-    }
-  }, [user]);
-
-  const fetchSettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('real_time_location_enabled')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        setSettings(prev => ({
-          ...prev,
-          real_time_location_enabled: data.real_time_location_enabled || false,
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load settings.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateLocationSettings = async (enabled: boolean) => {
-    try {
-      setSaving(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          real_time_location_enabled: enabled,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      setSettings(prev => ({ ...prev, real_time_location_enabled: enabled }));
-      
-      toast({
-        title: "Settings Updated",
-        description: "Location settings have been updated successfully.",
-      });
-    } catch (error) {
-      console.error('Error updating settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update settings.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -151,6 +75,27 @@ const Settings = () => {
     }
   };
 
+
+
+  const handleEmailChange = async () => {
+    if (!emailData.newEmail || !emailData.currentPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await changeEmail(emailData);
+    if (result.success) {
+      setEmailData({
+        newEmail: "",
+        currentPassword: "",
+      });
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE") {
       toast({
@@ -164,6 +109,26 @@ const Settings = () => {
     const result = await deleteAccount();
     if (result.success) {
       setDeleteConfirmation("");
+    }
+  };
+
+  const handleSaveAll = async () => {
+    const success = await saveAllChanges();
+    if (success) {
+      toast({
+        title: "Success",
+        description: "All settings have been saved successfully.",
+      });
+    }
+  };
+
+  const handleResetToDefaults = async () => {
+    const result = await resetSettingsToDefaults();
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Settings have been reset to defaults.",
+      });
     }
   };
 
@@ -189,6 +154,34 @@ const Settings = () => {
           <p className="text-muted-foreground">
             Manage your account settings and preferences.
           </p>
+          
+          {/* Save/Reset Actions */}
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={handleSaveAll} 
+              disabled={!hasChanges || saving}
+              className="flex items-center gap-2"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? "Saving..." : "Save All Changes"}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleResetToDefaults}
+              disabled={saving}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reset to Defaults
+            </Button>
+            
+            {hasChanges && (
+              <span className="text-sm text-amber-600 font-medium">
+                You have unsaved changes
+              </span>
+            )}
+          </div>
         </div>
 
         <Tabs defaultValue="account" className="space-y-6">
@@ -201,46 +194,65 @@ const Settings = () => {
           </TabsList>
 
           <TabsContent value="account" className="space-y-6">
+            {/* Profile Information */}
+            <ProfileSettings showAvatar={true} compact={false} />
+
+            {/* Email Settings */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Account Information
+                  <Mail className="h-5 w-5" />
+                  Email Settings
                 </CardTitle>
                 <CardDescription>
-                  Update your account details and email address.
+                  Change your email address or manage email preferences.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="currentEmail">Current Email</Label>
                   <Input
-                    id="email"
+                    id="currentEmail"
                     type="email"
-                    value={emailSettings.email}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, email: e.target.value }))}
+                    value={user?.email || ""}
                     disabled
                   />
                   <p className="text-sm text-muted-foreground">
-                    Contact support to change your email address.
+                    Your current email address.
                   </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="userId">User ID</Label>
+                  <Label htmlFor="newEmail">New Email Address</Label>
                   <Input
-                    id="userId"
-                    value={user?.id || ""}
-                    disabled
+                    id="newEmail"
+                    type="email"
+                    value={emailData.newEmail}
+                    onChange={(e) => setEmailData(prev => ({ ...prev, newEmail: e.target.value }))}
+                    placeholder="Enter new email address"
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Your unique user identifier.
-                  </p>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="emailPassword">Current Password</Label>
+                  <Input
+                    id="emailPassword"
+                    type="password"
+                    value={emailData.currentPassword}
+                    onChange={(e) => setEmailData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    placeholder="Enter your current password"
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleEmailChange} 
+                  disabled={!emailData.newEmail || !emailData.currentPassword || saving}
+                  className="w-full"
+                >
+                  Change Email Address
+                </Button>
               </CardContent>
             </Card>
-
-
           </TabsContent>
 
           <TabsContent value="location" className="space-y-6">
@@ -248,160 +260,17 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="privacy" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Privacy Controls
-                </CardTitle>
-                <CardDescription>
-                  Manage your privacy and data sharing preferences.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Private Profile</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Make your profile visible only to approved followers.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.privacy_profile}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({ ...prev, privacy_profile: checked }))
-                    }
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Analytics</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Help improve the app by sharing anonymous usage data.
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
+            <PrivacySettings />
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Notification Preferences
-                </CardTitle>
-                <CardDescription>
-                  Choose what notifications you want to receive.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive updates and announcements via email.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.email_notifications}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({ ...prev, email_notifications: checked }))
-                    }
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get notified about new messages and activity.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.push_notifications}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({ ...prev, push_notifications: checked }))
-                    }
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Event Reminders</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Get reminded about upcoming events you're interested in.
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationSettings />
           </TabsContent>
 
           <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5" />
-                  Security Settings
-                </CardTitle>
-                <CardDescription>
-                  Manage your account security and authentication.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={emailSettings.currentPassword}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, currentPassword: e.target.value }))}
-                    placeholder="Enter current password"
-                  />
-                </div>
+            <SecuritySettings />
 
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={emailSettings.newPassword}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, newPassword: e.target.value }))}
-                    placeholder="Enter new password"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={emailSettings.confirmPassword}
-                    onChange={(e) => setEmailSettings(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-
-                <Button className="w-full" disabled>
-                  Update Password
-                </Button>
-                <p className="text-sm text-muted-foreground text-center">
-                  Password changes are currently disabled. Contact support for assistance.
-                </p>
-              </CardContent>
-            </Card>
-
+            {/* Danger Zone */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-destructive">Danger Zone</CardTitle>
