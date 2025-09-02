@@ -1,0 +1,1 @@
+import{j as s}from"./index-B5IYdG7F.js";import{C as a,a as i,b as n,d as r}from"./card-Bm1jiGt-.js";function d(){return s.jsx("div",{className:"container mx-auto py-6",children:s.jsxs(a,{children:[s.jsx(i,{children:s.jsx(n,{children:"Admin Analytics"})}),s.jsx(r,{children:s.jsx("p",{children:"Analytics dashboard is coming soon."})})]})})}export{d as default};
