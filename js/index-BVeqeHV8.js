@@ -1,0 +1,1 @@
+import{r as t,t as e}from"./index-DxejKcbp.js";function r(r,a){t(2,arguments);var n=e(r),o=e(a);return 12*(n.getFullYear()-o.getFullYear())+(n.getMonth()-o.getMonth())}function a(r){t(1,arguments);var a=e(r),n=a.getMonth();return a.setFullYear(a.getFullYear(),n+1,0),a.setHours(23,59,59,999),a}export{r as d,a as e};
