@@ -5,15 +5,7 @@
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { SecurityUtils, SecuritySchemas, SECURITY_CONFIG } from '../security';
-
-// Mock DOMPurify
-const mockSanitize = vi.fn();
-vi.mock('dompurify', () => ({
-  default: {
-    sanitize: mockSanitize,
-    setConfig: vi.fn(),
-  },
-}));
+import { mockSanitize } from '../../test/setup';
 
 describe('SecurityUtils', () => {
   beforeEach(() => {
@@ -295,8 +287,8 @@ describe('SecuritySchemas', () => {
       const invalidUsernames = ['ab', 'user@name', 'user.name', 'user name', '123user'];
       
       invalidUsernames.forEach(username => {
-        const result = username.match(SecuritySchemas.username._def.regex);
-        expect(result).toBeFalsy();
+        const result = SecuritySchemas.username.safeParse(username);
+        expect(result.success).toBe(false);
       });
     });
   });

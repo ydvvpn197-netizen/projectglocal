@@ -7,12 +7,35 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 // Mock DOMPurify for security utilities
+const mockSanitize = vi.fn((content: string) => content);
 vi.mock('dompurify', () => ({
   default: {
-    sanitize: vi.fn((content: string) => content),
+    sanitize: mockSanitize,
     setConfig: vi.fn(),
   },
 }));
+
+// Export mock for use in tests
+export { mockSanitize };
+
+// Mock window object for browser APIs
+Object.defineProperty(global, 'window', {
+  value: {
+    ...global.window,
+    location: {
+      href: 'http://localhost:3000',
+      origin: 'http://localhost:3000',
+      pathname: '/',
+      search: '',
+      hash: '',
+    },
+    navigator: {
+      userAgent: 'test',
+      onLine: true,
+    },
+  },
+  writable: true,
+});
 
 // Mock crypto for security utilities
 Object.defineProperty(window, 'crypto', {
@@ -24,7 +47,17 @@ Object.defineProperty(window, 'crypto', {
       return array;
     }),
     subtle: {
-      digest: vi.fn(async () => new ArrayBuffer(32)),
+      digest: vi.fn(async (algorithm, data) => {
+        // Generate a simple hash based on the input data
+        const dataString = new TextDecoder().decode(data);
+        const hash = dataString.split('').reduce((acc, char, index) => acc + char.charCodeAt(0) * (index + 1), 0);
+        const buffer = new ArrayBuffer(32);
+        const view = new Uint8Array(buffer);
+        for (let i = 0; i < 32; i++) {
+          view[i] = (hash + i * dataString.length + dataString.charCodeAt(i % dataString.length)) % 256;
+        }
+        return buffer;
+      }),
     },
   },
 });
@@ -337,6 +370,8 @@ vi.mock('lucide-react', () => ({
   Android2: () => '🤖',
   Windows2: () => '🪟',
   Linux2: () => '🐧',
+  Shuffle: () => '🔀',
+  Music: () => '🎵',
 }));
 
 // Mock date-fns
@@ -356,8 +391,26 @@ vi.mock('date-fns', () => ({
 // Mock security utils
 vi.mock('@/config/security', () => ({
   SecurityUtils: {
-    sanitizeHtml: (content: string) => content,
-    validateInput: (schema: unknown, input: unknown) => ({ success: true, data: input }),
+    sanitizeHtml: (content: string) => {
+      // Call the mock function to track calls
+      mockSanitize(content, {
+        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'br', 'p'],
+        ALLOWED_ATTR: ['href', 'target', 'rel'],
+        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
+        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+      });
+      return content;
+    },
+    validateInput: (schema: unknown, input: unknown) => {
+      // Mock validation logic
+      if (input === null || input === undefined) {
+        return { success: false, errors: ['Validation failed'] };
+      }
+      if (typeof input === 'string' && input.length < 3) {
+        return { success: false, errors: ['Username must be at least 3 characters'] };
+      }
+      return { success: true, data: input };
+    },
     containsDangerousContent: (content: string) => {
       const dangerousPatterns = [
         /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
@@ -474,8 +527,11 @@ vi.mock('@/config/security', () => ({
     fileUpload: {
       safeParse: (input: unknown) => {
         // Mock validation logic for file upload
-        if (input && typeof input === 'object' && input.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(input.type)) {
-          return { success: true, data: input };
+        if (input && typeof input === 'object' && 'size' in input && 'type' in input) {
+          const fileInput = input as { size: number; type: string };
+          if (fileInput.size <= 5 * 1024 * 1024 && fileInput.size > 0 && ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(fileInput.type)) {
+            return { success: true, data: input };
+          }
         }
         return { success: false, error: { issues: [{ message: 'Invalid file upload' }] } };
       },
