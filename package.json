@@ -42,6 +42,7 @@
     "deploy:github": "npm run build && gh-pages -d dist",
     "deploy:vercel": "vercel --prod",
     "deploy:netlify": "netlify deploy --prod --dir=dist",
+    "setup:env": "node scripts/create-env.js",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:migrate": "supabase migration up",

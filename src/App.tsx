@@ -10,6 +10,7 @@ import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { SPARouter } from "./components/SPARouter";
 import { AppRoutes } from "./routes/AppRoutes";
 import { appConfig } from '@/config/environment';
+import { isSupabaseConfigured } from '@/integrations/supabase/client';
 
 // import { useRoutePreloader } from "./hooks/useRoutePreloader";
 
@@ -29,6 +30,17 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize route preloader - temporarily disabled to fix infinite reload
   // useRoutePreloader();
+
+  // Check configuration on app start
+  React.useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      console.error('❌ Supabase is not properly configured!');
+      console.error('Please create a .env file with your Supabase credentials.');
+      console.error('Visit /config-status to see detailed configuration information.');
+    } else {
+      console.log('✅ Supabase configuration is valid');
+    }
+  }, []);
 
   return (
     <EnhancedThemeProvider>

@@ -60,6 +60,9 @@ const ServiceAgreement = React.lazy(() => import('@/pages/ServiceAgreement'));
 // Error pages
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 
+// Configuration status page
+const ConfigStatus = React.lazy(() => import('@/components/ConfigStatus'));
+
 // Admin pages
 const AdminDashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
@@ -74,6 +77,7 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/config-status" element={<ConfigStatus />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />

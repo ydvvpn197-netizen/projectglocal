@@ -1,4 +1,19 @@
-# Supabase Configuration (Required)
+#!/usr/bin/env node
+
+/**
+ * Script to create .env file with Supabase credentials
+ * Run this script to automatically create your .env file
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const envContent = `# Supabase Configuration (Required)
 VITE_SUPABASE_URL=https://tepvzhbgobckybyhryuj.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4
 
@@ -59,3 +74,48 @@ VITE_ENABLE_ERROR_TRACKING=true
 
 # Copy this file to .env and fill in your actual values
 # Never commit .env files to version control
+`;
+
+const envPath = path.join(__dirname, '..', '.env');
+
+try {
+  // Check if .env already exists
+  if (fs.existsSync(envPath)) {
+    console.log('⚠️  .env file already exists. Do you want to overwrite it? (y/N)');
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    
+    process.stdin.on('data', (data) => {
+      const input = data.trim().toLowerCase();
+      if (input === 'y' || input === 'yes') {
+        createEnvFile();
+      } else {
+        console.log('❌ .env file creation cancelled.');
+        process.exit(0);
+      }
+    });
+  } else {
+    createEnvFile();
+  }
+} catch (error) {
+  console.error('❌ Error creating .env file:', error.message);
+  process.exit(1);
+}
+
+function createEnvFile() {
+  try {
+    fs.writeFileSync(envPath, envContent);
+    console.log('✅ .env file created successfully!');
+    console.log('📍 Location:', envPath);
+    console.log('');
+    console.log('🚀 Next steps:');
+    console.log('1. Restart your development server');
+    console.log('2. Visit /config-status to verify configuration');
+    console.log('3. Your Supabase connection should now work!');
+    console.log('');
+    console.log('⚠️  Remember: Never commit .env files to version control');
+  } catch (error) {
+    console.error('❌ Failed to create .env file:', error.message);
+    process.exit(1);
+  }
+}
