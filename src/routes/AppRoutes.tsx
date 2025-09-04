@@ -9,6 +9,9 @@ const Feed = React.lazy(() => import('@/pages/Feed'));
 const Discover = React.lazy(() => import('@/pages/Discover'));
 const About = React.lazy(() => import('@/pages/About'));
 
+// Test component for debugging
+const TestRouter = React.lazy(() => import('@/components/TestRouter'));
+
 // Auth/Onboarding pages (grouped together)
 const LocationSetup = React.lazy(() => import('@/pages/LocationSetup'));
 const Onboarding = React.lazy(() => import('@/pages/Onboarding'));
@@ -77,6 +80,7 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/test-router" element={<TestRouter />} />
       <Route path="/config-status" element={<ConfigStatus />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { User, Session } from '@supabase/supabase-js';
 import { resilientSupabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { clearAuthData, checkForStaleAuthData } from '@/utils/clearAuthData';

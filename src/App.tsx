@@ -7,15 +7,11 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { EnhancedThemeProvider } from "@/components/ui/EnhancedThemeProvider";
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
-import { SPARouter } from "./components/SPARouter";
 import { AppRoutes } from "./routes/AppRoutes";
 import { appConfig } from '@/config/environment';
 import { isSupabaseConfigured } from '@/integrations/supabase/client';
 
-// import { useRoutePreloader } from "./hooks/useRoutePreloader";
-
 // App configuration and setup
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -25,12 +21,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// SPA Router component is now imported from separate file
-
 const App = () => {
-  // Initialize route preloader - temporarily disabled to fix infinite reload
-  // useRoutePreloader();
-
   // Check configuration on app start
   React.useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -49,12 +40,10 @@ const App = () => {
           <AuthProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter basename={appConfig.baseUrl}>
-              <SPARouter>
-                <LazyLoader fallback={<PageLoader />}>
-                  <AppRoutes />
-                </LazyLoader>
-              </SPARouter>
+            <BrowserRouter>
+              <LazyLoader fallback={<PageLoader />}>
+                <AppRoutes />
+              </LazyLoader>
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
