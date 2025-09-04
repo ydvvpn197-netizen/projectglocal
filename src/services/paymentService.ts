@@ -403,12 +403,12 @@ export class PaymentService {
   }
 }
 
-import { stripe } from '@/config/environment';
+import { stripeConfig } from '../config/environment';
 
 // Export singleton instance
 export const paymentService = new PaymentService({
-  publishableKey: stripe.publishableKey,
-  secretKey: stripe.secretKey,
-  webhookSecret: stripe.webhookSecret,
+  publishableKey: stripeConfig.publishableKey,
+  secretKey: stripeConfig.secretKey,
+  webhookSecret: stripeConfig.webhookSecret,
   apiVersion: '2023-10-16'
 });
