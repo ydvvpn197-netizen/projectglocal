@@ -5,6 +5,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isOnline: boolean;
+  connectionStatus: 'connected' | 'connecting' | 'failed' | 'offline';
   signUp: (email: string, password: string, firstName?: string, lastName?: string, userType?: 'user' | 'artist') => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithOAuth: (provider: 'google' | 'facebook') => Promise<{ error: Error | null }>;

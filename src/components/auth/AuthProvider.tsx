@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { resilientSupabase } from '@/integrations/supabase/client';
+import { resilientSupabase, withErrorHandling, getConnectionStatus, forceReconnection } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { clearAuthData, checkForStaleAuthData } from '@/utils/clearAuthData';
 import { AuthContext } from './AuthContext';
@@ -9,7 +9,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'failed' | 'offline'>('connecting');
   const { toast } = useToast();
+
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setConnectionStatus('connecting');
+      // Attempt to reconnect when coming back online
+      forceReconnection().then((success) => {
+        if (success) {
+          setConnectionStatus('connected');
+          // Re-initialize auth when connection is restored
+          initializeAuth();
+        } else {
+          setConnectionStatus('failed');
+        }
+      });
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setConnectionStatus('offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Connection status monitoring
+  useEffect(() => {
+    const checkConnection = () => {
+      const status = getConnectionStatus();
+      setConnectionStatus(status);
+    };
+
+    const interval = setInterval(checkConnection, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -31,9 +75,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         
-        // Check if we're online
+        // Check if we're offline
         if (!navigator.onLine) {
           console.warn('Network is offline, using cached session');
+          setConnectionStatus('offline');
           // Try to get session from localStorage as fallback
           const cachedSession = localStorage.getItem('supabase.auth.token');
           if (cachedSession) {
@@ -49,47 +94,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Clear invalid cached data
               clearAuthData();
             }
+          } else {
+            setLoading(false);
           }
           return;
         }
 
-        // Test Supabase connection first
-        try {
-          const { data: { session }, error } = await resilientSupabase.auth.getSession();
-          
-          if (error) {
-            console.error('Error getting session:', error);
-            // Clear any stale session data
-            if (isMounted) {
-              setSession(null);
-              setUser(null);
-              setLoading(false);
-            }
-            return;
-          }
-          
-          // Validate session is still valid
-          if (session && session.expires_at) {
-            const expiresAt = new Date(session.expires_at * 1000);
-            if (expiresAt < new Date()) {
-              console.log('Session has expired, clearing auth state');
-              if (isMounted) {
-                setSession(null);
-                setUser(null);
-                setLoading(false);
-              }
-              return;
-            }
-          }
-          
-          if (isMounted) {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-          }
-        } catch (connectionError) {
-          console.error('Supabase connection error during auth initialization:', connectionError);
-          // Set loading to false so the app can continue without auth
+        // Test Supabase connection first with enhanced error handling
+        const { data: connectionResult, error: connectionError } = await withErrorHandling(
+          async () => {
+            const { data: { session }, error } = await resilientSupabase.auth.getSession();
+            if (error) throw error;
+            return session;
+          },
+          null,
+          'Failed to get session during initialization'
+        );
+        
+        if (connectionError) {
+          console.error('Error getting session:', connectionError);
+          setConnectionStatus('failed');
+          // Clear any stale session data
           if (isMounted) {
             setSession(null);
             setUser(null);
@@ -102,20 +127,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             description: "Unable to connect to authentication service. Some features may be limited.",
             variant: "destructive",
           });
+          return;
+        }
+        
+        const session = connectionResult;
+        
+        // Validate session is still valid
+        if (session && session.expires_at) {
+          const expiresAt = new Date(session.expires_at * 1000);
+          if (expiresAt < new Date()) {
+            console.log('Session has expired, clearing auth state');
+            if (isMounted) {
+              setSession(null);
+              setUser(null);
+              setLoading(false);
+            }
+            return;
+          }
+        }
+        
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+          setConnectionStatus('connected');
         }
       } catch (error) {
         console.error('Error during auth initialization:', error);
+        setConnectionStatus('failed');
         if (isMounted) {
           setSession(null);
           setUser(null);
           setLoading(false);
         }
+        
+        // Show error toast
+        toast({
+          title: "Authentication Error",
+          description: "Failed to initialize authentication. Please refresh the page.",
+          variant: "destructive",
+        });
       }
     };
 
     initializeAuth();
 
-    // Set up auth state change listener
+    // Set up auth state change listener with error handling
     const { data: { subscription } } = resilientSupabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
@@ -124,6 +181,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          
+          // Update connection status based on auth state
+          if (session) {
+            setConnectionStatus('connected');
+          } else if (!navigator.onLine) {
+            setConnectionStatus('offline');
+          } else {
+            setConnectionStatus('failed');
+          }
         }
       }
     );
@@ -145,21 +211,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const { data, error } = await resilientSupabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            user_type: userType || 'user',
-          }
-        }
-      });
+      const { data: result, error: operationError } = await withErrorHandling(
+        async () => {
+          const { data, error } = await resilientSupabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                first_name: firstName,
+                last_name: lastName,
+                user_type: userType || 'user',
+              }
+            }
+          });
+          if (error) throw error;
+          return data;
+        },
+        null,
+        'Sign up failed'
+      );
 
-      if (error) {
-        const errorMessage = error.message || 'An unexpected error occurred';
-        console.error('Sign up error:', error);
+      if (operationError) {
+        const errorMessage = operationError.message || 'An unexpected error occurred';
+        console.error('Sign up error:', operationError);
         toast({
           title: "Sign Up Failed",
           description: errorMessage,
@@ -168,7 +242,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error(errorMessage) };
       }
 
-      if (data.user && !data.session) {
+      if (result?.user && !result?.session) {
         toast({
           title: "Sign Up Successful",
           description: "Please check your email to verify your account.",
@@ -199,14 +273,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const { data, error } = await resilientSupabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data: result, error: operationError } = await withErrorHandling(
+        async () => {
+          const { data, error } = await resilientSupabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (error) throw error;
+          return data;
+        },
+        null,
+        'Sign in failed'
+      );
 
-      if (error) {
-        const errorMessage = error.message || 'An unexpected error occurred';
-        console.error('Sign in error:', error);
+      if (operationError) {
+        const errorMessage = operationError.message || 'An unexpected error occurred';
+        console.error('Sign in error:', operationError);
         toast({
           title: "Sign In Failed",
           description: errorMessage,
@@ -215,10 +297,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error(errorMessage) };
       }
 
-      if (data.user) {
+      if (result?.user) {
         toast({
           title: "Welcome Back!",
-          description: `Signed in as ${data.user.email}`,
+          description: `Signed in as ${result.user.email}`,
         });
       }
 
@@ -246,16 +328,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const { data, error } = await resilientSupabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
+      const { data: result, error: operationError } = await withErrorHandling(
+        async () => {
+          const { data, error } = await resilientSupabase.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo: `${window.location.origin}/auth/callback`
+            }
+          });
+          if (error) throw error;
+          return data;
+        },
+        null,
+        'OAuth sign in failed'
+      );
 
-      if (error) {
-        const errorMessage = error.message || 'An unexpected error occurred';
-        console.error('OAuth sign in error:', error);
+      if (operationError) {
+        const errorMessage = operationError.message || 'An unexpected error occurred';
+        console.error('OAuth sign in error:', operationError);
         toast({
           title: "OAuth Sign In Failed",
           description: errorMessage,
@@ -279,10 +369,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { error } = await resilientSupabase.auth.signOut();
+      const { error: operationError } = await withErrorHandling(
+        async () => {
+          const { error } = await resilientSupabase.auth.signOut();
+          if (error) throw error;
+          return { success: true };
+        },
+        { success: false },
+        'Sign out failed'
+      );
       
-      if (error) {
-        console.error('Sign out error:', error);
+      if (operationError) {
+        console.error('Sign out error:', operationError);
         toast({
           title: "Sign Out Failed",
           description: "There was an error signing you out.",
@@ -315,13 +413,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const { error } = await resilientSupabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const { error: operationError } = await withErrorHandling(
+        async () => {
+          const { error } = await resilientSupabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/auth/reset-password`,
+          });
+          if (error) throw error;
+          return { success: true };
+        },
+        { success: false },
+        'Password reset request failed'
+      );
 
-      if (error) {
-        const errorMessage = error.message || 'An unexpected error occurred';
-        console.error('Password reset request error:', error);
+      if (operationError) {
+        const errorMessage = operationError.message || 'An unexpected error occurred';
+        console.error('Password reset request error:', operationError);
         toast({
           title: "Password Reset Failed",
           description: errorMessage,
@@ -411,19 +517,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  // Enhanced auth context value with connection status
+  const authContextValue = useMemo(() => ({
+    user,
+    session,
+    loading,
+    isOnline,
+    connectionStatus,
+    signUp,
+    signIn,
+    signInWithOAuth,
+    signOut,
+    requestPasswordReset,
+    resetPassword,
+    clearAuthData: handleClearAuthData
+  }), [user, session, loading, isOnline, connectionStatus, signUp, signIn, signInWithOAuth, signOut, requestPasswordReset, resetPassword]);
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      signUp,
-      signIn,
-      signInWithOAuth,
-      signOut,
-      requestPasswordReset,
-      resetPassword,
-      clearAuthData: handleClearAuthData
-    }}>
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );

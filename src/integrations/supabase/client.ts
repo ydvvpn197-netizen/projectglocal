@@ -1,10 +1,23 @@
-// Supabase client configuration
+// Supabase client configuration with enhanced error handling and fallback mechanisms
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { supabaseConfig } from '@/config/environment';
 
+// Enhanced error handling and retry configuration
+const CLIENT_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  connectionTimeout: 10000,
+  enableOfflineMode: true,
+} as const;
+
+// Connection status tracking
+let connectionStatus: 'connected' | 'connecting' | 'failed' | 'offline' = 'connecting';
+let retryCount = 0;
+let lastConnectionAttempt = 0;
+
 // Validate Supabase configuration before creating client
-const validateSupabaseConfig = () => {
+const validateSupabaseConfig = (): boolean => {
   const url = supabaseConfig.url;
   const anonKey = supabaseConfig.anonKey;
   
@@ -21,7 +34,70 @@ const validateSupabaseConfig = () => {
   return true;
 };
 
-// Create Supabase client with validation
+// Enhanced connection test with timeout
+const testConnection = async (): Promise<boolean> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), CLIENT_CONFIG.connectionTimeout);
+    
+    const { data, error } = await resilientSupabase.auth.getSession();
+    
+    clearTimeout(timeoutId);
+    
+    if (error) {
+      console.warn('⚠️ Supabase connection test failed:', error.message);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn('⚠️ Supabase connection test timed out');
+    } else {
+      console.warn('⚠️ Supabase connection test failed:', error);
+    }
+    return false;
+  }
+};
+
+// Connection retry logic
+const attemptReconnection = async (): Promise<void> => {
+  if (retryCount >= CLIENT_CONFIG.maxRetries) {
+    console.error('❌ Max reconnection attempts reached');
+    connectionStatus = 'failed';
+    return;
+  }
+  
+  const now = Date.now();
+  if (now - lastConnectionAttempt < CLIENT_CONFIG.retryDelay) {
+    return; // Wait before retrying
+  }
+  
+  retryCount++;
+  lastConnectionAttempt = now;
+  
+  console.log(`🔄 Attempting to reconnect (${retryCount}/${CLIENT_CONFIG.maxRetries})...`);
+  
+  try {
+    const isConnected = await testConnection();
+    if (isConnected) {
+      connectionStatus = 'connected';
+      retryCount = 0;
+      console.log('✅ Reconnection successful');
+    } else {
+      connectionStatus = 'failed';
+      // Schedule next retry
+      setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
+    }
+  } catch (error) {
+    console.error('❌ Reconnection attempt failed:', error);
+    connectionStatus = 'failed';
+    // Schedule next retry
+    setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
+  }
+};
+
+// Create Supabase client with validation and enhanced error handling
 let supabase: ReturnType<typeof createClient<Database>>;
 
 if (validateSupabaseConfig()) {
@@ -32,6 +108,7 @@ if (validateSupabaseConfig()) {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        flowType: 'pkce',
       },
       realtime: {
         params: {
@@ -43,26 +120,40 @@ if (validateSupabaseConfig()) {
           'X-Client-Info': 'projectglocal-web',
         },
       },
+      db: {
+        schema: 'public',
+      },
     });
+    
     console.log('✅ Supabase client initialized successfully');
     
-    // Test the connection
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (error) {
-        console.warn('⚠️ Supabase connection test failed:', error.message);
-      } else {
+    // Test the connection asynchronously
+    testConnection().then((isConnected) => {
+      if (isConnected) {
+        connectionStatus = 'connected';
         console.log('✅ Supabase connection test successful');
+      } else {
+        connectionStatus = 'failed';
+        console.warn('⚠️ Supabase connection test failed, will retry automatically');
+        // Start retry process
+        setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
       }
     }).catch((error) => {
       console.warn('⚠️ Supabase connection test failed:', error.message);
+      connectionStatus = 'failed';
+      // Start retry process
+      setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
     });
     
   } catch (error) {
     console.error('❌ Failed to initialize Supabase client:', error);
+    connectionStatus = 'failed';
     // Create a mock client that will fail gracefully
     supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
   }
 } else {
+  console.error('❌ Supabase configuration is invalid');
+  connectionStatus = 'failed';
   // Create a mock client that will fail gracefully
   supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
 }
@@ -73,15 +164,24 @@ export const resilientSupabase = supabase;
 // Export the main client
 export { supabase };
 
-// Helper function to check if Supabase is properly configured
+// Enhanced helper functions
 export const isSupabaseConfigured = (): boolean => {
   return validateSupabaseConfig();
 };
 
-// Helper function to get connection status
-export const getSupabaseStatus = async (): Promise<{ connected: boolean; error?: string }> => {
+export const getSupabaseStatus = async (): Promise<{ 
+  connected: boolean; 
+  status: typeof connectionStatus;
+  error?: string;
+  retryCount: number;
+}> => {
   if (!isSupabaseConfigured()) {
-    return { connected: false, error: 'Environment variables not configured' };
+    return { 
+      connected: false, 
+      status: 'failed',
+      error: 'Environment variables not configured',
+      retryCount: 0
+    };
   }
   
   try {
@@ -89,16 +189,32 @@ export const getSupabaseStatus = async (): Promise<{ connected: boolean; error?:
     const { data, error } = await supabase.auth.getSession();
     
     if (error) {
-      return { connected: false, error: error.message };
+      connectionStatus = 'failed';
+      return { 
+        connected: false, 
+        status: 'failed',
+        error: error.message,
+        retryCount
+      };
     }
     
-    return { connected: true };
+    connectionStatus = 'connected';
+    return { 
+      connected: true, 
+      status: 'connected',
+      retryCount: 0
+    };
   } catch (error) {
-    return { connected: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    connectionStatus = 'failed';
+    return { 
+      connected: false, 
+      status: 'failed',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      retryCount
+    };
   }
 };
 
-// Helper function to test Supabase connection
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
     const status = await getSupabaseStatus();
@@ -107,3 +223,73 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
     return false;
   }
 };
+
+// Enhanced connection management
+export const forceReconnection = async (): Promise<boolean> => {
+  console.log('🔄 Forcing reconnection...');
+  retryCount = 0;
+  connectionStatus = 'connecting';
+  
+  try {
+    const isConnected = await testConnection();
+    if (isConnected) {
+      connectionStatus = 'connected';
+      retryCount = 0;
+      console.log('✅ Force reconnection successful');
+      return true;
+    } else {
+      connectionStatus = 'failed';
+      console.log('❌ Force reconnection failed');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Force reconnection error:', error);
+    connectionStatus = 'failed';
+    return false;
+  }
+};
+
+// Network status monitoring
+export const getNetworkStatus = (): { online: boolean; connectionType?: string } => {
+  if ('connection' in navigator) {
+    const connection = (navigator as any).connection;
+    return {
+      online: navigator.onLine,
+      connectionType: connection?.effectiveType || connection?.type
+    };
+  }
+  
+  return { online: navigator.onLine };
+};
+
+// Enhanced error wrapper for Supabase operations
+export const withErrorHandling = async <T>(
+  operation: () => Promise<T>,
+  fallback?: T,
+  errorMessage = 'Operation failed'
+): Promise<{ data: T | null; error: Error | null }> => {
+  try {
+    if (connectionStatus === 'failed' && !navigator.onLine) {
+      throw new Error('Network is offline and Supabase connection failed');
+    }
+    
+    const result = await operation();
+    return { data: result, error: null };
+  } catch (error) {
+    console.error(`${errorMessage}:`, error);
+    
+    // Attempt reconnection if this is a connection error
+    if (connectionStatus === 'failed' && navigator.onLine) {
+      await attemptReconnection();
+    }
+    
+    return { 
+      data: fallback || null, 
+      error: error instanceof Error ? error : new Error(String(error))
+    };
+  }
+};
+
+// Export connection status for monitoring
+export const getConnectionStatus = () => connectionStatus;
+export const getRetryCount = () => retryCount;
