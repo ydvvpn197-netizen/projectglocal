@@ -1,1 +1,0 @@
-import{j as s,C as n,v as a,w as i,y as r}from"./main-u5iDOJMZ.js";function c(){return s.jsx("div",{className:"container mx-auto py-6",children:s.jsxs(n,{children:[s.jsx(a,{children:s.jsx(i,{children:"Admin Analytics"})}),s.jsx(r,{children:s.jsx("p",{children:"Analytics dashboard is coming soon."})})]})})}export{c as default};
