@@ -15,13 +15,32 @@ import {
 import { handleError, handleAuthError, handleApiError } from '@/services/errorHandlingService';
 import ConnectionStatus from './ConnectionStatus';
 
+// Define proper types for test results
+interface TestResults {
+  supabaseStatus?: Awaited<ReturnType<typeof getSupabaseStatus>>;
+  connectionTest?: boolean;
+  networkStatus?: ReturnType<typeof getNetworkStatus>;
+  connectionStatus?: ReturnType<typeof getConnectionStatus>;
+  retryCount?: number;
+  timestamp?: string;
+  forceReconnection?: boolean;
+  errorHandling?: {
+    general: { recovered: boolean; fallbackValue?: unknown };
+    auth: { recovered: boolean; shouldRetry: boolean };
+    api: { recovered: boolean; shouldRetry: boolean; retryDelay?: number };
+  };
+  error?: string;
+  forceReconnectionError?: string;
+  errorHandlingError?: string;
+}
+
 /**
  * Test Router Component
  * Provides testing tools for error handling and connection status
  */
 export const TestRouter: React.FC = () => {
   const { user, connectionStatus, isOnline } = useAuth();
-  const [testResults, setTestResults] = useState<any>({});
+  const [testResults, setTestResults] = useState<TestResults>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const runConnectionTest = async () => {

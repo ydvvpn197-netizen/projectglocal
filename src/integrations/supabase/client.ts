@@ -252,7 +252,13 @@ export const forceReconnection = async (): Promise<boolean> => {
 // Network status monitoring
 export const getNetworkStatus = (): { online: boolean; connectionType?: string } => {
   if ('connection' in navigator) {
-    const connection = (navigator as any).connection;
+    // Define interface for navigator connection property
+    interface NavigatorConnection {
+      effectiveType?: string;
+      type?: string;
+    }
+    
+    const connection = (navigator as Navigator & { connection?: NavigatorConnection }).connection;
     return {
       online: navigator.onLine,
       connectionType: connection?.effectiveType || connection?.type

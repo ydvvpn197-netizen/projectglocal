@@ -17,7 +17,7 @@ export interface ErrorHandlingOptions {
   showToast?: boolean;
   logToConsole?: boolean;
   attemptRecovery?: boolean;
-  fallbackValue?: any;
+  fallbackValue?: unknown;
   context?: string;
 }
 
@@ -43,7 +43,7 @@ export class ErrorHandlingService {
   async handleError(
     error: unknown,
     options: ErrorHandlingOptions = {}
-  ): Promise<{ recovered: boolean; fallbackValue?: any }> {
+  ): Promise<{ recovered: boolean; fallbackValue?: unknown }> {
     const {
       showToast = true,
       logToConsole = true,

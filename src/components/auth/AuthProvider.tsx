@@ -200,7 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [toast]);
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, userType?: 'user' | 'artist') => {
+  const signUp = useCallback(async (email: string, password: string, firstName?: string, lastName?: string, userType?: 'user' | 'artist') => {
     try {
       if (!navigator.onLine) {
         toast({
@@ -260,9 +260,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error: new Error(errorMessage) };
     }
-  };
+  }, [toast]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
       if (!navigator.onLine) {
         toast({
@@ -315,9 +315,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error: new Error(errorMessage) };
     }
-  };
+  }, [toast]);
 
-  const signInWithOAuth = async (provider: 'google' | 'facebook') => {
+  const signInWithOAuth = useCallback(async (provider: 'google' | 'facebook') => {
     try {
       if (!navigator.onLine) {
         toast({
@@ -365,9 +365,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error: new Error(errorMessage) };
     }
-  };
+  }, [toast]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       const { error: operationError } = await withErrorHandling(
         async () => {
@@ -400,9 +400,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
-  const requestPasswordReset = async (email: string) => {
+  const requestPasswordReset = useCallback(async (email: string) => {
     try {
       if (!navigator.onLine) {
         toast({
@@ -452,9 +452,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error: new Error(errorMessage) };
     }
-  };
+  }, [toast]);
 
-  const resetPassword = async (token: string, newPassword: string) => {
+  const resetPassword = useCallback(async (token: string, newPassword: string) => {
     try {
       if (!navigator.onLine) {
         toast({
@@ -505,9 +505,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error: new Error(errorMessage) };
     }
-  };
+  }, [toast]);
 
-  const handleClearAuthData = () => {
+  const handleClearAuthData = useCallback(() => {
     clearAuthData();
     setUser(null);
     setSession(null);
@@ -515,7 +515,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       title: "Auth Data Cleared",
       description: "Authentication data has been cleared. Please sign in again.",
     });
-  };
+  }, [toast]);
 
   // Enhanced auth context value with connection status
   const authContextValue = useMemo(() => ({
@@ -531,7 +531,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     requestPasswordReset,
     resetPassword,
     clearAuthData: handleClearAuthData
-  }), [user, session, loading, isOnline, connectionStatus, signUp, signIn, signInWithOAuth, signOut, requestPasswordReset, resetPassword]);
+  }), [user, session, loading, isOnline, connectionStatus, signUp, signIn, signInWithOAuth, signOut, requestPasswordReset, resetPassword, handleClearAuthData]);
 
   return (
     <AuthContext.Provider value={authContextValue}>
