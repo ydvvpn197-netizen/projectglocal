@@ -70,7 +70,7 @@ vi.mock('@/components/ui/button', () => ({
     className?: string;
     'aria-label'?: string;
     'aria-haspopup'?: boolean | "false" | "true" | "menu" | "listbox" | "tree" | "grid" | "dialog";
-    [key: string]: any;
+    [key: string]: unknown;
   }) => (
     <button 
       className={className} 

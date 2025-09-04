@@ -35,7 +35,7 @@ export const useVoiceControl = (): VoiceControlState & VoiceControlActions => {
 
   // Check if speech recognition is supported
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof window.SpeechRecognition }).webkitSpeechRecognition;
     const isSupported = !!SpeechRecognition;
     
     setState(prev => ({ ...prev, isSupported }));

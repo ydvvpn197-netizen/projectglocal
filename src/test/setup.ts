@@ -357,7 +357,7 @@ vi.mock('date-fns', () => ({
 vi.mock('@/config/security', () => ({
   SecurityUtils: {
     sanitizeHtml: (content: string) => content,
-    validateInput: (schema: any, input: any) => ({ success: true, data: input }),
+    validateInput: (schema: unknown, input: unknown) => ({ success: true, data: input }),
     containsDangerousContent: (content: string) => {
       const dangerousPatterns = [
         /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
@@ -427,7 +427,7 @@ vi.mock('@/config/security', () => ({
       _def: {
         regex: /^[a-zA-Z0-9_-]+$/,
       },
-      safeParse: (input: any) => {
+      safeParse: (input: unknown) => {
         // Mock validation logic for username
         if (typeof input === 'string' && input.length >= 3 && input.length <= 30 && /^[a-zA-Z0-9_-]+$/.test(input)) {
           return { success: true, data: input };
@@ -436,7 +436,7 @@ vi.mock('@/config/security', () => ({
       },
     },
     email: {
-      safeParse: (input: any) => {
+      safeParse: (input: unknown) => {
         // Mock validation logic for email
         if (typeof input === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
           return { success: true, data: input };
@@ -445,7 +445,7 @@ vi.mock('@/config/security', () => ({
       },
     },
     password: {
-      safeParse: (input: any) => {
+      safeParse: (input: unknown) => {
         // Mock validation logic for password
         if (typeof input === 'string' && input.length >= 12 && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(input)) {
           return { success: true, data: input };
@@ -454,7 +454,7 @@ vi.mock('@/config/security', () => ({
       },
     },
     postContent: {
-      safeParse: (input: any) => {
+      safeParse: (input: unknown) => {
         // Mock validation logic for post content
         if (typeof input === 'string' && input.length > 0 && input.length <= 10000) {
           return { success: true, data: input };
@@ -463,7 +463,7 @@ vi.mock('@/config/security', () => ({
       },
     },
     commentContent: {
-      safeParse: (input: any) => {
+      safeParse: (input: unknown) => {
         // Mock validation logic for comment content
         if (typeof input === 'string' && input.length > 0 && input.length <= 1000) {
           return { success: true, data: input };
@@ -472,7 +472,7 @@ vi.mock('@/config/security', () => ({
       },
     },
     fileUpload: {
-      safeParse: (input: any) => {
+      safeParse: (input: unknown) => {
         // Mock validation logic for file upload
         if (input && typeof input === 'object' && input.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(input.type)) {
           return { success: true, data: input };

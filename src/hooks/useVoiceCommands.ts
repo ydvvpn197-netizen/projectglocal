@@ -1,16 +1,16 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface VoiceCommandAction {
   action: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   description: string;
 }
 
 interface VoiceCommandPattern {
   pattern: RegExp;
   action: string;
-  params?: (matches: RegExpMatchArray) => Record<string, any>;
+  params?: (matches: RegExpMatchArray) => Record<string, unknown>;
   description: string;
 }
 
@@ -19,7 +19,7 @@ export const useVoiceCommands = () => {
   const commandHistoryRef = useRef<string[]>([]);
 
   // Define command patterns
-  const commandPatterns: VoiceCommandPattern[] = [
+  const commandPatterns: VoiceCommandPattern[] = useMemo(() => [
     // Navigation commands
     {
       pattern: /^(go to|navigate to|open|show)\s+(.+)$/i,
@@ -126,7 +126,7 @@ export const useVoiceCommands = () => {
       params: (matches) => ({ direction: matches[2] }),
       description: 'Scroll the page',
     },
-  ];
+  ], []);
 
   // Process voice command and return action
   const processCommand = useCallback((command: string): VoiceCommandAction | null => {
@@ -151,7 +151,7 @@ export const useVoiceCommands = () => {
     }
 
     return null;
-  }, []);
+  }, [commandPatterns]);
 
   // Execute voice command action
   const executeCommand = useCallback((commandAction: VoiceCommandAction) => {
@@ -248,7 +248,7 @@ export const useVoiceCommands = () => {
       description: pattern.description,
       example: getExampleCommand(pattern.pattern.source),
     }));
-  }, []);
+  }, [commandPatterns]);
 
   // Generate example command from pattern
   const getExampleCommand = (patternSource: string) => {
