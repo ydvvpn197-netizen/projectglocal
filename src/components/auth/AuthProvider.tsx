@@ -52,24 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        const { data: { session }, error } = await resilientSupabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          // Clear any stale session data
-          if (isMounted) {
-            setSession(null);
-            setUser(null);
-            setLoading(false);
-          }
-          return;
-        }
-        
-        // Validate session is still valid
-        if (session && session.expires_at) {
-          const expiresAt = new Date(session.expires_at * 1000);
-          if (expiresAt < new Date()) {
-            console.log('Session has expired, clearing auth state');
+        // Test Supabase connection first
+        try {
+          const { data: { session }, error } = await resilientSupabase.auth.getSession();
+          
+          if (error) {
+            console.error('Error getting session:', error);
+            // Clear any stale session data
             if (isMounted) {
               setSession(null);
               setUser(null);
@@ -77,12 +66,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             return;
           }
-        }
-        
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
+          
+          // Validate session is still valid
+          if (session && session.expires_at) {
+            const expiresAt = new Date(session.expires_at * 1000);
+            if (expiresAt < new Date()) {
+              console.log('Session has expired, clearing auth state');
+              if (isMounted) {
+                setSession(null);
+                setUser(null);
+                setLoading(false);
+              }
+              return;
+            }
+          }
+          
+          if (isMounted) {
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+          }
+        } catch (connectionError) {
+          console.error('Supabase connection error during auth initialization:', connectionError);
+          // Set loading to false so the app can continue without auth
+          if (isMounted) {
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+          }
+          
+          // Show a toast notification about the connection issue
+          toast({
+            title: "Connection Issue",
+            description: "Unable to connect to authentication service. Some features may be limited.",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Error during auth initialization:', error);

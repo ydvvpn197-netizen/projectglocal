@@ -240,33 +240,133 @@ export const EnhancedIndex: React.FC = () => {
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
 
   const handleSearch = (query: string) => {
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query)}`);
+    try {
+      if (query.trim()) {
+        navigate(`/search?q=${encodeURIComponent(query)}`);
+      }
+    } catch (error) {
+      console.error('Navigation error during search:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to search page. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleGetStarted = () => {
-    if (user) {
-      navigate('/feed');
-    } else {
-      navigate('/signin');
+    try {
+      if (user) {
+        navigate('/feed');
+      } else {
+        navigate('/signin');
+      }
+    } catch (error) {
+      console.error('Navigation error during get started:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleNotificationClick = () => {
-    if (user) {
-      navigate('/notifications');
-    } else {
-      navigate('/signin');
+    try {
+      if (user) {
+        navigate('/notifications');
+      } else {
+        navigate('/signin');
+      }
+    } catch (error) {
+      console.error('Navigation error during notification click:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to notifications. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const nextEvent = () => {
-    setCurrentEventIndex((prev) => (prev + 1) % trendingEvents.length);
+    try {
+      setCurrentEventIndex((prev) => (prev + 1) % trendingEvents.length);
+    } catch (error) {
+      console.error('Error navigating to next event:', error);
+    }
   };
 
   const prevEvent = () => {
-    setCurrentEventIndex((prev) => (prev - 1 + trendingEvents.length) % trendingEvents.length);
+    try {
+      setCurrentEventIndex((prev) => (prev - 1 + trendingEvents.length) % trendingEvents.length);
+    } catch (error) {
+      console.error('Error navigating to previous event:', error);
+    }
+  };
+
+  const handleEventNavigation = (eventId: number) => {
+    try {
+      navigate(`/event/${eventId}`);
+    } catch (error) {
+      console.error('Navigation error to event:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to event. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDiscussionNavigation = (discussionId: number) => {
+    try {
+      navigate(`/community/discussion/${discussionId}`);
+    } catch (error) {
+      console.error('Navigation error to discussion:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to discussion. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCommunityNavigation = (communityId: number) => {
+    try {
+      navigate(`/community/${communityId}`);
+    } catch (error) {
+      console.error('Navigation error to community:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to community. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCategoryNavigation = (category: string) => {
+    try {
+      navigate(`/discover?category=${category.toLowerCase()}`);
+    } catch (error) {
+      console.error('Navigation error to category:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to category. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAboutNavigation = () => {
+    try {
+      navigate('/about');
+    } catch (error) {
+      console.error('Navigation error to about page:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to about page. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const containerVariants = {
@@ -341,7 +441,7 @@ export const EnhancedIndex: React.FC = () => {
               <AdvancedButton
                 onClick={handleGetStarted}
                 size="lg"
-                variant="gradient"
+                variant="default"
                 leftIcon={<Sparkles className="h-5 w-5" />}
                 rightIcon={<ArrowRight className="h-5 w-5" />}
               >
@@ -473,7 +573,7 @@ export const EnhancedIndex: React.FC = () => {
                         <AdvancedButton
                           variant="secondary"
                           size="sm"
-                          onClick={() => navigate(`/event/${trendingEvents[currentEventIndex].id}`)}
+                          onClick={() => handleEventNavigation(trendingEvents[currentEventIndex].id)}
                         >
                           Learn More
                         </AdvancedButton>
@@ -511,7 +611,7 @@ export const EnhancedIndex: React.FC = () => {
                         variant="default"
                         className="cursor-pointer"
                         hoverEffect="lift"
-                        onClick={() => navigate(`/event/${event.id}`)}
+                        onClick={() => handleEventNavigation(event.id)}
                         entranceAnimation="slide"
                         delay={index * 100}
                         image={{
@@ -552,7 +652,7 @@ export const EnhancedIndex: React.FC = () => {
                       variant="default"
                       className="cursor-pointer"
                       hoverEffect="scale"
-                      onClick={() => navigate(`/community/discussion/${discussion.id}`)}
+                      onClick={() => handleDiscussionNavigation(discussion.id)}
                       entranceAnimation="slide"
                       delay={index * 100}
                     >
@@ -620,7 +720,7 @@ export const EnhancedIndex: React.FC = () => {
                   variant="default"
                   className="cursor-pointer"
                   hoverEffect="lift"
-                  onClick={() => navigate(`/community/${community.id}`)}
+                  onClick={() => handleCommunityNavigation(community.id)}
                   entranceAnimation="slide"
                   delay={index * 100}
                   image={{
@@ -677,7 +777,7 @@ export const EnhancedIndex: React.FC = () => {
                   variant="outline"
                   className="cursor-pointer text-center p-6"
                   hoverEffect="scale"
-                  onClick={() => navigate(`/discover?category=${category.name.toLowerCase()}`)}
+                  onClick={() => handleCategoryNavigation(category.name)}
                   entranceAnimation="slide"
                   delay={index * 100}
                 >
@@ -720,13 +820,13 @@ export const EnhancedIndex: React.FC = () => {
               <AdvancedButton
                 onClick={handleGetStarted}
                 size="lg"
-                variant="gradient"
+                variant="default"
                 leftIcon={<Sparkles className="h-5 w-5" />}
               >
                 {user ? 'Explore Feed' : 'Join Now'}
               </AdvancedButton>
               <AdvancedButton
-                onClick={() => navigate('/about')}
+                onClick={handleAboutNavigation}
                 size="lg"
                 variant="outline"
                 leftIcon={<Info className="h-5 w-5" />}

@@ -30,6 +30,14 @@ export class ErrorBoundary extends Component<Props, State> {
     if (process.env.NODE_ENV === 'development') {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
+
+    // Log error to console in production for debugging
+    console.error('Application Error:', {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      timestamp: new Date().toISOString()
+    });
   }
 
   render(): ReactNode {
@@ -46,21 +54,43 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-gray-600 mb-4">
               We're sorry, but something unexpected happened. Please try refreshing the page.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Refresh Page
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Refresh Page
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Go to Home
+              </button>
+            </div>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 text-left">
                 <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
                   Error Details (Development)
                 </summary>
-                <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-                  {this.state.error.toString()}
-                  {this.state.errorInfo?.componentStack}
-                </pre>
+                <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto max-h-40">
+                  <div className="font-semibold mb-1">Error Message:</div>
+                  <div className="mb-2">{this.state.error.toString()}</div>
+                  <div className="font-semibold mb-1">Component Stack:</div>
+                  <div className="font-mono text-xs">{this.state.errorInfo?.componentStack}</div>
+                </div>
+              </details>
+            )}
+            {/* Always show error details in development or when debug mode is enabled */}
+            {(process.env.NODE_ENV === 'development' || import.meta.env.VITE_ENABLE_DEBUG_MODE === 'true') && this.state.error && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                  Debug Information
+                </summary>
+                <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded overflow-auto max-h-40">
+                  <div className="font-semibold mb-1">Error Stack:</div>
+                  <div className="font-mono text-xs">{this.state.error.stack}</div>
+                </div>
               </details>
             )}
           </div>
