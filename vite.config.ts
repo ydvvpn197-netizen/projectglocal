@@ -76,21 +76,14 @@ export default defineConfig(({ mode }) => ({
       },
     },
     chunkSizeWarningLimit: 2000,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
-        // Simplified terser options for better compatibility
-        hoist_funs: false,
-        hoist_vars: false,
-        hoist_props: false,
-        inline: false,
-      },
-      mangle: {
-        // Prevent mangling of React-related variables
-        reserved: ['React', 'createRoot', 'render', 'createContext', 'useState', 'useEffect', 'useRef', 'useCallback', 'useMemo', 'useReducer', 'useContext', 'useLayoutEffect', 'useImperativeHandle', 'useDebugValue', 'useDeferredValue', 'useTransition', 'useId', 'useSyncExternalStore', 'useInsertionEffect']
-      }
+    minify: 'esbuild',
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
+      // Prevent problematic optimizations that can cause initialization issues
+      keepNames: true,
+      minifyIdentifiers: false,
+      minifySyntax: true,
+      minifyWhitespace: true,
     },
     sourcemap: mode === 'development',
   },
