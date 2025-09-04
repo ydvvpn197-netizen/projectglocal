@@ -102,7 +102,12 @@ export class ErrorBoundary extends Component<Props, State> {
                          this.state.error?.message?.includes('network');
       
       const isConfigError = this.state.error?.message?.includes('environment') ||
-                           this.state.error?.message?.includes('configuration');
+                           this.state.error?.message?.includes('configuration') ||
+                           this.state.error?.message?.includes('MISSING_ENV_VARS');
+      
+      const isRoutingError = this.state.error?.message?.includes('routing') ||
+                            this.state.error?.message?.includes('route') ||
+                            this.state.error?.message?.includes('navigation');
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -121,16 +126,20 @@ export class ErrorBoundary extends Component<Props, State> {
             
             <CardContent className="space-y-4">
               {/* Error Type Detection */}
-              {(isAuthError || isConfigError) && (
+              {(isAuthError || isConfigError || isRoutingError) && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-blue-800">
                     <Bug className="w-4 h-4" />
                     <span className="text-sm font-medium">
-                      {isAuthError ? 'Authentication Issue Detected' : 'Configuration Issue Detected'}
+                      {isAuthError ? 'Authentication Issue Detected' : 
+                       isConfigError ? 'Configuration Issue Detected' : 
+                       'Routing Issue Detected'}
                     </span>
                   </div>
                   <p className="text-xs text-blue-700 mt-1">
-                    This appears to be a {isAuthError ? 'connection or authentication' : 'configuration'} problem.
+                    {isAuthError ? 'This appears to be a connection or authentication problem.' :
+                     isConfigError ? 'This appears to be a configuration problem.' :
+                     'This appears to be a routing or navigation problem. Try refreshing the page.'}
                   </p>
                 </div>
               )}
@@ -164,6 +173,17 @@ export class ErrorBoundary extends Component<Props, State> {
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Check Configuration
+                  </Button>
+                )}
+
+                {isRoutingError && (
+                  <Button 
+                    onClick={() => window.location.reload()} 
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh Page
                   </Button>
                 )}
 
