@@ -51,7 +51,7 @@ export interface UserListProps {
   className?: string;
   loading?: boolean;
   error?: string | null;
-  onUserAction?: (userId: string, action: string, data?: any) => void | Promise<void>;
+  onUserAction?: (userId: string, action: string, data?: Record<string, unknown>) => void | Promise<void>;
   onFollow?: (userId: string) => void | Promise<void>;
   onMessage?: (userId: string) => void | Promise<void>;
   onViewProfile?: (userId: string) => void | Promise<void>;
@@ -157,7 +157,7 @@ export const UserList: React.FC<UserListProps> = ({
   }, [users, searchQuery, activeTab, sortBy, filterVerified, filterOnline, filterPremium]);
 
   // Event handlers
-  const handleUserAction = useCallback(async (userId: string, action: string, data?: any) => {
+  const handleUserAction = useCallback(async (userId: string, action: string, data?: Record<string, unknown>) => {
     if (onUserAction) {
       try {
         await onUserAction(userId, action, data);
@@ -453,7 +453,7 @@ export const UserList: React.FC<UserListProps> = ({
               <span className="text-sm font-medium">Sort by:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'followers' | 'rating' | 'recent')}
                 className="px-3 py-1 border rounded-md text-sm"
               >
                 <option value="name">Name</option>

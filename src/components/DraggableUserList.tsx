@@ -27,7 +27,7 @@ export interface DraggableUserListProps {
   users: EnhancedUserProfile[];
   variant?: 'default' | 'compact' | 'minimal' | 'premium' | 'featured' | 'enterprise' | 'dark';
   onReorder?: (users: EnhancedUserProfile[]) => void;
-  onUserAction?: (userId: string, action: string, data?: any) => void;
+  onUserAction?: (userId: string, action: string, data?: Record<string, unknown>) => void;
   onFollow?: (userId: string) => void | Promise<void>;
   onMessage?: (userId: string) => void | Promise<void>;
   onViewProfile?: (userId: string) => void | Promise<void>;

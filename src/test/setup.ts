@@ -242,13 +242,11 @@ expect.extend({
 
 // Type declarations for global test utilities
 declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toHaveBeenCalledWithMatch(...expected: unknown[]): R;
-    }
+  interface JestMatchers<R> {
+    toHaveBeenCalledWithMatch(...expected: unknown[]): R;
   }
   
-  var testUtils: {
+  const testUtils: {
     waitFor: (condition: () => boolean, timeout?: number) => Promise<void>;
     mockApiResponse: (data: unknown, status?: number) => Response;
     createMockUser: (overrides?: Record<string, unknown>) => Record<string, unknown>;

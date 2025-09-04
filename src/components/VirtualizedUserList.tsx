@@ -39,7 +39,7 @@ export interface VirtualizedUserListProps {
   variant?: 'default' | 'compact' | 'minimal' | 'premium' | 'featured' | 'enterprise' | 'dark';
   height?: number;
   itemHeight?: number;
-  onUserAction?: (userId: string, action: string, data?: any) => void;
+  onUserAction?: (userId: string, action: string, data?: Record<string, unknown>) => void;
   onFollow?: (userId: string) => void | Promise<void>;
   onMessage?: (userId: string) => void | Promise<void>;
   onViewProfile?: (userId: string) => void | Promise<void>;
@@ -109,7 +109,7 @@ export default function VirtualizedUserList({
 
     // Apply sorting
     result.sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: string | number, bValue: string | number;
       
       switch (sortBy) {
         case 'name':

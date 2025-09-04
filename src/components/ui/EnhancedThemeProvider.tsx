@@ -1,22 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
-
-interface EnhancedThemeContextType {
-  theme: string;
-  setTheme: (theme: string) => void;
-  isSystem: boolean;
-  accentColor: string;
-  setAccentColor: (color: string) => void;
-  fontSize: 'small' | 'medium' | 'large';
-  setFontSize: (size: 'small' | 'medium' | 'large') => void;
-  reducedMotion: boolean;
-  setReducedMotion: (reduced: boolean) => void;
-  highContrast: boolean;
-  setHighContrast: (high: boolean) => void;
-}
-
-export const EnhancedThemeContext = createContext<EnhancedThemeContextType | undefined>(undefined);
-
+import { EnhancedThemeContext } from './EnhancedThemeContext';
 import { accentColors } from './themeConstants';
 
 export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

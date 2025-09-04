@@ -59,12 +59,6 @@ const Discover = () => {
   const [loading, setLoading] = useState(true);
   const [discoveredUsers, setDiscoveredUsers] = useState<EnhancedUserProfile[]>([]);
 
-  useEffect(() => {
-    fetchLocalContent();
-    fetchTrendingContent();
-    fetchDiscoveredUsers();
-  }, [currentLocation, locationEnabled]);
-
   const fetchLocalContent = useCallback(async () => {
     try {
       setLoading(true);
@@ -172,7 +166,7 @@ const Discover = () => {
     }
   }, [currentLocation, toast]);
 
-  const fetchTrendingContent = async () => {
+  const fetchTrendingContent = useCallback(async () => {
     try {
       // Fetch trending events (most attendees)
       const { data: trendingEvents } = await supabase
@@ -248,7 +242,7 @@ const Discover = () => {
     } catch (error) {
       console.error('Error fetching trending content:', error);
     }
-  };
+  }, []);
 
   const fetchDiscoveredUsers = useCallback(async () => {
     try {
@@ -351,6 +345,13 @@ const Discover = () => {
     }
   }, [toast]);
 
+  // Move useEffect after function definitions
+  useEffect(() => {
+    fetchLocalContent();
+    fetchTrendingContent();
+    fetchDiscoveredUsers();
+  }, [fetchLocalContent, fetchTrendingContent, fetchDiscoveredUsers]);
+
   const getTrendingIcon = (type: string) => {
     switch (type) {
       case 'event': return <Calendar className="h-4 w-4" />;
@@ -361,7 +362,7 @@ const Discover = () => {
     }
   };
 
-  const handleUserAction = useCallback(async (userId: string, action: string, data?: any) => {
+  const handleUserAction = useCallback(async (userId: string, action: string, data?: Record<string, unknown>) => {
     console.log(`User action: ${action} for user ${userId}`, data);
     
     switch (action) {
