@@ -18,6 +18,25 @@ vi.mock('dompurify', () => ({
 // Export mock for use in tests
 export { mockSanitize };
 
+// Fix React DOM testing issues
+import { configure } from '@testing-library/react';
+
+configure({
+  testIdAttribute: 'data-testid',
+  asyncUtilTimeout: 5000,
+  // Disable automatic cleanup to prevent React DOM issues
+  asyncWrapper: (cb) => {
+    return new Promise((resolve, reject) => {
+      const result = cb();
+      if (result && typeof result.then === 'function') {
+        result.then(resolve).catch(reject);
+      } else {
+        resolve(result);
+      }
+    });
+  },
+});
+
 // Mock window object for browser APIs
 Object.defineProperty(global, 'window', {
   value: {
@@ -111,6 +130,24 @@ afterAll(() => {
   // Restore console methods
   console.error = originalConsoleError;
   console.warn = originalConsoleWarn;
+});
+
+// Add proper cleanup after each test
+afterEach(() => {
+  // Clear all mocks
+  vi.clearAllMocks();
+  
+  // Clean up any pending timers
+  vi.clearAllTimers();
+  
+  // Reset DOM
+  document.body.innerHTML = '';
+  
+  // Clear any React state
+  if (typeof window !== 'undefined') {
+    // Reset any global state
+    window.history.replaceState({}, '', '/');
+  }
 });
 
 // Mock React Router
