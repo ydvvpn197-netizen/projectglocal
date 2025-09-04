@@ -39,6 +39,7 @@
     "deploy:domain": "node scripts/deploy-domain.js",
     "deploy:simple": "node scripts/simple-deploy.js",
     "deploy:fix": "node scripts/deploy-fix.js",
+    "deploy:check": "node scripts/check-deployment.js",
     "deploy:windows": "npm run build && powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1",
     "deploy:github": "npm run build && gh-pages -d dist",
     "deploy:vercel": "vercel --prod",
