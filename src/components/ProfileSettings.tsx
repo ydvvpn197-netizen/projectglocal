@@ -54,7 +54,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
     setHasChanges(changed);
   }, [localSettings, settings]);
 
-  const handleInputChange = (key: string, value: any) => {
+  const handleInputChange = (key: string, value: unknown) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 

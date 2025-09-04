@@ -41,7 +41,7 @@ export async function checkTableExists(tableName: string): Promise<TableStatus> 
     }
 
     return { exists: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { exists: false, error: error.message };
   }
 }
@@ -78,7 +78,7 @@ export async function checkDatabaseSchema(): Promise<DatabaseSchema> {
   };
 
   results.forEach(({ table, status }) => {
-    (schema as any)[table] = status;
+    (schema as Record<string, unknown>)[table] = status;
   });
 
   return schema;

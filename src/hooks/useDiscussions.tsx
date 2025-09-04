@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +36,7 @@ export const useDiscussions = () => {
   const { toast } = useToast();
   const { currentLocation } = useLocation();
 
-  const fetchDiscussions = async () => {
+  const fetchDiscussions = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.rpc('get_discussions_with_details');
@@ -54,7 +54,7 @@ export const useDiscussions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const createDiscussion = async (discussionData: CreateDiscussionData): Promise<boolean> => {
     if (!user) {
@@ -102,7 +102,7 @@ export const useDiscussions = () => {
     if (user) {
       fetchDiscussions();
     }
-  }, [user]);
+  }, [user, fetchDiscussions]);
 
   const deleteDiscussion = async (discussionId: string) => {
     if (!user) return { error: new Error('Not authenticated') };
@@ -127,7 +127,7 @@ export const useDiscussions = () => {
       fetchDiscussions();
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error deleting discussion",
         description: error.message,

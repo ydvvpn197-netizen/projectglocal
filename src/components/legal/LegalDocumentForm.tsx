@@ -223,7 +223,7 @@ export const LegalDocumentForm: React.FC<LegalDocumentFormProps> = ({
   const handleDocumentTypeChange = (type: string) => {
     setSelectedDocumentType(type);
     form.reset({
-      document_type: type as any,
+      document_type: type as string,
       title: '',
       additional_terms: '',
     });

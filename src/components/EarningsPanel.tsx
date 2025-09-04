@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,9 +41,9 @@ export const EarningsPanel = () => {
     if (user) {
       fetchEarningsData();
     }
-  }, [user]);
+  }, [user, fetchEarningsData]);
 
-  const fetchEarningsData = async () => {
+  const fetchEarningsData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -116,7 +116,7 @@ export const EarningsPanel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   if (!user) return null;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PlatformAnalyticsService, DashboardStats } from '@/services/platformAnalyticsService';
 
 export const useDashboardStats = (refreshInterval: number = 30000) => {
@@ -7,7 +7,7 @@ export const useDashboardStats = (refreshInterval: number = 30000) => {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  const analyticsService = new PlatformAnalyticsService();
+  const analyticsService = useMemo(() => new PlatformAnalyticsService(), []);
 
   const fetchStats = useCallback(async () => {
     try {

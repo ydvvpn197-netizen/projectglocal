@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -23,7 +23,7 @@ export const useComments = (postId: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchComments = async () => {
+    const fetchComments = useCallback(async () => {
     if (!user || !postId) return;
 
     setLoading(true);
@@ -50,7 +50,7 @@ export const useComments = (postId: string) => {
             .from('profiles')
             .select('display_name, username, avatar_url')
             .eq('user_id', comment.user_id)
-            .single();
+        .single();
 
           return {
             ...comment,
@@ -60,17 +60,17 @@ export const useComments = (postId: string) => {
       );
 
       setComments(commentsWithProfiles);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching comments:', error);
       toast({
         title: "Error loading comments",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, postId, toast]);
 
   const addComment = async (content: string) => {
     if (!user || !content.trim()) return;
@@ -107,10 +107,10 @@ export const useComments = (postId: string) => {
       });
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error adding comment",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       });
       return { error };
@@ -134,10 +134,10 @@ export const useComments = (postId: string) => {
         title: "Comment deleted",
         description: "Your comment has been removed."
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error deleting comment",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       });
     }
@@ -147,7 +147,7 @@ export const useComments = (postId: string) => {
     if (postId && user) {
       fetchComments();
     }
-  }, [postId, user]);
+  }, [postId, user, fetchComments]);
 
   return {
     comments,

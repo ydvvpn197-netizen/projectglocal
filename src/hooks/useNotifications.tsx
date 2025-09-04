@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { notificationService, GeneralNotification, PersonalNotification, NotificationCounts } from '@/services/notificationService';
+import { NotificationType } from '@/types/notifications';
 
 export interface NotificationState {
   generalNotifications: GeneralNotification[];
@@ -202,10 +203,10 @@ export const useNotifications = () => {
   // Create a new notification
   const createNotification = useCallback(async (notificationData: {
     user_id: string;
-    type: any;
+    type: NotificationType;
     title: string;
     message: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
     action_url?: string;
     action_text?: string;
   }) => {

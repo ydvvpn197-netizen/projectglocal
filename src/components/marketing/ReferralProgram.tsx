@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,9 +55,9 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
     if (user) {
       loadReferralData();
     }
-  }, [user]);
+  }, [user, loadReferralData]);
 
-  const loadReferralData = async () => {
+  const loadReferralData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -89,7 +89,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const createReferralCode = async () => {
     try {
@@ -144,7 +144,7 @@ export const ReferralProgram: React.FC<ReferralProgramProps> = ({ className }) =
       const shareData = {
         content_type: 'profile' as const,
         content_id: user!.id,
-        platform: platform as any,
+        platform: platform as string,
         share_text: `Join me on Glocal! Use my referral link: ${referralLink}`,
         share_url: referralLink
       };

@@ -22,7 +22,7 @@ export interface PersonalNotification {
   type: 'booking_request' | 'booking_accepted' | 'booking_declined' | 'message_request' | 'new_follower' | 'event_reminder' | 'event_update' | 'event_created' | 'event_updated' | 'event_cancelled' | 'poll_result' | 'review_reply' | 'group_invite' | 'discussion_request' | 'discussion_approved' | 'discussion_rejected' | 'payment_received' | 'payment_failed' | 'system_announcement';
   read: boolean;
   created_at: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   action_url?: string;
   action_text?: string;
 }
@@ -305,7 +305,7 @@ class NotificationService {
     title: string,
     message: string,
     type: PersonalNotification['type'],
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     actionUrl?: string,
     actionText?: string
   ): Promise<string | null> {
@@ -347,7 +347,7 @@ class NotificationService {
   }
 
   // Subscribe to real-time updates (only for logged-in users)
-  subscribeToNotifications(userId: string, callback: (payload: any) => void) {
+  subscribeToNotifications(userId: string, callback: (payload: Record<string, unknown>) => void) {
     if (!userId) {
       console.warn('Cannot subscribe to notifications: no user ID provided');
       return () => {}; // Return empty unsubscribe function
@@ -403,7 +403,7 @@ class NotificationService {
     type: PersonalNotification['type'];
     title: string;
     message: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
     action_url?: string;
     action_text?: string;
   }): Promise<string | null> {
@@ -419,7 +419,7 @@ class NotificationService {
   }
 
   // Convenience methods for creating specific types of notifications
-  async createBookingRequestNotification(artistId: string, clientId: string, bookingData: any): Promise<string | null> {
+  async createBookingRequestNotification(artistId: string, clientId: string, bookingData: Record<string, unknown>): Promise<string | null> {
     return this.createPersonalNotification(
       artistId,
       'New Booking Request',
@@ -431,7 +431,7 @@ class NotificationService {
     );
   }
 
-  async createBookingResponseNotification(clientId: string, artistId: string, status: 'accepted' | 'declined', bookingData: any): Promise<string | null> {
+  async createBookingResponseNotification(clientId: string, artistId: string, status: 'accepted' | 'declined', bookingData: Record<string, unknown>): Promise<string | null> {
     const action = status === 'accepted' ? 'accepted' : 'declined';
     return this.createPersonalNotification(
       clientId,
@@ -468,7 +468,7 @@ class NotificationService {
     );
   }
 
-  async createEventReminderNotification(userId: string, eventData: any): Promise<string | null> {
+  async createEventReminderNotification(userId: string, eventData: Record<string, unknown>): Promise<string | null> {
     return this.createPersonalNotification(
       userId,
       'Event Reminder',
@@ -480,7 +480,7 @@ class NotificationService {
     );
   }
 
-  async createDiscussionRequestNotification(artistId: string, userId: string, discussionData: any): Promise<string | null> {
+  async createDiscussionRequestNotification(artistId: string, userId: string, discussionData: Record<string, unknown>): Promise<string | null> {
     return this.createPersonalNotification(
       artistId,
       'New Discussion Request',

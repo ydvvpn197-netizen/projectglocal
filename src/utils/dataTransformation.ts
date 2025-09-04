@@ -2,6 +2,7 @@
  * Data transformation utilities for consistent naming conventions
  * between snake_case (database) and camelCase (frontend)
  */
+import { ApiErrorResponse, GenericContent } from '@/types/extended';
 
 export interface TransformOptions {
   excludeKeys?: string[];
@@ -12,10 +13,10 @@ export interface TransformOptions {
 /**
  * Transform snake_case object keys to camelCase
  */
-export function snakeToCamel<T extends Record<string, any>>(
+export function snakeToCamel<T extends Record<string, unknown>>(
   obj: T,
   options: TransformOptions = {}
-): Record<string, any> {
+): Record<string, unknown> {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
@@ -24,7 +25,7 @@ export function snakeToCamel<T extends Record<string, any>>(
     return obj.map(item => snakeToCamel(item, options));
   }
 
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   
   for (const [key, value] of Object.entries(obj)) {
     // Skip excluded keys
@@ -54,10 +55,10 @@ export function snakeToCamel<T extends Record<string, any>>(
 /**
  * Transform camelCase object keys to snake_case
  */
-export function camelToSnake<T extends Record<string, any>>(
+export function camelToSnake<T extends Record<string, unknown>>(
   obj: T,
   options: TransformOptions = {}
-): Record<string, any> {
+): Record<string, unknown> {
   if (obj === null || typeof obj !== 'object') {
     return obj;
   }
@@ -66,7 +67,7 @@ export function camelToSnake<T extends Record<string, any>>(
     return obj.map(item => camelToSnake(item, options));
   }
 
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
   
   for (const [key, value] of Object.entries(obj)) {
     // Skip excluded keys
@@ -96,7 +97,7 @@ export function camelToSnake<T extends Record<string, any>>(
 /**
  * Check if a string represents a date
  */
-function isDateString(value: any): boolean {
+function isDateString(value: unknown): boolean {
   if (typeof value !== 'string') return false;
   
   const date = new Date(value);
@@ -107,16 +108,16 @@ function isDateString(value: any): boolean {
  * Transform Supabase response to frontend format
  */
 export function transformSupabaseResponse<T>(
-  response: { data: T | null; error: any } | T | null,
+  response: { data: T | null; error: ApiErrorResponse } | T | null,
   options: TransformOptions = {}
-): { data: T | null; error: any } | T | null {
+): { data: T | null; error: ApiErrorResponse } | T | null {
   if (!response) return response;
   
   // Handle Supabase response format
   if ('data' in response && 'error' in response) {
     return {
       data: response.data ? snakeToCamel(response.data, options) : null,
-      error: response.error
+      error: response.error as ApiErrorResponse
     };
   }
   
@@ -130,8 +131,8 @@ export function transformSupabaseResponse<T>(
 export function transformForSupabase<T>(
   data: T,
   options: TransformOptions = {}
-): Record<string, any> {
-  return camelToSnake(data as Record<string, any>, options);
+): Record<string, unknown> {
+  return camelToSnake(data as Record<string, unknown>, options);
 }
 
 /**
@@ -162,23 +163,23 @@ export const TRANSFORM_OPTIONS = {
  */
 export const transformers = {
   user: {
-    toFrontend: (data: any) => snakeToCamel(data, TRANSFORM_OPTIONS.user),
-    toSupabase: (data: any) => camelToSnake(data, TRANSFORM_OPTIONS.user)
+    toFrontend: (data: GenericContent) => snakeToCamel(data, TRANSFORM_OPTIONS.user),
+    toSupabase: (data: GenericContent) => camelToSnake(data, TRANSFORM_OPTIONS.user)
   },
   community: {
-    toFrontend: (data: any) => snakeToCamel(data, TRANSFORM_OPTIONS.community),
-    toSupabase: (data: any) => camelToSnake(data, TRANSFORM_OPTIONS.community)
+    toFrontend: (data: GenericContent) => snakeToCamel(data, TRANSFORM_OPTIONS.community),
+    toSupabase: (data: GenericContent) => camelToSnake(data, TRANSFORM_OPTIONS.community)
   },
   post: {
-    toFrontend: (data: any) => snakeToCamel(data, TRANSFORM_OPTIONS.post),
-    toSupabase: (data: any) => camelToSnake(data, TRANSFORM_OPTIONS.post)
+    toFrontend: (data: GenericContent) => snakeToCamel(data, TRANSFORM_OPTIONS.post),
+    toSupabase: (data: GenericContent) => camelToSnake(data, TRANSFORM_OPTIONS.post)
   },
   event: {
-    toFrontend: (data: any) => snakeToCamel(data, TRANSFORM_OPTIONS.event),
-    toSupabase: (data: any) => camelToSnake(data, TRANSFORM_OPTIONS.event)
+    toFrontend: (data: GenericContent) => snakeToCamel(data, TRANSFORM_OPTIONS.event),
+    toSupabase: (data: GenericContent) => camelToSnake(data, TRANSFORM_OPTIONS.event)
   },
   profile: {
-    toFrontend: (data: any) => snakeToCamel(data, TRANSFORM_OPTIONS.profile),
-    toSupabase: (data: any) => camelToSnake(data, TRANSFORM_OPTIONS.profile)
+    toFrontend: (data: GenericContent) => snakeToCamel(data, TRANSFORM_OPTIONS.profile),
+    toSupabase: (data: GenericContent) => camelToSnake(data, TRANSFORM_OPTIONS.profile)
   }
 };

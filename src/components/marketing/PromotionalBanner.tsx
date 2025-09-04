@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -86,9 +86,9 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
     if (marketingTablesAvailable === true) {
       loadCampaigns();
     }
-  }, [marketingTablesAvailable]);
+  }, [marketingTablesAvailable, loadCampaigns]);
 
-  const loadCampaigns = async () => {
+  const loadCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -122,7 +122,7 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [position, variant, maxCampaigns]);
 
   // Auto-rotate campaigns
   useEffect(() => {

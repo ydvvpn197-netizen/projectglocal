@@ -12,7 +12,7 @@ import {
 import { StripePaymentIntent, StripeConfig } from '../types/stripe';
 
 export class PaymentService {
-  private stripe: any;
+  private stripe: Record<string, unknown> | null;
   private config: StripeConfig;
 
   constructor(config: StripeConfig) {

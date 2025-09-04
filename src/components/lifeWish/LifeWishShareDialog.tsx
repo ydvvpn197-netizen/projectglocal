@@ -46,7 +46,7 @@ export const LifeWishShareDialog: React.FC<LifeWishShareDialogProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [permissions, setPermissions] = useState<Record<string, any>>({
+  const [permissions, setPermissions] = useState<Record<string, unknown>>({
     canView: true,
     canEdit: false,
     canShare: false,

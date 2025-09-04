@@ -26,7 +26,7 @@ interface DiscoveryResult {
   image?: string;
   score: number;
   reason: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export const useContentDiscovery = () => {
@@ -68,7 +68,7 @@ export const useContentDiscovery = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, filters, currentLocation]);
+  }, [user]);
 
   const updateFilters = useCallback((newFilters: Partial<DiscoveryFilters>) => {
     const updatedFilters = { ...filters, ...newFilters };

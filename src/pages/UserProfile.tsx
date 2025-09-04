@@ -32,10 +32,11 @@ import {
   Camera
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, Event } from "@/hooks/useEvents";
 import { useToast } from "@/hooks/use-toast";
 import { EventCard } from "@/components/EventCard";
 import { format } from "date-fns";
+import { UserProfile } from "@/types/common";
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -44,8 +45,8 @@ const UserProfile = () => {
   const { events, loading } = useEvents();
   const { toast } = useToast();
   
-  const [profileUser, setProfileUser] = useState<any>(null);
-  const [userEvents, setUserEvents] = useState<any[]>([]);
+  const [profileUser, setProfileUser] = useState<UserProfile | null>(null);
+  const [userEvents, setUserEvents] = useState<Event[]>([]);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [message, setMessage] = useState("");

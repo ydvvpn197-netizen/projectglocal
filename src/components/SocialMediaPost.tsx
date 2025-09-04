@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -125,9 +125,9 @@ export const SocialMediaPost: React.FC<SocialMediaPostProps> = ({
     if (user && !post.has_viewed) {
       recordView();
     }
-  }, []);
+  }, [user, post.has_viewed, recordView]);
 
-  const recordView = async () => {
+  const recordView = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -145,7 +145,7 @@ export const SocialMediaPost: React.FC<SocialMediaPostProps> = ({
     } catch (error) {
       console.error('Error recording view:', error);
     }
-  };
+  }, [user, post]);
 
   const handleVote = async (voteType: number) => {
     if (!user || isVoting) return;

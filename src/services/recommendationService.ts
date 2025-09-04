@@ -31,7 +31,7 @@ export class RecommendationService {
     }
   }
 
-  private async getUserProfile(userId: string): Promise<any> {
+  private async getUserProfile(userId: string): Promise<Record<string, unknown>> {
     try {
       const { data: preferences } = await supabase
         .from('user_preferences')
@@ -59,7 +59,7 @@ export class RecommendationService {
     }
   }
 
-  private async getAvailableContent(userId: string): Promise<any[]> {
+  private async getAvailableContent(userId: string): Promise<Record<string, unknown>[]> {
     try {
       // Get posts, events, artists, etc.
       const { data: posts } = await supabase
@@ -197,7 +197,7 @@ export class RecommendationService {
   }
 
   private async calculateContentScore(
-    content: any, 
+    content: Record<string, unknown>, 
     preferences: UserPreference[], 
     userId: string
   ): Promise<ContentScore> {
@@ -278,7 +278,7 @@ export class RecommendationService {
         id: `${userId}-${score.contentId}`,
         userId,
         contentId: score.contentId,
-        contentType: score.contentType as any,
+        contentType: score.contentType as string,
         score: score.overallScore,
         reason,
         algorithm: 'hybrid',

@@ -50,10 +50,10 @@ export class ReferralAnalyticsService {
       acc[userId].referral_count++;
       acc[userId].total_rewards += r.reward_amount || 0;
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, unknown>);
 
     const topReferrersList = Object.values(referrerStats || {})
-      .sort((a: any, b: any) => b.referral_count - a.referral_count)
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => b.referral_count - a.referral_count)
       .slice(0, 10);
 
     return {
@@ -136,14 +136,14 @@ export class ReferralAnalyticsService {
         acc[userId].total_rewards += r.reward_amount || 0;
       }
       return acc;
-    }, {} as Record<string, any>) || {};
+    }, {} as Record<string, unknown>) || {};
 
     const leaderboard = Object.values(userStats)
-      .map((user: any) => ({
+      .map((user: Record<string, unknown>) => ({
         ...user,
         conversion_rate: user.referral_count > 0 ? (user.successful_referrals / user.referral_count) * 100 : 0
       }))
-      .sort((a: any, b: any) => b.referral_count - a.referral_count)
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => b.referral_count - a.referral_count)
       .slice(0, limit);
 
     return leaderboard;

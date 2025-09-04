@@ -6,7 +6,7 @@ export interface PaymentIntent {
   currency: string;
   status: PaymentIntentStatus;
   payment_method_types: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   client_secret?: string;
   created_at: string;
   updated_at: string;
@@ -35,7 +35,7 @@ export interface Subscription {
   current_period_start?: string;
   current_period_end?: string;
   cancel_at_period_end: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -59,7 +59,7 @@ export interface PaymentMethod {
   card_last4?: string;
   card_exp_month?: number;
   card_exp_year?: number;
-  billing_details: Record<string, any>;
+  billing_details: Record<string, unknown>;
   is_default: boolean;
   created_at: string;
   updated_at: string;
@@ -74,7 +74,7 @@ export interface Transaction {
   currency: string;
   status: TransactionStatus;
   description?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   fee_amount?: number; // Stripe fee in cents
   net_amount?: number; // Net amount after fees
   created_at: string;
@@ -95,7 +95,7 @@ export interface Refund {
   currency: string;
   status: RefundStatus;
   reason?: RefundReason;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -110,10 +110,10 @@ export interface BillingProfile {
   email?: string;
   name?: string;
   phone?: string;
-  address: Record<string, any>;
+  address: Record<string, unknown>;
   tax_exempt: string;
   preferred_locales: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -129,7 +129,7 @@ export interface ArtistPayout {
   commission_amount: number; // Platform commission
   net_amount: number; // Amount after commission
   description?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -147,7 +147,7 @@ export interface EventTicket {
   qr_code: string;
   status: TicketStatus;
   used_at?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -165,7 +165,7 @@ export interface BookingPayment {
   commission_percentage: number;
   commission_amount: number; // Commission in cents
   net_amount: number; // Amount after commission
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -176,7 +176,7 @@ export interface PaymentFormData {
   amount: number;
   currency: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   payment_method_types?: string[];
 }
 

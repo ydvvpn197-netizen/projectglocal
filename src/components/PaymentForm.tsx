@@ -14,8 +14,8 @@ interface PaymentFormProps {
   amount: number;
   currency?: string;
   description?: string;
-  metadata?: Record<string, any>;
-  onSuccess?: (result: any) => void;
+  metadata?: Record<string, unknown>;
+  onSuccess?: (result: Record<string, unknown>) => void;
   onError?: (error: string) => void;
   onCancel?: () => void;
   className?: string;
@@ -35,7 +35,7 @@ export function PaymentForm({
   const elements = useElements();
   const { createPaymentIntent, confirmPayment, loading, error, clearError } = usePayment();
   
-  const [paymentIntent, setPaymentIntent] = useState<any>(null);
+  const [paymentIntent, setPaymentIntent] = useState<Record<string, unknown> | null>(null);
   const [clientSecret, setClientSecret] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [formError, setFormError] = useState<string>('');

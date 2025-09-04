@@ -8,7 +8,7 @@ export interface BillingProfile {
   address: BillingAddress;
   tax_exempt: TaxExemptStatus;
   preferred_locales: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -44,7 +44,7 @@ export interface Invoice {
   total: number; // Amount in cents
   hosted_invoice_url?: string;
   invoice_pdf?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -63,7 +63,7 @@ export interface InvoiceItem {
   quantity?: number;
   unit_amount?: number; // Amount in cents
   unit_amount_decimal?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
@@ -90,7 +90,7 @@ export interface CheckoutSession {
   status: CheckoutStatus;
   payment_status: PaymentStatus;
   customer_email?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -164,14 +164,14 @@ export interface SubscriptionSettings {
 export interface PaymentSettings {
   payment_method_types: string[];
   save_default_payment_method: 'off' | 'on_subscription';
-  payment_method_options: Record<string, any>;
+  payment_method_options: Record<string, unknown>;
 }
 
 export interface BillingWebhookEvent {
   id: string;
   type: BillingWebhookEventType;
   data: {
-    object: Invoice | CheckoutSession | any;
+    object: Invoice | CheckoutSession | Record<string, unknown>;
   };
   created: number;
   livemode: boolean;

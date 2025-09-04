@@ -266,7 +266,7 @@ export class FollowingService {
   }
 
   // Helper methods for algorithm integration
-  private async getUserProfile(userId: string): Promise<any> {
+  private async getUserProfile(userId: string): Promise<Record<string, unknown>> {
     try {
       const { data: profile } = await supabase
         .from('profiles')
@@ -293,7 +293,7 @@ export class FollowingService {
     }
   }
 
-  private async getAllUsers(userId: string): Promise<any[]> {
+  private async getAllUsers(userId: string): Promise<Record<string, unknown>[]> {
     try {
       // Get users that the current user is already following
       const { data: following } = await supabase

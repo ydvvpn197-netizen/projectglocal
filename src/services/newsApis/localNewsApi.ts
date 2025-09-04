@@ -21,7 +21,7 @@ export class LocalNewsApi {
   /**
    * Get local community content
    */
-  private async getLocalCommunityContent(): Promise<any[]> {
+  private async getLocalCommunityContent(): Promise<Record<string, unknown>[]> {
     try {
       // Fetch recent posts, events, and other community content
       const [posts, events, reviews] = await Promise.all([
@@ -60,7 +60,7 @@ export class LocalNewsApi {
   /**
    * Convert local content to news article format
    */
-  private convertToNewsArticle(content: any, source: NewsSource): NewsApiArticle {
+  private convertToNewsArticle(content: Record<string, unknown>, source: NewsSource): NewsApiArticle {
     const author = content.profiles?.full_name || content.profiles?.username || 'Local Community Member';
     
     let title = '';

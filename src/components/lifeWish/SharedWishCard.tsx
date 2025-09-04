@@ -30,7 +30,7 @@ interface SharedWishCardProps {
     avatar_url?: string;
   };
   sharedAt?: string;
-  permissions?: Record<string, any>;
+  permissions?: Record<string, unknown>;
   onShare?: (wish: LifeWish) => void;
   className?: string;
 }

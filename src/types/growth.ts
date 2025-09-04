@@ -8,7 +8,7 @@ export interface GrowthMetric {
   segment?: string;
   source?: string;
   campaign_id?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -27,7 +27,7 @@ export interface ViralContent {
   viral_velocity: number;
   peak_time?: string;
   decay_rate: number;
-  viral_metadata?: Record<string, any>;
+  viral_metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -40,9 +40,9 @@ export interface UserAcquisition {
   acquisition_campaign?: string;
   acquisition_cost?: number;
   acquisition_date: string;
-  first_touch_attribution: Record<string, any>;
-  last_touch_attribution: Record<string, any>;
-  multi_touch_attribution: Record<string, any>;
+  first_touch_attribution: Record<string, unknown>;
+  last_touch_attribution: Record<string, unknown>;
+  multi_touch_attribution: Record<string, unknown>;
   created_at: string;
 }
 
@@ -87,7 +87,7 @@ export interface GrowthHacking {
     priority: 'low' | 'medium' | 'high';
     start_date?: string;
     end_date?: string;
-    results?: Record<string, any>;
+    results?: Record<string, unknown>;
   }>;
   status: 'planning' | 'active' | 'completed' | 'paused';
   created_at: string;
@@ -118,7 +118,7 @@ export interface GrowthExperiment {
   variants: Array<{
     id: string;
     name: string;
-    config: Record<string, any>;
+    config: Record<string, unknown>;
     traffic_percentage: number;
   }>;
   metrics: Array<{
@@ -133,7 +133,7 @@ export interface GrowthExperiment {
   sample_size: number;
   confidence_level: number;
   winner_variant_id?: string;
-  results?: Record<string, any>;
+  results?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -167,8 +167,8 @@ export interface RetentionTool {
   name: string;
   description?: string;
   tool_type: 'email_sequence' | 'push_notification' | 'in_app_message' | 'loyalty_program';
-  trigger_condition: Record<string, any>;
-  action_config: Record<string, any>;
+  trigger_condition: Record<string, unknown>;
+  action_config: Record<string, unknown>;
   target_segment?: string;
   is_active: boolean;
   effectiveness_score: number;
@@ -276,7 +276,7 @@ export interface GrowthStrategy {
   name: string;
   description?: string;
   focus_area: 'acquisition' | 'retention' | 'engagement' | 'monetization';
-  target_audience: Record<string, any>;
+  target_audience: Record<string, unknown>;
   key_metrics: string[];
   tactics: Array<{
     id: string;
@@ -288,7 +288,7 @@ export interface GrowthStrategy {
     status: 'planned' | 'active' | 'completed' | 'failed';
     start_date?: string;
     end_date?: string;
-    results?: Record<string, any>;
+    results?: Record<string, unknown>;
   }>;
   budget?: number;
   timeline: {
@@ -325,7 +325,7 @@ export interface GrowthOptimization {
     confidence_level: number;
     implementation_effort: 'low' | 'medium' | 'high';
     status: 'proposed' | 'testing' | 'implemented' | 'rejected';
-    test_results?: Record<string, any>;
+    test_results?: Record<string, unknown>;
   }>;
   a_b_tests: Array<{
     id: string;

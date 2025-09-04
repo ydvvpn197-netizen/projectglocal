@@ -1,107 +1,272 @@
-// Environment configuration with fallbacks
-export const config = {
-  // Supabase Configuration
-  supabase: {
-    url: import.meta.env.VITE_SUPABASE_URL || "https://tepvzhbgobckybyhryuj.supabase.co",
-    anonKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4"
-  },
+// Environment configuration with proper validation and security
+import { ValidationError } from '@/utils/errorHandling';
 
-  // Debug environment variables (only in development)
-  debug: {
-    envUrl: import.meta.env.VITE_SUPABASE_URL,
-    envKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 'Present' : 'Missing',
-    nodeEnv: import.meta.env.NODE_ENV,
-    mode: import.meta.env.MODE
-  },
+// Environment variable validation
+const requiredEnvVars = [
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY'
+] as const;
 
-  // Google Maps API Key
-  googleMaps: {
-    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""
-  },
+const optionalEnvVars = [
+  'VITE_GOOGLE_MAPS_API_KEY',
+  'VITE_STRIPE_PUBLISHABLE_KEY',
+  'VITE_STRIPE_SECRET_KEY',
+  'VITE_STRIPE_WEBHOOK_SECRET',
+  'VITE_NEWS_API_KEY',
+  'VITE_FACEBOOK_APP_ID',
+  'VITE_TWITTER_API_KEY',
+  'VITE_LINKEDIN_CLIENT_ID',
+  'VITE_WHATSAPP_API_KEY',
+  'VITE_TELEGRAM_BOT_TOKEN'
+] as const;
 
-  // Stripe Configuration
-  stripe: {
-    publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "",
-    secretKey: import.meta.env.VITE_STRIPE_SECRET_KEY || "",
-    webhookSecret: import.meta.env.VITE_STRIPE_WEBHOOK_SECRET || ""
-  },
+// Validate required environment variables
+const validateEnvironment = (): void => {
+  const missingVars: string[] = [];
 
-  // News API Configuration
-  news: {
-    apiKey: import.meta.env.VITE_NEWS_API_KEY || ""
-  },
-
-  // Social Media API Keys
-  social: {
-    facebook: {
-      appId: import.meta.env.VITE_FACEBOOK_APP_ID || import.meta.env.NEXT_PUBLIC_FACEBOOK_APP_ID || ""
-    },
-    twitter: {
-      apiKey: import.meta.env.VITE_TWITTER_API_KEY || import.meta.env.NEXT_PUBLIC_TWITTER_API_KEY || ""
-    },
-    linkedin: {
-      clientId: import.meta.env.VITE_LINKEDIN_CLIENT_ID || import.meta.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || ""
-    },
-    whatsapp: {
-      apiKey: import.meta.env.VITE_WHATSAPP_API_KEY || import.meta.env.NEXT_PUBLIC_WHATSAPP_API_KEY || ""
-    },
-    telegram: {
-      botToken: import.meta.env.VITE_TELEGRAM_BOT_TOKEN || import.meta.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || ""
+  for (const envVar of requiredEnvVars) {
+    if (!import.meta.env[envVar]) {
+      missingVars.push(envVar);
     }
-  },
+  }
 
-  // Application Configuration
-  app: {
-    baseUrl: import.meta.env.BASE_URL || "/",
-    environment: import.meta.env.NODE_ENV || "development",
-    isDevelopment: import.meta.env.NODE_ENV === "development",
-    isProduction: import.meta.env.NODE_ENV === "production"
+  if (missingVars.length > 0) {
+    throw new ValidationError(
+      `Missing required environment variables: ${missingVars.join(', ')}`,
+      'environment',
+      'MISSING_ENV_VARS'
+    );
   }
 };
 
-// Helper function to check if required environment variables are set
-export const validateEnvironment = () => {
+// Initialize environment validation
+validateEnvironment();
+
+// Supabase Configuration
+export const supabaseConfig = {
+  url: import.meta.env.VITE_SUPABASE_URL!,
+  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY!,
+} as const;
+
+// Google Maps API Configuration
+export const googleMapsConfig = {
+  apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+} as const;
+
+// Stripe Configuration
+export const stripeConfig = {
+  publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
+  secretKey: import.meta.env.VITE_STRIPE_SECRET_KEY || '',
+  webhookSecret: import.meta.env.VITE_STRIPE_WEBHOOK_SECRET || '',
+} as const;
+
+// News API Configuration
+export const newsConfig = {
+  apiKey: import.meta.env.VITE_NEWS_API_KEY || '',
+} as const;
+
+// Social Media API Configuration
+export const socialMediaConfig = {
+  facebook: {
+    appId: import.meta.env.VITE_FACEBOOK_APP_ID || '',
+  },
+  twitter: {
+    apiKey: import.meta.env.VITE_TWITTER_API_KEY || '',
+  },
+  linkedin: {
+    clientId: import.meta.env.VITE_LINKEDIN_CLIENT_ID || '',
+  },
+  whatsapp: {
+    apiKey: import.meta.env.VITE_WHATSAPP_API_KEY || '',
+  },
+  telegram: {
+    botToken: import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '',
+  },
+} as const;
+
+// Application Configuration
+export const appConfig = {
+  baseUrl: import.meta.env.BASE_URL || '/',
+  environment: import.meta.env.NODE_ENV || 'development',
+  isDevelopment: import.meta.env.NODE_ENV === 'development',
+  isProduction: import.meta.env.NODE_ENV === 'production',
+  version: import.meta.env.VITE_APP_VERSION || '1.0.0',
+} as const;
+
+// Feature Flags Configuration
+export const featureFlags = {
+  enableAnalytics: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
+  enableDebugMode: import.meta.env.VITE_ENABLE_DEBUG_MODE === 'true',
+  enablePerformanceMonitoring: import.meta.env.VITE_ENABLE_PERFORMANCE_MONITORING === 'true',
+  enableErrorTracking: import.meta.env.VITE_ENABLE_ERROR_TRACKING === 'true',
+} as const;
+
+// API Configuration
+export const apiConfig = {
+  baseUrl: import.meta.env.VITE_API_BASE_URL || '',
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
+  retryAttempts: parseInt(import.meta.env.VITE_API_RETRY_ATTEMPTS || '3'),
+  retryDelay: parseInt(import.meta.env.VITE_API_RETRY_DELAY || '1000'),
+} as const;
+
+// Cache Configuration
+export const cacheConfig = {
+  defaultTTL: parseInt(import.meta.env.VITE_CACHE_DEFAULT_TTL || '300000'), // 5 minutes
+  maxSize: parseInt(import.meta.env.VITE_CACHE_MAX_SIZE || '100'),
+  enablePersistentCache: import.meta.env.VITE_ENABLE_PERSISTENT_CACHE === 'true',
+} as const;
+
+// Security Configuration
+export const securityConfig = {
+  enableCSP: import.meta.env.VITE_ENABLE_CSP === 'true',
+  enableHSTS: import.meta.env.VITE_ENABLE_HSTS === 'true',
+  enableXSSProtection: import.meta.env.VITE_ENABLE_XSS_PROTECTION === 'true',
+  maxLoginAttempts: parseInt(import.meta.env.VITE_MAX_LOGIN_ATTEMPTS || '5'),
+  sessionTimeout: parseInt(import.meta.env.VITE_SESSION_TIMEOUT || '3600000'), // 1 hour
+} as const;
+
+// Performance Configuration
+export const performanceConfig = {
+  enableLazyLoading: import.meta.env.VITE_ENABLE_LAZY_LOADING === 'true',
+  enableCodeSplitting: import.meta.env.VITE_ENABLE_CODE_SPLITTING === 'true',
+  enableServiceWorker: import.meta.env.VITE_ENABLE_SERVICE_WORKER === 'true',
+  enablePreloading: import.meta.env.VITE_ENABLE_PRELOADING === 'true',
+} as const;
+
+// Monitoring Configuration
+export const monitoringConfig = {
+  enableLogging: import.meta.env.VITE_ENABLE_LOGGING === 'true',
+  enableMetrics: import.meta.env.VITE_ENABLE_METRICS === 'true',
+  enableTracing: import.meta.env.VITE_ENABLE_TRACING === 'true',
+  logLevel: import.meta.env.VITE_LOG_LEVEL || 'info',
+} as const;
+
+// Main configuration object
+export const config = {
+  supabase: supabaseConfig,
+  googleMaps: googleMapsConfig,
+  stripe: stripeConfig,
+  news: newsConfig,
+  social: socialMediaConfig,
+  app: appConfig,
+  features: featureFlags,
+  api: apiConfig,
+  cache: cacheConfig,
+  security: securityConfig,
+  performance: performanceConfig,
+  monitoring: monitoringConfig,
+} as const;
+
+// Configuration validation and warnings
+export const validateConfiguration = (): {
+  warnings: string[];
+  errors: string[];
+} => {
   const warnings: string[] = [];
   const errors: string[] = [];
 
-  // Check for required environment variables
-  if (!config.googleMaps.apiKey) {
-    warnings.push("VITE_GOOGLE_MAPS_API_KEY is not set. Location services may not work properly.");
+  // Check for optional but recommended environment variables
+  if (!googleMapsConfig.apiKey) {
+    warnings.push('VITE_GOOGLE_MAPS_API_KEY is not set. Location services may not work properly.');
   }
 
-  if (!config.stripe.publishableKey) {
-    warnings.push("VITE_STRIPE_PUBLISHABLE_KEY is not set. Payment features will be disabled.");
+  if (!stripeConfig.publishableKey) {
+    warnings.push('VITE_STRIPE_PUBLISHABLE_KEY is not set. Payment features will be disabled.');
   }
 
-  if (!config.news.apiKey) {
-    warnings.push("VITE_NEWS_API_KEY is not set. News feed features may not work properly.");
+  if (!newsConfig.apiKey) {
+    warnings.push('VITE_NEWS_API_KEY is not set. News feed features may not work properly.');
   }
 
   // Check for social media API keys
-  if (!config.social.facebook.appId) {
-    warnings.push("VITE_FACEBOOK_APP_ID is not set. Facebook sharing may not work properly.");
+  if (!socialMediaConfig.facebook.appId) {
+    warnings.push('VITE_FACEBOOK_APP_ID is not set. Facebook sharing may not work properly.');
   }
 
-  if (!config.social.twitter.apiKey) {
-    warnings.push("VITE_TWITTER_API_KEY is not set. Twitter sharing may not work properly.");
+  if (!socialMediaConfig.twitter.apiKey) {
+    warnings.push('VITE_TWITTER_API_KEY is not set. Twitter sharing may not work properly.');
   }
 
-  if (!config.social.linkedin.clientId) {
-    warnings.push("VITE_LINKEDIN_CLIENT_ID is not set. LinkedIn sharing may not work properly.");
+  if (!socialMediaConfig.linkedin.clientId) {
+    warnings.push('VITE_LINKEDIN_CLIENT_ID is not set. LinkedIn sharing may not work properly.');
+  }
+
+  // Validate configuration values
+  if (apiConfig.timeout < 1000) {
+    errors.push('API timeout must be at least 1000ms');
+  }
+
+  if (cacheConfig.defaultTTL < 1000) {
+    errors.push('Cache TTL must be at least 1000ms');
+  }
+
+  if (securityConfig.maxLoginAttempts < 1) {
+    errors.push('Max login attempts must be at least 1');
   }
 
   // Log warnings and errors
   if (warnings.length > 0) {
-    console.warn("Environment Configuration Warnings:", warnings);
+    console.warn('Configuration Warnings:', warnings);
   }
 
   if (errors.length > 0) {
-    console.error("Environment Configuration Errors:", errors);
-    throw new Error("Required environment variables are missing");
+    console.error('Configuration Errors:', errors);
   }
 
   return { warnings, errors };
 };
 
 // Export individual config sections for easier imports
-export const { supabase, googleMaps, stripe, news, social, app } = config;
+export const {
+  supabase,
+  googleMaps,
+  stripe,
+  news,
+  social,
+  app,
+  features,
+  api,
+  cache,
+  security,
+  performance,
+  monitoring,
+} = config;
+
+// Type for the entire configuration
+export type AppConfig = typeof config;
+
+// Helper function to check if a feature is enabled
+export const isFeatureEnabled = (feature: keyof typeof featureFlags): boolean => {
+  return featureFlags[feature];
+};
+
+// Helper function to get configuration value with fallback
+export const getConfigValue = <T>(
+  key: keyof AppConfig,
+  fallback: T
+): T => {
+  try {
+    return (config as Record<string, unknown>)[key] as T || fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+// Helper function to check if running in specific environment
+export const isEnvironment = (env: 'development' | 'production' | 'test'): boolean => {
+  return appConfig.environment === env;
+};
+
+// Helper function to get API endpoint
+export const getApiEndpoint = (path: string): string => {
+  const baseUrl = apiConfig.baseUrl || '';
+  return `${baseUrl}${path}`.replace(/\/+/g, '/');
+};
+
+// Helper function to get cache key
+export const getCacheKey = (prefix: string, identifier: string): string => {
+  return `${prefix}:${identifier}`;
+};
+
+// Export default configuration
+export default config;

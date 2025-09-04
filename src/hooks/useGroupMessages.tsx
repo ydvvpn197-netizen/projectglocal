@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,7 +24,7 @@ export const useGroupMessages = (groupId: string) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('get_group_messages_with_details', {
         group_id_param: groupId
@@ -42,7 +42,7 @@ export const useGroupMessages = (groupId: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupId, toast]);
 
   const postMessage = async (content: string, parentId?: string) => {
     try {
@@ -174,7 +174,7 @@ export const useGroupMessages = (groupId: string) => {
     if (groupId) {
       fetchMessages();
     }
-  }, [groupId]);
+  }, [groupId, fetchMessages]);
 
   // Set up real-time subscription
   useEffect(() => {
@@ -210,7 +210,7 @@ export const useGroupMessages = (groupId: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [groupId]);
+  }, [groupId, fetchMessages]);
 
   return {
     messages,

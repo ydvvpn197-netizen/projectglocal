@@ -1,6 +1,7 @@
 /**
  * Network utilities for handling connectivity issues and retries
  */
+import { GenericFunction } from '@/types/extended';
 
 export interface RetryOptions {
   maxRetries?: number;
@@ -106,7 +107,7 @@ export function getNetworkInfo(): {
   saveData?: boolean;
 } {
   if (typeof window !== 'undefined' && 'connection' in navigator) {
-    const connection = (navigator as any).connection;
+    const connection = (navigator as Record<string, unknown>).connection;
     return {
       effectiveType: connection?.effectiveType,
       downlink: connection?.downlink,
@@ -120,7 +121,7 @@ export function getNetworkInfo(): {
 /**
  * Debounce function calls
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends GenericFunction>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -134,7 +135,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function calls
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends GenericFunction>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {

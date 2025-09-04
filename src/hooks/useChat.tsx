@@ -49,7 +49,7 @@ export const useChat = (conversationId?: string) => {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${conversationId}` },
-        (payload: any) => {
+        (payload: { new: ChatMessage }) => {
           setMessages((prev) => [...prev, payload.new as ChatMessage]);
         }
       )
@@ -81,9 +81,9 @@ export const useChat = (conversationId?: string) => {
         .single();
 
       setConversation({ ...data, other_user: profile || undefined });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching conversation:', err);
-      toast({ title: 'Error', description: err.message || 'Failed to load conversation', variant: 'destructive' });
+      toast({ title: 'Error', description: err instanceof Error ? err.message : 'Failed to load conversation', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -99,9 +99,9 @@ export const useChat = (conversationId?: string) => {
 
       if (error) throw error;
       setMessages((data as ChatMessage[]) || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching messages:', err);
-      toast({ title: 'Error', description: err.message || 'Failed to load messages', variant: 'destructive' });
+      toast({ title: 'Error', description: err instanceof Error ? err.message : 'Failed to load messages', variant: 'destructive' });
     }
   };
 

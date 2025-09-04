@@ -85,7 +85,7 @@ export function useLocalStorageArray<T>(key: string, initialValue: T[] = []) {
   return useLocalStorage<T[]>(key, initialValue);
 }
 
-export function useLocalStorageObject<T extends Record<string, any>>(
+export function useLocalStorageObject<T extends Record<string, unknown>>(
   key: string,
   initialValue: T
 ) {

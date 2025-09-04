@@ -83,10 +83,11 @@ export const useSampleData = () => {
         title: "Sample data created!",
         description: "Added 5 sample posts to help you explore the app."
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
         title: "Error creating sample data",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

@@ -426,7 +426,7 @@ export class PollService {
 
       // Count votes for each option
       const voteCounts: Record<string, number> = {};
-      poll.options.forEach((option: any) => {
+      poll.options.forEach((option: Record<string, unknown>) => {
         voteCounts[option.id] = 0;
       });
 
@@ -439,7 +439,7 @@ export class PollService {
       });
 
       // Update options with vote counts
-      const updatedOptions = poll.options.map((option: any) => ({
+      const updatedOptions = poll.options.map((option: Record<string, unknown>) => ({
         ...option,
         votes: voteCounts[option.id] || 0
       }));

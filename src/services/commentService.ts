@@ -46,7 +46,7 @@ export class CommentService {
       if (!user) throw new Error('User not authenticated');
 
       // Use any to bypass strict typing for dynamic table names
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .insert({
           ...commentData,
@@ -79,7 +79,7 @@ export class CommentService {
       if (!user) return [];
 
       // Simplified query without foreign key joins to avoid PGRST200 errors
-      let query = (supabase as any)
+      let query = (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*')
         .eq('post_id', postId);
@@ -99,7 +99,7 @@ export class CommentService {
       if (error) throw error;
 
       // Get user profiles separately to avoid foreign key issues
-      const userIds = [...new Set((data || []).map((comment: any) => comment.user_id))] as string[];
+      const userIds = [...new Set((data || []).map((comment: Record<string, unknown>) => comment.user_id))] as string[];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url')
@@ -107,7 +107,7 @@ export class CommentService {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      const comments = (data || []).map((comment: any) => ({
+      const comments = (data || []).map((comment: Record<string, unknown>) => ({
         ...comment,
         author_name: comment.is_anonymous ? 'Anonymous' : profileMap.get(comment.user_id)?.display_name || 'Unknown',
         author_avatar: comment.is_anonymous ? undefined : profileMap.get(comment.user_id)?.avatar_url,
@@ -134,7 +134,7 @@ export class CommentService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*')
         .eq('id', commentId)
@@ -175,7 +175,7 @@ export class CommentService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .update({
           ...updates,
@@ -206,7 +206,7 @@ export class CommentService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error } = await (supabase as any)
+      const { error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .delete()
         .eq('id', commentId)
@@ -234,7 +234,7 @@ export class CommentService {
       }
 
       // Check if vote already exists
-      const { data: existingVote } = await (supabase as any)
+      const { data: existingVote } = await (supabase as Record<string, unknown>)
         .from('comment_votes')
         .select('*')
         .eq('comment_id', commentId)
@@ -243,7 +243,7 @@ export class CommentService {
 
       if (existingVote) {
         // Update existing vote
-        const { error } = await (supabase as any)
+        const { error } = await (supabase as Record<string, unknown>)
           .from('comment_votes')
           .update({ vote_type: voteType })
           .eq('comment_id', commentId)
@@ -252,7 +252,7 @@ export class CommentService {
         if (error) throw error;
       } else {
         // Create new vote
-        const { error } = await (supabase as any)
+        const { error } = await (supabase as Record<string, unknown>)
           .from('comment_votes')
           .insert({
             comment_id: commentId,
@@ -278,19 +278,19 @@ export class CommentService {
       const votesTableExists = await checkTableExists('comment_votes');
       if (!votesTableExists.exists) return;
 
-      const { data: votes } = await (supabase as any)
+      const { data: votes } = await (supabase as Record<string, unknown>)
         .from('comment_votes')
         .select('vote_type')
         .eq('comment_id', commentId);
 
       if (!votes) return;
 
-      const score = votes.reduce((sum: number, vote: any) => sum + vote.vote_type, 0);
+      const score = votes.reduce((sum: number, vote: Record<string, unknown>) => sum + vote.vote_type, 0);
 
       const tableName = await this.getCommentsTable();
       if (!tableName) return;
 
-      await (supabase as any)
+      await (supabase as Record<string, unknown>)
         .from(tableName)
         .update({ score })
         .eq('id', commentId);
@@ -304,7 +304,7 @@ export class CommentService {
       const tableName = await this.getCommentsTable();
       if (!tableName) return;
 
-      const { count } = await (supabase as any)
+      const { count } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*', { count: 'exact', head: true })
         .eq('post_id', postId);
@@ -313,7 +313,7 @@ export class CommentService {
         // Check if community_posts table exists
         const postsTableExists = await checkTableExists('community_posts');
         if (postsTableExists.exists) {
-          await (supabase as any)
+          await (supabase as Record<string, unknown>)
             .from('community_posts')
             .update({ comment_count: count })
             .eq('id', postId);
@@ -362,7 +362,7 @@ export class CommentService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*')
         .eq('parent_id', commentId)
@@ -386,7 +386,7 @@ export class CommentService {
         return 0;
       }
 
-      const { count, error } = await (supabase as any)
+      const { count, error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*', { count: 'exact', head: true })
         .eq('post_id', postId);
@@ -408,7 +408,7 @@ export class CommentService {
         return [];
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*')
         .eq('user_id', userId)
@@ -437,7 +437,7 @@ export class CommentService {
         return [];
       }
 
-      let searchQuery = (supabase as any)
+      let searchQuery = (supabase as Record<string, unknown>)
         .from(tableName)
         .select('*');
 

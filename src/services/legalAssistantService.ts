@@ -15,7 +15,7 @@ export interface LegalChatMessage {
   session_id: string;
   message_type: 'user' | 'assistant';
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -28,7 +28,7 @@ export interface LegalDraft {
   document_type: string;
   status: 'draft' | 'review' | 'final';
   file_urls?: Record<string, string>;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,7 @@ import { UserManagementFilters, UserAction, AdminUser } from '@/types/admin';
 
 const UserManagement: React.FC = () => {
   const { adminUser } = useAdminAuth();
-  const adminService = new AdminService();
+  const adminService = useMemo(() => new AdminService(), []);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,9 +49,9 @@ const UserManagement: React.FC = () => {
 
   useEffect(() => {
     loadUsers();
-  }, [filters]);
+  }, [filters, loadUsers]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -64,7 +64,7 @@ const UserManagement: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, adminService]);
 
   const handleSearch = (value: string) => {
     setFilters(prev => ({ ...prev, search: value, page: 1 }));

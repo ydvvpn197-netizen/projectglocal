@@ -30,7 +30,7 @@ export class CommunityService {
     maxRetries: number = 3,
     delay: number = 1000
   ): Promise<T> {
-    let lastError: any;
+    let lastError: unknown;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -456,8 +456,8 @@ export class CommunityService {
   // Validate group before joining
   static async validateGroupForJoining(groupId: string, userId: string): Promise<{
     isValid: boolean;
-    group?: any;
-    user?: any;
+    group?: Record<string, unknown>;
+    user?: Record<string, unknown>;
     errors: string[];
   }> {
     const errors: string[] = [];
@@ -503,7 +503,7 @@ export class CommunityService {
   }
 
   // Debug method to help troubleshoot issues
-  static async debugGroupIssues(): Promise<any> {
+  static async debugGroupIssues(): Promise<Record<string, unknown>> {
     try {
       console.log('=== DEBUG: Group Issues ===');
       

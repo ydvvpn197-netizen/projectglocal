@@ -90,10 +90,10 @@ export class NewsApiManager {
   /**
    * Parse generic API response
    */
-  private parseGenericApiResponse(data: any, source: NewsSource): NewsApiArticle[] {
+  private parseGenericApiResponse(data: Record<string, unknown>, source: NewsSource): NewsApiArticle[] {
     try {
       // Try different common response patterns
-      let articles: any[] = [];
+      let articles: Record<string, unknown>[] = [];
 
       // Pattern 1: { articles: [...] }
       if (data.articles && Array.isArray(data.articles)) {
@@ -141,7 +141,7 @@ export class NewsApiManager {
   /**
    * Normalize article from different API formats
    */
-  private normalizeArticle(article: any, source: NewsSource): NewsApiArticle {
+  private normalizeArticle(article: Record<string, unknown>, source: NewsSource): NewsApiArticle {
     return {
       source: {
         id: article.source?.id || source.id,

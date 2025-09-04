@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,9 +57,9 @@ const Discover = () => {
   useEffect(() => {
     fetchLocalContent();
     fetchTrendingContent();
-  }, [currentLocation, locationEnabled]);
+  }, [currentLocation, locationEnabled, fetchLocalContent]);
 
-  const fetchLocalContent = async () => {
+  const fetchLocalContent = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -164,7 +164,7 @@ const Discover = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentLocation, toast]);
 
   const fetchTrendingContent = async () => {
     try {

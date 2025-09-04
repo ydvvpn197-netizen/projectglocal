@@ -70,7 +70,7 @@ const Messages = () => {
 
       setActive(decorated.filter(r => r.status === 'active'));
       setRequests(decorated.filter(r => r.status === 'pending' && r.client_id !== user.id));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading conversations:', err);
       toast({ title: 'Error', description: err.message || 'Failed to load messages', variant: 'destructive' });
     } finally {

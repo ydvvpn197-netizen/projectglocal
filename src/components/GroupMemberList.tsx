@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export const GroupMemberList = ({ groupId, currentUserId, isGroupAdmin }: GroupM
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('group_members')
@@ -44,7 +44,7 @@ export const GroupMemberList = ({ groupId, currentUserId, isGroupAdmin }: GroupM
 
       if (error) throw error;
 
-      const transformedMembers = data?.map((member: any) => ({
+      const transformedMembers = data?.map((member: Record<string, unknown>) => ({
         id: member.id,
         user_id: member.user_id,
         role: member.role,
@@ -64,7 +64,7 @@ export const GroupMemberList = ({ groupId, currentUserId, isGroupAdmin }: GroupM
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupId, toast]);
 
   const removeMember = async (memberId: string) => {
     try {
@@ -94,7 +94,7 @@ export const GroupMemberList = ({ groupId, currentUserId, isGroupAdmin }: GroupM
     if (groupId) {
       fetchMembers();
     }
-  }, [groupId]);
+  }, [groupId, fetchMembers]);
 
   if (loading) {
     return (

@@ -6,7 +6,7 @@ export interface Recommendation {
   score: number;
   reason: string;
   algorithm: 'collaborative' | 'content-based' | 'hybrid' | 'location-based';
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   createdAt: string;
   expiresAt?: string;
 }
@@ -56,7 +56,7 @@ export interface UserBehavior {
   action: 'view' | 'like' | 'comment' | 'share' | 'bookmark' | 'follow' | 'search';
   contentType: string;
   contentId: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   timestamp: string;
   sessionId: string;
 }

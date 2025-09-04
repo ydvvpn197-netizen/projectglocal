@@ -38,7 +38,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, Event } from "@/hooks/useEvents";
 import { EventCard } from "@/components/EventCard";
 import { useToast } from "@/hooks/use-toast";
 
@@ -216,7 +216,7 @@ const categories = [
   "Entertainment"
 ];
 
-const EventBookingModal = ({ event, isOpen, onClose }: { event: any; isOpen: boolean; onClose: () => void }) => {
+const EventBookingModal = ({ event, isOpen, onClose }: { event: Record<string, unknown>; isOpen: boolean; onClose: () => void }) => {
   const [tickets, setTickets] = useState(1);
   const [showContact, setShowContact] = useState(false);
 
@@ -351,7 +351,7 @@ const Events = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("date");
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   
   const { events, loading, toggleAttendance } = useEvents();
@@ -394,7 +394,7 @@ const Events = () => {
   const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : null;
   const upcomingEvents = sortedEvents.slice(1); // All events except the featured one
 
-  const handleBookEvent = (event: any) => {
+  const handleBookEvent = (event: Record<string, unknown>) => {
     setSelectedEvent(event);
     setIsBookingModalOpen(true);
   };

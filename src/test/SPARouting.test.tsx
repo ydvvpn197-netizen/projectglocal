@@ -35,7 +35,7 @@ jest.mock('../pages/NotFound', () => ({
 describe('SPA Routing', () => {
   beforeEach(() => {
     // Clear any existing global variables
-    delete (window as any).__SPA_INITIAL_PATH__;
+    delete (window as Record<string, unknown>).__SPA_INITIAL_PATH__;
   });
 
   it('should render the app with proper routing', () => {
@@ -52,7 +52,7 @@ describe('SPA Routing', () => {
 
   it('should handle SPA initial path correctly', () => {
     // Set the initial path
-    (window as any).__SPA_INITIAL_PATH__ = '/settings';
+    (window as Record<string, unknown>).__SPA_INITIAL_PATH__ = '/settings';
     
     render(
       <BrowserRouter>
@@ -66,7 +66,7 @@ describe('SPA Routing', () => {
 
   it('should clear SPA initial path after handling', () => {
     // Set the initial path
-    (window as any).__SPA_INITIAL_PATH__ = '/settings';
+    (window as Record<string, unknown>).__SPA_INITIAL_PATH__ = '/settings';
     
     render(
       <BrowserRouter>

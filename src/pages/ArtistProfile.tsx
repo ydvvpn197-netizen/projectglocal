@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,9 +83,9 @@ const ArtistProfile = () => {
       fetchArtistProfile();
       fetchDiscussions();
     }
-  }, [artistId, user]);
+  }, [artistId, user, fetchArtistProfile, fetchDiscussions]);
 
-  const fetchArtistProfile = async () => {
+  const fetchArtistProfile = useCallback(async () => {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -127,7 +127,7 @@ const ArtistProfile = () => {
             is_available: false, // Set to false to prevent bookings
             hourly_rate_min: profileData.hourly_rate_min || 0,
             hourly_rate_max: profileData.hourly_rate_max || 0,
-          } as any);
+          });
           return;
         }
 
@@ -152,9 +152,9 @@ const ArtistProfile = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [artistId, toast]);
 
-  const fetchDiscussions = async () => {
+  const fetchDiscussions = useCallback(async () => {
     try {
       // We need to get the artist record first to get the correct artist_id
       const { data: artistRecord, error: artistError } = await supabase
@@ -181,7 +181,7 @@ const ArtistProfile = () => {
 
       // Fetch user profiles separately
       const userIds = (data || []).map(d => d.user_id);
-      let profilesMap: Record<string, any> = {};
+      let profilesMap: Record<string, { user_id: string; display_name?: string; avatar_url?: string }> = {};
       
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
@@ -206,7 +206,7 @@ const ArtistProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [artistId]);
 
   const handleSubmitDiscussion = async () => {
     if (!user) {
@@ -271,7 +271,7 @@ const ArtistProfile = () => {
 
       setDiscussionTitle("");
       setDiscussionContent("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting discussion:', error);
       let errorMessage = "Failed to submit discussion request";
       
@@ -397,7 +397,7 @@ const ArtistProfile = () => {
       setBudgetMin("");
       setBudgetMax("");
       setContactInfo("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating booking:', error);
       
       // Provide more specific error messages

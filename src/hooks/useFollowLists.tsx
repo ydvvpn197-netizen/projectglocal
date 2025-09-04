@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 
 export interface FollowUser {
@@ -19,7 +19,7 @@ export const useFollowLists = () => {
   
   const { user } = useAuth();
 
-  const fetchFollowers = async () => {
+  const fetchFollowers = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -51,9 +51,9 @@ export const useFollowLists = () => {
       setError('Failed to fetch followers');
       setFollowers([]);
     }
-  };
+  }, [user]);
 
-  const fetchFollowing = async () => {
+  const fetchFollowing = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -85,7 +85,7 @@ export const useFollowLists = () => {
       setError('Failed to fetch following');
       setFollowing([]);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +105,7 @@ export const useFollowLists = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, fetchFollowers, fetchFollowing]);
 
   const removeFromFollowers = (userId: string) => {
     setFollowers(prev => prev.filter(f => f.user_id !== userId));

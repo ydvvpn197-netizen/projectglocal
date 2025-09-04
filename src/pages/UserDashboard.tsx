@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { ClientBookingsPanel } from "@/components/ClientBookingsPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +27,7 @@ const UserDashboard = () => {
     activeBookings: 0,
     completedBookings: 0
   });
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<{ avatar_url?: string; display_name?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("bookings");
 
@@ -35,9 +35,9 @@ const UserDashboard = () => {
     if (user) {
       fetchUserData();
     }
-  }, [user]);
+  }, [user, fetchUserData]);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -76,7 +76,7 @@ const UserDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   if (!user) {
     navigate('/signin');

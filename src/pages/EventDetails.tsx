@@ -32,7 +32,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, Event } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -44,7 +44,7 @@ const EventDetails = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [tickets, setTickets] = useState(1);

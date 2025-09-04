@@ -7,8 +7,8 @@ export interface Campaign {
   status: 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
   start_date?: string;
   end_date?: string;
-  target_audience?: Record<string, any>;
-  campaign_config?: Record<string, any>;
+  target_audience?: Record<string, unknown>;
+  campaign_config?: Record<string, unknown>;
   budget?: number;
   spent: number;
   impressions: number;
@@ -46,7 +46,7 @@ export interface SocialShare {
   platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'whatsapp' | 'telegram' | 'email' | 'sms';
   share_url?: string;
   share_text?: string;
-  share_metadata?: Record<string, any>;
+  share_metadata?: Record<string, unknown>;
   clicks: number;
   impressions: number;
   engagement_rate: number;
@@ -69,8 +69,8 @@ export interface PromoCode {
   valid_from: string;
   valid_until?: string;
   is_active: boolean;
-  applicable_services?: Record<string, any>;
-  excluded_services?: Record<string, any>;
+  applicable_services?: Record<string, unknown>;
+  excluded_services?: Record<string, unknown>;
   created_by?: string;
   created_at: string;
   updated_at: string;
@@ -92,7 +92,7 @@ export interface MarketingAnalytics {
   user_id?: string;
   session_id?: string;
   event_type: string;
-  event_data?: Record<string, any>;
+  event_data?: Record<string, unknown>;
   campaign_id?: string;
   referral_code?: string;
   utm_source?: string;
@@ -103,7 +103,7 @@ export interface MarketingAnalytics {
   ip_address?: string;
   user_agent?: string;
   device_type?: string;
-  location_data?: Record<string, any>;
+  location_data?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -169,8 +169,8 @@ export interface CreateCampaignData {
   campaign_type: Campaign['campaign_type'];
   start_date?: string;
   end_date?: string;
-  target_audience?: Record<string, any>;
-  campaign_config?: Record<string, any>;
+  target_audience?: Record<string, unknown>;
+  campaign_config?: Record<string, unknown>;
   budget?: number;
 }
 
@@ -179,8 +179,8 @@ export interface UpdateCampaignData {
   description?: string;
   status?: Campaign['status'];
   end_date?: string;
-  target_audience?: Record<string, any>;
-  campaign_config?: Record<string, any>;
+  target_audience?: Record<string, unknown>;
+  campaign_config?: Record<string, unknown>;
   budget?: number;
 }
 
@@ -196,8 +196,8 @@ export interface CreatePromoCodeData {
   usage_limit?: number;
   user_limit?: number;
   valid_until?: string;
-  applicable_services?: Record<string, any>;
-  excluded_services?: Record<string, any>;
+  applicable_services?: Record<string, unknown>;
+  excluded_services?: Record<string, unknown>;
 }
 
 export interface UpdatePromoCodeData {
@@ -210,8 +210,8 @@ export interface UpdatePromoCodeData {
   user_limit?: number;
   valid_until?: string;
   is_active?: boolean;
-  applicable_services?: Record<string, any>;
-  excluded_services?: Record<string, any>;
+  applicable_services?: Record<string, unknown>;
+  excluded_services?: Record<string, unknown>;
 }
 
 // Social Sharing Types
@@ -221,7 +221,7 @@ export interface ShareContentData {
   platform: SocialShare['platform'];
   share_text?: string;
   share_url?: string;
-  share_metadata?: Record<string, any>;
+  share_metadata?: Record<string, unknown>;
 }
 
 export interface ShareAnalytics {
@@ -271,10 +271,10 @@ export interface AutomationWorkflow {
   name: string;
   description?: string;
   trigger_type: 'user_action' | 'time_based' | 'condition_met';
-  trigger_config: Record<string, any>;
+  trigger_config: Record<string, unknown>;
   actions: Array<{
     type: 'email' | 'push_notification' | 'sms' | 'in_app_message';
-    config: Record<string, any>;
+    config: Record<string, unknown>;
     delay_seconds?: number;
   }>;
   is_active: boolean;
@@ -286,7 +286,7 @@ export interface UserSegment {
   id: string;
   name: string;
   description?: string;
-  criteria: Record<string, any>;
+  criteria: Record<string, unknown>;
   user_count: number;
   created_at: string;
   updated_at: string;
@@ -316,7 +316,7 @@ export interface ABTest {
   variants: Array<{
     id: string;
     name: string;
-    config: Record<string, any>;
+    config: Record<string, unknown>;
     traffic_percentage: number;
   }>;
   metrics: Array<{
@@ -356,7 +356,7 @@ export interface InfluencerCampaign {
   influencer_id: string;
   campaign_id: string;
   status: 'proposed' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
-  terms: Record<string, any>;
+  terms: Record<string, unknown>;
   compensation: {
     type: 'fixed' | 'commission' | 'product' | 'hybrid';
     amount: number;

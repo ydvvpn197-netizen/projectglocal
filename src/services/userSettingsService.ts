@@ -60,7 +60,7 @@ export interface EmailChangeData {
 export interface SettingsUpdateResult {
   success: boolean;
   error?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 class UserSettingsService {
@@ -141,8 +141,8 @@ class UserSettingsService {
    */
   async updateProfileSettings(userId: string, updates: Partial<UserSettings>): Promise<SettingsUpdateResult> {
     try {
-      const profileUpdates: any = {};
-      const notificationUpdates: any = {};
+      const profileUpdates: Record<string, unknown> = {};
+      const notificationUpdates: Record<string, unknown> = {};
 
       // Separate profile and notification updates
       if (updates.display_name !== undefined) profileUpdates.display_name = updates.display_name;
@@ -195,7 +195,7 @@ class UserSettingsService {
    */
   async updateNotificationSettings(userId: string, updates: Partial<UserSettings>): Promise<SettingsUpdateResult> {
     try {
-      const notificationUpdates: any = {};
+      const notificationUpdates: Record<string, unknown> = {};
 
       // Extract notification-related fields
       if (updates.email_notifications !== undefined) notificationUpdates.email_notifications = updates.email_notifications;
@@ -327,7 +327,7 @@ class UserSettingsService {
 
       categories.forEach(category => {
         if (category in settings) {
-          (preferences as any)[category] = (settings as any)[category];
+          (preferences as Record<string, unknown>)[category] = (settings as Record<string, unknown>)[category];
         }
       });
 

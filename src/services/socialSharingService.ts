@@ -431,10 +431,10 @@ export class SocialSharingService {
       acc[key].clicks += share.clicks;
       acc[key].viral_score = (acc[key].shares * 0.4 + (acc[key].clicks / Math.max(totalImpressions, 1)) * 0.6);
       return acc;
-    }, {} as Record<string, any>) || {};
+    }, {} as Record<string, unknown>) || {};
 
     const topContent = Object.values(contentStats)
-      .sort((a: any, b: any) => b.viral_score - a.viral_score)
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => b.viral_score - a.viral_score)
       .slice(0, 10);
 
     return {

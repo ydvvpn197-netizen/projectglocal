@@ -1,11 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Event, CommunityGroup, UserProfile } from '@/types/common';
 
 // Enhanced API service with better error handling, caching, and real-time updates
 export class EnhancedApiService {
   private static instance: EnhancedApiService;
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
-  private subscriptions = new Map<string, any>();
+  private cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
+  private subscriptions = new Map<string, unknown>();
   private toast = useToast();
 
   static getInstance(): EnhancedApiService {
@@ -22,7 +23,7 @@ export class EnhancedApiService {
     options: {
       ttl?: number; // Time to live in milliseconds
       forceRefresh?: boolean;
-      onError?: (error: any) => void;
+      onError?: (error: unknown) => void;
     } = {}
   ): Promise<T> {
     const { ttl = 5 * 60 * 1000, forceRefresh = false, onError } = options; // Default 5 minutes
@@ -215,7 +216,7 @@ export class EventApiService extends EnhancedApiService {
     );
   }
 
-  async createEvent(eventData: any) {
+  async createEvent(eventData: Partial<Event>) {
     const { data, error } = await supabase
       .from('events')
       .insert(eventData)
@@ -231,7 +232,7 @@ export class EventApiService extends EnhancedApiService {
     return data;
   }
 
-  async updateEvent(id: string, updates: any) {
+  async updateEvent(id: string, updates: Partial<Event>) {
     const { data, error } = await supabase
       .from('events')
       .update(updates)
@@ -385,7 +386,7 @@ export class CommunityApiService extends EnhancedApiService {
     );
   }
 
-  async createCommunity(communityData: any) {
+  async createCommunity(communityData: Partial<CommunityGroup>) {
     const { data, error } = await supabase
       .from('community_groups')
       .insert(communityData)
@@ -480,7 +481,7 @@ export class UserApiService extends EnhancedApiService {
     );
   }
 
-  async updateUserProfile(userId: string, updates: any) {
+  async updateUserProfile(userId: string, updates: Partial<UserProfile>) {
     const { data, error } = await supabase
       .from('user_profiles')
       .update(updates)

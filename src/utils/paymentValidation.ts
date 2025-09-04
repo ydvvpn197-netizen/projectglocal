@@ -1,6 +1,7 @@
 /**
  * Payment validation utilities for security and validation
  */
+import { BillingDetails, AddressDetails, PaymentMetadata } from '@/types/extended';
 
 export interface PaymentValidationResult {
   isValid: boolean;
@@ -109,7 +110,7 @@ export function validatePaymentMethodTypes(paymentMethodTypes: string[]): Paymen
 /**
  * Validate billing details
  */
-export function validateBillingDetails(billingDetails: any): PaymentValidationResult {
+export function validateBillingDetails(billingDetails: BillingDetails): PaymentValidationResult {
   const errors: string[] = [];
 
   if (!billingDetails) {
@@ -146,7 +147,7 @@ export function validateBillingDetails(billingDetails: any): PaymentValidationRe
 /**
  * Validate address
  */
-function validateAddress(address: any): string[] {
+function validateAddress(address: AddressDetails): string[] {
   const errors: string[] = [];
 
   if (typeof address !== 'object' || address === null) {
@@ -180,7 +181,7 @@ function validateAddress(address: any): string[] {
 /**
  * Validate payment metadata
  */
-export function validatePaymentMetadata(metadata: any): PaymentValidationResult {
+export function validatePaymentMetadata(metadata: PaymentMetadata): PaymentValidationResult {
   const errors: string[] = [];
 
   if (metadata && typeof metadata !== 'object') {
@@ -214,8 +215,8 @@ export function validatePaymentData(paymentData: {
   amount: number;
   currency: string;
   payment_method_types?: string[];
-  billing_details?: any;
-  metadata?: any;
+  billing_details?: BillingDetails;
+  metadata?: PaymentMetadata;
   description?: string;
 }): PaymentValidationResult {
   const errors: string[] = [];
@@ -264,7 +265,7 @@ export function validatePaymentData(paymentData: {
 /**
  * Sanitize payment data for logging (remove sensitive information)
  */
-export function sanitizePaymentData(paymentData: any): any {
+export function sanitizePaymentData(paymentData: PaymentData): SanitizedPaymentData {
   const sanitized = { ...paymentData };
 
   // Remove sensitive fields

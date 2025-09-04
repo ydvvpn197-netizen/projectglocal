@@ -117,7 +117,7 @@ export default function Notifications() {
     }
   };
 
-  const handleNavigate = (notification: any) => {
+  const handleNavigate = (notification: Record<string, unknown>) => {
     // Handle navigation logic here
     console.log('Navigate to:', notification);
   };

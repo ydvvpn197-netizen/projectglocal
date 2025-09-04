@@ -16,6 +16,18 @@ interface NewsItem {
   imageUrl?: string;
 }
 
+interface NewsArticle {
+  title: string;
+  description: string;
+  content: string;
+  url: string;
+  urlToImage?: string;
+  publishedAt: string;
+  source: {
+    name: string;
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -92,8 +104,8 @@ async function fetchRealNews(
     }
 
     const newsItems = data.articles
-      .filter((article: any) => isLocationRelevant(article, location, latitude, longitude, radius))
-      .map((article: any) => ({
+      .filter((article: NewsArticle) => isLocationRelevant(article, location, latitude, longitude, radius))
+      .map((article: NewsArticle) => ({
         title: article.title,
         description: article.description || 'No description available',
         url: article.url,
@@ -131,7 +143,7 @@ async function getLocationName(lat: number, lng: number): Promise<string> {
 }
 
 function isLocationRelevant(
-  article: any, 
+  article: NewsArticle, 
   location: string, 
   latitude?: number, 
   longitude?: number, 
@@ -148,7 +160,7 @@ function isLocationRelevant(
   return localTerms.some(term => text.includes(term));
 }
 
-function categorizeArticle(article: any): string {
+function categorizeArticle(article: NewsArticle): string {
   const text = `${article.title} ${article.description}`.toLowerCase();
   
   if (text.includes('event') || text.includes('festival') || text.includes('concert')) {

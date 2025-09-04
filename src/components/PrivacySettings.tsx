@@ -51,7 +51,7 @@ export const PrivacySettings = ({ onClose, compact = false }: PrivacySettingsPro
     setHasChanges(changed);
   }, [localSettings, settings]);
 
-  const handleInputChange = (key: string, value: any) => {
+  const handleInputChange = (key: string, value: unknown) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 

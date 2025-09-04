@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,13 +37,13 @@ const SystemSettings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [settings, setSettings] = useState<Record<string, SystemSetting>>({});
-  const adminService = new AdminService();
+  const adminService = useMemo(() => new AdminService(), []);
 
   useEffect(() => {
     loadSettings();
-  }, []);
+  }, [loadSettings]);
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -61,7 +61,7 @@ const SystemSettings: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [adminService]);
 
   const handleSettingChange = (key: string, value: string | boolean) => {
     setSettings(prev => ({

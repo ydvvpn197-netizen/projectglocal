@@ -8,7 +8,7 @@ export interface AIInsight {
   title: string;
   description: string;
   confidence: number;
-  data: any;
+  data: Record<string, unknown>;
   recommendations: string[];
 }
 
@@ -34,9 +34,9 @@ export class AIAlgorithms {
    * Generate AI insights for user
    */
   static generateAIInsights(
-    userData: any,
-    contentData: any[],
-    behaviorData: any[]
+    userData: Record<string, unknown>,
+    contentData: Record<string, unknown>[],
+    behaviorData: Record<string, unknown>[]
   ): AIInsight[] {
     const insights: AIInsight[] = [];
 
@@ -66,7 +66,7 @@ export class AIAlgorithms {
   /**
    * Generate trending insights
    */
-  private static generateTrendingInsights(contentData: any[]): AIInsight[] {
+  private static generateTrendingInsights(contentData: Record<string, unknown>[]): AIInsight[] {
     const insights: AIInsight[] = [];
 
     // Analyze trending patterns
@@ -114,7 +114,7 @@ export class AIAlgorithms {
   /**
    * Generate recommendation insights
    */
-  private static generateRecommendationInsights(userData: any, contentData: any[]): AIInsight[] {
+  private static generateRecommendationInsights(userData: Record<string, unknown>, contentData: Record<string, unknown>[]): AIInsight[] {
     const insights: AIInsight[] = [];
 
     // Analyze user preferences
@@ -155,7 +155,7 @@ export class AIAlgorithms {
   /**
    * Generate behavior insights
    */
-  private static generateBehaviorInsights(behaviorData: any[]): AIInsight[] {
+  private static generateBehaviorInsights(behaviorData: Record<string, unknown>[]): AIInsight[] {
     const insights: AIInsight[] = [];
 
     // Analyze behavior patterns
@@ -197,7 +197,7 @@ export class AIAlgorithms {
   /**
    * Generate network insights
    */
-  private static generateNetworkInsights(userData: any): AIInsight[] {
+  private static generateNetworkInsights(userData: Record<string, unknown>): AIInsight[] {
     const insights: AIInsight[] = [];
 
     // Analyze network growth
@@ -236,7 +236,7 @@ export class AIAlgorithms {
   /**
    * Generate content insights
    */
-  private static generateContentInsights(contentData: any[]): AIInsight[] {
+  private static generateContentInsights(contentData: Record<string, unknown>[]): AIInsight[] {
     const insights: AIInsight[] = [];
 
     // Analyze content performance
@@ -275,7 +275,7 @@ export class AIAlgorithms {
   /**
    * Analyze content for sentiment, topics, and quality
    */
-  static analyzeContent(content: any): ContentAnalysis {
+  static analyzeContent(content: Record<string, unknown>): ContentAnalysis {
     const text = `${content.title} ${content.description || ''}`.toLowerCase();
     
     // Simple sentiment analysis
@@ -321,8 +321,8 @@ export class AIAlgorithms {
    * Predict user behavior patterns
    */
   static predictUserBehavior(
-    userData: any,
-    behaviorHistory: any[]
+    userData: Record<string, unknown>,
+    behaviorHistory: Record<string, unknown>[]
   ): UserBehaviorPattern[] {
     const patterns: UserBehaviorPattern[] = [];
 
@@ -345,9 +345,9 @@ export class AIAlgorithms {
    * Optimize content recommendations using AI
    */
   static optimizeRecommendations(
-    userProfile: any,
-    availableContent: any[],
-    userBehavior: any[]
+    userProfile: Record<string, unknown>,
+    availableContent: Record<string, unknown>[],
+    userBehavior: Record<string, unknown>[]
   ): Recommendation[] {
     // Apply AI-based filtering
     const filteredContent = this.applyAIFiltering(availableContent, userProfile);
@@ -385,7 +385,7 @@ export class AIAlgorithms {
 
   // Helper methods for analysis
 
-  private static analyzeCategoryTrends(contentData: any[]): Array<{ category: string; count: number; score: number }> {
+  private static analyzeCategoryTrends(contentData: Record<string, unknown>[]): Array<{ category: string; count: number; score: number }> {
     const categoryCounts: Record<string, { count: number; totalScore: number }> = {};
     
     contentData.forEach(content => {
@@ -405,42 +405,42 @@ export class AIAlgorithms {
       .sort((a, b) => b.score - a.score);
   }
 
-  private static analyzeUserPreferences(userData: any): UserPreference[] {
+  private static analyzeUserPreferences(userData: Record<string, unknown>): UserPreference[] {
     // This would be implemented with actual user preference analysis
     return [];
   }
 
-  private static analyzeRecommendationAccuracy(userData: any, contentData: any[]): number {
+  private static analyzeRecommendationAccuracy(userData: Record<string, unknown>, contentData: Record<string, unknown>[]): number {
     // This would be implemented with actual accuracy calculation
     return 0.75;
   }
 
-  private static analyzeBehaviorPatterns(behaviorData: any[]): UserBehaviorPattern[] {
+  private static analyzeBehaviorPatterns(behaviorData: Record<string, unknown>[]): UserBehaviorPattern[] {
     // This would be implemented with actual pattern analysis
     return [];
   }
 
-  private static analyzeEngagementTrends(behaviorData: any[]): { trend: string; change: number } {
+  private static analyzeEngagementTrends(behaviorData: Record<string, unknown>[]): { trend: string; change: number } {
     // This would be implemented with actual trend analysis
     return { trend: 'increased', change: 0.15 };
   }
 
-  private static analyzeNetworkGrowth(userData: any): { growth: number; newConnections: number } {
+  private static analyzeNetworkGrowth(userData: Record<string, unknown>): { growth: number; newConnections: number } {
     // This would be implemented with actual network analysis
     return { growth: 25, newConnections: 15 };
   }
 
-  private static analyzeNetworkDiversity(userData: any): { diversity: number; categories: number } {
+  private static analyzeNetworkDiversity(userData: Record<string, unknown>): { diversity: number; categories: number } {
     // This would be implemented with actual diversity analysis
     return { diversity: 0.65, categories: 8 };
   }
 
-  private static analyzeContentPerformance(contentData: any[]): { avgEngagement: number } {
+  private static analyzeContentPerformance(contentData: Record<string, unknown>[]): { avgEngagement: number } {
     // This would be implemented with actual performance analysis
     return { avgEngagement: 0.12 };
   }
 
-  private static analyzeContentQuality(contentData: any[]): { qualityScore: number } {
+  private static analyzeContentQuality(contentData: Record<string, unknown>[]): { qualityScore: number } {
     // This would be implemented with actual quality analysis
     return { qualityScore: 0.78 };
   }
@@ -455,7 +455,7 @@ export class AIAlgorithms {
     return ['local', 'events', 'community', 'fun'];
   }
 
-  private static calculateContentQuality(content: any): number {
+  private static calculateContentQuality(content: Record<string, unknown>): number {
     let score = 0.5;
 
     if (content.title && content.title.length > 10) score += 0.1;
@@ -467,14 +467,14 @@ export class AIAlgorithms {
     return Math.min(score, 1.0);
   }
 
-  private static calculateEngagementScore(content: any): number {
+  private static calculateEngagementScore(content: Record<string, unknown>): number {
     if (!content.engagement) return 0.5;
 
     const total = content.engagement.likes + content.engagement.comments + content.engagement.shares;
     return Math.min(total / 100, 1.0);
   }
 
-  private static calculateViralityScore(content: any): number {
+  private static calculateViralityScore(content: Record<string, unknown>): number {
     if (!content.engagement) return 0.5;
 
     const shares = content.engagement.shares || 0;
@@ -483,42 +483,42 @@ export class AIAlgorithms {
     return Math.min(shares / views, 1.0);
   }
 
-  private static analyzeInteractionPatterns(behaviorHistory: any[]): UserBehaviorPattern[] {
+  private static analyzeInteractionPatterns(behaviorHistory: Record<string, unknown>[]): UserBehaviorPattern[] {
     // This would be implemented with actual pattern analysis
     return [];
   }
 
-  private static analyzeConsumptionPatterns(behaviorHistory: any[]): UserBehaviorPattern[] {
+  private static analyzeConsumptionPatterns(behaviorHistory: Record<string, unknown>[]): UserBehaviorPattern[] {
     // This would be implemented with actual pattern analysis
     return [];
   }
 
-  private static analyzeTimePatterns(behaviorHistory: any[]): UserBehaviorPattern[] {
+  private static analyzeTimePatterns(behaviorHistory: Record<string, unknown>[]): UserBehaviorPattern[] {
     // This would be implemented with actual pattern analysis
     return [];
   }
 
-  private static applyAIFiltering(content: any[], userProfile: any): any[] {
+  private static applyAIFiltering(content: Record<string, unknown>[], userProfile: Record<string, unknown>): Record<string, unknown>[] {
     // This would be implemented with actual AI filtering
     return content;
   }
 
-  private static calculateAIScore(content: any, userProfile: any, userBehavior: any[]): number {
+  private static calculateAIScore(content: Record<string, unknown>, userProfile: Record<string, unknown>, userBehavior: Record<string, unknown>[]): number {
     // This would be implemented with actual AI scoring
     return 0.75;
   }
 
-  private static generateAIRecommendationReason(content: any, userProfile: any): string {
+  private static generateAIRecommendationReason(content: Record<string, unknown>, userProfile: Record<string, unknown>): string {
     // This would be implemented with actual reason generation
     return 'AI-optimized recommendation based on your preferences and behavior';
   }
 
-  private static calculateConfidence(content: any, userProfile: any): number {
+  private static calculateConfidence(content: Record<string, unknown>, userProfile: Record<string, unknown>): number {
     // This would be implemented with actual confidence calculation
     return 0.85;
   }
 
-  private static predictEngagement(content: any, userProfile: any): number {
+  private static predictEngagement(content: Record<string, unknown>, userProfile: Record<string, unknown>): number {
     // This would be implemented with actual engagement prediction
     return 0.72;
   }

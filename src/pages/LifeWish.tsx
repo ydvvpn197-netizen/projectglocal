@@ -60,7 +60,7 @@ const LifeWishPage: React.FC = () => {
 
   // Create life wish mutation
   const createWishMutation = useMutation({
-    mutationFn: (wishData: any) => lifeWishService.createLifeWish(wishData),
+    mutationFn: (wishData: Record<string, unknown>) => lifeWishService.createLifeWish(wishData),
     onSuccess: () => {
       refetchMyWishes();
       setShowCreateDialog(false);
@@ -74,7 +74,7 @@ const LifeWishPage: React.FC = () => {
 
   // Update life wish mutation
   const updateWishMutation = useMutation({
-    mutationFn: ({ wishId, updates }: { wishId: string; updates: any }) => 
+    mutationFn: ({ wishId, updates }: { wishId: string; updates: Record<string, unknown> }) => 
       lifeWishService.updateLifeWish(wishId, updates),
     onSuccess: () => {
       refetchMyWishes();
@@ -87,7 +87,7 @@ const LifeWishPage: React.FC = () => {
     },
   });
 
-  const handleUpdateWish = (wishData: any) => {
+  const handleUpdateWish = (wishData: Record<string, unknown>) => {
     if (editingWish) {
       updateWishMutation.mutate({ wishId: editingWish.id, updates: wishData });
     }
@@ -106,7 +106,7 @@ const LifeWishPage: React.FC = () => {
     },
   });
 
-  const handleCreateWish = (wishData: any) => {
+  const handleCreateWish = (wishData: Record<string, unknown>) => {
     createWishMutation.mutate(wishData);
   };
 

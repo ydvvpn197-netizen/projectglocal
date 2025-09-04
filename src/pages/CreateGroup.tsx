@@ -69,9 +69,9 @@ const CreateGroup = () => {
         description: formData.description.trim(),
         latitude: currentLocation?.latitude,
         longitude: currentLocation?.longitude,
-        location_city: (currentLocation as any)?.city || '',
-        location_state: (currentLocation as any)?.state || '',
-        location_country: (currentLocation as any)?.country || ''
+        location_city: (currentLocation as Record<string, unknown>)?.city || '',
+        location_state: (currentLocation as Record<string, unknown>)?.state || '',
+        location_country: (currentLocation as Record<string, unknown>)?.country || ''
       };
 
       // Create the group using CommunityService
@@ -100,7 +100,7 @@ const CreateGroup = () => {
     }
   };
 
-  const handleInputChange = (field: keyof CreateGroupRequest, value: any) => {
+  const handleInputChange = (field: keyof CreateGroupRequest, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

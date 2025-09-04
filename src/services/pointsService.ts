@@ -32,7 +32,7 @@ export class PointsService {
     points: number, 
     transactionType: PointTransactionType, 
     description?: string, 
-    metadata?: any
+    metadata?: Record<string, unknown>
   ): Promise<boolean> {
     try {
       const { data, error } = await supabase.rpc('add_user_points', {

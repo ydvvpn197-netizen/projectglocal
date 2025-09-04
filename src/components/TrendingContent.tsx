@@ -140,7 +140,7 @@ export const TrendingContent = () => {
         </Button>
       </div>
 
-      <Tabs value={period} onValueChange={(value) => changePeriod(value as any)}>
+              <Tabs value={period} onValueChange={(value) => changePeriod(value as 'hour' | 'day' | 'week' | 'month')}>
         <TabsList>
           {periods.map((p) => (
             <TabsTrigger key={p.value} value={p.value}>

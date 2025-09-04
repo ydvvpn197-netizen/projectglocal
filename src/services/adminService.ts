@@ -96,7 +96,7 @@ export class AdminService {
     actionType: string,
     resourceType: string,
     resourceId?: string,
-    actionData?: any,
+    actionData?: Record<string, unknown>,
     success: boolean = true,
     errorMessage?: string
   ): Promise<string | null> {
@@ -504,7 +504,7 @@ export class AdminService {
   /**
    * Get system settings
    */
-  async getSystemSettings(): Promise<any[]> {
+  async getSystemSettings(): Promise<SystemSetting[]> {
     try {
       const { data, error } = await supabase
         .from('system_settings')
@@ -522,7 +522,7 @@ export class AdminService {
   /**
    * Update system settings
    */
-  async updateSystemSettings(settings: any[]): Promise<void> {
+  async updateSystemSettings(settings: SystemSetting[]): Promise<void> {
     try {
       for (const setting of settings) {
         const { error } = await supabase
@@ -546,7 +546,7 @@ export class AdminService {
   /**
    * Get users with pagination and filters
    */
-  async getUsers(filters: any): Promise<PaginatedResponse<any>> {
+  async getUsers(filters: UserManagementFilters): Promise<PaginatedResponse<UserProfile>> {
     try {
       let query = supabase
         .from('profiles')
@@ -578,7 +578,7 @@ export class AdminService {
   /**
    * Get content reports with pagination and filters
    */
-  async getContentReports(filters: any): Promise<PaginatedResponse<any>> {
+  async getContentReports(filters: ContentReportFilters): Promise<PaginatedResponse<ContentReport>> {
     try {
       let query = supabase
         .from('content_reports')
@@ -637,7 +637,7 @@ export class AdminService {
   /**
    * Get user analytics
    */
-  async getUserAnalytics(filters: any): Promise<any> {
+  async getUserAnalytics(filters: AdminAnalyticsFilters): Promise<AdminAnalytics> {
     try {
       // Mock data for now - replace with actual analytics queries
       return {
@@ -663,7 +663,7 @@ export class AdminService {
   /**
    * Get content analytics
    */
-  async getContentAnalytics(filters: any): Promise<any> {
+  async getContentAnalytics(filters: AdminAnalyticsFilters): Promise<AdminAnalytics> {
     try {
       // Mock data for now - replace with actual analytics queries
       return {
@@ -689,7 +689,7 @@ export class AdminService {
   /**
    * Get platform metrics
    */
-  async getPlatformMetrics(filters: any): Promise<any> {
+  async getPlatformMetrics(filters: AdminAnalyticsFilters): Promise<AdminAnalytics> {
     try {
       // Mock data for now - replace with actual analytics queries
       return {

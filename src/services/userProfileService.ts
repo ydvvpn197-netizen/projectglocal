@@ -124,7 +124,7 @@ class UserProfileService {
       }
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in updateUserProfile:', error);
       return { success: false, error: error.message };
     }
@@ -435,7 +435,7 @@ class UserProfileService {
       }
 
       return { success: true, url: publicUrl };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in uploadAvatar:', error);
       return { success: false, error: error.message };
     }

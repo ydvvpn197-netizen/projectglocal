@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SocialMediaPost, SocialPost } from './SocialMediaPost';
 import { SocialPostService, PostFilters } from '@/services/socialPostService';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ export const SocialMediaFeed: React.FC<SocialMediaFeedProps> = ({
   const [offset, setOffset] = useState(0);
   const limit = 10;
 
-  const loadPosts = async (isRefresh = false) => {
+  const loadPosts = useCallback(async (isRefresh = false) => {
     try {
       const currentOffset = isRefresh ? 0 : offset;
       const newPosts = await SocialPostService.getPosts({
@@ -48,7 +48,7 @@ export const SocialMediaFeed: React.FC<SocialMediaFeedProps> = ({
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [filters, offset]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -190,7 +190,7 @@ export const SocialMediaFeed: React.FC<SocialMediaFeedProps> = ({
 
   useEffect(() => {
     loadPosts(true);
-  }, [filters]);
+  }, [filters, loadPosts]);
 
   if (loading && posts.length === 0) {
     return (

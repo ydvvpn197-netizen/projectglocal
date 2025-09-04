@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -23,7 +23,7 @@ export const useComments = (postId: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     if (!user || !postId) return;
 
     setLoading(true);
@@ -60,17 +60,18 @@ export const useComments = (postId: string) => {
       );
 
       setComments(commentsWithProfiles);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       console.error('Error fetching comments:', error);
       toast({
         title: "Error loading comments",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, postId, toast]);
 
   const addComment = async (content: string) => {
     if (!user || !content.trim()) return;
@@ -107,10 +108,11 @@ export const useComments = (postId: string) => {
       });
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       toast({
         title: "Error adding comment",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
       return { error };
@@ -134,10 +136,11 @@ export const useComments = (postId: string) => {
         title: "Comment deleted",
         description: "Your comment has been removed."
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       toast({
         title: "Error deleting comment",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -147,7 +150,7 @@ export const useComments = (postId: string) => {
     if (postId && user) {
       fetchComments();
     }
-  }, [postId, user]);
+  }, [postId, user, fetchComments]);
 
   return {
     comments,

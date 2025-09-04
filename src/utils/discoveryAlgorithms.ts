@@ -1,5 +1,6 @@
 import { SearchResult, TrendingContent } from '@/types/search';
 import { Recommendation } from '@/types/recommendations';
+import { ContentItem } from '@/types/extended';
 
 export interface DiscoveryScore {
   interestMatchScore: number;
@@ -37,10 +38,10 @@ export class DiscoveryAlgorithms {
   static discoverContent(
     userInterests: string[],
     userLocation: { latitude: number; longitude: number; city: string; state: string } | null,
-    availableContent: any[],
+    availableContent: ContentItem[],
     filters: DiscoveryFilters,
     limit: number = 20
-  ): any[] {
+  ): ContentItem[] {
     // Apply filters first
     const filteredContent = this.applyDiscoveryFilters(availableContent, filters);
 
@@ -71,7 +72,7 @@ export class DiscoveryAlgorithms {
   /**
    * Apply discovery filters to content
    */
-  private static applyDiscoveryFilters(content: any[], filters: DiscoveryFilters): any[] {
+  private static applyDiscoveryFilters(content: ContentItem[], filters: DiscoveryFilters): ContentItem[] {
     return content.filter(item => {
       // Category filter
       if (filters.categories.length > 0 && !filters.categories.includes(item.category)) {
@@ -135,7 +136,7 @@ export class DiscoveryAlgorithms {
   private static calculateDiscoveryScores(
     userInterests: string[],
     userLocation: { latitude: number; longitude: number; city: string; state: string } | null,
-    content: any,
+    content: ContentItem,
     filters: DiscoveryFilters
   ): DiscoveryScore {
     const interestMatchScore = this.calculateInterestMatchScore(userInterests, content);
@@ -169,7 +170,7 @@ export class DiscoveryAlgorithms {
   /**
    * Calculate interest matching score
    */
-  private static calculateInterestMatchScore(userInterests: string[], content: any): number {
+  private static calculateInterestMatchScore(userInterests: string[], content: ContentItem): number {
     if (userInterests.length === 0) {
       return 0.5; // Neutral score if no interests
     }
@@ -192,7 +193,7 @@ export class DiscoveryAlgorithms {
   /**
    * Calculate diversity score
    */
-  private static calculateDiversityScore(content: any): number {
+  private static calculateDiversityScore(content: ContentItem): number {
     let score = 0.5; // Base score
 
     // Content type diversity
@@ -229,7 +230,7 @@ export class DiscoveryAlgorithms {
   /**
    * Calculate freshness score
    */
-  private static calculateFreshnessScore(content: any): number {
+  private static calculateFreshnessScore(content: ContentItem): number {
     const now = new Date();
     const createdAt = new Date(content.createdAt);
     const hoursSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
@@ -246,7 +247,7 @@ export class DiscoveryAlgorithms {
    */
   private static calculateLocationRelevanceScore(
     userLocation: { latitude: number; longitude: number; city: string; state: string } | null,
-    content: any
+    content: ContentItem
   ): number {
     if (!userLocation || !content.location) {
       return 0.5; // Neutral score if no location data
@@ -282,7 +283,7 @@ export class DiscoveryAlgorithms {
   /**
    * Calculate engagement prediction score
    */
-  private static calculateEngagementPredictionScore(content: any): number {
+  private static calculateEngagementPredictionScore(content: ContentItem): number {
     let score = 0.5; // Base score
 
     // Historical engagement
@@ -319,7 +320,7 @@ export class DiscoveryAlgorithms {
   /**
    * Calculate serendipity score (unexpected but relevant content)
    */
-  private static calculateSerendipityScore(userInterests: string[], content: any): number {
+  private static calculateSerendipityScore(userInterests: string[], content: ContentItem): number {
     if (userInterests.length === 0) {
       return 0.5; // Neutral score if no interests
     }
@@ -347,8 +348,8 @@ export class DiscoveryAlgorithms {
   /**
    * Apply diversity balancing to ensure variety
    */
-  private static applyDiversityBalancing(content: any[], limit: number): any[] {
-    const diverseContent: any[] = [];
+  private static applyDiversityBalancing(content: ContentItem[], limit: number): ContentItem[] {
+    const diverseContent: ContentItem[] = [];
     const usedCategories = new Set<string>();
     const usedContentTypes = new Set<string>();
     const usedTags = new Set<string>();
@@ -416,7 +417,7 @@ export class DiscoveryAlgorithms {
    */
   static generateDiscoveryInsights(
     userInterests: string[],
-    discoveredContent: any[]
+    discoveredContent: ContentItem[]
   ): {
     topCategories: string[];
     trendingTopics: string[];
@@ -490,15 +491,15 @@ export class DiscoveryAlgorithms {
    */
   static matchContentWithInterests(
     userInterests: string[],
-    content: any[]
+    content: ContentItem[]
   ): {
-    perfectMatches: any[];
-    goodMatches: any[];
-    serendipitousMatches: any[];
+    perfectMatches: ContentItem[];
+    goodMatches: ContentItem[];
+    serendipitousMatches: ContentItem[];
   } {
-    const perfectMatches: any[] = [];
-    const goodMatches: any[] = [];
-    const serendipitousMatches: any[] = [];
+    const perfectMatches: ContentItem[] = [];
+    const goodMatches: ContentItem[] = [];
+    const serendipitousMatches: ContentItem[] = [];
 
     content.forEach(item => {
       const contentInterests = [item.category, ...(item.tags || [])];

@@ -1,4 +1,5 @@
 import { Location, LocationSearchResult } from '../types/location';
+import { GoogleMapsPlace, LocationCacheData } from '@/types/extended';
 
 /**
  * Calculate distance between two points using Haversine formula
@@ -168,7 +169,7 @@ export async function searchPlaces(
     const data = await response.json();
     
     if (data.status === 'OK') {
-      return data.results.map((place: any) => ({
+      return data.results.map((place: GoogleMapsPlace) => ({
         id: place.place_id,
         name: place.name,
         address: place.formatted_address,
@@ -251,7 +252,7 @@ export function isWithinRadius(
  * @param data Data to cache
  * @param ttl Time to live in milliseconds
  */
-export function cacheLocationData(key: string, data: any, ttl: number = 300000): void {
+export function cacheLocationData(key: string, data: LocationCacheData, ttl: number = 300000): void {
   try {
     const cacheData = {
       data,
@@ -269,7 +270,7 @@ export function cacheLocationData(key: string, data: any, ttl: number = 300000):
  * @param key Cache key
  * @returns Cached data or null if expired/not found
  */
-export function getCachedLocationData(key: string): any {
+export function getCachedLocationData(key: string): LocationCacheData | null {
   try {
     const cached = localStorage.getItem(`location_cache_${key}`);
     if (!cached) return null;

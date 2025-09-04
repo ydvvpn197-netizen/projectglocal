@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@12.0.0'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
@@ -74,7 +74,7 @@ serve(async (req) => {
   }
 })
 
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, supabaseClient: any) {
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, supabaseClient: SupabaseClient) {
   console.log('Payment intent succeeded:', paymentIntent.id)
   
   // Update payment intent status
@@ -120,7 +120,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
   }
 }
 
-async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, supabaseClient: any) {
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, supabaseClient: SupabaseClient) {
   console.log('Payment intent failed:', paymentIntent.id)
   
   await supabaseClient
@@ -132,14 +132,14 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, su
     .eq('stripe_payment_intent_id', paymentIntent.id)
 }
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabaseClient: any) {
+async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabaseClient: SupabaseClient) {
   console.log('Subscription created:', subscription.id)
   
   // Subscription creation is typically handled in the checkout session completion
   // This is just for logging purposes
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabaseClient: any) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabaseClient: SupabaseClient) {
   console.log('Subscription updated:', subscription.id)
   
   await supabaseClient
@@ -154,7 +154,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
     .eq('stripe_subscription_id', subscription.id)
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabaseClient: any) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabaseClient: SupabaseClient) {
   console.log('Subscription deleted:', subscription.id)
   
   await supabaseClient
@@ -166,21 +166,21 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
     .eq('stripe_subscription_id', subscription.id)
 }
 
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, supabaseClient: any) {
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, supabaseClient: SupabaseClient) {
   console.log('Invoice payment succeeded:', invoice.id)
   
   // Handle successful invoice payment
   // This could trigger additional business logic like extending subscription access
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabaseClient: any) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabaseClient: SupabaseClient) {
   console.log('Invoice payment failed:', invoice.id)
   
   // Handle failed invoice payment
   // This could trigger dunning management or subscription suspension
 }
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabaseClient: any) {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabaseClient: SupabaseClient) {
   console.log('Checkout session completed:', session.id)
   
   // Update checkout session status

@@ -135,7 +135,7 @@ export const useCommunityGroups = () => {
       } else {
         throw new Error('Failed to join group');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error joining group:', error);
       
       // Handle specific error cases

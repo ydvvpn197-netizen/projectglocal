@@ -167,7 +167,7 @@ const Profile = () => {
   };
 
   const getBadgeIcon = (iconName: string) => {
-    const iconMap: { [key: string]: any } = {
+    const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
       Crown,
       Shield,
       Zap,

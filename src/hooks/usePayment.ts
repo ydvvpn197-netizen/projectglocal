@@ -64,8 +64,8 @@ export function usePayment(): UsePaymentReturn {
     setError(null);
   }, []);
 
-  const handleError = useCallback((error: any, message?: string) => {
-    const errorMessage = message || error.message || 'An error occurred';
+  const handleError = useCallback((error: unknown, message?: string) => {
+    const errorMessage = message || (error instanceof Error ? error.message : 'An error occurred');
     setError(errorMessage);
     toast({
       title: "Error",
@@ -122,7 +122,7 @@ export function usePayment(): UsePaymentReturn {
     } finally {
       setLoading(false);
     }
-  }, [handleError, toast]);
+  }, [handleError, toast, refreshTransactions]);
 
   const refreshPaymentMethods = useCallback(async () => {
     try {

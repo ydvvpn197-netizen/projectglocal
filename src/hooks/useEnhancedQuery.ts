@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { eventApi, communityApi, userApi } from '@/services/enhancedApi';
+import { EventData, CommunityData, UserUpdateData } from '@/types/extended';
 
 // Enhanced query hook with better error handling and caching
 export function useEnhancedQuery<TData, TError = unknown>(
@@ -18,7 +19,7 @@ export function useEnhancedQuery<TData, TError = unknown>(
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors
       if (error && typeof error === 'object' && 'status' in error) {
-        const status = (error as any).status;
+        const status = (error as Record<string, unknown>).status;
         if (status >= 400 && status < 500) {
           return false;
         }
@@ -99,7 +100,7 @@ export function useCreateEvent() {
   const queryClient = useQueryClient();
   
   return useEnhancedMutation(
-    (eventData: any) => eventApi.createEvent(eventData),
+    (eventData: EventData) => eventApi.createEvent(eventData),
     {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -112,7 +113,7 @@ export function useUpdateEvent() {
   const queryClient = useQueryClient();
   
   return useEnhancedMutation(
-    ({ id, updates }: { id: string; updates: any }) => eventApi.updateEvent(id, updates),
+    ({ id, updates }: { id: string; updates: Partial<EventData> }) => eventApi.updateEvent(id, updates),
     {
       onSuccess: (data, { id }) => {
         queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -196,7 +197,7 @@ export function useCreateCommunity() {
   const queryClient = useQueryClient();
   
   return useEnhancedMutation(
-    (communityData: any) => communityApi.createCommunity(communityData),
+    (communityData: CommunityData) => communityApi.createCommunity(communityData),
     {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['communities'] });
@@ -251,7 +252,7 @@ export function useUpdateUserProfile() {
   const queryClient = useQueryClient();
   
   return useEnhancedMutation(
-    ({ userId, updates }: { userId: string; updates: any }) => 
+    ({ userId, updates }: { userId: string; updates: UserUpdateData }) => 
       userApi.updateUserProfile(userId, updates),
     {
       onSuccess: (data, { userId }) => {

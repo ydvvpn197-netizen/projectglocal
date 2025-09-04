@@ -5,7 +5,8 @@ import type {
   Campaign,
   CreateCampaignData,
   UpdateCampaignData,
-  CampaignFilters
+  CampaignFilters,
+  MarketingAnalytics
 } from '@/types/marketing';
 
 /**
@@ -269,7 +270,7 @@ export class MarketingService {
    * @param eventData - Event data
    * @param campaignId - Optional campaign ID
    */
-  static async trackEvent(eventType: string, eventData: any, campaignId?: string): Promise<void> {
+  static async trackEvent(eventType: string, eventData: Record<string, unknown>, campaignId?: string): Promise<void> {
     const tablesAvailable = await this.checkMarketingTables();
     
     if (!tablesAvailable) {
@@ -302,7 +303,7 @@ export class MarketingService {
    * @param filters - Optional filters
    * @returns Promise<any> - Analytics data
    */
-  static async getAnalytics(filters?: any): Promise<any> {
+  static async getAnalytics(filters?: Record<string, unknown>): Promise<MarketingAnalytics[]> {
     const tablesAvailable = await this.checkMarketingTables();
     
     if (!tablesAvailable) {

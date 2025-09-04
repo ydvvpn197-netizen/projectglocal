@@ -6,7 +6,7 @@
 export interface MonitoringEvent {
   type: 'error' | 'performance' | 'user_action' | 'api_call';
   name: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   timestamp: string;
   userId?: string;
   sessionId?: string;
@@ -22,7 +22,7 @@ export interface PerformanceMetric {
 export interface ErrorEvent {
   message: string;
   stack?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
@@ -69,7 +69,7 @@ export class MonitoringService {
   /**
    * Track a custom event
    */
-  trackEvent(name: string, data?: Record<string, any>, userId?: string): void {
+  trackEvent(name: string, data?: Record<string, unknown>, userId?: string): void {
     const event: MonitoringEvent = {
       type: 'user_action',
       name,

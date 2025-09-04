@@ -45,7 +45,7 @@ const TIME_FILTERS = [
 export const SearchFilters = ({ filters, onFiltersChange, onClearFilters }: SearchFiltersProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const updateFilter = (key: keyof SearchFilter, value: any) => {
+  const updateFilter = (key: keyof SearchFilter, value: unknown) => {
     onFiltersChange({
       ...filters,
       [key]: value

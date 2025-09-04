@@ -70,14 +70,15 @@ export const usePolls = () => {
       });
       
       return { success: false, error: "Feature not implemented yet" };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create poll';
       console.error('Error creating poll:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create poll.",
+        description: errorMessage,
         variant: "destructive",
       });
-      return { success: false, error: error.message };
+      return { success: false, error: errorMessage };
     } finally {
       setCreating(false);
     }
@@ -89,7 +90,7 @@ export const usePolls = () => {
         title: "Polls Feature Coming Soon",
         description: "Poll voting functionality is being developed.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error voting:', error);
       toast({
         title: "Error",
@@ -105,7 +106,7 @@ export const usePolls = () => {
         title: "Polls Feature Coming Soon",
         description: "Poll management functionality is being developed.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting poll:', error);
       toast({
         title: "Error",

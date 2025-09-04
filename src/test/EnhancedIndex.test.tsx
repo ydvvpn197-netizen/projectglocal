@@ -39,12 +39,12 @@ jest.mock('../hooks/use-toast', () => ({
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    nav: ({ children, ...props }: any) => <nav {...props}>{children}</nav>,
-    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+    div: ({ children, ...props }: Record<string, unknown>) => <div {...props}>{children}</div>,
+    nav: ({ children, ...props }: Record<string, unknown>) => <nav {...props}>{children}</nav>,
+    h1: ({ children, ...props }: Record<string, unknown>) => <h1 {...props}>{children}</h1>,
+    p: ({ children, ...props }: Record<string, unknown>) => <p {...props}>{children}</p>,
   },
-  AnimatePresence: ({ children }: any) => <div>{children}</div>,
+  AnimatePresence: ({ children }: Record<string, unknown>) => <div>{children}</div>,
 }));
 
 // Mock react-router-dom
@@ -52,7 +52,7 @@ const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
-  Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
+  Link: ({ children, to, ...props }: Record<string, unknown>) => <a href={to} {...props}>{children}</a>,
 }));
 
 // Create a test wrapper component

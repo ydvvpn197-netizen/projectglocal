@@ -160,16 +160,17 @@ export const useLocation = () => {
           description: "Location data has been cleared.",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setLocationState(prev => ({
         ...prev,
-        error: error.message,
+        error: errorMessage,
         isLoading: false,
       }));
 
       toast({
         title: "Location error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -196,16 +197,17 @@ export const useLocation = () => {
         title: "Location updated",
         description: "Your current location has been refreshed.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Location update failed';
       setLocationState(prev => ({
         ...prev,
-        error: error.message,
+        error: errorMessage,
         isLoading: false,
       }));
 
       toast({
         title: "Location update failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }

@@ -76,7 +76,7 @@ export class GoogleNewsApi {
       }
 
       // Filter articles by relevance to location
-      const locationArticles = data.articles.filter((article: any) => 
+      const locationArticles = data.articles.filter((article: Record<string, unknown>) => 
         this.isLocationRelevant(article, locationName, lat, lng, radius)
       );
 
@@ -90,7 +90,7 @@ export class GoogleNewsApi {
   /**
    * Transform GNews API response to our format
    */
-  private transformArticles(articles: any[], source: NewsSource): NewsApiArticle[] {
+  private transformArticles(articles: Record<string, unknown>[], source: NewsSource): NewsApiArticle[] {
     return articles.map(article => ({
       source: { 
         id: source.id, 
@@ -112,7 +112,7 @@ export class GoogleNewsApi {
    * Check if article is relevant to the specified location
    */
   private isLocationRelevant(
-    article: any, 
+    article: Record<string, unknown>, 
     locationName: string, 
     lat: number, 
     lng: number, 

@@ -24,7 +24,7 @@ interface TestResult {
   name: string;
   status: 'pending' | 'success' | 'error';
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export function LocationTestPanel() {
@@ -47,10 +47,10 @@ export function LocationTestPanel() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [nearbyContent, setNearbyContent] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Record<string, unknown>[]>([]);
+  const [nearbyContent, setNearbyContent] = useState<Record<string, unknown>[]>([]);
 
-  const addTestResult = (name: string, status: 'pending' | 'success' | 'error', message: string, details?: any) => {
+  const addTestResult = (name: string, status: 'pending' | 'success' | 'error', message: string, details?: Record<string, unknown>) => {
     setTestResults(prev => [...prev, { name, status, message, details }]);
   };
 
@@ -94,8 +94,9 @@ export function LocationTestPanel() {
         } else {
           addTestResult('Location Detection', 'error', 'Location detection failed');
         }
-      } catch (error: any) {
-        addTestResult('Location Detection', 'error', `Location detection error: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        addTestResult('Location Detection', 'error', `Location detection error: ${errorMessage}`);
       }
 
       // Test 4: Test location settings
@@ -103,8 +104,9 @@ export function LocationTestPanel() {
       try {
         const currentSettings = await LocationService.getLocationSettings();
         addTestResult('Location Settings', 'success', 'Location settings retrieved successfully', currentSettings);
-      } catch (error: any) {
-        addTestResult('Location Settings', 'error', `Settings error: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        addTestResult('Location Settings', 'error', `Settings error: ${errorMessage}`);
       }
 
       // Test 5: Test nearby content
@@ -112,8 +114,9 @@ export function LocationTestPanel() {
       try {
         const content = await getNearbyContent(50);
         addTestResult('Nearby Content', 'success', `Found ${content.length} nearby content items`, content);
-      } catch (error: any) {
-        addTestResult('Nearby Content', 'error', `Nearby content error: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        addTestResult('Nearby Content', 'error', `Nearby content error: ${errorMessage}`);
       }
 
       // Test 6: Test place search
@@ -121,8 +124,9 @@ export function LocationTestPanel() {
       try {
         const places = await searchPlaces('Mumbai');
         addTestResult('Place Search', 'success', `Found ${places.length} places for "Mumbai"`, places);
-      } catch (error: any) {
-        addTestResult('Place Search', 'error', `Place search error: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        addTestResult('Place Search', 'error', `Place search error: ${errorMessage}`);
       }
 
       // Test 7: Test location utilities
@@ -130,12 +134,14 @@ export function LocationTestPanel() {
       try {
         const distance = formatDistance(5.5);
         addTestResult('Location Utilities', 'success', `Distance formatting works: 5.5km = ${distance}`);
-      } catch (error: any) {
-        addTestResult('Location Utilities', 'error', `Utilities error: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        addTestResult('Location Utilities', 'error', `Utilities error: ${errorMessage}`);
       }
 
-    } catch (error: any) {
-      addTestResult('Test Suite', 'error', `Test suite error: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      addTestResult('Test Suite', 'error', `Test suite error: ${errorMessage}`);
     } finally {
       setIsRunningTests(false);
     }

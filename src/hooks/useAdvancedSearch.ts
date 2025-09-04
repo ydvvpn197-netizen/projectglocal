@@ -54,7 +54,7 @@ export const useAdvancedSearch = () => {
     try {
       const searchQuery: SearchQuery = {
         query: queryToUse,
-        type: filtersToUse.type === 'all' ? undefined : filtersToUse.type as any,
+        type: filtersToUse.type === 'all' ? undefined : filtersToUse.type,
         category: filtersToUse.category === 'all' ? undefined : filtersToUse.category,
         location: filtersToUse.location.enabled && currentLocation ? {
           latitude: currentLocation.latitude,
@@ -70,7 +70,7 @@ export const useAdvancedSearch = () => {
           max: filtersToUse.priceRange.max
         } : undefined,
         tags: filtersToUse.tags.length > 0 ? filtersToUse.tags : undefined,
-        sortBy: filtersToUse.sortBy as any,
+        sortBy: filtersToUse.sortBy,
         page: pageToUse,
         limit: 20
       };
@@ -180,7 +180,7 @@ export const useAdvancedSearch = () => {
     if (query.trim()) {
       search();
     }
-  }, [filters, search]);
+  }, [filters, search, query]);
 
   return {
     query,

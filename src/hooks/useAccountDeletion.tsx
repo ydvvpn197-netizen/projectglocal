@@ -34,11 +34,11 @@ export const useAccountDeletion = () => {
           description: "Edge function is accessible",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Test function error:', error);
       toast({
         title: "Test Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive",
       });
     }
@@ -77,24 +77,26 @@ export const useAccountDeletion = () => {
       
       return { success: true };
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting account:', error);
       
       let errorMessage = "Failed to delete account. Please try again.";
       let errorDetails = "";
       
-      if (error.message) {
+      if (error instanceof Error && error.message) {
         errorMessage = error.message;
         errorDetails = error.message;
-      } else if (error.error) {
-        errorMessage = error.error;
-        errorDetails = error.error;
+      } else if (typeof error === 'object' && error !== null && 'error' in error) {
+        const errorObj = error as { error: string };
+        errorMessage = errorObj.error;
+        errorDetails = errorObj.error;
       }
 
       // Log additional error details
-      if (error.details) {
-        console.error('Error details:', error.details);
-        errorDetails += ` | Details: ${JSON.stringify(error.details)}`;
+      if (typeof error === 'object' && error !== null && 'details' in error) {
+        const errorObj = error as { details: unknown };
+        console.error('Error details:', errorObj.details);
+        errorDetails += ` | Details: ${JSON.stringify(errorObj.details)}`;
       }
 
       console.error('Final error message:', errorMessage);

@@ -1,4 +1,5 @@
 import { Recommendation, UserPreference, ContentScore } from '@/types/recommendations';
+import { ContentItem, RecommendationScore as ExtendedRecommendationScore } from '@/types/extended';
 
 export interface RecommendationScore {
   collaborativeScore: number;
@@ -32,7 +33,7 @@ export class RecommendationAlgorithms {
    */
   static generateRecommendations(
     userProfile: UserProfile,
-    availableContent: any[],
+    availableContent: ContentItem[],
     limit: number = 20
   ): Recommendation[] {
     const recommendations: Recommendation[] = [];
@@ -76,7 +77,7 @@ export class RecommendationAlgorithms {
   /**
    * Calculate comprehensive recommendation scores
    */
-  private static calculateRecommendationScores(userProfile: UserProfile, content: any): RecommendationScore {
+  private static calculateRecommendationScores(userProfile: UserProfile, content: ContentItem): RecommendationScore {
     const collaborativeScore = this.calculateCollaborativeScore(userProfile, content);
     const contentBasedScore = this.calculateContentBasedScore(userProfile, content);
     const locationScore = this.calculateLocationScore(userProfile, content);
@@ -105,7 +106,7 @@ export class RecommendationAlgorithms {
   /**
    * Calculate collaborative filtering score
    */
-  private static calculateCollaborativeScore(userProfile: UserProfile, content: any): number {
+  private static calculateCollaborativeScore(userProfile: UserProfile, content: ContentItem): number {
     // Find similar users based on behavior patterns
     const similarUsers = this.findSimilarUsers(userProfile);
     
@@ -127,7 +128,7 @@ export class RecommendationAlgorithms {
   /**
    * Calculate content-based filtering score
    */
-  private static calculateContentBasedScore(userProfile: UserProfile, content: any): number {
+  private static calculateContentBasedScore(userProfile: UserProfile, content: ContentItem): number {
     const userPreferences = userProfile.preferences;
     
     if (userPreferences.length === 0) {
@@ -153,7 +154,7 @@ export class RecommendationAlgorithms {
   /**
    * Calculate location-based score
    */
-  private static calculateLocationScore(userProfile: UserProfile, content: any): number {
+  private static calculateLocationScore(userProfile: UserProfile, content: ContentItem): number {
     if (!userProfile.location || !content.location) {
       return 0.5; // Neutral score if no location data
     }
@@ -175,7 +176,7 @@ export class RecommendationAlgorithms {
   /**
    * Calculate freshness score
    */
-  private static calculateFreshnessScore(content: any): number {
+  private static calculateFreshnessScore(content: ContentItem): number {
     const now = new Date();
     const createdAt = new Date(content.createdAt);
     const hoursSinceCreation = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
@@ -190,7 +191,7 @@ export class RecommendationAlgorithms {
   /**
    * Calculate diversity score
    */
-  private static calculateDiversityScore(content: any): number {
+  private static calculateDiversityScore(content: ContentItem): number {
     // This would be enhanced with actual diversity calculation
     // For now, return a base score
     return 0.8;
@@ -208,7 +209,7 @@ export class RecommendationAlgorithms {
   /**
    * Extract content features for similarity calculation
    */
-  private static extractContentFeatures(content: any): Record<string, number> {
+  private static extractContentFeatures(content: ContentItem): Record<string, number> {
     const features: Record<string, number> = {};
 
     // Category features
@@ -298,8 +299,8 @@ export class RecommendationAlgorithms {
   /**
    * Apply diversity filter to ensure variety in recommendations
    */
-  private static applyDiversityFilter(content: any[], limit: number): any[] {
-    const diverseContent: any[] = [];
+  private static applyDiversityFilter(content: ContentItem[], limit: number): ContentItem[] {
+    const diverseContent: ContentItem[] = [];
     const usedCategories = new Set<string>();
     const usedContentTypes = new Set<string>();
 
@@ -333,7 +334,7 @@ export class RecommendationAlgorithms {
   /**
    * Generate human-readable recommendation reason
    */
-  private static generateRecommendationReason(userProfile: UserProfile, content: any, scores: RecommendationScore): string {
+  private static generateRecommendationReason(userProfile: UserProfile, content: ContentItem, scores: RecommendationScore): string {
     const reasons: string[] = [];
 
     if (scores.contentBasedScore > 0.7) {

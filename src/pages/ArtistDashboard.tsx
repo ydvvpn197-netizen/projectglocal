@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { BookingRequestsPanel } from "@/components/BookingRequestsPanel";
 import { ActiveChatsPanel } from "@/components/ActiveChatsPanel";
@@ -30,7 +30,13 @@ const ArtistDashboard = () => {
     totalEarnings: 0,
     averageRating: 0
   });
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<{ 
+    avatar_url?: string; 
+    display_name?: string; 
+    is_verified?: boolean; 
+    bio?: string; 
+    artist_skills?: string[] 
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("bookings");
 
@@ -38,9 +44,9 @@ const ArtistDashboard = () => {
     if (user) {
       fetchArtistData();
     }
-  }, [user]);
+  }, [user, fetchArtistData]);
 
-  const fetchArtistData = async () => {
+  const fetchArtistData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -120,7 +126,7 @@ const ArtistDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   if (!user) {
     navigate('/signin');

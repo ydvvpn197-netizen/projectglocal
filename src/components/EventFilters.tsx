@@ -54,7 +54,7 @@ const timeSlots = [
 export const EventFiltersComponent = ({ filters, onFiltersChange, onClearFilters }: EventFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const updateFilters = (key: keyof EventFilters, value: any) => {
+  const updateFilters = (key: keyof EventFilters, value: unknown) => {
     onFiltersChange({ ...filters, [key]: value });
   };
 

@@ -211,14 +211,14 @@ const Feed = () => {
     }
   });
 
-  const renderPostContent = (post: any) => {
+  const renderPostContent = (post: Record<string, unknown>) => {
     switch (post.type) {
       case "poll":
         return (
           <div className="space-y-3">
             <h3 className="font-semibold text-lg">{post.question}</h3>
             <div className="space-y-2">
-              {post.options.map((option: any) => (
+              {post.options.map((option: Record<string, unknown>) => (
                 <div key={option.id} className="relative">
                   <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
                     <span>{option.text}</span>

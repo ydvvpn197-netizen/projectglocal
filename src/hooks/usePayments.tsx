@@ -42,11 +42,12 @@ export const usePayments = () => {
         status: 'requires_payment_method',
         client_secret: 'mock_client_secret'
       } as PaymentIntent;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create payment';
       console.error('Error creating payment intent:', error);
       toast({
         title: "Payment Error",
-        description: error.message || "Failed to create payment",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
@@ -65,11 +66,12 @@ export const usePayments = () => {
       });
 
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to confirm payment';
       console.error('Error confirming payment:', error);
       toast({
         title: "Payment Error",
-        description: error.message || "Failed to confirm payment",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
@@ -91,11 +93,12 @@ export const usePayments = () => {
         paymentIntent: null,
         order: null
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process ticket payment';
       console.error('Error processing ticket payment:', error);
       toast({
         title: "Payment Error",
-        description: error.message || "Failed to process ticket payment",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
@@ -127,11 +130,12 @@ export const usePayments = () => {
       });
 
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to request refund';
       console.error('Error requesting refund:', error);
       toast({
         title: "Refund Error",
-        description: error.message || "Failed to request refund",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
@@ -157,11 +161,12 @@ export const usePayments = () => {
       });
 
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save payment method';
       console.error('Error saving payment method:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save payment method",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;

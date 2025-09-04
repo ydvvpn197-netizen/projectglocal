@@ -9,7 +9,7 @@ export interface LifeWish {
   visibility: 'private' | 'public' | 'family';
   is_encrypted: boolean;
   encrypted_content?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -21,7 +21,7 @@ export interface LifeWishShare {
   shared_with?: string;
   shared_email?: string;
   share_type: 'user' | 'email';
-  permissions: Record<string, any>;
+  permissions: Record<string, unknown>;
   created_at: string;
   expires_at?: string;
 }
@@ -293,7 +293,7 @@ export class LifeWishService {
     shareType: 'user' | 'email';
     sharedWith?: string;
     sharedEmail?: string;
-    permissions?: Record<string, any>;
+    permissions?: Record<string, unknown>;
     expiresAt?: string;
   }): Promise<LifeWishShare> {
     try {

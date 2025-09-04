@@ -21,10 +21,10 @@ const NotificationItem = ({
   onNavigate,
   isGeneral = false
 }: {
-  notification: any;
+  notification: Record<string, unknown>;
   onMarkAsRead: (id: string) => Promise<void>;
   onDelete: (id: string) => void;
-  onNavigate: (notification: any) => void;
+  onNavigate: (notification: Record<string, unknown>) => void;
   isGeneral?: boolean;
 }) => {
   const handleClick = () => {
@@ -169,7 +169,7 @@ export const NotificationsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const handleNotificationClick = async (notification: any) => {
+  const handleNotificationClick = async (notification: Record<string, unknown>) => {
     if (!notification.isGeneral) {
       await markAsRead(notification.id);
     }

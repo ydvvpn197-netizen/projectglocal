@@ -52,7 +52,7 @@ export const NotificationSettings = ({ onClose, compact = false }: NotificationS
     setHasChanges(changed);
   }, [localSettings, settings]);
 
-  const handleInputChange = (key: string, value: any) => {
+  const handleInputChange = (key: string, value: unknown) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 

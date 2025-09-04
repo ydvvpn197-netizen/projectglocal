@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -51,7 +51,7 @@ export const useEvents = () => {
   const { toast } = useToast();
   const { currentLocation } = useLocation();
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       console.log('Fetching events with function: get_events_with_attendance');
@@ -72,7 +72,7 @@ export const useEvents = () => {
       
       console.log('Events fetched successfully:', data?.length || 0, 'events');
       setEvents(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching events - Full error object:', error);
       
       // Provide more specific error messages based on error type
@@ -107,7 +107,7 @@ export const useEvents = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, user]);
 
   const createEvent = async (eventData: CreateEventData): Promise<boolean> => {
     if (!user) {
@@ -236,7 +236,7 @@ export const useEvents = () => {
 
   useEffect(() => {
     fetchEvents(); // Fetch events even when not logged in
-  }, [user]);
+  }, [user, fetchEvents]);
 
   // Listen for real-time updates
   useEffect(() => {
@@ -253,7 +253,7 @@ export const useEvents = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchEvents]);
 
   const deleteEvent = async (eventId: string) => {
     if (!user) return { error: new Error('Not authenticated') };
@@ -278,7 +278,7 @@ export const useEvents = () => {
       fetchEvents();
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error deleting event",
         description: error.message,

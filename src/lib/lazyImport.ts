@@ -1,7 +1,7 @@
 import { lazy, ComponentType } from 'react';
 
 // Retry function for failed imports
-const retry = (fn: () => Promise<any>, retriesLeft = 3, interval = 1000): Promise<any> => {
+const retry = <T>(fn: () => Promise<T>, retriesLeft = 3, interval = 1000): Promise<T> => {
   return new Promise((resolve, reject) => {
     fn()
       .then(resolve)
@@ -18,7 +18,7 @@ const retry = (fn: () => Promise<any>, retriesLeft = 3, interval = 1000): Promis
 };
 
 // Enhanced lazy import with retry logic
-export const lazyImport = <T extends ComponentType<any>>(
+export const lazyImport = <T extends ComponentType<Record<string, unknown>>>(
   importFunc: () => Promise<{ default: T }>,
   retries = 3
 ) => {
@@ -26,7 +26,7 @@ export const lazyImport = <T extends ComponentType<any>>(
 };
 
 // Preload function for critical components
-export const preloadComponent = (importFunc: () => Promise<any>) => {
+export const preloadComponent = <T>(importFunc: () => Promise<{ default: T }>) => {
   const Component = lazy(importFunc);
   // Trigger the import
   importFunc();

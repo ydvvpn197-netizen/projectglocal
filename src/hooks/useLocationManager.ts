@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { LocationService } from '../services/locationService';
 import { Location, LocationSettings, LocationState } from '../types/location';
 import { useAuth } from './useAuth';
@@ -21,12 +21,25 @@ export function useLocationManager() {
     notifications: true,
   });
 
+  // Use refs for internal state values that don't trigger re-renders
+  const stateRef = useRef(state);
+  const settingsRef = useRef(settings);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
   // Load initial location and settings
   useEffect(() => {
     if (user) {
       loadLocationAndSettings();
     }
-  }, [user]);
+  }, [user, loadLocationAndSettings]);
 
   const loadLocationAndSettings = useCallback(async () => {
     if (!user) return;
@@ -206,12 +219,12 @@ export function useLocationManager() {
   }, [user]);
 
   const refreshLocation = useCallback(async () => {
-    if (!user || !state.enabled) return;
+    if (!user || !stateRef.current.enabled) return;
 
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      if (state.auto_detect) {
+      if (stateRef.current.auto_detect) {
         await detectLocation();
       } else {
         await loadLocationAndSettings();
@@ -224,10 +237,10 @@ export function useLocationManager() {
         error: error instanceof Error ? error.message : 'Failed to refresh location',
       }));
     }
-  }, [user, state.enabled, state.auto_detect, detectLocation, loadLocationAndSettings]);
+  }, [user, detectLocation, loadLocationAndSettings]);
 
   const getNearbyContent = useCallback(async (radiusKm?: number, contentType?: string) => {
-    if (!user || !state.enabled || !state.current) return [];
+    if (!user || !stateRef.current.enabled || !stateRef.current.current) return [];
 
     try {
       return await LocationService.getNearbyContent(radiusKm, contentType);
@@ -235,18 +248,18 @@ export function useLocationManager() {
       console.error('Error getting nearby content:', error);
       return [];
     }
-  }, [user, state.enabled, state.current]);
+  }, [user]);
 
   const searchPlaces = useCallback(async (query: string) => {
     if (!user) return [];
 
     try {
-      return await LocationService.searchPlaces(query, state.current || undefined);
+      return await LocationService.searchPlaces(query, stateRef.current.current || undefined);
     } catch (error) {
       console.error('Error searching places:', error);
       return [];
     }
-  }, [user, state.current]);
+  }, [user]);
 
   return {
     // State

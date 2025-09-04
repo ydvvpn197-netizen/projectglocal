@@ -50,7 +50,7 @@ describe('ErrorHandlingService', () => {
 
     it('should handle errors with codes', () => {
       const error = new Error('Network error');
-      (error as any).code = 'NETWORK_ERROR';
+      (error as Record<string, unknown>).code = 'NETWORK_ERROR';
       
       const result = errorHandler.handleApiError(error, 'TestContext');
 

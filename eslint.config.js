@@ -24,8 +24,8 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "warn", // Temporarily downgraded from error to warning
-      "@typescript-eslint/no-empty-object-type": "warn", // Temporarily downgraded from error to warning
+      "@typescript-eslint/no-explicit-any": "error", // Strict typing required
+      "@typescript-eslint/no-empty-object-type": "error", // Strict typing required
       // Allow warnings to pass CI/CD
       "react-hooks/exhaustive-deps": "warn",
       "react-hooks/rules-of-hooks": "error", // Keep this as error for critical issues

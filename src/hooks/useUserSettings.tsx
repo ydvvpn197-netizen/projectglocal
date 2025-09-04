@@ -239,7 +239,7 @@ export const useUserSettings = () => {
   }, [user?.id, toast, loadSettings]);
 
   // Handle setting changes
-  const handleSettingChange = useCallback((key: keyof UserSettings, value: any) => {
+  const handleSettingChange = useCallback((key: keyof UserSettings, value: unknown) => {
     setSettings(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
   }, []);
@@ -263,9 +263,9 @@ export const useUserSettings = () => {
             key.startsWith('message_') || key.startsWith('follower_') || key.startsWith('event_') ||
             key.startsWith('discussion_') || key.startsWith('payment_') || key.startsWith('system_') ||
             key.startsWith('marketing_') || key.startsWith('quiet_hours_')) {
-          (notificationUpdates as any)[key] = value;
+          (notificationUpdates as Record<string, unknown>)[key] = value;
         } else {
-          (profileUpdates as any)[key] = value;
+          (profileUpdates as Record<string, unknown>)[key] = value;
         }
       });
 

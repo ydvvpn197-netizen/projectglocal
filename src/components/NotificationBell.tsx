@@ -62,10 +62,10 @@ const NotificationItem = memo(({
   isGeneral = false,
   isAuthenticated = false
 }: {
-  notification: any;
+  notification: Record<string, unknown>;
   onMarkAsRead: (id: string) => Promise<void>;
   onDelete: (id: string) => void;
-  onNavigate: (notification: any) => void;
+  onNavigate: (notification: Record<string, unknown>) => void;
   isGeneral?: boolean;
   isAuthenticated?: boolean;
 }) => {
@@ -175,7 +175,7 @@ export const NotificationBell = memo(() => {
   } = useNotifications();
 
   // Handle notification click
-  const handleNotificationClick = useCallback(async (notification: any) => {
+  const handleNotificationClick = useCallback(async (notification: Record<string, unknown>) => {
     if (!notification.isGeneral && isAuthenticated) {
       try {
         await markAsRead(notification.id);

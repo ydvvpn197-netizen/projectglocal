@@ -148,7 +148,7 @@ const Community = () => {
         // Refresh the communities list
         await fetchGroups();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error joining community:', error);
       
       let errorMessage = "Failed to join community. Please try again.";

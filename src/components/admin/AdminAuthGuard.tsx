@@ -78,26 +78,3 @@ export const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({
   // If all checks pass, render children
   return <>{children}</>;
 };
-
-// Higher-order component for protecting admin routes
-export const withAdminAuth = <P extends object>(
-  Component: React.ComponentType<P>,
-  options?: {
-    requiredPermission?: string;
-    requiredRole?: string;
-    fallback?: React.ReactNode;
-  }
-) => {
-  const WrappedComponent: React.FC<P> = (props) => (
-    <AdminAuthGuard
-      requiredPermission={options?.requiredPermission}
-      requiredRole={options?.requiredRole}
-      fallback={options?.fallback}
-    >
-      <Component {...props} />
-    </AdminAuthGuard>
-  );
-
-  WrappedComponent.displayName = `withAdminAuth(${Component.displayName || Component.name})`;
-  return WrappedComponent;
-};

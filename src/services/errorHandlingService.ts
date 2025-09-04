@@ -28,7 +28,7 @@ export class ErrorHandlingService {
     if (error instanceof Error) {
       appError = {
         message: error.message,
-        code: (error as any).code,
+        code: (error as Record<string, unknown>).code as string | undefined,
         details: error,
         severity: 'error'
       };

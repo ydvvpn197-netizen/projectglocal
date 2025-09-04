@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 
 // Extremely lightweight placeholder to satisfy various usages in the app
 // Accepts any props and renders a simple dialog when `open` is provided
-export const FollowListsDialog = (props: any) => {
+export const FollowListsDialog = (props: Record<string, unknown>) => {
   const { open = false, onOpenChange = () => {}, type = 'followers' } = props || {};
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

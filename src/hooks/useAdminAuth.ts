@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminService } from '@/services/adminService';
 import { 
@@ -13,7 +13,7 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const adminService = new AdminService();
+  const adminService = useMemo(() => new AdminService(), []);
 
   // Check if user is admin and load admin data
   const checkAdminStatus = useCallback(async () => {

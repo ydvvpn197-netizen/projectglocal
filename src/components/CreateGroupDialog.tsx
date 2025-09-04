@@ -228,7 +228,7 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
             <div className="flex items-center gap-2 text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
               <MapPin className="h-4 w-4" />
               <span>
-                Location: {(currentLocation as any)?.name || 'Unknown'}
+                Location: {(currentLocation as Record<string, unknown>)?.name || 'Unknown'}
               </span>
             </div>
           )}

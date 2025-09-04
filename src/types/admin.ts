@@ -1,380 +1,586 @@
-// Admin Dashboard Type Definitions
+/**
+ * Type definitions for admin and moderation functionality
+ */
 
-export interface AdminRole {
-  id: string;
-  name: string;
-  display_name: string;
-  description?: string;
-  permissions: AdminPermissions;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// =========================
+// Admin User Types
+// =========================
 
-export interface AdminPermissions {
-  users?: string[];
-  content?: string[];
-  analytics?: string[];
-  settings?: string[];
-  admin_users?: string[];
-  roles?: string[];
-  [key: string]: string[] | undefined;
-}
-
-export interface AdminUser {
+export interface AdminUser extends BaseEntity {
   id: string;
   user_id: string;
-  role_id?: string;
+  role: AdminRole;
+  permissions: Permission[];
+  assigned_areas: string[];
+  last_moderation_action?: string;
+  moderation_stats: ModerationStats;
   is_active: boolean;
-  last_login_at?: string;
-  login_count: number;
-  two_factor_enabled: boolean;
-  two_factor_secret?: string;
-  ip_whitelist: string[];
   created_at: string;
   updated_at: string;
-  // Joined data
-  role?: AdminRole;
-  profile?: {
-    username: string;
-    full_name: string;
-    email: string;
-    avatar_url?: string;
-  };
 }
 
-export interface AdminAction {
+export type AdminRole = 'super_admin' | 'admin' | 'moderator' | 'support';
+
+export interface Permission {
   id: string;
-  admin_user_id?: string;
-  action_type: string;
-  resource_type: string;
-  resource_id?: string;
-  action_data?: any;
-  ip_address?: string;
-  user_agent?: string;
-  success: boolean;
-  error_message?: string;
+  name: string;
+  description: string;
+  resource: string;
+  action: string;
+  conditions?: Record<string, unknown>;
   created_at: string;
-  // Joined data
-  admin_user?: AdminUser;
+  updated_at: string;
 }
 
-export interface ContentReport {
+export interface ModerationStats {
+  total_actions: number;
+  actions_this_week: number;
+  accuracy_rate: number;
+  response_time_avg: number;
+  last_updated: string;
+}
+
+// =========================
+// Content Moderation Types
+// =========================
+
+export interface ContentReport extends BaseEntity {
   id: string;
-  reporter_id?: string;
-  content_type: 'post' | 'event' | 'review' | 'comment' | 'artist';
+  reporter_id: string;
+  content_type: 'post' | 'comment' | 'review' | 'business' | 'event' | 'group';
   content_id: string;
-  report_reason: string;
-  report_details?: string;
-  report_status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-  reviewed_by?: string;
-  reviewed_at?: string;
-  resolution_notes?: string;
+  reason: ReportReason;
+  description: string;
+  evidence?: string[];
+  status: ReportStatus;
+  assigned_moderator_id?: string;
+  resolution?: string;
+  resolved_at?: string;
+  action_taken?: ModerationAction;
+  priority: ReportPriority;
+  severity: ReportSeverity;
+  is_urgent: boolean;
+  tags: string[];
+  metadata: Record<string, unknown>;
+}
+
+export type ReportReason = 
+  | 'spam'
+  | 'inappropriate'
+  | 'harassment'
+  | 'fake_information'
+  | 'copyright_violation'
+  | 'hate_speech'
+  | 'violence'
+  | 'sexual_content'
+  | 'drugs'
+  | 'terrorism'
+  | 'other';
+
+export type ReportStatus = 'pending' | 'investigating' | 'resolved' | 'dismissed' | 'escalated';
+
+export type ModerationAction = 
+  | 'warning'
+  | 'content_removal'
+  | 'user_suspension'
+  | 'user_ban'
+  | 'content_hide'
+  | 'content_edit'
+  | 'no_action'
+  | 'escalate_to_admin';
+
+export type ReportPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export type ReportSeverity = 'minor' | 'moderate' | 'major' | 'critical';
+
+export interface ModerationQueue {
+  id: string;
+  name: string;
+  description?: string;
+  content_type: string;
+  filters: ModerationFilter[];
+  assigned_moderators: string[];
+  priority: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
-  // Joined data
-  reporter?: {
-    username: string;
-    full_name: string;
-    email: string;
-  };
-  reviewer?: AdminUser;
-  content?: any; // The actual content being reported
 }
+
+export interface ModerationFilter {
+  field: string;
+  operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than' | 'in' | 'not_in';
+  value: string | number | boolean | string[];
+  logical_operator?: 'and' | 'or';
+}
+
+export interface ModerationTask {
+  id: string;
+  queue_id: string;
+  content_id: string;
+  content_type: string;
+  assigned_moderator_id?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'escalated';
+  priority: number;
+  due_date?: string;
+  started_at?: string;
+  completed_at?: string;
+  action_taken?: ModerationAction;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// =========================
+// User Management Types
+// =========================
+
+export interface UserManagement {
+  id: string;
+  user_id: string;
+  status: UserStatus;
+  moderation_history: ModerationHistory[];
+  flags: UserFlag[];
+  restrictions: UserRestriction[];
+  notes: AdminNote[];
+  last_reviewed?: string;
+  reviewed_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type UserStatus = 'active' | 'suspended' | 'banned' | 'pending_review' | 'restricted';
+
+export interface ModerationHistory {
+  id: string;
+  action: ModerationAction;
+  reason: string;
+  moderator_id: string;
+  timestamp: string;
+  duration?: string;
+  notes?: string;
+}
+
+export interface UserFlag {
+  id: string;
+  type: FlagType;
+  reason: string;
+  severity: 'low' | 'medium' | 'high';
+  is_active: boolean;
+  created_at: string;
+  expires_at?: string;
+}
+
+export type FlagType = 
+  | 'spam'
+  | 'inappropriate_behavior'
+  | 'harassment'
+  | 'fake_account'
+  | 'multiple_accounts'
+  | 'suspicious_activity'
+  | 'terms_violation'
+  | 'other';
+
+export interface UserRestriction {
+  id: string;
+  type: RestrictionType;
+  reason: string;
+  duration: string;
+  is_active: boolean;
+  created_at: string;
+  expires_at: string;
+  created_by: string;
+}
+
+export type RestrictionType = 
+  | 'posting'
+  | 'commenting'
+  | 'messaging'
+  | 'group_creation'
+  | 'event_creation'
+  | 'business_creation'
+  | 'full_access';
+
+export interface AdminNote {
+  id: string;
+  content: string;
+  author_id: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// =========================
+// System Settings Types
+// =========================
 
 export interface SystemSetting {
   id: string;
-  setting_key: string;
-  setting_value: any;
-  setting_type: 'string' | 'number' | 'boolean' | 'json' | 'array';
-  description?: string;
+  key: string;
+  value: unknown;
+  type: 'string' | 'number' | 'boolean' | 'json' | 'array';
+  description: string;
+  category: string;
   is_public: boolean;
+  is_editable: boolean;
+  validation_rules?: ValidationRule[];
+  updated_by: string;
   created_at: string;
   updated_at: string;
 }
 
-// Admin Dashboard State Types
-export interface AdminDashboardState {
-  currentUser: AdminUser | null;
-  permissions: AdminPermissions | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-// User Management Types
-export interface UserManagementFilters {
-  search?: string;
-  status?: 'active' | 'suspended' | 'banned';
-  role?: string;
-  date_from?: string;
-  date_to?: string;
-  location?: string;
-}
-
-export interface UserAction {
-  type: 'suspend' | 'ban' | 'activate' | 'delete' | 'change_role';
-  user_id: string;
-  reason?: string;
-  duration?: number; // For suspensions
-  new_role?: string;
-}
-
-// Content Moderation Types
-export interface ModerationFilters {
-  content_type?: string;
-  status?: string;
-  severity?: 'low' | 'medium' | 'high';
-  date_from?: string;
-  date_to?: string;
-  reviewed_by?: string;
-}
-
-export interface ModerationAction {
-  type: 'approve' | 'reject' | 'delete' | 'feature' | 'unfeature';
-  content_id: string;
-  content_type: string;
-  reason?: string;
-  notify_user?: boolean;
-}
-
-// Analytics Types
-export interface AnalyticsFilters {
-  date_range: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
-  start_date?: string;
-  end_date?: string;
-  group_by?: 'day' | 'week' | 'month';
-  content_type?: string;
-}
-
-export interface UserAnalytics {
-  date: string;
-  new_users: number;
-  active_users: number;
-  total_users: number;
-  user_engagement_rate: number;
-}
-
-export interface ContentAnalytics {
-  date: string;
-  content_type: string;
-  new_content: number;
-  total_content: number;
-  engagement_rate: number;
-}
-
-export interface PlatformMetrics {
-  total_users: number;
-  active_users_today: number;
-  total_content: number;
-  content_created_today: number;
-  total_reports: number;
-  pending_reports: number;
-  system_health: 'excellent' | 'good' | 'warning' | 'critical';
-}
-
-// System Management Types
-export interface SystemHealth {
-  status: 'healthy' | 'warning' | 'critical';
-  uptime: number;
-  response_time: number;
-  error_rate: number;
-  active_connections: number;
-  memory_usage: number;
-  cpu_usage: number;
-  disk_usage: number;
-}
-
-export interface PerformanceMetrics {
-  page_load_time: number;
-  api_response_time: number;
-  database_query_time: number;
-  cache_hit_rate: number;
-  error_count: number;
-  request_count: number;
-}
-
-// Admin API Response Types
-export interface AdminApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-// Admin Dashboard Component Props
-export interface AdminLayoutProps {
-  children: React.ReactNode;
-  title?: string;
-  breadcrumbs?: Array<{
-    label: string;
-    href?: string;
-  }>;
-}
-
-export interface AdminTableProps<T> {
-  data: T[];
-  columns: Array<{
-    key: string;
-    label: string;
-    render?: (item: T) => React.ReactNode;
-    sortable?: boolean;
-  }>;
-  onRowClick?: (item: T) => void;
-  onSelectionChange?: (selectedIds: string[]) => void;
-  loading?: boolean;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    onPageChange: (page: number) => void;
-  };
-}
-
-export interface AdminFilterProps {
-  filters: Record<string, any>;
-  onFilterChange: (filters: Record<string, any>) => void;
-  onReset?: () => void;
-}
-
-// Admin Dashboard Hook Types
-export interface UseAdminAuthReturn {
-  adminUser: AdminUser | null;
-  permissions: AdminPermissions | null;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  checkPermission: (permission: string) => boolean;
-  hasRole: (role: string) => boolean;
-}
-
-export interface UseUserManagementReturn {
-  users: Array<any>;
-  loading: boolean;
-  error: string | null;
-  filters: UserManagementFilters;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-  fetchUsers: (filters?: UserManagementFilters) => Promise<void>;
-  updateFilters: (filters: Partial<UserManagementFilters>) => void;
-  performAction: (action: UserAction) => Promise<void>;
-  exportUsers: (format: 'csv' | 'json') => Promise<void>;
-}
-
-export interface UseContentModerationReturn {
-  reports: ContentReport[];
-  loading: boolean;
-  error: string | null;
-  filters: ModerationFilters;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-  fetchReports: (filters?: ModerationFilters) => Promise<void>;
-  updateFilters: (filters: Partial<ModerationFilters>) => void;
-  moderateContent: (action: ModerationAction) => Promise<void>;
-  bulkModerate: (actions: ModerationAction[]) => Promise<void>;
-}
-
-export interface UseAdminAnalyticsReturn {
-  userAnalytics: UserAnalytics[];
-  contentAnalytics: ContentAnalytics[];
-  platformMetrics: PlatformMetrics;
-  loading: boolean;
-  error: string | null;
-  filters: AnalyticsFilters;
-  fetchAnalytics: (filters?: AnalyticsFilters) => Promise<void>;
-  updateFilters: (filters: Partial<AnalyticsFilters>) => void;
-  exportAnalytics: (format: 'csv' | 'json', type: 'users' | 'content') => Promise<void>;
-}
-
-export interface UseSystemManagementReturn {
-  systemHealth: SystemHealth;
-  performanceMetrics: PerformanceMetrics;
-  settings: SystemSetting[];
-  loading: boolean;
-  error: string | null;
-  fetchSystemHealth: () => Promise<void>;
-  fetchPerformanceMetrics: () => Promise<void>;
-  fetchSettings: () => Promise<void>;
-  updateSetting: (key: string, value: any) => Promise<void>;
-  backupDatabase: () => Promise<void>;
-  clearCache: () => Promise<void>;
-}
-
-// Admin Dashboard Event Types
-export interface AdminEvent {
-  type: 'user_action' | 'content_moderation' | 'system_alert' | 'security_alert';
-  title: string;
+export interface ValidationRule {
+  type: 'required' | 'min' | 'max' | 'pattern' | 'custom';
+  value?: unknown;
   message: string;
-  severity: 'info' | 'warning' | 'error' | 'critical';
-  timestamp: string;
-  data?: any;
+  validator?: (value: unknown) => boolean | string;
 }
 
-// Admin Dashboard Notification Types
-export interface AdminNotification {
+export interface SystemConfig {
   id: string;
-  type: 'info' | 'warning' | 'error' | 'success';
-  title: string;
-  message: string;
-  action_url?: string;
-  is_read: boolean;
+  name: string;
+  description?: string;
+  settings: SystemSetting[];
+  is_active: boolean;
+  version: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// =========================
+// Analytics & Reporting Types
+// =========================
+
+export interface AdminAnalytics {
+  id: string;
+  period: string;
+  metrics: AdminMetrics;
+  trends: AdminTrend[];
+  breakdowns: AdminBreakdown[];
+  alerts: AdminAlert[];
   created_at: string;
 }
 
-// Admin Dashboard Export Types
-export interface ExportOptions {
-  format: 'csv' | 'json' | 'xlsx';
-  filters?: Record<string, any>;
-  columns?: string[];
-  filename?: string;
+export interface AdminMetrics {
+  total_users: number;
+  active_users: number;
+  new_users: number;
+  suspended_users: number;
+  banned_users: number;
+  total_content: number;
+  flagged_content: number;
+  moderation_actions: number;
+  system_health_score: number;
+  response_time_avg: number;
 }
 
-export interface ExportResult {
-  success: boolean;
-  download_url?: string;
-  error?: string;
+export interface AdminTrend {
+  metric: string;
+  value: number;
+  change_percentage: number;
+  trend_direction: 'up' | 'down' | 'stable';
+  period: string;
 }
 
-// Admin Dashboard Security Types
-export interface SecurityAudit {
+export interface AdminBreakdown {
+  category: string;
+  value: number;
+  percentage: number;
+  change_percentage: number;
+  subcategories?: AdminBreakdown[];
+}
+
+export interface AdminAlert {
   id: string;
-  admin_user_id: string;
-  action: string;
-  resource: string;
-  ip_address: string;
-  user_agent: string;
-  success: boolean;
-  timestamp: string;
-  details?: any;
+  type: AlertType;
+  title: string;
+  message: string;
+  severity: AlertSeverity;
+  is_active: boolean;
+  created_at: string;
+  acknowledged_at?: string;
+  acknowledged_by?: string;
 }
 
-export interface SecuritySettings {
-  two_factor_required: boolean;
-  session_timeout: number;
-  max_login_attempts: number;
-  ip_whitelist_enabled: boolean;
-  allowed_ips: string[];
-  password_policy: {
-    min_length: number;
-    require_uppercase: boolean;
-    require_lowercase: boolean;
-    require_numbers: boolean;
-    require_special: boolean;
-  };
+export type AlertType = 
+  | 'system_error'
+  | 'performance_degradation'
+  | 'security_threat'
+  | 'abuse_spike'
+  | 'capacity_warning'
+  | 'maintenance_required';
+
+export type AlertSeverity = 'info' | 'warning' | 'error' | 'critical';
+
+// =========================
+// Audit & Logging Types
+// =========================
+
+export interface AdminAuditLog {
+  id: string;
+  admin_id: string;
+  action: string;
+  resource_type: string;
+  resource_id: string;
+  details: Record<string, unknown>;
+  ip_address?: string;
+  user_agent?: string;
+  timestamp: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface SystemLog {
+  id: string;
+  level: LogLevel;
+  message: string;
+  context: Record<string, unknown>;
+  timestamp: string;
+  source: string;
+  trace_id?: string;
+  user_id?: string;
+  session_id?: string;
+}
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+
+export interface LogFilter {
+  level?: LogLevel;
+  source?: string;
+  start_date?: string;
+  end_date?: string;
+  user_id?: string;
+  search_query?: string;
+  limit?: number;
+  offset?: number;
+}
+
+// =========================
+// Content Management Types
+// =========================
+
+export interface ContentModeration {
+  id: string;
+  content_id: string;
+  content_type: string;
+  status: ModerationStatus;
+  flags: ContentFlag[];
+  actions: ContentAction[];
+  review_history: ReviewHistory[];
+  auto_moderation_score?: number;
+  manual_review_required: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged' | 'under_review';
+
+export interface ContentFlag {
+  id: string;
+  type: ContentFlagType;
+  reason: string;
+  confidence: number;
+  source: 'auto' | 'user' | 'moderator';
+  is_resolved: boolean;
+  created_at: string;
+  resolved_at?: string;
+}
+
+export type ContentFlagType = 
+  | 'spam'
+  | 'inappropriate'
+  | 'harassment'
+  | 'fake_information'
+  | 'copyright_violation'
+  | 'hate_speech'
+  | 'violence'
+  | 'sexual_content'
+  | 'drugs'
+  | 'terrorism'
+  | 'quality_issue'
+  | 'duplicate_content';
+
+export interface ContentAction {
+  id: string;
+  type: ContentActionType;
+  reason: string;
+  moderator_id: string;
+  timestamp: string;
+  details?: Record<string, unknown>;
+}
+
+export type ContentActionType = 
+  | 'approve'
+  | 'reject'
+  | 'flag'
+  | 'hide'
+  | 'edit'
+  | 'delete'
+  | 'escalate';
+
+export interface ReviewHistory {
+  id: string;
+  action: ContentActionType;
+  moderator_id: string;
+  timestamp: string;
+  notes?: string;
+  decision_reason?: string;
+}
+
+// =========================
+// Dashboard & UI Types
+// =========================
+
+export interface AdminDashboard {
+  id: string;
+  name: string;
+  description?: string;
+  widgets: DashboardWidget[];
+  layout: DashboardLayout;
+  is_default: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DashboardWidget {
+  id: string;
+  type: WidgetType;
+  title: string;
+  config: WidgetConfig;
+  position: WidgetPosition;
+  size: WidgetSize;
+  refresh_interval?: number;
+  is_visible: boolean;
+}
+
+export type WidgetType = 
+  | 'metrics_card'
+  | 'chart'
+  | 'table'
+  | 'list'
+  | 'gauge'
+  | 'progress_bar'
+  | 'alert_feed'
+  | 'activity_timeline';
+
+export interface WidgetConfig {
+  data_source: string;
+  query?: string;
+  filters?: Record<string, unknown>;
+  display_options?: Record<string, unknown>;
+}
+
+export interface WidgetPosition {
+  x: number;
+  y: number;
+}
+
+export interface WidgetSize {
+  width: number;
+  height: number;
+}
+
+export interface DashboardLayout {
+  columns: number;
+  rows: number;
+  cell_size: number;
+  gap: number;
+}
+
+// =========================
+// API & Integration Types
+// =========================
+
+export interface AdminAPI {
+  id: string;
+  name: string;
+  description?: string;
+  endpoint: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  authentication: AuthType;
+  rate_limit?: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AuthType = 'api_key' | 'jwt' | 'oauth2' | 'none';
+
+export interface WebhookConfig {
+  id: string;
+  name: string;
+  url: string;
+  events: WebhookEvent[];
+  headers: Record<string, string>;
+  is_active: boolean;
+  retry_count: number;
+  timeout: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type WebhookEvent = 
+  | 'user.created'
+  | 'user.updated'
+  | 'user.deleted'
+  | 'content.created'
+  | 'content.updated'
+  | 'content.deleted'
+  | 'report.created'
+  | 'moderation.action_taken'
+  | 'system.alert'
+  | 'admin.action';
+
+// =========================
+// Utility Types
+// =========================
+
+export interface AdminFilter {
+  user_id?: string;
+  role?: AdminRole;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  search_query?: string;
+  limit?: number;
+  offset?: number;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface AdminStats {
+  total_admins: number;
+  active_admins: number;
+  total_actions: number;
+  actions_today: number;
+  pending_reports: number;
+  system_alerts: number;
+  performance_score: number;
+}
+
+export interface AdminSummary {
+  recent_actions: AdminAuditLog[];
+  pending_items: number;
+  alerts: AdminAlert[];
+  stats: AdminStats;
+  quick_actions: QuickAction[];
+}
+
+export interface QuickAction {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  action: string;
+  requires_confirmation: boolean;
+  is_dangerous: boolean;
+}
+
+// =========================
+// Base Entity Interface
+// =========================
+
+interface BaseEntity {
+  id: string;
+  created_at: string;
+  updated_at: string;
 }

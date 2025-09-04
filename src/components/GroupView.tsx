@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +61,7 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
     getCurrentUser();
   }, []);
 
-  const fetchGroupDetails = async () => {
+  const fetchGroupDetails = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('groups')
@@ -110,7 +110,7 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupId, currentUserId, toast, onBack]);
 
   const handlePostMessage = async (content: string) => {
     await postMessage(content);
@@ -149,7 +149,7 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
     if (groupId && currentUserId) {
       fetchGroupDetails();
     }
-  }, [groupId, currentUserId]);
+  }, [groupId, currentUserId, fetchGroupDetails]);
 
   // Group messages by parent_id for threading
   const mainMessages = messages.filter(msg => !msg.parent_id);

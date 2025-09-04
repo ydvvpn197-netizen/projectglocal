@@ -279,8 +279,8 @@ export class StripeService {
       const prices = await response.json();
       
       return prices.data
-        .filter((price: any) => price.active && price.type === 'recurring')
-        .map((price: any) => ({
+        .filter((price: Record<string, unknown>) => price.active && price.type === 'recurring')
+        .map((price: Record<string, unknown>) => ({
           id: price.id,
           name: price.nickname || 'Unknown Plan',
           description: price.metadata?.description || '',
@@ -466,12 +466,12 @@ export class StripeService {
       .eq('stripe_subscription_id', subscription.id);
   }
 
-  private async handleInvoicePaymentSucceeded(invoice: any): Promise<void> {
+  private async handleInvoicePaymentSucceeded(invoice: Record<string, unknown>): Promise<void> {
     // Handle successful invoice payment
     console.log('Invoice payment succeeded:', invoice.id);
   }
 
-  private async handleInvoicePaymentFailed(invoice: any): Promise<void> {
+  private async handleInvoicePaymentFailed(invoice: Record<string, unknown>): Promise<void> {
     // Handle failed invoice payment
     console.log('Invoice payment failed:', invoice.id);
   }

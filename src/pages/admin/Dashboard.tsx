@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,7 @@ import { AdminDashboardState, PlatformMetrics } from '@/types/admin';
 
 const AdminDashboard: React.FC = () => {
   const { adminUser } = useAdminAuth();
-  const adminService = new AdminService();
+  const adminService = useMemo(() => new AdminService(), []);
   const [state, setState] = useState<AdminDashboardState>({
     isLoading: true,
     error: null,
@@ -54,9 +54,9 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [loadDashboardData]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
@@ -93,7 +93,7 @@ const AdminDashboard: React.FC = () => {
         error: error instanceof Error ? error.message : 'Failed to load dashboard data'
       }));
     }
-  };
+  }, [adminService]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

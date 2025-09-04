@@ -28,7 +28,7 @@ import { SocialPostService, CreatePostRequest } from '@/services/socialPostServi
 import { useLocation } from '@/hooks/useLocation';
 
 interface CreatePostDialogProps {
-  onPostCreated?: (post: any) => void;
+  onPostCreated?: (post: Record<string, unknown>) => void;
   trigger?: React.ReactNode;
 }
 
@@ -161,7 +161,7 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
           {/* Post Type */}
           <div className="space-y-2">
             <Label htmlFor="post-type">Post Type</Label>
-            <Select value={postType} onValueChange={(value: any) => setPostType(value)}>
+            <Select value={postType} onValueChange={(value: string) => setPostType(value as 'post' | 'event' | 'service' | 'discussion' | 'poll' | 'announcement')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

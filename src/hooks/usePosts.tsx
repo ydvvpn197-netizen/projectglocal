@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -36,7 +36,7 @@ export const usePosts = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     if (!user) {
       console.log('No user found, skipping fetchPosts');
       setLoading(false);
@@ -75,17 +75,18 @@ export const usePosts = () => {
       })) || [];
       
       setPosts(filteredData as Post[]);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load posts';
       console.error('Error fetching posts:', error);
       toast({
         title: "Error loading posts",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const createPost = async (postData: {
     type: 'post' | 'event' | 'service' | 'discussion';
@@ -104,7 +105,7 @@ export const usePosts = () => {
         .insert({
           ...postData,
           user_id: user.id,
-          type: postData.type as any // Cast to match database enum
+          type: postData.type // Cast to match database enum
         })
         .select()
         .single();
@@ -122,10 +123,11 @@ export const usePosts = () => {
       fetchPosts();
 
       return { data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create post';
       toast({
         title: "Error creating post",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
       return { error };
@@ -163,10 +165,11 @@ export const usePosts = () => {
 
       // Refresh posts to get updated counts
       fetchPosts();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update like';
       toast({
         title: "Error updating like",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -195,10 +198,11 @@ export const usePosts = () => {
       fetchPosts();
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete post';
       toast({
         title: "Error deleting post",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
       return { error };
@@ -209,7 +213,7 @@ export const usePosts = () => {
     if (user) {
       fetchPosts();
     }
-  }, [user]);
+  }, [user, fetchPosts]);
 
   return {
     posts,

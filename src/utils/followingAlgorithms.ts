@@ -1,5 +1,6 @@
 
 import { FollowSuggestion, FollowRelationship, FollowStats } from '@/types/following';
+import { UserWithConnections } from '@/types/extended';
 
 export interface UserSimilarity {
   userId: string;
@@ -28,7 +29,7 @@ export class FollowingAlgorithms {
     userInterests: string[],
     userLocation: { latitude: number; longitude: number; city: string; state: string } | null,
     existingFollows: string[],
-    allUsers: any[],
+    allUsers: UserWithConnections[],
     limit: number = 20
   ): FollowSuggestion[] {
     // Filter out users already followed
@@ -81,8 +82,8 @@ export class FollowingAlgorithms {
     userId: string,
     userInterests: string[],
     userLocation: { latitude: number; longitude: number; city: string; state: string } | null,
-    candidateUser: any,
-    allUsers: any[]
+    candidateUser: UserWithConnections,
+    allUsers: UserWithConnections[]
   ): FollowRecommendationScore {
     const similarityScore = this.calculateSimilarityScore(userInterests, candidateUser.interests || []);
     const mutualConnectionsScore = this.calculateMutualConnectionsScore(userId, candidateUser.id, allUsers);
@@ -126,7 +127,7 @@ export class FollowingAlgorithms {
   /**
    * Calculate mutual connections score
    */
-  private static calculateMutualConnectionsScore(userId: string, candidateId: string, allUsers: any[]): number {
+  private static calculateMutualConnectionsScore(userId: string, candidateId: string, allUsers: UserWithConnections[]): number {
     const mutualCount = this.countMutualFollowers(userId, candidateId, allUsers);
     
     // Normalize based on typical social network sizes
@@ -137,7 +138,7 @@ export class FollowingAlgorithms {
   /**
    * Calculate activity score based on user engagement
    */
-  private static calculateActivityScore(user: any): number {
+  private static calculateActivityScore(user: UserWithConnections): number {
     let score = 0.5; // Base score
 
     // Post activity
@@ -172,7 +173,7 @@ export class FollowingAlgorithms {
    */
   private static calculateLocationScore(
     userLocation: { latitude: number; longitude: number; city: string; state: string } | null,
-    candidateLocation: any
+    candidateLocation: { latitude: number; longitude: number; city: string; state: string } | null
   ): number {
     if (!userLocation || !candidateLocation) {
       return 0.5; // Neutral score if no location data
@@ -234,7 +235,7 @@ export class FollowingAlgorithms {
   /**
    * Count mutual followers between two users
    */
-  private static countMutualFollowers(userId1: string, userId2: string, allUsers: any[]): number {
+  private static countMutualFollowers(userId1: string, userId2: string, allUsers: UserWithConnections[]): number {
     // This would be implemented with actual follow relationship data
     // For now, return a simulated count
     const user1 = allUsers.find(u => u.id === userId1);
@@ -273,7 +274,7 @@ export class FollowingAlgorithms {
   /**
    * Generate human-readable follow reason
    */
-  private static generateFollowReason(scores: FollowRecommendationScore, user: any): string {
+  private static generateFollowReason(scores: FollowRecommendationScore, user: UserWithConnections): string {
     const reasons: string[] = [];
 
     if (scores.similarityScore > 0.7) {
@@ -311,7 +312,7 @@ export class FollowingAlgorithms {
   /**
    * Get popular users for follow suggestions
    */
-  static getPopularUsers(allUsers: any[], limit: number = 10): any[] {
+  static getPopularUsers(allUsers: UserWithConnections[], limit: number = 10): UserWithConnections[] {
     return allUsers
       .filter(user => user.followers_count > 0)
       .sort((a, b) => (b.followers_count || 0) - (a.followers_count || 0))
@@ -321,7 +322,7 @@ export class FollowingAlgorithms {
   /**
    * Get users by specific interest
    */
-  static getUsersByInterest(allUsers: any[], interest: string, limit: number = 10): any[] {
+  static getUsersByInterest(allUsers: UserWithConnections[], interest: string, limit: number = 10): UserWithConnections[] {
     const interestLower = interest.toLowerCase();
     
     return allUsers
@@ -340,8 +341,8 @@ export class FollowingAlgorithms {
    */
   static calculateFollowStats(
     userId: string,
-    followers: any[],
-    following: any[]
+    followers: UserWithConnections[],
+    following: UserWithConnections[]
   ): FollowStats {
     const totalFollowers = followers.length;
     const totalFollowing = following.length;
@@ -382,8 +383,8 @@ export class FollowingAlgorithms {
    */
   static analyzeFollowNetwork(
     userId: string,
-    followers: any[],
-    following: any[]
+    followers: UserWithConnections[],
+    following: UserWithConnections[]
   ): {
     networkSize: number;
     networkDensity: number;

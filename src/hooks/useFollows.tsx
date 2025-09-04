@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -24,9 +24,9 @@ export const useFollows = (userId?: string) => {
       checkFollowStatus();
       getFollowCounts();
     }
-  }, [userId, user]);
+  }, [userId, user, checkFollowStatus, getFollowCounts]);
 
-  const checkFollowStatus = async () => {
+  const checkFollowStatus = useCallback(async () => {
     if (!user || !userId) return;
 
     try {
@@ -45,9 +45,9 @@ export const useFollows = (userId?: string) => {
     } catch (error) {
       setIsFollowing(false);
     }
-  };
+  }, [user, userId]);
 
-  const getFollowCounts = async () => {
+  const getFollowCounts = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -69,7 +69,7 @@ export const useFollows = (userId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   const toggleFollow = async () => {
     if (!user || !userId) {

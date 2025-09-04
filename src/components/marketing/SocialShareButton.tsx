@@ -108,7 +108,7 @@ export const SocialShareButton: React.FC<SocialShareButtonProps> = ({
       // Track the share
       await SocialSharingService.shareContent({
         ...content,
-        platform: platform as any
+        platform: platform as string
       });
 
       // Open share dialog

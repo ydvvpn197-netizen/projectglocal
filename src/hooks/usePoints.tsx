@@ -28,7 +28,7 @@ interface UsePointsReturn {
   // Actions
   refreshUserPoints: () => Promise<void>;
   refreshLeaderboard: (limit?: number) => Promise<void>;
-  refreshPointHistory: (filters?: any) => Promise<void>;
+  refreshPointHistory: (filters?: PointHistoryFilters) => Promise<void>;
   addPoints: (points: number, type: PointTransactionType, referenceId?: string, referenceType?: string, description?: string) => Promise<boolean>;
   handleEventAttendance: (eventId: string) => Promise<boolean>;
   handleEventOrganization: (eventId: string) => Promise<boolean>;
@@ -59,7 +59,7 @@ export const usePoints = (): UsePointsReturn => {
   const [historyError, setHistoryError] = useState<string | null>(null);
   
   // Real-time subscription
-  const [subscription, setSubscription] = useState<any>(null);
+  const [subscription, setSubscription] = useState<RealtimeChannel | null>(null);
 
   // Load current user points
   const loadUserPoints = useCallback(async () => {
@@ -96,7 +96,7 @@ export const usePoints = (): UsePointsReturn => {
   }, []);
 
   // Load point history
-  const loadPointHistory = useCallback(async (filters?: any) => {
+  const loadPointHistory = useCallback(async (filters?: PointHistoryFilters) => {
     if (!user) return;
 
     try {
@@ -127,7 +127,7 @@ export const usePoints = (): UsePointsReturn => {
         points, 
         type, 
         referenceId, 
-        referenceType as any, 
+                 referenceType as string, 
         description
       );
       

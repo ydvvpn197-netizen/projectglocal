@@ -20,7 +20,7 @@ const CreateDiscussion = () => {
   const { user } = useAuth();
   const { createDiscussion } = useDiscussions();
   const [loading, setLoading] = useState(false);
-  const [userGroups, setUserGroups] = useState<any[]>([]);
+  const [userGroups, setUserGroups] = useState<{ id: string; name: string; description?: string; category?: string }[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     content: "",

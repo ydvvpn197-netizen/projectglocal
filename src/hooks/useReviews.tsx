@@ -75,14 +75,15 @@ export const useReviews = () => {
       });
       
       return { success: false, error: "Feature not implemented yet" };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to post review';
       console.error('Error creating review:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to post review.",
+        description: errorMessage,
         variant: "destructive",
       });
-      return { success: false, error: error.message };
+      return { success: false, error: errorMessage };
     } finally {
       setCreating(false);
     }
@@ -94,7 +95,7 @@ export const useReviews = () => {
         title: "Reviews Feature Coming Soon",
         description: "Review voting functionality is being developed.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error marking helpful:', error);
       toast({
         title: "Error",
@@ -112,14 +113,15 @@ export const useReviews = () => {
       });
 
       return { success: false, error: "Feature not implemented yet" };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to post reply';
       console.error('Error adding reply:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to post reply.",
+        description: errorMessage,
         variant: "destructive",
       });
-      return { success: false, error: error.message };
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -129,7 +131,7 @@ export const useReviews = () => {
         title: "Reviews Feature Coming Soon",
         description: "Review management functionality is being developed.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting review:', error);
       toast({
         title: "Error",

@@ -130,7 +130,7 @@ const CommunityDetail = () => {
 
         if (membersError) throw membersError;
         
-        const formattedMembers: CommunityMember[] = membersData.map((member: any) => ({
+        const formattedMembers: CommunityMember[] = membersData.map((member: Record<string, unknown>) => ({
           id: member.id,
           user_id: member.user_id,
           display_name: member.profiles?.display_name || 'Anonymous',
@@ -157,7 +157,7 @@ const CommunityDetail = () => {
 
         if (postsError) throw postsError;
         
-        const formattedPosts: CommunityPost[] = postsData.map((post: any) => ({
+        const formattedPosts: CommunityPost[] = postsData.map((post: Record<string, unknown>) => ({
           id: post.id,
           title: post.title,
           content: post.content,

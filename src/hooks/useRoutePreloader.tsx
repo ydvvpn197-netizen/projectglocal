@@ -92,7 +92,7 @@ export const useRoutePreloader = () => {
   // Preload immediate routes on mount - only run once
   useEffect(() => {
     ROUTE_PRELOAD_CONFIG.immediate.forEach(route => preloadRoute(route));
-  }, []); // Remove preloadRoute dependency to prevent infinite loop
+  }, [preloadRoute]); // Add preloadRoute dependency
 
   // Preload related routes when current route changes
   useEffect(() => {

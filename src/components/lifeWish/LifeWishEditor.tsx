@@ -272,7 +272,7 @@ export const LifeWishEditor: React.FC<LifeWishEditorProps> = ({
                 </div>
                 <Select
                   value={form.watch('visibility')}
-                  onValueChange={(value) => form.setValue('visibility', value as any)}
+                  onValueChange={(value) => form.setValue('visibility', value as 'private' | 'family' | 'public')}
                 >
                   <SelectTrigger className="w-40">
                     <SelectValue />

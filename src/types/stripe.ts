@@ -41,7 +41,7 @@ export interface StripePaymentIntent {
   next_action: StripeNextAction | null;
   on_behalf_of: string | null;
   payment_method: string | null;
-  payment_method_options: Record<string, any>;
+  payment_method_options: Record<string, unknown>;
   payment_method_types: string[];
   processing: StripeProcessing | null;
   receipt_email: string | null;
@@ -79,7 +79,7 @@ export interface StripeCharge {
   failure_balance_transaction: string | null;
   failure_code: string | null;
   failure_message: string | null;
-  fraud_details: Record<string, any>;
+  fraud_details: Record<string, unknown>;
   invoice: string | null;
   livemode: boolean;
   metadata: Record<string, string>;
@@ -287,10 +287,10 @@ export interface StripeCustomer {
   email: string | null;
   invoice_prefix: string;
   invoice_settings: {
-    custom_fields: any[] | null;
+    custom_fields: Record<string, unknown>[] | null;
     default_payment_method: string | null;
     footer: string | null;
-    rendering_options: any | null;
+    rendering_options: Record<string, unknown> | null;
   };
   livemode: boolean;
   metadata: Record<string, string>;
@@ -329,7 +329,7 @@ export interface StripeSubscription {
   days_until_due: number | null;
   default_payment_method: string | null;
   default_source: string | null;
-  default_tax_rates: any[];
+  default_tax_rates: Record<string, unknown>[];
   discount: string | null;
   ended_at: number | null;
   items: {
@@ -391,7 +391,7 @@ export interface StripeSubscriptionItem {
   };
   quantity: number | null;
   subscription: string;
-  tax_rates: any[];
+  tax_rates: Record<string, unknown>[];
 }
 
 export interface StripeWebhookEvent {
@@ -400,7 +400,7 @@ export interface StripeWebhookEvent {
   api_version: string;
   created: number;
   data: {
-    object: StripePaymentIntent | StripeCharge | StripeCustomer | StripeSubscription | any;
+    object: StripePaymentIntent | StripeCharge | StripeCustomer | StripeSubscription | Record<string, unknown>;
   };
   livemode: boolean;
   pending_webhooks: number;
@@ -432,7 +432,7 @@ export interface StripeElementsOptions {
       spacingUnit?: string;
       borderRadius?: string;
     };
-    rules?: Record<string, any>;
+    rules?: Record<string, unknown>;
   };
   loader?: 'auto' | 'always' | 'never';
   locale?: string;

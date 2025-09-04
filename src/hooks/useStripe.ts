@@ -11,12 +11,12 @@ import { useToast } from './use-toast';
 
 interface UseStripeReturn {
   // Stripe instance
-  stripe: any;
+  stripe: Stripe | null;
   loading: boolean;
   
   // Payment intent management
-  createStripePaymentIntent: (data: PaymentFormData) => Promise<any>;
-  confirmStripePayment: (paymentIntentId: string, options?: StripeConfirmPaymentOptions) => Promise<any>;
+  createStripePaymentIntent: (data: PaymentFormData) => Promise<PaymentIntent | null>;
+  confirmStripePayment: (paymentIntentId: string, options?: StripeConfirmPaymentOptions) => Promise<PaymentIntent | null>;
   
   // Subscription management
   subscriptions: Subscription[];
@@ -50,7 +50,7 @@ export function useStripe(): UseStripeReturn {
   const [error, setError] = useState<string | null>(null);
   
   // Stripe instance
-  const [stripe, setStripe] = useState<any>(null);
+  const [stripe, setStripe] = useState<Stripe | null>(null);
   
   // Subscriptions state
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -86,7 +86,7 @@ export function useStripe(): UseStripeReturn {
     setError(null);
   }, []);
 
-  const handleError = useCallback((error: any, message?: string) => {
+  const handleError = useCallback((error: unknown, message?: string) => {
     const errorMessage = message || error.message || 'An error occurred';
     setError(errorMessage);
     toast({

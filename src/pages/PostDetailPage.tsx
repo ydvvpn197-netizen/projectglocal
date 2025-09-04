@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SocialMediaPost, SocialPost } from '@/components/SocialMediaPost';
 import { SocialPostService } from '@/services/socialPostService';
@@ -49,9 +49,9 @@ export const PostDetailPage: React.FC = () => {
       loadPost();
       loadComments();
     }
-  }, [postId]);
+  }, [postId, loadPost, loadComments]);
 
-  const loadPost = async () => {
+  const loadPost = useCallback(async () => {
     try {
       if (!postId) return;
       
@@ -69,9 +69,9 @@ export const PostDetailPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [postId, navigate]);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
       if (!postId) return;
 
@@ -94,18 +94,18 @@ export const PostDetailPage: React.FC = () => {
         throw error;
       }
 
-      const transformedComments = data.map(comment => ({
-        ...comment,
-        author_name: comment.profiles?.display_name,
-        author_avatar: comment.profiles?.avatar_url,
-        user_vote: comment.comment_votes?.[0]?.vote_type || 0
-      }));
+              const transformedComments = data.map(comment => ({
+          ...comment,
+          author_name: comment.profiles?.display_name,
+          author_avatar: comment.profiles?.avatar_url,
+          user_vote: comment.comment_votes?.[0]?.vote_type || 0
+        }));
 
       setComments(transformedComments);
     } catch (error) {
       console.error('Error loading comments:', error);
     }
-  };
+  }, [postId]);
 
   const handleSubmitComment = async () => {
     if (!user || !postId || !commentContent.trim()) return;
