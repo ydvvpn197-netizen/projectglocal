@@ -55,6 +55,19 @@ export class ApplicationError extends Error implements AppError {
 }
 
 /**
+ * Custom error class for validation errors
+ */
+export class ValidationError extends ApplicationError {
+  constructor(
+    message: string,
+    context?: Record<string, unknown>
+  ) {
+    super(message, 'VALIDATION_ERROR', 400, context);
+    this.name = 'ValidationError';
+  }
+}
+
+/**
  * Error codes for different types of errors
  */
 export const ErrorCodes = {

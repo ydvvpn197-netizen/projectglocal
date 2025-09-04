@@ -54,7 +54,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useEnhancedTheme } from '@/components/ui/EnhancedThemeProvider';
+import { useEnhancedTheme } from '@/components/ui/useEnhancedTheme';
 import { useToast } from '@/hooks/use-toast';
 import { NotificationButton } from '@/components/NotificationButton';
 

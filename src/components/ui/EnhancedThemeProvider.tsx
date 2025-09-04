@@ -15,7 +15,7 @@ interface EnhancedThemeContextType {
   setHighContrast: (high: boolean) => void;
 }
 
-const EnhancedThemeContext = createContext<EnhancedThemeContextType | undefined>(undefined);
+export const EnhancedThemeContext = createContext<EnhancedThemeContextType | undefined>(undefined);
 
 import { accentColors } from './themeConstants';
 
