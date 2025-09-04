@@ -10,15 +10,15 @@ export const withAdminAuth = <P extends object>(
     fallback?: React.ReactNode;
   }
 ) => {
-  const WrappedComponent: React.FC<P> = (props) => (
+  const WrappedComponent = React.forwardRef<HTMLElement, P>((props, ref) => (
     <AdminAuthGuard
       requiredPermission={options?.requiredPermission}
       requiredRole={options?.requiredRole}
       fallback={options?.fallback}
     >
-      <Component {...props} />
+      <Component {...props} ref={ref} />
     </AdminAuthGuard>
-  );
+  ));
 
   WrappedComponent.displayName = `withAdminAuth(${Component.displayName || Component.name})`;
   return WrappedComponent;
