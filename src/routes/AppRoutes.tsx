@@ -53,6 +53,7 @@ const CreatePost = React.lazy(() => import('@/pages/CreatePost'));
 // New Features pages
 const LegalAssistant = React.lazy(() => import('@/pages/LegalAssistant'));
 const LifeWish = React.lazy(() => import('@/pages/LifeWish'));
+const VoiceControlDemo = React.lazy(() => import('@/pages/VoiceControlDemo'));
 
 // Document type pages
 const RentalAgreement = React.lazy(() => import('@/pages/RentalAgreement'));
@@ -93,6 +94,7 @@ export const AppRoutes: React.FC = () => {
       {/* New Features routes */}
       <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
       <Route path="/life-wish" element={<ProtectedRoute><LifeWish /></ProtectedRoute>} />
+      <Route path="/voice-demo" element={<VoiceControlDemo />} />
       
       {/* Document type routes */}
       <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />

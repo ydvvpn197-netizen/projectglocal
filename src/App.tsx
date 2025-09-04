@@ -9,6 +9,7 @@ import { EnhancedThemeProvider } from "@/components/ui/EnhancedThemeProvider";
 import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { AppRoutes } from "./routes/AppRoutes";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { VoiceControl } from "./components/VoiceControl";
 import { appConfig } from '@/config/environment';
 import { isSupabaseConfigured } from '@/integrations/supabase/client';
 
@@ -74,6 +75,7 @@ const App = () => {
                 <LazyLoader fallback={<PageLoader />}>
                   <AppRoutes />
                 </LazyLoader>
+                <VoiceControl position="bottom-right" />
               </BrowserRouter>
             </AuthProvider>
           </TooltipProvider>

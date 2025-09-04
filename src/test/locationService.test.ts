@@ -1,15 +1,33 @@
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LocationService } from '../services/locationService';
 import { createUserPreferencesFallback } from '../utils/databaseUtils';
 
+// Mock the database utils
+vi.mock('../utils/databaseUtils', () => ({
+  createUserPreferencesFallback: vi.fn(() => ({
+    location_radius_km: 10,
+    location_notifications: true,
+    email_notifications: true,
+    push_notifications: true,
+    theme: 'light',
+    language: 'en',
+    timezone: 'UTC',
+    category: 'general'
+  })),
+  checkTableExists: vi.fn()
+}));
+
 describe('LocationService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('getUserLocationPreferences', () => {
     it('should return fallback preferences when table is not available', async () => {
       // Mock the checkTableExists function to return false
-      jest.mock('../utils/databaseUtils', () => ({
-        ...jest.requireActual('../utils/databaseUtils'),
-        checkTableExists: jest.fn().mockResolvedValue({ exists: false })
-      }));
+      const { checkTableExists } = await import('../utils/databaseUtils');
+      vi.mocked(checkTableExists).mockResolvedValue({ exists: false });
 
       const preferences = await LocationService.getUserLocationPreferences();
       const fallback = createUserPreferencesFallback();

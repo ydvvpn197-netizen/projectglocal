@@ -15,8 +15,121 @@ const mockOnPin = vi.fn();
 const mockOnLock = vi.fn();
 const mockOnDelete = vi.fn();
 
+// Mock react-router-dom
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
+}));
+
+// Mock UI components
+vi.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown-menu">{children}</div>,
+  DropdownMenuTrigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => 
+    asChild ? children : <div data-testid="dropdown-trigger">{children}</div>,
+  DropdownMenuContent: ({ children, align }: { children: React.ReactNode; align?: string }) => 
+    <div data-testid="dropdown-content" data-align={align}>{children}</div>,
+  DropdownMenuItem: ({ children, onClick, disabled, className }: { 
+    children: React.ReactNode; 
+    onClick?: () => void; 
+    disabled?: boolean; 
+    className?: string;
+  }) => (
+    <button 
+      data-testid="dropdown-item" 
+      onClick={onClick} 
+      disabled={disabled}
+      className={className}
+    >
+      {children}
+    </button>
+  ),
+}));
+
+vi.mock('@/components/ui/avatar', () => ({
+  Avatar: ({ children, className, onClick }: { 
+    children: React.ReactNode; 
+    className?: string; 
+    onClick?: () => void;
+  }) => (
+    <span className={className} onClick={onClick}>
+      {children}
+    </span>
+  ),
+  AvatarImage: ({ src, alt }: { src?: string; alt?: string }) => (
+    <img src={src} alt={alt} />
+  ),
+  AvatarFallback: ({ children }: { children: React.ReactNode }) => (
+    <span>{children}</span>
+  ),
+}));
+
+vi.mock('@/components/ui/button', () => ({
+  Button: ({ children, variant, size, className, 'aria-label': ariaLabel, 'aria-haspopup': ariaHasPopup, ...props }: {
+    children: React.ReactNode;
+    variant?: string;
+    size?: string;
+    className?: string;
+    'aria-label'?: string;
+    'aria-haspopup'?: boolean | "false" | "true" | "menu" | "listbox" | "tree" | "grid" | "dialog";
+    [key: string]: any;
+  }) => (
+    <button 
+      className={className} 
+      aria-label={ariaLabel}
+      aria-haspopup={ariaHasPopup}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+}));
+
+vi.mock('@/components/ui/badge', () => ({
+  Badge: ({ children, variant, className }: { 
+    children: React.ReactNode; 
+    variant?: string; 
+    className?: string;
+  }) => (
+    <div className={className} data-variant={variant}>
+      {children}
+    </div>
+  ),
+}));
+
+// Mock lucide-react icons
+vi.mock('lucide-react', () => ({
+  MoreVertical: () => <span data-testid="icon-more-vertical">⋮</span>,
+  Pin: () => <span data-testid="icon-pin">📌</span>,
+  Lock: () => <span data-testid="icon-lock">🔒</span>,
+  CheckCircle: () => <span data-testid="icon-check-circle">✓</span>,
+  TrendingUp: () => <span data-testid="icon-trending-up">📈</span>,
+}));
+
+// Mock date-fns
+vi.mock('date-fns', () => ({
+  formatDistanceToNow: (date: Date, options: { addSuffix: boolean }) => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days > 365) return 'over 1 year ago';
+    if (days > 30) return 'over 1 month ago';
+    if (days > 7) return 'over 1 week ago';
+    if (days > 0) return 'over 1 day ago';
+    return 'less than 1 day ago';
+  },
+}));
+
+// Mock security utils
+vi.mock('@/config/security', () => ({
+  SecurityUtils: {
+    sanitizeHtml: (content: string) => content,
+  },
+}));
+
+// Mock auth hook
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'user-1', username: 'testuser' },
+  }),
 }));
 
 const defaultProps: PostHeaderProps = {
@@ -75,9 +188,9 @@ describe('PostHeader', () => {
     it('shows trending badge when post is trending', () => {
       render(<PostHeader {...defaultProps} />);
       
-      // Check for the TrendingUp icon by looking for its class
-      const icons = screen.getAllByRole('img', { hidden: true });
-      expect(icons.length).toBeGreaterThan(1); // Should have both verified and trending icons
+      // Check for the TrendingUp icon by looking for its testid
+      const trendingIcon = screen.getByTestId('icon-trending-up');
+      expect(trendingIcon).toBeInTheDocument();
     });
 
     it('shows pinned badge when post is pinned', () => {
@@ -165,7 +278,8 @@ describe('PostHeader', () => {
         };
         
         const { unmount } = render(<PostHeader {...props} />);
-        const badge = screen.getByText(expectedClass.includes('Post') ? 'Post' : expectedClass.split(' ')[1].split('-')[1]);
+        // Look for the badge with the post type text
+        const badge = screen.getByText(type.charAt(0).toUpperCase() + type.slice(1));
         expect(badge).toHaveClass(expectedClass);
         unmount();
       });

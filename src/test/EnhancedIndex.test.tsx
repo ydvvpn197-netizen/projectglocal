@@ -2,57 +2,62 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { EnhancedIndex } from '../pages/EnhancedIndex';
-import { AuthProvider } from '../hooks/useAuth';
+import { AuthProvider } from '../components/auth/AuthProvider';
 import { EnhancedThemeProvider } from '../components/ui/EnhancedThemeProvider';
 
 // Mock the enhanced API service
-jest.mock('../services/enhancedApi', () => ({
+vi.mock('../services/enhancedApi', () => ({
   eventApi: {
-    getEvents: jest.fn(),
-    getEventById: jest.fn(),
+    getEvents: vi.fn(),
+    getEventById: vi.fn(),
   },
   communityApi: {
-    getCommunities: jest.fn(),
-    getCommunityById: jest.fn(),
+    getCommunities: vi.fn(),
+    getCommunityById: vi.fn(),
   },
   userApi: {
-    getUserProfile: jest.fn(),
+    getUserProfile: vi.fn(),
   },
 }));
 
 // Mock the auth hook
-jest.mock('../hooks/useAuth', () => ({
+vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({
     user: null,
-    signOut: jest.fn(),
+    signOut: vi.fn(),
   }),
 }));
 
 // Mock the toast hook
-jest.mock('../hooks/use-toast', () => ({
+vi.mock('../hooks/use-toast', () => ({
   useToast: () => ({
-    toast: jest.fn(),
+    toast: vi.fn(),
   }),
 }));
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
+vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: Record<string, unknown>) => <div {...props}>{children}</div>,
-    nav: ({ children, ...props }: Record<string, unknown>) => <nav {...props}>{children}</nav>,
-    h1: ({ children, ...props }: Record<string, unknown>) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: Record<string, unknown>) => <p {...props}>{children}</p>,
+    div: ({ children, ...props }: Record<string, unknown>) => <div {...props}>{children as React.ReactNode}</div>,
+    nav: ({ children, ...props }: Record<string, unknown>) => <nav {...props}>{children as React.ReactNode}</nav>,
+    h1: ({ children, ...props }: Record<string, unknown>) => <h1 {...props}>{children as React.ReactNode}</h1>,
+    p: ({ children, ...props }: Record<string, unknown>) => <p {...props}>{children as React.ReactNode}</p>,
   },
-  AnimatePresence: ({ children }: Record<string, unknown>) => <div>{children}</div>,
+  AnimatePresence: ({ children }: Record<string, unknown>) => <div>{children as React.ReactNode}</div>,
 }));
 
 // Mock react-router-dom
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+const mockNavigate = vi.fn();
+const mockLocation = { pathname: '/', search: '', hash: '', state: null };
+vi.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => <div data-testid="browser-router">{children}</div>,
   useNavigate: () => mockNavigate,
-  Link: ({ children, to, ...props }: Record<string, unknown>) => <a href={to} {...props}>{children}</a>,
+  useLocation: () => mockLocation,
+  useParams: () => ({}),
+  useSearchParams: () => [new URLSearchParams(), vi.fn()],
+  Link: ({ children, to, ...props }: Record<string, unknown>) => <a href={to as string} {...props}>{children as React.ReactNode}</a>,
 }));
 
 // Create a test wrapper component
@@ -80,7 +85,7 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 describe('EnhancedIndex Component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders the hero section with correct content', () => {
@@ -459,7 +464,7 @@ describe('EnhancedIndex Component', () => {
 
   it('handles error states gracefully', () => {
     // Mock an error in the API
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(
       <TestWrapper>

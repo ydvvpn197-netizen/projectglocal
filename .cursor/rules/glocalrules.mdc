@@ -1,0 +1,132 @@
+---
+description:
+# TypeScript & React Standards
+  # =========================
+  - Always use TypeScript with strict mode enabled (strict: true in tsconfig).
+  - Use React 18+ patterns: prefer hooks over class components, use React.memo for expensive components.
+  - Follow React best practices: useCallback/useMemo for expensive operations, avoid inline object/function creation.
+  - Enforce proper TypeScript typing: no implicit any, strict null checks, proper interface definitions.
+  - Use proper React types: React.FC, React.PropsWithChildren, React.MouseEvent, etc.
+
+  # =========================
+  # Component Architecture
+  # =========================
+  - Follow Radix UI patterns for accessible components (use proper ARIA attributes).
+  - Implement shadcn/ui style component composition with class-variance-authority.
+  - Use compound components pattern for complex UI elements.
+  - Keep components focused: single responsibility, max 200 lines per component.
+  - Implement proper prop drilling alternatives: Context API, custom hooks, or state management.
+
+  # =========================
+  # State Management & Data Fetching
+  # =========================
+  - Use TanStack React Query for all server state (API calls, data fetching).
+  - Implement proper error boundaries and loading states for async operations.
+  - Use React Hook Form with Zod validation for all forms.
+  - Prefer local state (useState) for UI-only state, global state only when necessary.
+  - Implement optimistic updates for better UX where appropriate.
+
+  # =========================
+  # Styling & Design System
+  # =========================
+  - Use Tailwind CSS utility classes with consistent spacing scale.
+  - Implement design tokens through CSS custom properties (CSS variables).
+  - Use Tailwind's container queries and responsive design patterns.
+  - Follow mobile-first responsive design approach.
+  - Use Framer Motion for animations, avoid CSS animations for complex interactions.
+
+  # =========================
+  # Performance & Optimization
+  # =========================
+  - Implement proper code splitting with React.lazy() and Suspense.
+  - Use Vite's build optimization features (manual chunks, tree shaking).
+  - Implement proper image optimization and lazy loading.
+  - Use Intersection Observer for scroll-based optimizations.
+  - Implement proper memoization: React.memo, useMemo, useCallback.
+
+  # =========================
+  # Supabase & Backend Integration
+  # =========================
+  - Use Supabase client consistently across the application.
+  - Implement proper error handling for Supabase operations.
+  - Use real-time subscriptions sparingly and implement cleanup.
+  - Follow Supabase security best practices (RLS policies, proper auth).
+  - Use Edge Functions for complex server-side logic.
+
+  # =========================
+  # Form Handling & Validation
+  # =========================
+  - Always use React Hook Form with Zod schemas for validation.
+  - Implement proper form error handling and user feedback.
+  - Use controlled components for form inputs.
+  - Implement proper form submission states (loading, success, error).
+  - Use proper input types and accessibility attributes.
+
+  # =========================
+  # Testing Strategy
+  # =========================
+  - Write unit tests with Vitest for all utility functions and hooks.
+  - Use React Testing Library for component testing.
+  - Implement integration tests for critical user flows.
+  - Use Playwright for E2E testing of key user journeys.
+  - Mock Supabase calls in tests using MSW or similar.
+
+  # =========================
+  # Code Quality & Standards
+  # =========================
+  - Follow ESLint + Prettier configuration strictly.
+  - Use conventional commits: feat:, fix:, chore:, docs:, refactor:.
+  - Implement proper error boundaries and error logging.
+  - Use proper TypeScript generics for reusable components.
+  - Implement proper accessibility (ARIA labels, keyboard navigation).
+
+  # =========================
+  # Security & Best Practices
+  # =========================
+  - Never expose Supabase keys or sensitive data in client code.
+  - Implement proper input sanitization with DOMPurify.
+  - Use proper authentication flows with Supabase Auth.
+  - Implement proper CORS and CSP policies.
+  - Validate all user inputs on both client and server side.
+
+  # =========================
+  # File Organization
+  # =========================
+  - Keep components in src/components with proper categorization.
+  - Use custom hooks in src/hooks for reusable logic.
+  - Organize services in src/services for API calls and business logic.
+  - Use proper barrel exports (index.ts) for clean imports.
+  - Implement proper lazy loading for route-based code splitting.
+
+  # =========================
+  # Development Workflow
+  # =========================
+  - Use Vite dev server for development (port 8080).
+  - Implement proper hot reload and fast refresh.
+  - Use proper environment variables (.env files).
+  - Implement proper debugging with React DevTools.
+  - Use proper source maps for debugging.
+
+  # =========================
+  # Build & Deployment
+  # =========================
+  - Use Vite build optimization for production.
+  - Implement proper asset optimization and compression.
+  - Use proper chunk splitting for better caching.
+  - Implement proper error tracking and monitoring.
+  - Use proper CI/CD pipelines for deployment.
+
+  # =========================
+  # AI Assistant Behavior
+  # =========================
+  - Always suggest TypeScript-first solutions.
+  - Prefer React patterns over vanilla JavaScript.
+  - Suggest performance optimizations when appropriate.
+  - Recommend proper error handling patterns.
+  - Suggest accessibility improvements for UI components.
+  - Always consider mobile responsiveness in suggestions.
+  - Prefer Supabase patterns over custom backend solutions.
+  - Suggest proper testing strategies for new features.
+globs:
+alwaysApply: true
+---
