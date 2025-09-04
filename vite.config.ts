@@ -38,11 +38,13 @@ export default defineConfig(({ mode }) => ({
     // Ensure build is reliable
     target: 'es2015',
     outDir: 'dist',
-    assetsDir: 'assets',
+    assetsDir: '', // Remove this to use default structure
     emptyOutDir: true,
     cssCodeSplit: true,
-    // Add better error handling for production builds
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
       onwarn(warning, warn) {
         // Suppress warnings about circular dependencies in production
         if (mode === 'production' && warning.code === 'CIRCULAR_DEPENDENCY') {
