@@ -34,13 +34,62 @@ const validateSupabaseConfig = (): boolean => {
   return true;
 };
 
-// Enhanced connection test with timeout
+// Create Supabase client with validation and enhanced error handling
+let supabase: ReturnType<typeof createClient<Database>>;
+
+if (validateSupabaseConfig()) {
+  try {
+    supabase = createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {
+      auth: {
+        storage: localStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'projectglocal-web',
+        },
+      },
+      db: {
+        schema: 'public',
+      },
+    });
+    
+    console.log('✅ Supabase client initialized successfully');
+    
+  } catch (error) {
+    console.error('❌ Failed to initialize Supabase client:', error);
+    connectionStatus = 'failed';
+    // Create a mock client that will fail gracefully
+    supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
+  }
+} else {
+  console.error('❌ Supabase configuration is invalid');
+  connectionStatus = 'failed';
+  // Create a mock client that will fail gracefully
+  supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
+}
+
+// A second client export (alias) commonly used around the app
+export const resilientSupabase = supabase;
+
+// Export the main client
+export { supabase };
+
+// Enhanced connection test with timeout - now using the local supabase variable
 const testConnection = async (): Promise<boolean> => {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CLIENT_CONFIG.connectionTimeout);
     
-    const { data, error } = await resilientSupabase.auth.getSession();
+    const { data, error } = await supabase.auth.getSession();
     
     clearTimeout(timeoutId);
     
@@ -97,72 +146,25 @@ const attemptReconnection = async (): Promise<void> => {
   }
 };
 
-// Create Supabase client with validation and enhanced error handling
-let supabase: ReturnType<typeof createClient<Database>>;
-
+// Test the connection asynchronously after client is created
 if (validateSupabaseConfig()) {
-  try {
-    supabase = createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {
-      auth: {
-        storage: localStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 10,
-        },
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'projectglocal-web',
-        },
-      },
-      db: {
-        schema: 'public',
-      },
-    });
-    
-    console.log('✅ Supabase client initialized successfully');
-    
-    // Test the connection asynchronously
-    testConnection().then((isConnected) => {
-      if (isConnected) {
-        connectionStatus = 'connected';
-        console.log('✅ Supabase connection test successful');
-      } else {
-        connectionStatus = 'failed';
-        console.warn('⚠️ Supabase connection test failed, will retry automatically');
-        // Start retry process
-        setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
-      }
-    }).catch((error) => {
-      console.warn('⚠️ Supabase connection test failed:', error.message);
+  testConnection().then((isConnected) => {
+    if (isConnected) {
+      connectionStatus = 'connected';
+      console.log('✅ Supabase connection test successful');
+    } else {
       connectionStatus = 'failed';
+      console.warn('⚠️ Supabase connection test failed, will retry automatically');
       // Start retry process
       setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
-    });
-    
-  } catch (error) {
-    console.error('❌ Failed to initialize Supabase client:', error);
+    }
+  }).catch((error) => {
+    console.warn('⚠️ Supabase connection test failed:', error.message);
     connectionStatus = 'failed';
-    // Create a mock client that will fail gracefully
-    supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
-  }
-} else {
-  console.error('❌ Supabase configuration is invalid');
-  connectionStatus = 'failed';
-  // Create a mock client that will fail gracefully
-  supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
+    // Start retry process
+    setTimeout(attemptReconnection, CLIENT_CONFIG.retryDelay);
+  });
 }
-
-// A second client export (alias) commonly used around the app
-export const resilientSupabase = supabase;
-
-// Export the main client
-export { supabase };
 
 // Enhanced helper functions
 export const isSupabaseConfigured = (): boolean => {
