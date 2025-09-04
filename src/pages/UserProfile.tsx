@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EnhancedUserProfileCard } from "@/components/EnhancedUserProfileCard";
 import { 
   ArrowLeft,
   Calendar,
@@ -182,81 +183,52 @@ const UserProfile = () => {
           {/* Cover Image */}
           <div className="h-48 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg mb-4"></div>
           
-          {/* Profile Info */}
-          <div className="flex flex-col md:flex-row md:items-end gap-6">
-            <div className="relative -mt-16 ml-6">
-              <Avatar className="w-32 h-32 border-4 border-white">
-                <AvatarImage src={profileUser.avatar_url} />
-                <AvatarFallback className="text-2xl">
-                  {profileUser.full_name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              {profileUser.verified && (
-                <div className="absolute -bottom-2 -right-2">
-                  <Badge className="bg-blue-500 text-white">
-                    <Star className="w-3 h-3 mr-1" />
-                    Verified
-                  </Badge>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex-1 px-6 pb-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{profileUser.full_name}</h1>
-                  <p className="text-muted-foreground mb-2">@{profileUser.username}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {profileUser.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      Joined {formatDate(profileUser.joined_date)}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  {!isOwnProfile && (
-                    <>
-                      <Button 
-                        variant={isFollowing ? "default" : "outline"}
-                        onClick={handleFollow}
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        {isFollowing ? "Following" : "Follow"}
-                      </Button>
-                      
-                      <Button 
-                        variant={isConnected ? "default" : "outline"}
-                        onClick={() => setIsConnectModalOpen(true)}
-                        disabled={isConnected}
-                      >
-                        <UserCheck className="w-4 h-4 mr-2" />
-                        {isConnected ? "Connected" : "Connect"}
-                      </Button>
-                      
-                      <Button 
-                        variant="outline"
-                        onClick={() => setIsChatModalOpen(true)}
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Message
-                      </Button>
-                    </>
-                  )}
-                  
-                  {isOwnProfile && (
-                    <Button variant="outline">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+          {/* Enhanced Profile Card */}
+          <div className="mb-6">
+            <EnhancedUserProfileCard
+              user={{
+                id: profileUser.id,
+                name: profileUser.full_name,
+                email: profileUser.email,
+                avatar: profileUser.avatar_url,
+                bio: profileUser.bio,
+                location: profileUser.location,
+                verified: profileUser.verified,
+                followersCount: profileUser.followers_count,
+                followingCount: profileUser.following_count,
+                isFollowing: isFollowing,
+                isOnline: true,
+                badges: profileUser.verified ? ['verified'] : [],
+                socialLinks: {
+                  twitter: profileUser.social_links?.twitter,
+                  linkedin: profileUser.social_links?.linkedin,
+                  website: profileUser.website,
+                  phone: profileUser.phone
+                },
+                skills: profileUser.interests,
+                eventsCount: profileUser.events_count,
+                joinDate: profileUser.joined_date,
+                isPremium: profileUser.verified,
+                isFeatured: profileUser.followers_count > 1000
+              }}
+              variant="detailed"
+              showActions={!isOwnProfile}
+              showStats={true}
+              showSkills={true}
+              showSocialLinks={true}
+              onFollow={handleFollow}
+              onMessage={() => setIsChatModalOpen(true)}
+              onViewProfile={() => {}} // Already on profile page
+              onShare={() => {
+                navigator.share?.({
+                  title: `${profileUser.full_name}'s Profile`,
+                  text: `Check out ${profileUser.full_name}'s profile on Glocal`,
+                  url: window.location.href
+                });
+              }}
+              onContact={() => setIsConnectModalOpen(true)}
+              className="max-w-4xl mx-auto"
+            />
           </div>
         </div>
 

@@ -217,6 +217,8 @@ export const PostHeader: React.FC<PostHeaderProps> = ({
                 variant="ghost" 
                 size="sm" 
                 className="h-8 w-8 p-0"
+                aria-label="More options"
+                aria-haspopup="true"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map, Sparkles, UserPlus } from "lucide-react";
+import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map, Sparkles, UserPlus, GripVertical, BarChart3 } from "lucide-react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocation } from "@/hooks/useLocation";
@@ -14,6 +14,10 @@ import { TrendingContent } from "@/components/TrendingContent";
 import { RecommendationFeed } from "@/components/RecommendationFeed";
 import { FollowSuggestions } from "@/components/FollowSuggestions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedUserProfileCard, EnhancedUserProfile } from "@/components/EnhancedUserProfileCard";
+import { UserList } from "@/components/UserList";
+import DraggableUserList from "@/components/DraggableUserList";
+import VirtualizedUserList from "@/components/VirtualizedUserList";
 import { format } from "date-fns";
 
 interface NewsItem {
@@ -28,10 +32,10 @@ interface NewsItem {
 interface LocalEvent {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   location: string;
   date: string;
-  category: string;
+  category: string | null;
   price?: string;
   attendees?: number;
 }
@@ -40,9 +44,9 @@ interface TrendingItem {
   id: string;
   type: 'event' | 'artist' | 'post' | 'group';
   title: string;
-  description: string;
+  description: string | null;
   engagement: number;
-  image?: string;
+  image?: string | null;
 }
 
 const Discover = () => {
@@ -53,11 +57,13 @@ const Discover = () => {
   const [nearbyEvents, setNearbyEvents] = useState<LocalEvent[]>([]);
   const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [discoveredUsers, setDiscoveredUsers] = useState<EnhancedUserProfile[]>([]);
 
   useEffect(() => {
     fetchLocalContent();
     fetchTrendingContent();
-  }, [currentLocation, locationEnabled, fetchLocalContent]);
+    fetchDiscoveredUsers();
+  }, [currentLocation, locationEnabled]);
 
   const fetchLocalContent = useCallback(async () => {
     try {
@@ -244,6 +250,107 @@ const Discover = () => {
     }
   };
 
+  const fetchDiscoveredUsers = useCallback(async () => {
+    try {
+      // Mock data for demonstration - in real app, fetch from API
+      const mockUsers: EnhancedUserProfile[] = [
+        {
+          id: 'user-1',
+          name: 'Sarah Johnson',
+          email: 'sarah@example.com',
+          avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200&h=200&fit=crop&crop=face',
+          bio: 'Event organizer and community builder passionate about bringing people together',
+          location: 'San Francisco, CA',
+          verified: true,
+          followersCount: 2341,
+          followingCount: 189,
+          isFollowing: false,
+          isOnline: true,
+          badges: ['trending'],
+          skills: ['Event Planning', 'Community Management', 'Marketing'],
+          interests: ['Community', 'Events', 'Networking'],
+          joinDate: '2021-08-15',
+          eventsCount: 23,
+          projectsCount: 12,
+          isPremium: true,
+          isFeatured: false
+        },
+        {
+          id: 'user-2',
+          name: 'Michael Chen',
+          email: 'michael@example.com',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+          bio: 'Tech entrepreneur and startup mentor helping others build successful businesses',
+          location: 'Austin, TX',
+          verified: true,
+          followersCount: 5678,
+          followingCount: 234,
+          isFollowing: true,
+          isOnline: false,
+          badges: ['trending'],
+          skills: ['Startup Strategy', 'Product Development', 'Investor Relations'],
+          interests: ['Technology', 'Business', 'Innovation'],
+          joinDate: '2020-12-01',
+          eventsCount: 45,
+          projectsCount: 18,
+          isPremium: true,
+          isFeatured: true
+        },
+        {
+          id: 'user-3',
+          name: 'Emma Rodriguez',
+          email: 'emma@example.com',
+          avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face',
+          bio: 'Creative designer and artist exploring the intersection of art and technology',
+          location: 'Portland, OR',
+          verified: false,
+          followersCount: 892,
+          followingCount: 456,
+          isFollowing: false,
+          isOnline: true,
+          badges: [],
+          skills: ['UI/UX Design', 'Digital Art', 'Creative Direction'],
+          interests: ['Art', 'Design', 'Technology'],
+          joinDate: '2023-01-20',
+          eventsCount: 8,
+          projectsCount: 5,
+          isPremium: false,
+          isFeatured: false
+        },
+        {
+          id: 'user-4',
+          name: 'David Kim',
+          email: 'david@example.com',
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
+          bio: 'Fitness coach and wellness advocate promoting healthy lifestyles',
+          location: 'Miami, FL',
+          verified: true,
+          followersCount: 3456,
+          followingCount: 123,
+          isFollowing: false,
+          isOnline: false,
+          badges: ['trending'],
+          skills: ['Personal Training', 'Nutrition', 'Wellness Coaching'],
+          interests: ['Fitness', 'Health', 'Wellness'],
+          joinDate: '2022-06-10',
+          eventsCount: 32,
+          projectsCount: 14,
+          isPremium: true,
+          isFeatured: false
+        }
+      ];
+
+      setDiscoveredUsers(mockUsers);
+    } catch (error) {
+      console.error('Error fetching discovered users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load discovered users",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
   const getTrendingIcon = (type: string) => {
     switch (type) {
       case 'event': return <Calendar className="h-4 w-4" />;
@@ -254,40 +361,211 @@ const Discover = () => {
     }
   };
 
+  const handleUserAction = useCallback(async (userId: string, action: string, data?: any) => {
+    console.log(`User action: ${action} for user ${userId}`, data);
+    
+    switch (action) {
+      case 'follow':
+        toast({
+          title: "Success",
+          description: "You are now following this user",
+        });
+        break;
+      case 'message':
+        toast({
+          title: "Message",
+          description: "Opening message composer...",
+        });
+        break;
+      case 'view_profile':
+        toast({
+          title: "Profile",
+          description: "Navigating to user profile...",
+        });
+        break;
+      case 'share':
+        toast({
+          title: "Share",
+          description: "Sharing user profile...",
+        });
+        break;
+      case 'edit':
+        toast({
+          title: "Edit",
+          description: "Opening profile editor...",
+        });
+        break;
+      case 'contact':
+        toast({
+          title: "Contact",
+          description: "Opening contact options...",
+        });
+        break;
+      default:
+        break;
+    }
+  }, [toast]);
+
+  const handleFollow = useCallback(async (userId: string) => {
+    try {
+      // Update local state
+      setDiscoveredUsers(prev => 
+        prev.map(user => 
+          user.id === userId 
+            ? { ...user, isFollowing: !user.isFollowing }
+            : user
+        )
+      );
+      
+      toast({
+        title: "Success",
+        description: "Follow status updated",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update follow status",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
+
+  const handleMessage = useCallback(async (userId: string) => {
+    toast({
+      title: "Message",
+      description: "Opening message composer...",
+    });
+  }, [toast]);
+
+  const handleViewProfile = useCallback(async (userId: string) => {
+    toast({
+      title: "Profile",
+      description: "Navigating to user profile...",
+    });
+  }, [toast]);
+
+  const handleShare = useCallback(async (userId: string) => {
+    toast({
+      title: "Share",
+      description: "Sharing user profile...",
+    });
+  }, [toast]);
+
+  const handleEdit = useCallback(async (userId: string) => {
+    toast({
+      title: "Edit",
+      description: "Opening profile editor...",
+    });
+  }, [toast]);
+
+  const handleContact = useCallback(async (userId: string) => {
+    toast({
+      title: "Contact",
+      description: "Opening contact options...",
+    });
+  }, [toast]);
+
   return (
     <ResponsiveLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Discover Local</h1>
-          <p className="text-muted-foreground">
-            Explore what's happening in your area and connect with your community
+          <h1 className="text-4xl font-bold text-center mb-4">
+            Discover Your Community
+          </h1>
+          <p className="text-xl text-center text-muted-foreground max-w-3xl mx-auto">
+            Connect with amazing people, discover local events, and explore trending content in your area
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="search">Search</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="users">People</TabsTrigger>
+            <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="trending">Trending</TabsTrigger>
-            <TabsTrigger value="recommendations">For You</TabsTrigger>
-            <TabsTrigger value="follow">People</TabsTrigger>
-            <TabsTrigger value="events">Local Events</TabsTrigger>
-            <TabsTrigger value="news">Local News</TabsTrigger>
+            <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+            <TabsTrigger value="draggable">Draggable</TabsTrigger>
+            <TabsTrigger value="virtualized">Virtualized</TabsTrigger>
           </TabsList>
 
           <TabsContent value="search" className="space-y-6">
             <AdvancedSearch />
           </TabsContent>
 
-          <TabsContent value="trending" className="space-y-6">
-            <TrendingContent />
-          </TabsContent>
+          <TabsContent value="users" className="space-y-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-2">Discover Amazing People</h2>
+              <p className="text-muted-foreground">
+                Connect with verified professionals, creators, and community leaders
+              </p>
+            </div>
 
-          <TabsContent value="recommendations" className="space-y-6">
-            <RecommendationFeed />
-          </TabsContent>
+            {/* Featured Users Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  Featured Users
+                </CardTitle>
+                <CardDescription>
+                  Premium and verified users you might want to connect with
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {discoveredUsers.filter(user => user.isPremium || user.isFeatured).map((user) => (
+                    <EnhancedUserProfileCard
+                      key={user.id}
+                      user={user}
+                      variant={user.isFeatured ? 'featured' : 'premium'}
+                      onFollow={handleFollow}
+                      onMessage={handleMessage}
+                      onViewProfile={handleViewProfile}
+                      onShare={handleShare}
+                      onEdit={handleEdit}
+                      onContact={handleContact}
+                      showActions={true}
+                      showStats={true}
+                      showSocialLinks={true}
+                      showSkills={true}
+                      showInterests={true}
+                      animate={true}
+                      interactive={true}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-          <TabsContent value="follow" className="space-y-6">
-            <FollowSuggestions />
+            {/* All Users Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  All Users
+                </CardTitle>
+                <CardDescription>
+                  Browse and discover users in your community
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserList
+                  users={discoveredUsers}
+                  variant="compact"
+                  layout="grid"
+                  showSearch={true}
+                  showFilters={true}
+                  showTabs={true}
+                  onUserAction={handleUserAction}
+                  onFollow={handleFollow}
+                  onMessage={handleMessage}
+                  onViewProfile={handleViewProfile}
+                  onShare={handleShare}
+                  onEdit={handleEdit}
+                  onContact={handleContact}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
@@ -344,99 +622,100 @@ const Discover = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="news" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold">Local News</h2>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={fetchLocalContent}
-                  disabled={loading}
-                  size="sm"
-                >
-                  {loading ? 'Loading...' : 'Refresh'}
-                </Button>
-                <Button variant="outline" onClick={() => window.open('https://news.google.com', '_blank')}>
-                  More News
-                </Button>
+          <TabsContent value="trending" className="space-y-6">
+            <TrendingContent />
+          </TabsContent>
+
+          <TabsContent value="recommendations" className="space-y-6">
+            <RecommendationFeed />
+            <FollowSuggestions />
+          </TabsContent>
+
+          {/* Draggable Users Tab */}
+          <TabsContent value="draggable" className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Interactive User List</h2>
+                <p className="text-muted-foreground">
+                  Drag and drop users to reorder them. Use the shuffle button to randomize the order.
+                </p>
               </div>
-            </div>
-            
-            {loading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="h-5 bg-muted rounded w-16"></div>
-                            <div className="h-4 bg-muted rounded w-20"></div>
-                          </div>
-                          <div className="h-5 bg-muted rounded w-3/4 mb-2"></div>
-                          <div className="h-4 bg-muted rounded w-full mb-3"></div>
-                          <div className="flex items-center justify-between">
-                            <div className="h-4 bg-muted rounded w-20"></div>
-                            <div className="h-8 bg-muted rounded w-16"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : localNews.length > 0 ? (
-              <div className="space-y-4">
-                {localNews.map((news, index) => (
-                  <Card key={index} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              {news.category}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">{news.source}</span>
-                          </div>
-                          <h3 className="font-semibold mb-2">{news.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                            {news.description}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              {format(new Date(news.publishedAt), 'MMM dd, yyyy')}
-                            </span>
-                            <Button variant="outline" size="sm" onClick={() => window.open(news.url, '_blank')}>
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Read
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="text-center py-12">
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GripVertical className="h-5 w-5 text-blue-500" />
+                    Draggable Users
+                  </CardTitle>
+                  <CardDescription>
+                    Drag users to reorder them. Click shuffle to randomize the order.
+                  </CardDescription>
+                </CardHeader>
                 <CardContent>
-                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MapPin className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">No Local News Available</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Enable location services to get personalized local news, or check back later for updates.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    onClick={fetchLocalContent}
-                    disabled={loading}
-                  >
-                    {loading ? 'Loading...' : 'Refresh News'}
-                  </Button>
+                  <DraggableUserList
+                    users={discoveredUsers}
+                    variant="compact"
+                    onReorder={(newOrder) => {
+                      setDiscoveredUsers(newOrder);
+                      toast({
+                        title: "Users Reordered",
+                        description: "The user list has been updated with the new order.",
+                      });
+                    }}
+                    onFollow={handleFollow}
+                    onMessage={handleMessage}
+                    onViewProfile={handleViewProfile}
+                    onShare={handleShare}
+                    onEdit={handleEdit}
+                    onContact={handleContact}
+                    showDragHandles={true}
+                    allowReordering={true}
+                  />
                 </CardContent>
               </Card>
-            )}
+            </div>
+          </TabsContent>
+
+          {/* Virtualized Users Tab */}
+          <TabsContent value="virtualized" className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">High-Performance User List</h2>
+                <p className="text-muted-foreground">
+                  This list uses virtualization to handle large datasets efficiently. Only visible items are rendered.
+                </p>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-green-500" />
+                    Virtualized Users
+                  </CardTitle>
+                  <CardDescription>
+                    High-performance list with search, filtering, and sorting capabilities.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <VirtualizedUserList
+                    users={discoveredUsers}
+                    variant="dark"
+                    height={600}
+                    itemHeight={120}
+                    onFollow={handleFollow}
+                    onMessage={handleMessage}
+                    onViewProfile={handleViewProfile}
+                    onShare={handleShare}
+                    onEdit={handleEdit}
+                    onContact={handleContact}
+                    showSearch={true}
+                    showFilters={true}
+                    showSorting={true}
+                    enableVirtualization={true}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

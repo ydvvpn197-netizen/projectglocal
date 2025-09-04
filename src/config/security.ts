@@ -99,7 +99,7 @@ export class SecurityUtils {
       if (error instanceof z.ZodError) {
         return { 
           success: false, 
-          errors: error.errors.map(e => e.message) 
+          errors: error.errors?.map(e => e.message) || ['Validation failed']
         };
       }
       return { success: false, errors: ['Validation failed'] };
