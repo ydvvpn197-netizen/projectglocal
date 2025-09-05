@@ -13,7 +13,7 @@ export const ChatDebugTest: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<unknown>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const runDebugTest = async () => {
@@ -27,7 +27,7 @@ export const ChatDebugTest: React.FC = () => {
     }
 
     setIsLoading(true);
-    const debugData: any = {};
+    const debugData: Record<string, unknown> = {};
 
     try {
       // Step 1: Get user's accepted bookings
@@ -201,7 +201,7 @@ export const ChatDebugTest: React.FC = () => {
                   <p className="text-blue-700 mt-1">
                     Found {debugInfo.bookings.length} accepted booking(s)
                   </p>
-                  {debugInfo.bookings.map((booking: any, index: number) => (
+                  {(debugInfo as { bookings: unknown[] }).bookings.map((booking: unknown, index: number) => (
                     <div key={index} className="mt-2 p-2 bg-white rounded border">
                       <p className="text-sm"><strong>ID:</strong> {booking.id}</p>
                       <p className="text-sm"><strong>Event:</strong> {booking.event_description}</p>
@@ -245,7 +245,7 @@ export const ChatDebugTest: React.FC = () => {
                   <p className="text-green-700 mt-1">
                     Found {debugInfo.messages.length} message(s)
                   </p>
-                  {debugInfo.messages.map((message: any, index: number) => (
+                  {(debugInfo as { messages: unknown[] }).messages.map((message: unknown, index: number) => (
                     <div key={index} className="mt-2 p-2 bg-white rounded border">
                       <p className="text-sm"><strong>From:</strong> {message.sender_id}</p>
                       <p className="text-sm"><strong>Message:</strong> {message.message}</p>

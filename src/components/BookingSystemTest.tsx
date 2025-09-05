@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,15 +11,15 @@ interface BookingTestResult {
   test: string;
   status: 'pending' | 'running' | 'passed' | 'failed';
   message?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export const BookingSystemTest: React.FC = () => {
   const { user } = useAuth();
   const [testResults, setTestResults] = useState<BookingTestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [artistInfo, setArtistInfo] = useState<any>(null);
-  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const [artistInfo, setArtistInfo] = useState<unknown>(null);
+  const [bookingRequests, setBookingRequests] = useState<unknown[]>([]);
 
   const tests: BookingTestResult[] = [
     { test: 'User Authentication', status: 'pending' },
@@ -31,7 +31,7 @@ export const BookingSystemTest: React.FC = () => {
     { test: 'Real-time Subscription', status: 'pending' },
   ];
 
-  const updateTestResult = (testName: string, status: BookingTestResult['status'], message?: string, data?: any) => {
+  const updateTestResult = (testName: string, status: BookingTestResult['status'], message?: string, data?: unknown) => {
     setTestResults(prev => prev.map(test => 
       test.test === testName 
         ? { ...test, status, message, data }
@@ -39,7 +39,7 @@ export const BookingSystemTest: React.FC = () => {
     ));
   };
 
-  const runTest = async (testName: string, testFn: () => Promise<any>) => {
+  const runTest = async (testName: string, testFn: () => Promise<unknown>) => {
     updateTestResult(testName, 'running');
     
     try {
@@ -203,7 +203,7 @@ export const BookingSystemTest: React.FC = () => {
     }
   };
 
-  const fetchBookingRequests = async () => {
+  const fetchBookingRequests = useCallback(async () => {
     if (!artistInfo) return;
 
     try {
@@ -222,13 +222,13 @@ export const BookingSystemTest: React.FC = () => {
     } catch (error) {
       console.error('Error fetching booking requests:', error);
     }
-  };
+  }, [artistInfo]);
 
   useEffect(() => {
     if (artistInfo) {
       fetchBookingRequests();
     }
-  }, [artistInfo]);
+  }, [artistInfo, fetchBookingRequests]);
 
   const getStatusIcon = (status: BookingTestResult['status']) => {
     switch (status) {

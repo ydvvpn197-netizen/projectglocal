@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -55,9 +55,9 @@ export const MessagesTabContent = ({ userId }: MessagesTabContentProps) => {
     if (user) {
       fetchConversations();
     }
-  }, [user?.id]);
+  }, [user, fetchConversations]);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -125,7 +125,7 @@ export const MessagesTabContent = ({ userId }: MessagesTabContentProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const handleConversationClick = (conversationId: string) => {
     navigate(`/chat/${conversationId}`);

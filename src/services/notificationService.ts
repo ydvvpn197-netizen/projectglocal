@@ -63,7 +63,7 @@ const fallbackGeneralNotifications: GeneralNotification[] = [
 
 class NotificationService {
   private isDatabaseAvailable = true;
-  private cache = new Map<string, { data: any; timestamp: number }>();
+  private cache = new Map<string, { data: unknown; timestamp: number }>();
   private readonly CACHE_TTL = 30000; // 30 seconds
   private retryAttempts = new Map<string, number>();
   private readonly MAX_RETRY_ATTEMPTS = 3;
@@ -90,7 +90,7 @@ class NotificationService {
   }
 
   // Cache management
-  private getCachedData(key: string): any | null {
+  private getCachedData(key: string): unknown | null {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       return cached.data;
@@ -99,7 +99,7 @@ class NotificationService {
     return null;
   }
 
-  private setCachedData(key: string, data: any): void {
+  private setCachedData(key: string, data: unknown): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now()

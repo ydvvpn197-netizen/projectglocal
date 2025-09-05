@@ -13,7 +13,7 @@ interface TestResult {
   test: string;
   status: 'pending' | 'running' | 'passed' | 'failed';
   message?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export const ChatFlowTest: React.FC = () => {
@@ -33,7 +33,7 @@ export const ChatFlowTest: React.FC = () => {
     { test: 'Navigation Test', status: 'pending' },
   ];
 
-  const updateTestResult = (testName: string, status: TestResult['status'], message?: string, data?: any) => {
+  const updateTestResult = (testName: string, status: TestResult['status'], message?: string, data?: unknown) => {
     setTestResults(prev => prev.map(test => 
       test.test === testName 
         ? { ...test, status, message, data }
@@ -41,7 +41,7 @@ export const ChatFlowTest: React.FC = () => {
     ));
   };
 
-  const runTest = async (testName: string, testFn: () => Promise<any>) => {
+  const runTest = async (testName: string, testFn: () => Promise<unknown>) => {
     updateTestResult(testName, 'running');
     
     try {

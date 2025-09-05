@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,7 @@ export const NotificationSystemTest: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [realtimeStatus, setRealtimeStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-  const [realtimeEvents, setRealtimeEvents] = useState<any[]>([]);
+  const [realtimeEvents, setRealtimeEvents] = useState<unknown[]>([]);
   const [healthCheck, setHealthCheck] = useState<HealthCheckResult | null>(null);
   const [isHealthCheckRunning, setIsHealthCheckRunning] = useState(false);
 
@@ -47,7 +47,7 @@ export const NotificationSystemTest: React.FC = () => {
     ));
   };
 
-  const runTest = async (testName: string, testFn: () => Promise<any>) => {
+  const runTest = async (testName: string, testFn: () => Promise<unknown>) => {
     const startTime = Date.now();
     updateTestResult(testName, 'running');
     
@@ -225,7 +225,7 @@ export const NotificationSystemTest: React.FC = () => {
     }
   };
 
-  const setupRealtimeMonitoring = () => {
+  const setupRealtimeMonitoring = useCallback(() => {
     if (!user?.id) return;
 
     setRealtimeStatus('connecting');
@@ -273,12 +273,12 @@ export const NotificationSystemTest: React.FC = () => {
       subscription.unsubscribe();
       setRealtimeStatus('disconnected');
     };
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     const cleanup = setupRealtimeMonitoring();
     return cleanup;
-  }, [user?.id]);
+  }, [setupRealtimeMonitoring]);
 
   const createTestNotification = async () => {
     if (!user?.id) return;

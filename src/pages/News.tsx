@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,13 +51,12 @@ const News: React.FC = () => {
     searchQuery: ''
   });
 
-  const newsService = new NewsAggregationService();
-
   useEffect(() => {
     loadNews();
-  }, [filters, activeTab]);
+  }, [loadNews]);
 
-  const loadNews = async () => {
+  const loadNews = useCallback(async () => {
+    const newsService = new NewsAggregationService();
     try {
       setLoading(true);
       setError(null);
@@ -100,7 +99,7 @@ const News: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, currentLocation, user, filters, toast]);
 
   const refreshNews = async () => {
     setRefreshing(true);
