@@ -46,6 +46,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { UserPointsDisplay } from "@/components/UserPointsDisplay";
+import { MessagesTabContent } from "@/components/MessagesTabContent";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -409,11 +410,11 @@ const Profile = () => {
         )}
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="posts" className="space-y-6">
+        <Tabs defaultValue="messages" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="posts" className="flex items-center gap-2">
+            <TabsTrigger value="messages" className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
-              Posts
+              Messages
             </TabsTrigger>
             <TabsTrigger value="bookings" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -429,71 +430,9 @@ const Profile = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Posts Tab */}
-          <TabsContent value="posts" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Recent Posts</h2>
-              <Button onClick={handleCreatePost} className="btn-community">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Post
-              </Button>
-            </div>
-            
-            {posts.length > 0 ? (
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <Card key={post.id} className="discussion-card">
-                    <CardContent className="p-6">
-                      <div className="flex gap-4">
-                        {post.image && (
-                          <img 
-                            src={post.image} 
-                            alt={post.title}
-                            className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                            {post.content}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Heart className="w-4 h-4" />
-                                {post.likes}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MessageCircle className="w-4 h-4" />
-                                {post.comments}
-                              </span>
-                              <span>{post.date}</span>
-                            </div>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No Posts Yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Start sharing your thoughts and experiences with the community!
-                  </p>
-                  <Button onClick={handleCreatePost}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Your First Post
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+          {/* Messages Tab */}
+          <TabsContent value="messages" className="space-y-4">
+            {user && <MessagesTabContent userId={user.id} />}
           </TabsContent>
 
           {/* Bookings Tab */}
