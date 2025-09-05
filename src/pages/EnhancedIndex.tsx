@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { EnhancedNavigation } from '@/components/ui/EnhancedNavigation';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { AdvancedButton } from '@/components/ui/AdvancedButton';
 import { SmartInput } from '@/components/ui/SmartInput';
@@ -404,13 +404,8 @@ export const EnhancedIndex: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <EnhancedNavigation 
-        variant="glass"
-        showSearch={false}
-        notifications={user ? counts.personal : 0}
-        onNotificationClick={handleNotificationClick}
-      />
+    <ResponsiveLayout>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4">
@@ -868,6 +863,7 @@ export const EnhancedIndex: React.FC = () => {
           </motion.div>
         </div>
       </section>
-    </div>
+      </div>
+    </ResponsiveLayout>
   );
 };
