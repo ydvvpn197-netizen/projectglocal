@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FollowButton } from "@/components/FollowButton";
 import { Star, MapPin, Clock, MessageCircle, Heart, Calendar, Users } from "lucide-react";
-import { useNavigate as useRRNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFollows } from "@/hooks/useFollows";
@@ -55,7 +54,6 @@ const ArtistProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const rrNavigate = useRRNavigate();
   
   const [artist, setArtist] = useState<ArtistProfile | null>(null);
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
@@ -666,7 +664,7 @@ const ArtistProfile = () => {
                             }
                           }
 
-                          rrNavigate(`/chat/${conversationId}`);
+                          navigate(`/chat/${conversationId}`);
                         } catch (err) {
                           console.error('Error starting chat:', err);
                           toast({
