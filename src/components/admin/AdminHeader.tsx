@@ -92,7 +92,11 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           )}
 
           <div className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
+            <img 
+              src="/logo.png" 
+              alt="Glocal Logo" 
+              className="h-6 w-6 object-contain"
+            />
             <div className="hidden sm:block">
               <h1 className="text-lg font-semibold">{title || 'Admin Dashboard'}</h1>
               <p className="text-sm text-muted-foreground">{subtitle || getPageTitle()}</p>

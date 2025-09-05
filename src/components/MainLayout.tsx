@@ -63,7 +63,11 @@ export function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-4 lg:gap-6">
                 <SidebarTrigger />
                 <Link to="/" className="flex items-center gap-2 font-bold text-lg lg:text-xl text-gradient">
-                  <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
+                  <img 
+                    src="/logo.png" 
+                    alt="Glocal Logo" 
+                    className="h-6 w-6 lg:h-7 lg:w-7 object-contain"
+                  />
                   <span className="hidden sm:inline">Glocal</span>
                   <span className="sm:hidden">G</span>
                 </Link>
