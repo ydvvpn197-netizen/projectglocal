@@ -169,15 +169,15 @@ const Profile = () => {
 
   const getBadgeIcon = (iconName: string) => {
     const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
-      Crown,
-      Shield,
-      Zap,
-      Trophy,
-      Calendar,
-      Users,
-      Star,
-      Flame,
-      TrendingUp
+      'Crown': Crown,
+      'Shield': Shield,
+      'Zap': Zap,
+      'Trophy': Trophy,
+      'Calendar': Calendar,
+      'Users': Users,
+      'Star': Star,
+      'Flame': Flame,
+      'TrendingUp': TrendingUp
     };
     return iconMap[iconName] || Star;
   };
