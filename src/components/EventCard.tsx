@@ -61,8 +61,8 @@ export const EventCard = ({
   };
 
   const handleEventClick = () => {
-    // Open event details in a new window
-    window.open(`/event/${event.id}`, '_blank');
+    // Navigate to event details in the same window
+    navigate(`/event/${event.id}`);
   };
 
   const handleOrganizerClick = (e: React.MouseEvent) => {
