@@ -77,13 +77,6 @@ const ArtistProfile = () => {
   // Get followers and following counts for the artist
   const { followersCount, followingCount } = useFollows(artistId);
 
-  useEffect(() => {
-    if (artistId) {
-      fetchArtistProfile();
-      fetchDiscussions();
-    }
-  }, [artistId, user, fetchArtistProfile, fetchDiscussions]);
-
   const fetchArtistProfile = useCallback(async () => {
     try {
       const { data: profileData, error: profileError } = await supabase
@@ -206,6 +199,13 @@ const ArtistProfile = () => {
       setLoading(false);
     }
   }, [artistId]);
+
+  useEffect(() => {
+    if (artistId) {
+      fetchArtistProfile();
+      fetchDiscussions();
+    }
+  }, [artistId, user, fetchArtistProfile, fetchDiscussions]);
 
   const handleSubmitDiscussion = async () => {
     if (!user) {
