@@ -51,12 +51,6 @@ export const MessagesTabContent = ({ userId }: MessagesTabContentProps) => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    if (user) {
-      fetchConversations();
-    }
-  }, [user, fetchConversations]);
-
   const fetchConversations = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -126,6 +120,12 @@ export const MessagesTabContent = ({ userId }: MessagesTabContentProps) => {
       setLoading(false);
     }
   }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+    }
+  }, [user, fetchConversations]);
 
   const handleConversationClick = (conversationId: string) => {
     navigate(`/chat/${conversationId}`);

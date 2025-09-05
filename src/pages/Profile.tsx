@@ -224,9 +224,9 @@ const Profile = () => {
   }
 
   const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
-  const location = profile ? [profile.location_city, profile.location_state, profile.location_country]
+  const location = profile ? ([profile.location_city, profile.location_state, profile.location_country]
     .filter(Boolean)
-    .join(', ') || 'Location not set' : 'Location not set';
+    .join(', ') || 'Location not set') : 'Location not set';
 
   return (
     <ResponsiveLayout>
