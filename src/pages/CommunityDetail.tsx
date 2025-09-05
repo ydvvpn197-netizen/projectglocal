@@ -189,7 +189,7 @@ const CommunityDetail = () => {
     };
 
     fetchGroupDetails();
-  }, [groupId, user, isGroupMember, getUserRole, toast, navigate]);
+  }, [groupId, user, getUserRole, isGroupMember, navigate, toast]);
 
   const handleJoinLeave = async () => {
     if (!user || !groupId) {

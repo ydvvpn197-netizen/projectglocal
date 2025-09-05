@@ -144,7 +144,7 @@ export class PostService {
             display_name,
             avatar_url
           ),
-          groups (
+          community_groups (
             name
           ),
           post_votes!inner (
@@ -370,7 +370,7 @@ export class PostService {
       if (error) throw error;
 
       await supabase
-        .from('groups')
+        .from('community_groups')
         .update({ post_count: count || 0 })
         .eq('id', groupId);
     } catch (error) {
