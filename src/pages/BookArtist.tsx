@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ interface Artist {
 const BookArtist = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [loading, setLoading] = useState(true);
@@ -248,7 +250,7 @@ const BookArtist = () => {
                     "cursor-pointer transition-all hover:shadow-md",
                     selectedArtist?.id === artist.id && "ring-2 ring-primary"
                   )}
-                  onClick={() => setSelectedArtist(artist)}
+                  onClick={() => navigate(`/artist/${artist.user_id}`)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-3">
@@ -287,7 +289,7 @@ const BookArtist = () => {
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open(`/artist/${artist.user_id}`, '_blank');
+                            navigate(`/artist/${artist.user_id}`);
                           }}
                         >
                           View Profile
