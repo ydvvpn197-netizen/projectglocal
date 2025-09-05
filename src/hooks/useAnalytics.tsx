@@ -100,7 +100,7 @@ export const useAnalytics = () => {
         supabase.from('events').select('*', { count: 'exact', head: true }),
         supabase.from('posts').select('*', { count: 'exact', head: true }),
         supabase.from('artist_bookings').select('*', { count: 'exact', head: true }),
-        supabase.from('groups').select('*', { count: 'exact', head: true }),
+        supabase.from('community_groups').select('*', { count: 'exact', head: true }),
         supabase.from('discussions').select('*', { count: 'exact', head: true })
       ]);
 

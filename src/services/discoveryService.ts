@@ -215,7 +215,7 @@ export class DiscoveryService {
     const timeFilter = this.getTimeFilter(period);
     
     const { data: groups } = await supabase
-      .from('groups')
+      .from('community_groups')
       .select(`
         id,
         name,

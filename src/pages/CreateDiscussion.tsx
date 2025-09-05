@@ -35,7 +35,7 @@ const CreateDiscussion = () => {
 
       try {
         const { data: memberGroups, error } = await supabase
-          .from('groups')
+          .from('community_groups')
           .select(`
             id,
             name,

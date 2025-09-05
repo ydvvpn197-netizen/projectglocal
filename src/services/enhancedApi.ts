@@ -314,15 +314,15 @@ export class CommunityApiService extends EnhancedApiService {
     const { category, search, limit = 20, offset = 0 } = options;
     
     let query = supabase
-      .from('groups')
+      .from('community_groups')
       .select(`
         *,
-        creator:profiles!groups_created_by_fkey(
+        creator:profiles!community_groups_created_by_fkey(
           user_id,
           display_name,
           avatar_url
         ),
-        members:group_members(count)
+        members:community_group_members(count)
       `)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);

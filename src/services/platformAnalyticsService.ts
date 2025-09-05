@@ -160,7 +160,7 @@ export class PlatformAnalyticsService {
   private async getTotalCommunities(daysAgo: number = 0): Promise<number> {
     try {
       let query = supabase
-        .from('groups')
+        .from('community_groups')
         .select('*', { count: 'exact', head: true });
 
       if (daysAgo > 0) {

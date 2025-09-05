@@ -64,16 +64,16 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
   const fetchGroupDetails = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('groups')
+        .from('community_groups')
         .select(`
           *,
-          group_members!inner (
+          community_group_members!inner (
             role,
             user_id
           )
         `)
         .eq('id', groupId)
-        .eq('group_members.user_id', currentUserId)
+        .eq('community_group_members.user_id', currentUserId)
         .maybeSingle();
 
       if (error) throw error;
@@ -90,14 +90,14 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
 
       // Get member count
       const { count } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .select('*', { count: 'exact', head: true })
         .eq('group_id', groupId);
 
       setGroup({
         ...data,
         member_count: count || 0,
-        user_role: data.group_members[0]?.role || 'member'
+        user_role: data.community_group_members[0]?.role || 'member'
       });
     } catch (error) {
       console.error('Error fetching group:', error);
@@ -123,7 +123,7 @@ export const GroupView = ({ groupId, onBack }: GroupViewProps) => {
   const leaveGroup = async () => {
     try {
       const { error } = await supabase
-        .from('group_members')
+        .from('community_group_members')
         .delete()
         .eq('group_id', groupId)
         .eq('user_id', currentUserId);
