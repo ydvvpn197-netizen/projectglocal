@@ -448,11 +448,15 @@ class NotificationService {
     }
 
     try {
-      const isAvailable = this.isDatabaseAvailable;
-      if (!isAvailable) {
-        console.warn('Database not available, real-time subscription disabled');
-        return () => {}; // Return empty unsubscribe function
-      }
+      // Check database availability before subscribing
+      this.checkDatabaseAvailability().then(isAvailable => {
+        if (!isAvailable) {
+          console.warn('Database not available, real-time subscription disabled');
+          return;
+        }
+      }).catch(() => {
+        console.warn('Database check failed, real-time subscription disabled');
+      });
 
       // Enhanced subscription with better error handling and reconnection
       const personalSubscription = supabase
@@ -495,7 +499,7 @@ class NotificationService {
           if (status === 'SUBSCRIBED') {
             console.log('✅ Personal notifications subscription active');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Personal notifications subscription failed');
+            console.warn('⚠️ Personal notifications subscription failed - using fallback mode');
           }
         });
 
@@ -535,7 +539,7 @@ class NotificationService {
           if (status === 'SUBSCRIBED') {
             console.log('✅ General notifications subscription active');
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('❌ General notifications subscription failed');
+            console.warn('⚠️ General notifications subscription failed - using fallback mode');
           }
         });
 

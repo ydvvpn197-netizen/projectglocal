@@ -42,16 +42,13 @@ export const ClientBookingsPanel = () => {
     try {
       const { data, error } = await supabase
         .from('artist_bookings')
-        .select(`
-          *,
-          chat_conversations!artist_bookings_id_fkey(id as chat_id)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Fetch artist profile data for each booking
+      // Fetch artist profile data and chat conversations for each booking
       const transformedBookings = await Promise.all(
         (data || []).map(async (booking) => {
           // First get the artist's user_id from the artist record
@@ -68,12 +65,20 @@ export const ClientBookingsPanel = () => {
             .eq('user_id', artistRecord?.user_id)
             .single();
 
+          // Check if there's a chat conversation for this booking
+          const { data: chatConversation } = await supabase
+            .from('chat_conversations')
+            .select('id')
+            .eq('client_id', user.id)
+            .eq('artist_id', artistRecord?.user_id)
+            .single();
+
           return {
             ...booking,
             artist_name: artistProfile?.display_name || 'Unknown Artist',
             artist_avatar: artistProfile?.avatar_url || '',
             artist_specialty: artistProfile?.artist_skills?.[0] || 'Artist',
-            chat_conversation_id: booking.chat_conversations?.[0]?.chat_id
+            chat_conversation_id: chatConversation?.id
           };
         })
       );
