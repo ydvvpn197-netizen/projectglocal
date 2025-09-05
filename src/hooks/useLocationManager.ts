@@ -34,13 +34,6 @@ export function useLocationManager() {
     settingsRef.current = settings;
   }, [settings]);
 
-  // Load initial location and settings
-  useEffect(() => {
-    if (user) {
-      loadLocationAndSettings();
-    }
-  }, [user, loadLocationAndSettings]);
-
   const loadLocationAndSettings = useCallback(async () => {
     if (!user) return;
 
@@ -70,6 +63,13 @@ export function useLocationManager() {
       }));
     }
   }, [user]);
+
+  // Load initial location and settings
+  useEffect(() => {
+    if (user) {
+      loadLocationAndSettings();
+    }
+  }, [user, loadLocationAndSettings]);
 
   const detectLocation = useCallback(async () => {
     if (!user) return;

@@ -40,12 +40,6 @@ const ArtistDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("bookings");
 
-  useEffect(() => {
-    if (user) {
-      fetchArtistData();
-    }
-  }, [user, fetchArtistData]);
-
   const fetchArtistData = useCallback(async () => {
     if (!user) return;
 
@@ -127,6 +121,12 @@ const ArtistDashboard = () => {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchArtistData();
+    }
+  }, [user, fetchArtistData]);
 
   if (!user) {
     navigate('/signin');

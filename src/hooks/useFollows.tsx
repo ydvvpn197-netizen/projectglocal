@@ -19,13 +19,6 @@ export const useFollows = (userId?: string) => {
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (userId) {
-      checkFollowStatus();
-      getFollowCounts();
-    }
-  }, [userId, user, checkFollowStatus, getFollowCounts]);
-
   const checkFollowStatus = useCallback(async () => {
     if (!user || !userId) return;
 
@@ -70,6 +63,13 @@ export const useFollows = (userId?: string) => {
       setLoading(false);
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      checkFollowStatus();
+      getFollowCounts();
+    }
+  }, [userId, user, checkFollowStatus, getFollowCounts]);
 
   const toggleFollow = async () => {
     if (!user || !userId) {

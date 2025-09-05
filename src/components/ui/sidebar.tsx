@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SidebarContext, SidebarContextType } from "./useSidebar"
+import { SidebarContext, SidebarContextType, useSidebar } from "./useSidebar"
 import {
   SIDEBAR_COOKIE_NAME,
   SIDEBAR_COOKIE_MAX_AGE,
@@ -715,10 +715,5 @@ export const SidebarMenuSubButton = React.forwardRef<
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
 
 // Export the useSidebar hook
-export function useSidebar() {
-  const context = useContext(SidebarContext)
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
-  }
-  return context
-}
+export { useSidebar }
+

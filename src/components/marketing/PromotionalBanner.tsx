@@ -77,17 +77,6 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
     checkMarketingTables();
   }, []);
 
-  useEffect(() => {
-    if (marketingTablesAvailable === false) {
-      setLoading(false);
-      return;
-    }
-
-    if (marketingTablesAvailable === true) {
-      loadCampaigns();
-    }
-  }, [marketingTablesAvailable, loadCampaigns]);
-
   const loadCampaigns = useCallback(async () => {
     try {
       setLoading(true);
@@ -123,6 +112,17 @@ export const PromotionalBanner: React.FC<PromotionalBannerProps> = ({
       setLoading(false);
     }
   }, [position, variant, maxCampaigns]);
+
+  useEffect(() => {
+    if (marketingTablesAvailable === false) {
+      setLoading(false);
+      return;
+    }
+
+    if (marketingTablesAvailable === true) {
+      loadCampaigns();
+    }
+  }, [marketingTablesAvailable, loadCampaigns]);
 
   // Auto-rotate campaigns
   useEffect(() => {

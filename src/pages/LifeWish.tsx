@@ -34,13 +34,13 @@ const LifeWishPage: React.FC = () => {
   const [editingWish, setEditingWish] = useState<LifeWish | null>(null);
   const queryClient = useQueryClient();
 
-  // Fetch user's life wishes
+  // Fetch user's private life wishes only
   const { data: myWishes = [], refetch: refetchMyWishes } = useQuery({
-    queryKey: ['my-life-wishes'],
-    queryFn: () => lifeWishService.getMyLifeWishes(),
+    queryKey: ['my-private-life-wishes'],
+    queryFn: () => lifeWishService.getMyPrivateLifeWishes(),
   });
 
-  // Fetch public life wishes
+  // Fetch all public life wishes (including user's own public wishes)
   const { data: publicWishes = [], refetch: refetchPublicWishes } = useQuery({
     queryKey: ['public-life-wishes'],
     queryFn: () => lifeWishService.getPublicLifeWishes(),
@@ -201,10 +201,10 @@ const LifeWishPage: React.FC = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">My Wishes</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
+                    <p className="text-sm text-gray-600">Private Wishes</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.private || 0}</p>
                   </div>
-                  <Heart className="w-8 h-8 text-pink-600" />
+                  <Lock className="w-8 h-8 text-pink-600" />
                 </div>
               </CardContent>
             </Card>
@@ -237,10 +237,10 @@ const LifeWishPage: React.FC = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Views</p>
+                    <p className="text-sm text-gray-600">Total Wishes</p>
                     <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
                   </div>
-                  <Eye className="w-8 h-8 text-purple-600" />
+                  <Heart className="w-8 h-8 text-purple-600" />
                 </div>
               </CardContent>
             </Card>
@@ -278,7 +278,7 @@ const LifeWishPage: React.FC = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-sm text-gray-600">
-                      <p>Your personal life wishes that you can keep private or share with others.</p>
+                      <p>Your private life wishes that are only visible to you. These are your personal thoughts and wishes that you want to keep private.</p>
                     </div>
                     
                     <Separator />
@@ -286,15 +286,15 @@ const LifeWishPage: React.FC = () => {
                     <div className="text-xs text-gray-500 space-y-2">
                       <div className="flex items-center gap-2">
                         <Lock className="w-3 h-3" />
-                        <span>Private by default</span>
+                        <span>Private and secure</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Share2 className="w-3 h-3" />
-                        <span>Share with specific people</span>
+                        <Shield className="w-3 h-3" />
+                        <span>Encrypted by default</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Globe className="w-3 h-3" />
-                        <span>Make public if desired</span>
+                        <Heart className="w-3 h-3" />
+                        <span>Personal wishes only</span>
                       </div>
                     </div>
                   </CardContent>
@@ -306,15 +306,15 @@ const LifeWishPage: React.FC = () => {
                 {myWishes.length === 0 ? (
                   <Card>
                     <CardContent className="text-center py-12">
-                      <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-medium text-gray-900 mb-2">No life wishes yet</h3>
+                      <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-medium text-gray-900 mb-2">No private wishes yet</h3>
                       <p className="text-gray-500 mb-6">
-                        Create your first life wish to get started. These can be personal messages, 
-                        legacy wishes, or important decisions you want to preserve.
+                        Create your first private life wish to get started. These are personal messages, 
+                        legacy wishes, or important decisions you want to keep private and secure.
                       </p>
                       <Button onClick={() => setShowCreateDialog(true)} className="bg-pink-600 hover:bg-pink-700">
                         <Plus className="w-4 h-4 mr-2" />
-                        Create Life Wish
+                        Create Private Wish
                       </Button>
                     </CardContent>
                   </Card>
@@ -351,7 +351,7 @@ const LifeWishPage: React.FC = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-sm text-gray-600">
-                      <p>Life wishes that others have chosen to share publicly with the community.</p>
+                      <p>All public life wishes from the community, including your own public wishes. These are shared openly to inspire and connect with others.</p>
                     </div>
                     
                     <Separator />
@@ -364,6 +364,10 @@ const LifeWishPage: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Star className="w-3 h-3" />
                         <span>Community inspiration</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-3 h-3" />
+                        <span>Your public wishes included</span>
                       </div>
                     </div>
                   </CardContent>
@@ -411,7 +415,7 @@ const LifeWishPage: React.FC = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-sm text-gray-600">
-                      <p>Life wishes that others have chosen to share with you.</p>
+                      <p>Life wishes that others have specifically shared with you. These are private wishes that people have chosen to share with you personally.</p>
                     </div>
                     
                     <Separator />
@@ -424,6 +428,10 @@ const LifeWishPage: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Shield className="w-3 h-3" />
                         <span>Trusted sharing</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-3 h-3" />
+                        <span>Shared by others</span>
                       </div>
                     </div>
                   </CardContent>

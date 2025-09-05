@@ -24,6 +24,7 @@ import {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebarExports";
 
 const mainItems = [

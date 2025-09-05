@@ -134,7 +134,37 @@ export class LifeWishService {
   }
 
   /**
+   * Get only private life wishes for the current user
+   */
+  async getMyPrivateLifeWishes(): Promise<LifeWish[]> {
+    try {
+      const { data, error } = await supabase
+        .from('life_wishes')
+        .select('*')
+        .eq('visibility', 'private')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Decrypt content for encrypted wishes
+      const decryptedWishes = (data || []).map(wish => {
+        if (wish.is_encrypted && wish.encrypted_content) {
+          wish.content = this.decryptText(wish.encrypted_content);
+        }
+        return wish;
+      });
+
+      return decryptedWishes;
+    } catch (error) {
+      console.error('Error fetching private life wishes:', error);
+      toast.error('Failed to fetch private life wishes');
+      throw error;
+    }
+  }
+
+  /**
    * Get public life wishes (for community memorial space)
+   * This includes all public wishes from all users, including the current user's public wishes
    */
   async getPublicLifeWishes(): Promise<LifeWish[]> {
     try {
@@ -439,14 +469,15 @@ export class LifeWishService {
     shared: number;
   }> {
     try {
-      const wishes = await this.getMyLifeWishes();
-      const sharedWishes = await this.getMySharedWishes();
+      const allWishes = await this.getMyLifeWishes();
+      const privateWishes = await this.getMyPrivateLifeWishes();
+      const sharedWishes = await this.getSharedLifeWishes();
 
       return {
-        total: wishes.length,
-        private: wishes.filter(w => w.visibility === 'private').length,
-        public: wishes.filter(w => w.visibility === 'public').length,
-        family: wishes.filter(w => w.visibility === 'family').length,
+        total: allWishes.length,
+        private: privateWishes.length,
+        public: allWishes.filter(w => w.visibility === 'public').length,
+        family: allWishes.filter(w => w.visibility === 'family').length,
         shared: sharedWishes.length
       };
     } catch (error) {

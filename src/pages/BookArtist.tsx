@@ -49,10 +49,6 @@ const BookArtist = () => {
     contactPhone: ""
   });
 
-  useEffect(() => {
-    fetchArtists();
-  }, [fetchArtists]);
-
   const fetchArtists = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -84,6 +80,10 @@ const BookArtist = () => {
       setLoading(false);
     }
   }, [toast]);
+
+  useEffect(() => {
+    fetchArtists();
+  }, [fetchArtists]);
 
   const handleBooking = async () => {
     if (!selectedArtist || !bookingDate) {
