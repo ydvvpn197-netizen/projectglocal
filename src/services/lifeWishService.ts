@@ -12,6 +12,11 @@ export interface LifeWish {
   metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+  // User profile information (populated separately)
+  user_profile?: {
+    display_name?: string;
+    avatar_url?: string;
+  };
 }
 
 export interface LifeWishShare {
@@ -113,6 +118,7 @@ export class LifeWishService {
       const { data, error } = await supabase
         .from('life_wishes')
         .select('*')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -141,6 +147,7 @@ export class LifeWishService {
       const { data, error } = await supabase
         .from('life_wishes')
         .select('*')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
         .eq('visibility', 'private')
         .order('updated_at', { ascending: false });
 
@@ -170,19 +177,34 @@ export class LifeWishService {
     try {
       const { data, error } = await supabase
         .from('life_wishes')
-        .select('*, user_profiles!inner(name, avatar_url)')
+        .select('*')
         .eq('visibility', 'public')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Decrypt content for encrypted wishes
-      const decryptedWishes = (data || []).map(wish => {
+      // Decrypt content for encrypted wishes and fetch user profiles
+      const decryptedWishes = await Promise.all((data || []).map(async (wish) => {
         if (wish.is_encrypted && wish.encrypted_content) {
           wish.content = this.decryptText(wish.encrypted_content);
         }
+
+        // Fetch user profile information
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url')
+            .eq('user_id', wish.user_id)
+            .single();
+
+          wish.user_profile = profileData || {};
+        } catch (profileError) {
+          console.warn('Could not fetch profile for user:', wish.user_id);
+          wish.user_profile = {};
+        }
+
         return wish;
-      });
+      }));
 
       return decryptedWishes;
     } catch (error) {

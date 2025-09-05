@@ -37,12 +37,6 @@ export const EarningsPanel = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchEarningsData();
-    }
-  }, [user, fetchEarningsData]);
-
   const fetchEarningsData = useCallback(async () => {
     if (!user) return;
 
@@ -117,6 +111,12 @@ export const EarningsPanel = () => {
       setLoading(false);
     }
   }, [user, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchEarningsData();
+    }
+  }, [user, fetchEarningsData]);
 
   if (!user) return null;
 

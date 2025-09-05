@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { MainLayout } from '@/components/MainLayout';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const serviceAgreementSchema = z.object({
   title: z.string().min(1, 'Title is required'),
