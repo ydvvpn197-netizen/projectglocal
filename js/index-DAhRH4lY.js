@@ -1,1 +1,0 @@
-import{r as t,t as e}from"./index-GQUAIkZv.js";function r(r,n){t(2,arguments);var a=e(r),o=e(n);return 12*(a.getFullYear()-o.getFullYear())+(a.getMonth()-o.getMonth())}function n(r){t(1,arguments);var n=e(r),a=n.getMonth();return n.setFullYear(n.getFullYear(),a+1,0),n.setHours(23,59,59,999),n}export{r as d,n as e};

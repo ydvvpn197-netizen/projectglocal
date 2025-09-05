@@ -10,25 +10,20 @@
     <meta name="theme-color" content="#6D28D9" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1F2937" media="(prefers-color-scheme: dark)" />
     
-    <!-- SPA Routing Fix - MUST BE FIRST -->
+    <!-- SPA Routing Fix for GitHub Pages -->
     <script type="text/javascript">
-      // Fix for SPA routing on custom domain hosting
-      // This ensures that direct URL access works properly
-      (function() {
-        // Check if we're accessing a route that should be handled by the SPA
-        var currentPath = window.location.pathname;
-        var isRoot = currentPath === '/' || currentPath === '/index.html';
-        
-        // If we're not at root and the path doesn't contain a file extension,
-        // this is likely a client-side route that should be handled by React Router
-        if (!isRoot && !currentPath.includes('.')) {
-          // Store the intended path for React Router to handle
-          window.__SPA_INITIAL_PATH__ = currentPath;
-          
-          // Optionally, you can redirect to root and let React Router handle it
-          // window.location.replace('/');
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafgraph/spa-github-pages
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
         }
-      })();
+      }(window.location))
     </script>
     
     <!-- CSP for Vite + Supabase - allows connections to Supabase -->
@@ -38,8 +33,9 @@
     <meta name="description" content="Discover local events, connect with your community, and book talented artists near you." />
     <link rel="canonical" href="https://theglocal.in/" />
     
-    <!-- Prevent favicon from loading -->
-    <link rel="icon" href="data:," />
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo.png" />
 
     <!-- Performance: Preconnect to Supabase -->
     <link rel="preconnect" href="https://tepvzhbgobckybyhryuj.supabase.co" crossorigin />
@@ -49,16 +45,16 @@
     <meta property="og:title" content="Glocal" />
     <meta property="og:description" content="Discover local events, connect with your community, and book talented artists near you." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/logo.png" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:site" content="@theglocal" />
+    <meta name="twitter:image" content="/logo.png" />
     
     <!-- Load main application script -->
-    <script type="module" crossorigin src="/js/main-6fHUpRzT.js"></script>
-    <link rel="stylesheet" crossorigin href="/css/main-BpXhufPJ.css">
+    <script type="module" crossorigin src="/js/main-jfCIwKxb.js"></script>
+    <link rel="stylesheet" crossorigin href="/css/main-CdKWumD2.css">
   </head>
 
   <body>
