@@ -2,6 +2,7 @@
 description:
 # TypeScript & React Standards
   # =========================
+  -always try to improve the project without breaking the previous build until and unless it is instructed to change/modify.
   - Always use TypeScript with strict mode enabled (strict: true in tsconfig).
   - Use React 18+ patterns: prefer hooks over class components, use React.memo for expensive components.
   - Follow React best practices: useCallback/useMemo for expensive operations, avoid inline object/function creation.

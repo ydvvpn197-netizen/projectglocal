@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { AdvancedButton } from '@/components/ui/AdvancedButton';
-import { SmartInput } from '@/components/ui/SmartInput';
 import { DynamicStats } from '@/components/DynamicStats';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,7 +30,6 @@ import {
   Trophy,
   Globe,
   Home,
-  Search,
   Plus,
   Bell,
   Settings,
@@ -235,24 +233,9 @@ export const EnhancedIndex: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { counts } = useNotifications();
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('events');
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
 
-  const handleSearch = (query: string) => {
-    try {
-      if (query.trim()) {
-        navigate(`/search?q=${encodeURIComponent(query)}`);
-      }
-    } catch (error) {
-      console.error('Navigation error during search:', error);
-      toast({
-        title: "Navigation Error",
-        description: "Unable to navigate to search page. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleGetStarted = () => {
     try {
@@ -435,17 +418,8 @@ export const EnhancedIndex: React.FC = () => {
 
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+              className="flex justify-center items-center mb-12"
             >
-              <SmartInput
-                placeholder="Search for events, people, or places..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onDebouncedChange={handleSearch}
-                debounceMs={500}
-                leftIcon={<Search className="h-4 w-4" />}
-                className="max-w-md"
-              />
               <AdvancedButton
                 onClick={handleGetStarted}
                 size="lg"
