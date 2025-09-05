@@ -70,11 +70,11 @@ const Profile = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
-    display_name: profile?.display_name || '',
-    bio: profile?.bio || '',
-    location_city: profile?.location_city || '',
-    location_state: profile?.location_state || '',
-    location_country: profile?.location_country || ''
+    display_name: '',
+    bio: '',
+    location_city: '',
+    location_state: '',
+    location_country: ''
   });
 
   // Update edit form when profile data changes
@@ -223,10 +223,10 @@ const Profile = () => {
     );
   }
 
-  const displayName = profile.display_name || user?.email?.split('@')[0] || 'User';
-  const location = [profile.location_city, profile.location_state, profile.location_country]
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+  const location = profile ? [profile.location_city, profile.location_state, profile.location_country]
     .filter(Boolean)
-    .join(', ') || 'Location not set';
+    .join(', ') || 'Location not set' : 'Location not set';
 
   return (
     <ResponsiveLayout>
@@ -238,7 +238,7 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row md:items-end gap-6">
               <div className="relative -mt-16">
                 <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                  <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
+                  <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
                   <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
                     {displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                   </AvatarFallback>
@@ -275,11 +275,11 @@ const Profile = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        Joined {formatJoinedDate(profile.created_at)}
+                        Joined {formatJoinedDate(profile?.created_at || '')}
                       </span>
                     </div>
                     <p className="text-muted-foreground max-w-2xl">
-                      {profile.bio || 'No bio available'}
+                      {profile?.bio || 'No bio available'}
                     </p>
                   </div>
                   
