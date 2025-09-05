@@ -126,7 +126,7 @@ class UserProfileService {
       return { success: true };
     } catch (error: unknown) {
       console.error('Error in updateUserProfile:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
@@ -437,7 +437,7 @@ class UserProfileService {
       return { success: true, url: publicUrl };
     } catch (error: unknown) {
       console.error('Error in uploadAvatar:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
 
