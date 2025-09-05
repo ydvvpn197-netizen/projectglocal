@@ -25,7 +25,7 @@ interface OfflineFallbackProps {
  * Offline Fallback Component
  * Provides a better user experience when offline or experiencing connection issues
  */
-export const OfflineFallback: React.FC<OfflineFallbackProps> = ({
+const OfflineFallback: React.FC<OfflineFallbackProps> = ({
   children,
   fallbackMessage = "You're currently offline or experiencing connection issues.",
   showReconnectButton = true,

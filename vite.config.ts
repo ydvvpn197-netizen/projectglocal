@@ -73,6 +73,9 @@ export default defineConfig(({ mode }) => ({
           }
           return `assets/[name]-[hash].${ext}`;
         },
+        // Ensure proper module handling
+        format: 'es',
+        exports: 'named',
       },
     },
     chunkSizeWarningLimit: 2000,
@@ -84,6 +87,8 @@ export default defineConfig(({ mode }) => ({
       minifyIdentifiers: false,
       minifySyntax: true,
       minifyWhitespace: true,
+      // Ensure proper handling of variable declarations
+      legalComments: 'none',
     },
     sourcemap: mode === 'development',
   },

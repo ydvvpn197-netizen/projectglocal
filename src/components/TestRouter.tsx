@@ -38,7 +38,7 @@ interface TestResults {
  * Test Router Component
  * Provides testing tools for error handling and connection status
  */
-export const TestRouter: React.FC = () => {
+const TestRouter: React.FC = () => {
   const { user, connectionStatus, isOnline } = useAuth();
   const [testResults, setTestResults] = useState<TestResults>({});
   const [isLoading, setIsLoading] = useState(false);
