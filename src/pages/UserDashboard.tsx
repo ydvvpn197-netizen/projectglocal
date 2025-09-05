@@ -31,12 +31,6 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("bookings");
 
-  useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
-  }, [user, fetchUserData]);
-
   const fetchUserData = useCallback(async () => {
     if (!user) return;
 
@@ -77,6 +71,12 @@ const UserDashboard = () => {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserData();
+    }
+  }, [user, fetchUserData]);
 
   if (!user) {
     navigate('/signin');
