@@ -53,33 +53,37 @@ export const AcceptedBookingsPanel = () => {
         return;
       }
 
-      // Fetch accepted bookings with chat conversation info
+      // Fetch accepted bookings
       const { data, error } = await supabase
         .from('artist_bookings')
-        .select(`
-          *,
-          chat_conversations!artist_bookings_id_fkey(id as chat_id)
-        `)
+        .select('*')
         .eq('artist_id', artistRecord.id)
         .eq('status', 'accepted')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
-      // Fetch profile data for each booking
+      // Fetch profile data and chat conversation for each booking
       const transformedBookings = await Promise.all(
         (data || []).map(async (booking) => {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('user_id', booking.user_id)
-            .single();
+          const [profileResult, chatResult] = await Promise.all([
+            supabase
+              .from('profiles')
+              .select('display_name, avatar_url')
+              .eq('user_id', booking.user_id)
+              .single(),
+            supabase
+              .from('chat_conversations')
+              .select('id')
+              .eq('booking_id', booking.id)
+              .single()
+          ]);
 
           return {
             ...booking,
-            client_name: profileData?.display_name || 'Unknown User',
-            client_avatar: profileData?.avatar_url || '',
-            chat_conversation_id: booking.chat_conversations?.[0]?.chat_id
+            client_name: profileResult.data?.display_name || 'Unknown User',
+            client_avatar: profileResult.data?.avatar_url || '',
+            chat_conversation_id: chatResult.data?.id
           };
         })
       );

@@ -33,10 +33,7 @@ export const ChatDebugTest: React.FC = () => {
       // Step 1: Get user's accepted bookings
       const { data: bookings, error: bookingsError } = await supabase
         .from('artist_bookings')
-        .select(`
-          *,
-          chat_conversations!artist_bookings_id_fkey(id as chat_id)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('status', 'accepted');
 
