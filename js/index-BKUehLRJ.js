@@ -1,1 +1,0 @@
-import{r as o,t as a}from"./index-BccyXWdq.js";function g(r,e){o(2,arguments);var t=a(r),n=a(e),u=t.getFullYear()-n.getFullYear(),f=t.getMonth()-n.getMonth();return u*12+f}function l(r){o(1,arguments);var e=a(r),t=e.getMonth();return e.setFullYear(e.getFullYear(),t+1,0),e.setHours(23,59,59,999),e}export{g as d,l as e};

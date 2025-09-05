@@ -1,1 +1,0 @@
-import{M as r,j as s}from"./main-B2Z1A0fl.js";const i=()=>{const{artistId:t}=r();return s.jsxs("div",{className:"p-8",children:[s.jsx("h1",{children:"Artist Profile Test"}),s.jsxs("p",{children:["Artist ID: ",t]}),s.jsx("p",{children:"This is a minimal test component to check if the error persists."})]})};export{i as default};
