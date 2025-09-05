@@ -82,7 +82,7 @@ export class CommunityService {
   }): Promise<CommunityGroup[]> {
     try {
       let query = supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .order('created_at', { ascending: false });
 

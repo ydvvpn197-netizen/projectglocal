@@ -96,7 +96,7 @@ const CommunityDetail = () => {
         
         // Fetch group details
         const { data: groupData, error: groupError } = await supabase
-          .from('community_groups')
+          .from('groups')
           .select('*')
           .eq('id', groupId)
           .single();
@@ -114,37 +114,81 @@ const CommunityDetail = () => {
           setUserRole(role);
         }
 
-        // Fetch members
-        const { data: membersData, error: membersError } = await supabase
-          .from('group_members')
-          .select(`
-            *,
-            profiles:user_id (
-              id,
-              display_name,
-              avatar_url
-            )
-          `)
-          .eq('group_id', groupId)
-          .order('joined_at', { ascending: false });
+        // Fetch members - try group_members first, then fallback to group_messages
+        let membersData: any[] = [];
+        try {
+          const { data: groupMembersData, error: membersError } = await supabase
+            .from('group_members')
+            .select(`
+              *,
+              profiles:user_id (
+                id,
+                display_name,
+                avatar_url
+              )
+            `)
+            .eq('group_id', groupId)
+            .order('joined_at', { ascending: false });
 
-        if (membersError) throw membersError;
+          if (!membersError && groupMembersData) {
+            membersData = groupMembersData;
+          }
+        } catch (error) {
+          console.log('No group_members found, will use group_messages for members');
+        }
+
+        // If no group_members, get unique users from group_messages
+        if (membersData.length === 0) {
+          const { data: messagesData, error: messagesError } = await supabase
+            .from('group_messages')
+            .select(`
+              user_id,
+              profiles:user_id (
+                id,
+                display_name,
+                avatar_url
+              ),
+              created_at
+            `)
+            .eq('group_id', groupId)
+            .order('created_at', { ascending: false });
+
+          if (!messagesError && messagesData) {
+            // Get unique users from messages
+            const uniqueUsers = new Map();
+            messagesData.forEach((message: any) => {
+              if (message.user_id && !uniqueUsers.has(message.user_id)) {
+                uniqueUsers.set(message.user_id, {
+                  id: message.user_id,
+                  user_id: message.user_id,
+                  display_name: message.profiles?.display_name || 'Anonymous',
+                  avatar_url: message.profiles?.avatar_url,
+                  role: 'member',
+                  joined_at: message.created_at,
+                  total_posts: 0,
+                  total_points: 0
+                });
+              }
+            });
+            membersData = Array.from(uniqueUsers.values());
+          }
+        }
         
         const formattedMembers: CommunityMember[] = membersData.map((member: Record<string, unknown>) => ({
-          id: member.id,
+          id: member.id || member.user_id,
           user_id: member.user_id,
           display_name: member.profiles?.display_name || 'Anonymous',
           avatar_url: member.profiles?.avatar_url,
-          role: member.role,
+          role: member.role || 'member',
           joined_at: member.joined_at,
           total_posts: 0, // TODO: Calculate from posts
           total_points: 0 // TODO: Calculate from points system
         }));
         setMembers(formattedMembers);
 
-        // Fetch posts
+        // Fetch posts - use group_messages as posts since community_posts is empty
         const { data: postsData, error: postsError } = await supabase
-          .from('community_posts')
+          .from('group_messages')
           .select(`
             *,
             profiles:user_id (
@@ -153,23 +197,24 @@ const CommunityDetail = () => {
             )
           `)
           .eq('group_id', groupId)
+          .is('parent_id', null) // Only top-level messages (not replies)
           .order('created_at', { ascending: false });
 
         if (postsError) throw postsError;
         
         const formattedPosts: CommunityPost[] = postsData.map((post: Record<string, unknown>) => ({
           id: post.id,
-          title: post.title,
+          title: post.content?.toString().substring(0, 50) + '...' || 'Untitled',
           content: post.content,
-          post_type: post.post_type,
+          post_type: 'text',
           user_id: post.user_id,
           author_name: post.profiles?.display_name || 'Anonymous',
           author_avatar: post.profiles?.avatar_url,
-          score: post.score || 0,
-          comment_count: post.comment_count || 0,
-          view_count: post.view_count || 0,
-          is_pinned: post.is_pinned || false,
-          is_locked: post.is_locked || false,
+          score: 0,
+          comment_count: 0, // TODO: Count replies
+          view_count: 0,
+          is_pinned: false,
+          is_locked: false,
           created_at: post.created_at,
           updated_at: post.updated_at
         }));
