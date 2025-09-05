@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ import {
   Mic,
   Paperclip
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 // Sample feed data
 const feedPosts = [
@@ -184,10 +184,20 @@ const sidebarHighlights = [
 ];
 
 const Feed = () => {
-  const [activeTab, setActiveTab] = useState("trending");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'trending';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState("hot");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Update active tab when URL parameter changes
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['trending', 'latest', 'following', 'local'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   const filteredPosts = feedPosts.filter(post => {
     if (searchQuery) {

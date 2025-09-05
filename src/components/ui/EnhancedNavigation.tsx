@@ -144,7 +144,7 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
     },
     {
       label: 'Trending',
-      href: '/trending',
+      href: '/feed?tab=trending',
       icon: <TrendingUp className="h-4 w-4" />,
       featured: true,
       mobile: false,

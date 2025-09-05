@@ -11,9 +11,11 @@ export interface NewsArticle extends BaseEntity {
   title: string;
   slug: string;
   summary: string;
+  description?: string;
   content: string;
   author_id: string;
   author_name: string;
+  author?: string;
   author_avatar?: string;
   category: NewsCategory;
   subcategory?: string;
@@ -27,6 +29,7 @@ export interface NewsArticle extends BaseEntity {
   is_verified: boolean;
   source_url?: string;
   source_name?: string;
+  source_id?: string;
   image_url?: string;
   image_alt?: string;
   video_url?: string;
@@ -40,6 +43,11 @@ export interface NewsArticle extends BaseEntity {
   bookmark_count: number;
   engagement_score: number;
   trending_score: number;
+  relevance_score?: number;
+  location_lat?: number;
+  location_lng?: number;
+  location_name?: string;
+  url?: string;
   seo_title?: string;
   seo_description?: string;
   seo_keywords?: string[];
@@ -166,8 +174,16 @@ export interface NewsSource {
   is_verified: boolean;
   is_active: boolean;
   last_fetch?: string;
+  last_fetch_at?: string;
   fetch_frequency: number;
   total_articles: number;
+  source_type: 'external' | 'local' | 'rss';
+  api_endpoint: string;
+  api_key?: string;
+  rate_limit_per_hour: number;
+  categories: NewsCategory[];
+  location_filter?: string;
+  category_filter?: string;
   created_at: string;
   updated_at: string;
 }
@@ -759,6 +775,66 @@ export interface NewsHighlight {
   fragment_size: number;
   number_of_fragments: number;
   highlight_query?: Record<string, unknown>;
+}
+
+// =========================
+// News API Types
+// =========================
+
+export interface NewsApiArticle {
+  source: {
+    id: string;
+    name: string;
+  };
+  author: string | null;
+  title: string;
+  description: string | null;
+  url: string;
+  urlToImage: string | null;
+  publishedAt: string;
+  content: string | null;
+  location?: string | null;
+}
+
+export interface NewsApiResponse {
+  status: string;
+  totalResults: number;
+  articles: NewsApiArticle[];
+}
+
+export interface NewsAggregationConfig {
+  sources: NewsSource[];
+  categories: NewsCategory[];
+  location?: {
+    lat: number;
+    lng: number;
+    radius: number;
+  };
+  timeRange?: {
+    start: string;
+    end: string;
+  };
+  maxArticles: number;
+  deduplication: boolean;
+  contentFiltering: boolean;
+}
+
+export interface NewsAggregationResult {
+  total_articles_fetched: number;
+  total_articles_processed: number;
+  total_articles_stored: number;
+  duplicates_removed: number;
+  processing_errors: number;
+  sources_processed: string[];
+  processing_time_ms: number;
+}
+
+export interface NewsProcessingResult {
+  success: boolean;
+  articles_processed: number;
+  articles_stored: number;
+  errors: string[];
+  processing_time_ms: number;
 }
 
 // =========================

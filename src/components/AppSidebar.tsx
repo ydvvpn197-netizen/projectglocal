@@ -29,8 +29,8 @@ import {
 
 const mainItems = [
   { title: "Feed", url: "/feed", icon: Home },
+  { title: "News Feed", url: "/news", icon: Newspaper },
   { title: "Discover", url: "/discover", icon: Search },
-  { title: "About", url: "/about", icon: MapPin },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
   { title: "Book Artists", url: "/book-artist", icon: Palette },
@@ -46,17 +46,17 @@ const newFeaturesItems = [
 const artistItems = [
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
   { title: "Messages", url: "/messages", icon: MessageSquare },
-  { title: "News Feed", url: "/news", icon: Newspaper },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
+  { title: "About", url: "/about", icon: MapPin },
 ];
 
 const regularUserItems = [
   { title: "My Dashboard", url: "/user-dashboard", icon: User },
   { title: "Messages", url: "/messages", icon: MessageSquare },
-  { title: "News Feed", url: "/news", icon: Newspaper },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
+  { title: "About", url: "/about", icon: MapPin },
 ];
 
 export function AppSidebar() {

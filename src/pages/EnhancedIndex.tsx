@@ -369,6 +369,19 @@ export const EnhancedIndex: React.FC = () => {
     }
   };
 
+  const handleTrendingNavigation = () => {
+    try {
+      navigate('/feed?tab=trending');
+    } catch (error) {
+      console.error('Navigation error to trending feed:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to trending feed. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -645,6 +658,17 @@ export const EnhancedIndex: React.FC = () => {
               </TabsContent>
 
               <TabsContent value="discussions" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold">Trending Discussions</h3>
+                  <AdvancedButton
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTrendingNavigation}
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                  >
+                    View All Trending
+                  </AdvancedButton>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {trendingDiscussions.map((discussion, index) => (
                     <AnimatedCard
@@ -667,7 +691,14 @@ export const EnhancedIndex: React.FC = () => {
                               {discussion.category}
                             </Badge>
                             {discussion.trending && (
-                              <Badge variant="destructive" className="text-xs">
+                              <Badge 
+                                variant="destructive" 
+                                className="text-xs cursor-pointer hover:bg-red-600 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTrendingNavigation();
+                                }}
+                              >
                                 <Flame className="h-3 w-3 mr-1" />
                                 Trending
                               </Badge>
