@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFollows } from "@/hooks/useFollows";
 import { useToast } from "@/hooks/use-toast";
 import { notificationService } from "@/services/notificationService";
+import { ChatService } from "@/services/chatService";
 
 interface ArtistProfile {
   id: string;
@@ -584,6 +585,18 @@ const ArtistProfile = () => {
                       className="w-full sm:w-auto"
                       onClick={async () => {
                         try {
+                          // Check if user can chat with this artist (only for accepted bookings)
+                          const canChat = await ChatService.canUserChatWithArtist(user.id, artistId);
+                          
+                          if (!canChat) {
+                            toast({
+                              title: "Chat Not Available",
+                              description: "You can only chat with artists after they accept your booking request. Please book this artist first.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+
                           // Find existing conversation between these two users (not closed)
                           const { data: existing1 } = await supabase
                             .from('chat_conversations')
@@ -606,18 +619,51 @@ const ArtistProfile = () => {
                           let conversationId = existing?.id;
 
                           if (!conversationId) {
-                            const { data: created, error: createErr } = await supabase
-                              .from('chat_conversations')
-                              .insert({
-                                booking_id: null,
-                                client_id: user.id,
-                                artist_id: artistId,
-                                status: 'active'
-                              })
-                              .select()
+                            // First, get the artist's record ID from their user ID
+                            const { data: artist, error: artistError } = await supabase
+                              .from('artists')
+                              .select('id')
+                              .eq('user_id', artistId)
                               .single();
-                            if (createErr) throw createErr;
-                            conversationId = created.id;
+
+                            if (artistError || !artist) {
+                              toast({
+                                title: "Error",
+                                description: "Artist not found. Please try again.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+
+                            // Find the accepted booking between these users
+                            const { data: booking, error: bookingError } = await supabase
+                              .from('artist_bookings')
+                              .select('id')
+                              .eq('user_id', user.id)
+                              .eq('artist_id', artist.id) // Use the artists.id, not user_id
+                              .eq('status', 'accepted')
+                              .single();
+
+                            if (bookingError || !booking) {
+                              toast({
+                                title: "Error",
+                                description: "No accepted booking found. Please book this artist first.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+
+                            // Create conversation for the accepted booking
+                            conversationId = await ChatService.getOrCreateConversationForBooking(booking.id);
+                            
+                            if (!conversationId) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to create chat conversation",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
                           }
 
                           rrNavigate(`/chat/${conversationId}`);

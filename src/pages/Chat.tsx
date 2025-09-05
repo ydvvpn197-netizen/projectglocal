@@ -9,9 +9,30 @@ import { ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
 const Chat = () => {
-  const { conversationId } = useParams();
+  const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
+  
+  // Debug logging
+  console.log("Chat component: conversationId =", conversationId);
+  console.log("Chat component: location =", window.location.href);
+  
   const { loading, conversation, messages, sendMessage, isOwnMessage } = useChat(conversationId);
+
+
+  // If conversationId is not provided, show error
+  if (!conversationId) {
+    return (
+      <ResponsiveLayout>
+        <div className="max-w-4xl mx-auto space-y-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Invalid Chat</h1>
+            <p className="text-gray-600 mb-4">No conversation ID provided</p>
+            <Button onClick={() => navigate('/messages')}>Go to Messages</Button>
+          </div>
+        </div>
+      </ResponsiveLayout>
+    );
+  }
 
   return (
     <ResponsiveLayout>
@@ -20,6 +41,9 @@ const Chat = () => {
           <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4 mr-1" /> Back
           </Button>
+          <div className="text-sm text-gray-500">
+            Chat ID: {conversationId}
+          </div>
         </div>
 
         <Card>
@@ -31,10 +55,10 @@ const Chat = () => {
               </Avatar>
               <div>
                 <CardTitle className="text-lg">
-                  {conversation?.other_user?.display_name || 'Conversation'}
+                  {conversation?.other_user?.display_name || 'Loading...'}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Started {conversation?.created_at ? format(new Date(conversation.created_at), 'PPp') : ''}
+                  {conversation?.created_at ? `Started ${format(new Date(conversation.created_at), 'PPp')}` : 'Loading conversation...'}
                 </p>
               </div>
             </div>
@@ -44,6 +68,17 @@ const Chat = () => {
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : !conversation ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-4">Conversation not found</p>
+                    <Button onClick={() => navigate('/messages')}>Go to Messages</Button>
+                  </div>
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500">No messages yet. Start the conversation!</p>
                 </div>
               ) : (
                 messages.map((m) => (
@@ -59,13 +94,13 @@ const Chat = () => {
               )}
             </div>
             {/* Allow initiator to send while pending; recipient will see prompt to accept */}
-            {conversation?.status === 'active' || conversation?.status === 'pending' ? (
+            {conversation && (conversation.status === 'active' || conversation.status === 'pending') ? (
               <div className="mt-4">
                 <MessageComposer onSubmit={sendMessage} placeholder="Send a message..." />
               </div>
-            ) : (
+            ) : conversation ? (
               <div className="mt-4 text-sm text-muted-foreground">
-                {conversation?.status === 'pending' ? (
+                {conversation.status === 'pending' ? (
                   <div>
                     This conversation is pending. Go to Messages to accept or decline.
                     <Button variant="outline" size="sm" className="ml-2" onClick={() => navigate('/messages')}>Open Messages</Button>
@@ -74,7 +109,7 @@ const Chat = () => {
                   <div>This conversation is closed.</div>
                 )}
               </div>
-            )}
+            ) : null}
           </CardContent>
         </Card>
       </div>

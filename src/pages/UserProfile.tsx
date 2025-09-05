@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EnhancedUserProfileCard } from "@/components/EnhancedUserProfileCard";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowLeft,
   Calendar,
@@ -92,15 +93,66 @@ const UserProfile = () => {
     }
   }, [events, userId]);
 
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
+  const handleSendMessage = async () => {
+    if (!message.trim() || !currentUser || !userId) return;
     
-    toast({
-      title: "Message Sent",
-      description: "Your message has been sent to the user",
-    });
-    setMessage("");
-    setIsChatModalOpen(false);
+    try {
+      // Check if conversation already exists
+      const { data: existing } = await supabase
+        .from('chat_conversations')
+        .select('id')
+        .or(`and(client_id.eq.${currentUser.id},artist_id.eq.${userId}),and(client_id.eq.${userId},artist_id.eq.${currentUser.id})`)
+        .single();
+
+      let conversationId = existing?.id;
+
+      if (!conversationId) {
+        // Create new conversation
+        const { data: created, error: createErr } = await supabase
+          .from('chat_conversations')
+          .insert({
+            booking_id: null,
+            client_id: currentUser.id,
+            artist_id: userId,
+            status: 'active'
+          })
+          .select()
+          .single();
+        
+        if (createErr) throw createErr;
+        conversationId = created.id;
+      }
+
+      // Send the initial message
+      const { error: messageErr } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUser.id,
+          message: message.trim(),
+          message_type: 'text'
+        });
+
+      if (messageErr) throw messageErr;
+
+      toast({
+        title: "Message Sent",
+        description: "Your message has been sent successfully",
+      });
+      
+      setMessage("");
+      setIsChatModalOpen(false);
+      
+      // Navigate to the chat
+      navigate(`/chat/${conversationId}`);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleConnect = () => {

@@ -11,6 +11,12 @@ const About = React.lazy(() => import('@/pages/About'));
 
 // Test component for debugging
 const TestRouter = React.lazy(() => import('@/components/TestRouter'));
+const NotificationSystemTest = React.lazy(() => import('@/components/NotificationSystemTest'));
+const BookingSystemTest = React.lazy(() => import('@/components/BookingSystemTest'));
+const ChatFlowTest = React.lazy(() => import('@/components/ChatFlowTest'));
+const ChatDebugTest = React.lazy(() => import('@/components/ChatDebugTest'));
+const SimpleChatTest = React.lazy(() => import('@/components/SimpleChatTest'));
+const ChatTest = React.lazy(() => import('@/components/ChatTest'));
 
 // Auth/Onboarding pages (grouped together)
 const LocationSetup = React.lazy(() => import('@/pages/LocationSetup'));
@@ -82,7 +88,6 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
-      <Route path="/test-router" element={<TestRouter />} />
       <Route path="/config-status" element={<ConfigStatus />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -129,8 +134,27 @@ export const AppRoutes: React.FC = () => {
       <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
       
       {/* Chat routes */}
-      <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+      <Route path="/chat/:conversationId" element={
+        <ProtectedRoute>
+          <div>
+            {console.log("Chat route matched!")}
+            <Chat />
+          </div>
+        </ProtectedRoute>
+      } />
       <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+      
+      {/* Test chat route */}
+      <Route path="/test-chat-route/:conversationId" element={<ChatTest />} />
+      <Route path="/test-chat-unprotected/:conversationId" element={<Chat />} />
+      <Route path="/debug-chat/:conversationId" element={
+        <div style={{padding: '20px'}}>
+          <h1>Debug Chat Route</h1>
+          <p>This route is working!</p>
+          <p>Conversation ID: {window.location.pathname.split('/').pop()}</p>
+        </div>
+      } />
+      
       
       {/* Admin routes */}
       <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
@@ -138,6 +162,24 @@ export const AppRoutes: React.FC = () => {
       <Route path="/admin/moderation" element={<ProtectedRoute><ContentModeration /></ProtectedRoute>} />
       <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
+      
+      {/* Test routes - moved to end to avoid conflicts */}
+      <Route path="/test-router" element={<TestRouter />} />
+      <Route path="/test-notifications" element={<ProtectedRoute><NotificationSystemTest /></ProtectedRoute>} />
+      <Route path="/test-booking" element={<ProtectedRoute><BookingSystemTest /></ProtectedRoute>} />
+      <Route path="/test-chat" element={<ProtectedRoute><ChatFlowTest /></ProtectedRoute>} />
+      <Route path="/debug-chat" element={<ProtectedRoute><ChatDebugTest /></ProtectedRoute>} />
+      <Route path="/simple-chat-test" element={<ProtectedRoute><SimpleChatTest /></ProtectedRoute>} />
+      
+      {/* Debug route to catch all unmatched routes */}
+      <Route path="/chat/*" element={
+        <div style={{padding: '20px', backgroundColor: 'yellow'}}>
+          <h1>Chat Wildcard Route Matched</h1>
+          <p>URL: {window.location.href}</p>
+          <p>Pathname: {window.location.pathname}</p>
+          <p>This means the specific /chat/:conversationId route is not matching</p>
+        </div>
+      } />
       
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />

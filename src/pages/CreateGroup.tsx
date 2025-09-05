@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Users } from "lucide-react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/hooks/use-toast";
@@ -177,50 +178,50 @@ const CreateGroup = () => {
                 </Select>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="is_public"
                     checked={formData.is_public}
-                    onChange={(e) => handleInputChange("is_public", e.target.checked)}
-                    className="rounded"
+                    onCheckedChange={(checked) => handleInputChange("is_public", checked)}
                   />
-                  <Label htmlFor="is_public">Public Community</Label>
+                  <Label htmlFor="is_public" className="text-sm">
+                    Public Community
+                  </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground ml-6">
                   Public communities are visible to everyone and anyone can join
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="allow_anonymous_posts"
                     checked={formData.allow_anonymous_posts}
-                    onChange={(e) => handleInputChange("allow_anonymous_posts", e.target.checked)}
-                    className="rounded"
+                    onCheckedChange={(checked) => handleInputChange("allow_anonymous_posts", checked)}
                   />
-                  <Label htmlFor="allow_anonymous_posts">Allow Anonymous Posts</Label>
+                  <Label htmlFor="allow_anonymous_posts" className="text-sm">
+                    Allow Anonymous Posts
+                  </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground ml-6">
                   Members can post anonymously in this community
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="require_approval"
                     checked={formData.require_approval}
-                    onChange={(e) => handleInputChange("require_approval", e.target.checked)}
-                    className="rounded"
+                    onCheckedChange={(checked) => handleInputChange("require_approval", checked)}
                   />
-                  <Label htmlFor="require_approval">Require Post Approval</Label>
+                  <Label htmlFor="require_approval" className="text-sm">
+                    Require Post Approval
+                  </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground ml-6">
                   Posts must be approved by moderators before appearing
                 </p>
               </div>

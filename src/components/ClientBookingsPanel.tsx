@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { ChatService } from "@/services/chatService";
 
 interface ClientBooking {
   id: string;
@@ -24,11 +26,13 @@ interface ClientBooking {
   artist_name: string;
   artist_avatar: string;
   artist_specialty: string;
+  chat_conversation_id?: string;
 }
 
 export const ClientBookingsPanel = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<ClientBooking[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +42,10 @@ export const ClientBookingsPanel = () => {
     try {
       const { data, error } = await supabase
         .from('artist_bookings')
-        .select('*')
+        .select(`
+          *,
+          chat_conversations!artist_bookings_id_fkey(id as chat_id)
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -47,18 +54,26 @@ export const ClientBookingsPanel = () => {
       // Fetch artist profile data for each booking
       const transformedBookings = await Promise.all(
         (data || []).map(async (booking) => {
-          // Get artist profile
+          // First get the artist's user_id from the artist record
+          const { data: artistRecord } = await supabase
+            .from('artists')
+            .select('user_id')
+            .eq('id', booking.artist_id)
+            .single();
+
+          // Then get artist profile using the user_id
           const { data: artistProfile } = await supabase
             .from('profiles')
             .select('display_name, avatar_url, artist_skills')
-            .eq('user_id', booking.artist_id)
+            .eq('user_id', artistRecord?.user_id)
             .single();
 
           return {
             ...booking,
             artist_name: artistProfile?.display_name || 'Unknown Artist',
             artist_avatar: artistProfile?.avatar_url || '',
-            artist_specialty: artistProfile?.artist_skills?.[0] || 'Artist'
+            artist_specialty: artistProfile?.artist_skills?.[0] || 'Artist',
+            chat_conversation_id: booking.chat_conversations?.[0]?.chat_id
           };
         })
       );
@@ -261,7 +276,29 @@ export const ClientBookingsPanel = () => {
                       {booking.status === 'accepted' && (
                         <Button 
                           size="sm"
-                          onClick={() => window.location.href = `/chat/${booking.id}`}
+                          onClick={async () => {
+                            try {
+                              // Get or create conversation for this booking
+                              const conversationId = await ChatService.getOrCreateConversationForBooking(booking.id);
+                              
+                              if (conversationId) {
+                                navigate(`/chat/${conversationId}`);
+                              } else {
+                                toast({
+                                  title: "Error",
+                                  description: "Unable to start chat. Please try again.",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              console.error('Error starting chat:', error);
+                              toast({
+                                title: "Error",
+                                description: "Unable to start chat. Please try again.",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
                         >
                           <MessageCircle className="h-4 w-4 mr-1" />
                           Chat with Artist

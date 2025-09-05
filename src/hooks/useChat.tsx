@@ -70,15 +70,28 @@ export const useChat = (conversationId?: string) => {
         .eq('id', conversationId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching conversation:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.error('No conversation found for ID:', conversationId);
+        throw new Error('Conversation not found');
+      }
 
       // Identify the other user
       const otherUserId = data.client_id === user?.id ? data.artist_id : data.client_id;
-      const { data: profile } = await supabase
+      
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url')
         .eq('user_id', otherUserId)
         .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      }
 
       setConversation({ ...data, other_user: profile || undefined });
     } catch (err: unknown) {
@@ -106,30 +119,44 @@ export const useChat = (conversationId?: string) => {
   };
 
   const sendMessage = async (content: string) => {
-    if (!user || !conversationId) return;
+    if (!user || !conversationId) {
+      toast({ title: 'Error', description: 'Unable to send message. Please try again.', variant: 'destructive' });
+      return;
+    }
 
-    // Insert the message
-    const { error } = await supabase
-      .from('chat_messages')
-      .insert({
-        conversation_id: conversationId,
-        sender_id: user.id,
-        message: content,
-        message_type: 'text'
-      });
-    if (error) throw error;
+    try {
+      // Insert the message
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          message: content,
+          message_type: 'text'
+        });
+      
+      if (error) {
+        console.error('Error sending message:', error);
+        toast({ title: 'Error', description: 'Failed to send message. Please try again.', variant: 'destructive' });
+        throw error;
+      }
 
-    // If conversation is pending and the recipient hasn't accepted yet, send an approval notification
-    if (conversation?.status === 'pending') {
-      const recipientId = user.id === conversation?.client_id ? conversation?.artist_id : conversation?.client_id;
-      if (recipientId) {
-        try {
-          await notificationService.createMessageRequestNotification(user.id, recipientId, conversationId);
-        } catch (notificationError) {
-          console.error('Error creating message request notification:', notificationError);
-          // Don't fail the message if notification fails
+      // If conversation is pending and the recipient hasn't accepted yet, send an approval notification
+      if (conversation?.status === 'pending') {
+        const recipientId = user.id === conversation?.client_id ? conversation?.artist_id : conversation?.client_id;
+        if (recipientId) {
+          try {
+            await notificationService.createMessageRequestNotification(recipientId, user.id, conversationId);
+          } catch (notificationError) {
+            console.error('Error creating message request notification:', notificationError);
+            // Don't fail the message if notification fails
+          }
         }
       }
+    } catch (err) {
+      console.error('Error in sendMessage:', err);
+      toast({ title: 'Error', description: 'Failed to send message. Please try again.', variant: 'destructive' });
+      throw err;
     }
   };
 

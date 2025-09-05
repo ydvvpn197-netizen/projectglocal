@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { BookingRequestsPanel } from "@/components/BookingRequestsPanel";
+import { AcceptedBookingsPanel } from "@/components/AcceptedBookingsPanel";
 import { ActiveChatsPanel } from "@/components/ActiveChatsPanel";
 import { EarningsPanel } from "@/components/EarningsPanel";
 import { ArtistModerationPanel } from "@/components/ArtistModerationPanel";
@@ -279,6 +280,7 @@ const ArtistDashboard = () => {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="accepted">Accepted Bookings</TabsTrigger>
             <TabsTrigger value="chats">Active Chats</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
             <TabsTrigger value="moderation">Discussion Moderation</TabsTrigger>
@@ -286,6 +288,10 @@ const ArtistDashboard = () => {
 
           <TabsContent value="bookings">
             <BookingRequestsPanel />
+          </TabsContent>
+
+          <TabsContent value="accepted">
+            <AcceptedBookingsPanel />
           </TabsContent>
 
           <TabsContent value="chats">

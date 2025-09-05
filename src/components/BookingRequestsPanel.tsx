@@ -183,17 +183,46 @@ export const BookingRequestsPanel = () => {
 
       if (action === 'accept') {
         // Create a chat conversation for accepted bookings
-        const { error: chatError } = await supabase
+        // We need to get the artist's user_id, not the artist_id
+        const { data: artistUser, error: artistUserError } = await supabase
+          .from('artists')
+          .select('user_id')
+          .eq('id', request.artist_id)
+          .single();
+
+        if (artistUserError) {
+          console.error('Error fetching artist user ID:', artistUserError);
+          return;
+        }
+
+        const { data: chatData, error: chatError } = await supabase
           .from('chat_conversations')
           .insert({
             booking_id: requestId,
             client_id: request.user_id,
-            artist_id: request.artist_id
-          });
+            artist_id: artistUser.user_id, // Use the artist's user_id
+            status: 'active'
+          })
+          .select()
+          .single();
 
         if (chatError) {
           console.error('Error creating chat conversation:', chatError);
           // Don't throw here, continue with the process
+        } else {
+          // Create a welcome message in the chat
+          try {
+            await supabase
+              .from('chat_messages')
+              .insert({
+                conversation_id: chatData.id,
+                sender_id: user.id,
+                message: `Hello! I've accepted your booking request for ${request.event_description}. Let's discuss the details!`,
+                message_type: 'text'
+              });
+          } catch (messageError) {
+            console.error('Error creating welcome message:', messageError);
+          }
         }
 
         toast({

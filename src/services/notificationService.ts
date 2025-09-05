@@ -63,6 +63,10 @@ const fallbackGeneralNotifications: GeneralNotification[] = [
 
 class NotificationService {
   private isDatabaseAvailable = true;
+  private cache = new Map<string, { data: any; timestamp: number }>();
+  private readonly CACHE_TTL = 30000; // 30 seconds
+  private retryAttempts = new Map<string, number>();
+  private readonly MAX_RETRY_ATTEMPTS = 3;
 
   // Check if database tables exist
   private async checkDatabaseAvailability(): Promise<boolean> {
@@ -85,29 +89,99 @@ class NotificationService {
     }
   }
 
+  // Cache management
+  private getCachedData(key: string): any | null {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      return cached.data;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  private setCachedData(key: string, data: any): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
+  private clearCache(): void {
+    this.cache.clear();
+  }
+
+  private clearUserCache(userId: string): void {
+    const keysToDelete: string[] = [];
+    for (const key of this.cache.keys()) {
+      if (key.includes(userId)) {
+        keysToDelete.push(key);
+      }
+    }
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  // Retry mechanism for failed operations
+  private async withRetry<T>(
+    operation: () => Promise<T>,
+    operationKey: string,
+    maxAttempts: number = this.MAX_RETRY_ATTEMPTS
+  ): Promise<T> {
+    let attempts = this.retryAttempts.get(operationKey) || 0;
+    
+    try {
+      const result = await operation();
+      this.retryAttempts.delete(operationKey);
+      return result;
+    } catch (error) {
+      attempts++;
+      this.retryAttempts.set(operationKey, attempts);
+      
+      if (attempts >= maxAttempts) {
+        this.retryAttempts.delete(operationKey);
+        throw error;
+      }
+      
+      // Exponential backoff
+      const delay = Math.pow(2, attempts) * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      return this.withRetry(operation, operationKey, maxAttempts);
+    }
+  }
+
   // General notifications - only for authenticated users
   async getGeneralNotifications(limit = 10): Promise<GeneralNotification[]> {
+    const cacheKey = `general_notifications_${limit}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
         return fallbackGeneralNotifications;
       }
 
-      const { data, error } = await supabase
-        .from('general_notifications')
-        .select('*')
-        .eq('is_active', true)
-        .lte('created_at', new Date().toISOString())
-        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const result = await this.withRetry(async () => {
+        const { data, error } = await supabase
+          .from('general_notifications')
+          .select('*')
+          .eq('is_active', true)
+          .lte('created_at', new Date().toISOString())
+          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-      if (error) {
-        console.warn('Error fetching general notifications:', error);
-        return fallbackGeneralNotifications;
-      }
+        if (error) {
+          throw error;
+        }
 
-      return data || fallbackGeneralNotifications;
+        return data || fallbackGeneralNotifications;
+      }, `getGeneralNotifications_${limit}`);
+
+      this.setCachedData(cacheKey, result);
+      return result;
     } catch (error) {
       console.warn('Error fetching general notifications:', error);
       return fallbackGeneralNotifications;
@@ -120,24 +194,34 @@ class NotificationService {
       return [];
     }
 
+    const cacheKey = `personal_notifications_${userId}_${limit}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     try {
       const isAvailable = await this.checkDatabaseAvailability();
       if (!isAvailable) {
         return [];
       }
 
-      const { data, error } = await supabase
-        .from('personal_notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const result = await this.withRetry(async () => {
+        const { data, error } = await supabase
+          .from('personal_notifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
 
-      if (error) {
-        console.warn('Error fetching personal notifications:', error);
-        return [];
-      }
-      return data || [];
+        if (error) {
+          throw error;
+        }
+        return data || [];
+      }, `getPersonalNotifications_${userId}_${limit}`);
+
+      this.setCachedData(cacheKey, result);
+      return result;
     } catch (error) {
       console.warn('Error fetching personal notifications:', error);
       return [];
@@ -224,17 +308,22 @@ class NotificationService {
         return true; // Pretend success for fallback
       }
 
-      const { error } = await supabase
-        .from('personal_notifications')
-        .update({ read: true })
-        .eq('id', notificationId)
-        .eq('user_id', userId);
+      const result = await this.withRetry(async () => {
+        const { error } = await supabase
+          .from('personal_notifications')
+          .update({ read: true })
+          .eq('id', notificationId)
+          .eq('user_id', userId);
 
-      if (error) {
-        console.warn('Error marking notification as read:', error);
-        return false;
-      }
-      return true;
+        if (error) {
+          throw error;
+        }
+        return true;
+      }, `markAsRead_${notificationId}_${userId}`);
+
+      // Clear cache for this user's notifications
+      this.clearUserCache(userId);
+      return result;
     } catch (error) {
       console.warn('Error marking notification as read:', error);
       return false;
@@ -321,25 +410,30 @@ class NotificationService {
         return null;
       }
 
-      const { data: notification, error } = await supabase
-        .from('personal_notifications')
-        .insert({
-          user_id: userId,
-          title,
-          message,
-          type,
-          data,
-          action_url: actionUrl,
-          action_text: actionText
-        })
-        .select('id')
-        .single();
+      const result = await this.withRetry(async () => {
+        const { data: notification, error } = await supabase
+          .from('personal_notifications')
+          .insert({
+            user_id: userId,
+            title,
+            message,
+            type,
+            data,
+            action_url: actionUrl,
+            action_text: actionText
+          })
+          .select('id')
+          .single();
 
-      if (error) {
-        console.warn('Error creating personal notification:', error);
-        return null;
-      }
-      return notification.id;
+        if (error) {
+          throw error;
+        }
+        return notification.id;
+      }, `createPersonalNotification_${userId}`);
+
+      // Clear cache for this user's notifications
+      this.clearUserCache(userId);
+      return result;
     } catch (error) {
       console.warn('Error creating personal notification:', error);
       return null;
@@ -360,8 +454,14 @@ class NotificationService {
         return () => {}; // Return empty unsubscribe function
       }
 
+      // Enhanced subscription with better error handling and reconnection
       const personalSubscription = supabase
-        .channel(`personal_notifications_${userId}`)
+        .channel(`personal_notifications_${userId}`, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: userId }
+          }
+        })
         .on(
           'postgres_changes',
           {
@@ -370,12 +470,41 @@ class NotificationService {
             table: 'personal_notifications',
             filter: `user_id=eq.${userId}`
           },
-          callback
+          (payload) => {
+            try {
+              // Add metadata to payload for better handling
+              const enhancedPayload = {
+                ...payload,
+                eventType: payload.eventType,
+                table: payload.table,
+                timestamp: new Date().toISOString(),
+                userId: userId
+              };
+              callback(enhancedPayload);
+            } catch (error) {
+              console.error('Error processing real-time notification:', error);
+            }
+          }
         )
-        .subscribe();
+        .on('system', {}, (status) => {
+          if (status === 'CHANNEL_ERROR') {
+            console.warn('Personal notifications subscription error, attempting reconnection...');
+          }
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Personal notifications subscription active');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Personal notifications subscription failed');
+          }
+        });
 
       const generalSubscription = supabase
-        .channel('general_notifications')
+        .channel('general_notifications', {
+          config: {
+            broadcast: { self: false }
+          }
+        })
         .on(
           'postgres_changes',
           {
@@ -383,13 +512,41 @@ class NotificationService {
             schema: 'public',
             table: 'general_notifications'
           },
-          callback
+          (payload) => {
+            try {
+              const enhancedPayload = {
+                ...payload,
+                eventType: payload.eventType,
+                table: payload.table,
+                timestamp: new Date().toISOString()
+              };
+              callback(enhancedPayload);
+            } catch (error) {
+              console.error('Error processing real-time general notification:', error);
+            }
+          }
         )
-        .subscribe();
+        .on('system', {}, (status) => {
+          if (status === 'CHANNEL_ERROR') {
+            console.warn('General notifications subscription error, attempting reconnection...');
+          }
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ General notifications subscription active');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ General notifications subscription failed');
+          }
+        });
 
       return () => {
-        personalSubscription.unsubscribe();
-        generalSubscription.unsubscribe();
+        try {
+          personalSubscription.unsubscribe();
+          generalSubscription.unsubscribe();
+          console.log('🔌 Notification subscriptions unsubscribed');
+        } catch (error) {
+          console.error('Error unsubscribing from notifications:', error);
+        }
       };
     } catch (error) {
       console.warn('Error setting up notification subscriptions:', error);
@@ -431,16 +588,42 @@ class NotificationService {
     );
   }
 
-  async createBookingResponseNotification(clientId: string, artistId: string, status: 'accepted' | 'declined', bookingData: Record<string, unknown>): Promise<string | null> {
+  async createBookingResponseNotification(bookingId: string, status: 'accepted' | 'declined'): Promise<string | null> {
+    // First, get the booking details and client information
+    const { data: booking, error: bookingError } = await supabase
+      .from('artist_bookings')
+      .select(`
+        *,
+        profiles!artist_bookings_user_id_fkey(display_name, avatar_url)
+      `)
+      .eq('id', bookingId)
+      .single();
+
+    if (bookingError || !booking) {
+      console.error('Error fetching booking details for notification:', bookingError);
+      return null;
+    }
+
     const action = status === 'accepted' ? 'accepted' : 'declined';
+    const eventType = booking.event_description || 'your event';
+    
     return this.createPersonalNotification(
-      clientId,
+      booking.user_id, // client user ID
       `Booking ${action.charAt(0).toUpperCase() + action.slice(1)}`,
-      `Your booking request for ${bookingData.event_type} has been ${action}`,
+      `Your booking request for ${eventType} has been ${action} by the artist.`,
       `booking_${status}` as PersonalNotification['type'],
-      { bookingData, artistId },
-      '/bookings',
-      'View Details'
+      { 
+        bookingId,
+        bookingData: {
+          event_date: booking.event_date,
+          event_location: booking.event_location,
+          event_description: booking.event_description,
+          budget_min: booking.budget_min,
+          budget_max: booking.budget_max
+        }
+      },
+      status === 'accepted' ? '/messages' : '/bookings',
+      status === 'accepted' ? 'Start Chat' : 'View Details'
     );
   }
 

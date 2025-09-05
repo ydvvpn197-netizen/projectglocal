@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { MessageCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface ConversationRow {
   id: string;
@@ -32,6 +32,7 @@ const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<ConversationRow[]>([]);
   const [requests, setRequests] = useState<ConversationRow[]>([]);
@@ -40,6 +41,15 @@ const Messages = () => {
     if (user) fetchConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // Handle conversation parameter from URL
+  useEffect(() => {
+    const conversationId = searchParams.get('conversation');
+    if (conversationId && user) {
+      // Navigate directly to the chat
+      navigate(`/chat/${conversationId}`);
+    }
+  }, [searchParams, navigate, user]);
 
   const fetchConversations = async () => {
     if (!user) return;
