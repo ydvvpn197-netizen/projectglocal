@@ -115,7 +115,7 @@ const CommunityDetail = () => {
         }
 
         // Fetch members - try group_members first, then fallback to group_messages
-        let membersData: any[] = [];
+        let membersData: Record<string, unknown>[] = [];
         try {
           const { data: groupMembersData, error: membersError } = await supabase
             .from('group_members')
@@ -156,7 +156,7 @@ const CommunityDetail = () => {
           if (!messagesError && messagesData) {
             // Get unique users from messages
             const uniqueUsers = new Map();
-            messagesData.forEach((message: any) => {
+            messagesData.forEach((message: Record<string, unknown>) => {
               if (message.user_id && !uniqueUsers.has(message.user_id)) {
                 uniqueUsers.set(message.user_id, {
                   id: message.user_id,
