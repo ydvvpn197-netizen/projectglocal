@@ -49,9 +49,17 @@ export const AcceptedBookingsPanel = () => {
 
       if (artistError) {
         console.error('Error fetching artist record:', artistError);
+        console.error('Artist error details:', {
+          message: artistError.message,
+          details: artistError.details,
+          hint: artistError.hint,
+          code: artistError.code
+        });
         setAcceptedBookings([]);
         return;
       }
+
+      console.log('Artist record found:', artistRecord);
 
       // Fetch accepted bookings
       const { data, error } = await supabase
@@ -61,7 +69,12 @@ export const AcceptedBookingsPanel = () => {
         .eq('status', 'accepted')
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching bookings:', error);
+        throw error;
+      }
+
+      console.log('Bookings data:', data);
 
       // Fetch profile data and chat conversation for each booking
       const transformedBookings = await Promise.all(
@@ -71,12 +84,12 @@ export const AcceptedBookingsPanel = () => {
               .from('profiles')
               .select('display_name, avatar_url')
               .eq('user_id', booking.user_id)
-              .single(),
+              .maybeSingle(), // Use maybeSingle() to handle missing profiles gracefully
             supabase
               .from('chat_conversations')
               .select('id')
               .eq('booking_id', booking.id)
-              .single()
+              .maybeSingle() // Use maybeSingle() instead of single() to handle missing records gracefully
           ]);
 
           return {
@@ -91,6 +104,12 @@ export const AcceptedBookingsPanel = () => {
       setAcceptedBookings(transformedBookings);
     } catch (error) {
       console.error('Error fetching accepted bookings:', error);
+      console.error('Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       toast({
         title: "Error",
         description: "Failed to load accepted bookings",
