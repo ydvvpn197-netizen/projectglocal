@@ -261,8 +261,7 @@ export const BookingRequestsPanel = () => {
         ) : (
           <ScrollArea className="h-96">
             <div className="space-y-4">
-               {bookingRequests.map((request) => {
-                 return (
+               {bookingRequests.map((request) => (
                   <div key={request.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -368,8 +367,7 @@ export const BookingRequestsPanel = () => {
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                ))}
             </div>
           </ScrollArea>
         )}
