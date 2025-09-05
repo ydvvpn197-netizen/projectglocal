@@ -96,7 +96,7 @@ const CommunityDetail = () => {
         
         // Fetch group details
         const { data: groupData, error: groupError } = await supabase
-          .from('community_groups')
+          .from('groups')
           .select('*')
           .eq('id', groupId)
           .single();

@@ -54,7 +54,7 @@ export class CommunityService {
       const user = await this.ensureAuthenticated();
 
       const { data, error } = await supabase
-        .from('community_groups')
+        .from('groups')
         .insert({
           ...groupData,
           created_by: user.id
@@ -82,7 +82,7 @@ export class CommunityService {
   }): Promise<CommunityGroup[]> {
     try {
       let query = supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -166,7 +166,7 @@ export class CommunityService {
 
       for (const groupData of sampleGroups) {
         const { error } = await supabase
-          .from('community_groups')
+          .from('groups')
           .insert(groupData);
         
         if (error && error.code !== '23505') { // Ignore unique constraint violations
@@ -183,7 +183,7 @@ export class CommunityService {
   static async getGroupById(groupId: string): Promise<CommunityGroup | null> {
     try {
       const { data, error } = await supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .eq('id', groupId)
         .single();
@@ -199,7 +199,7 @@ export class CommunityService {
   static async updateGroup(groupId: string, updates: Partial<CommunityGroup>): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('community_groups')
+        .from('groups')
         .update(updates)
         .eq('id', groupId);
 
@@ -214,7 +214,7 @@ export class CommunityService {
   static async deleteGroup(groupId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('community_groups')
+        .from('groups')
         .delete()
         .eq('id', groupId);
 
@@ -295,7 +295,7 @@ export class CommunityService {
             
             // Additional debugging for foreign key issues
             const { data: groupCheck } = await supabase
-              .from('community_groups')
+              .from('groups')
               .select('id, name')
               .eq('id', groupId);
             console.log('Group check result:', groupCheck);
@@ -383,7 +383,7 @@ export class CommunityService {
         const { data, error } = await supabase
           .from('group_members')
           .select(`
-            community_groups (*)
+            groups (*)
           `)
           .eq('user_id', userId);
 
@@ -392,7 +392,7 @@ export class CommunityService {
           throw error;
         }
 
-        return (data || []).map(item => item.community_groups);
+        return (data || []).map(item => item.groups);
       } catch (error) {
         console.error('Error fetching user groups:', error);
         throw error;
@@ -445,7 +445,7 @@ export class CommunityService {
       if (error) throw error;
 
       await supabase
-        .from('community_groups')
+        .from('groups')
         .update({ member_count: count || 0 })
         .eq('id', groupId);
     } catch (error) {
@@ -508,7 +508,7 @@ export class CommunityService {
       console.log('=== DEBUG: Group Issues ===');
       
       const { data: groups, error: groupsError } = await supabase
-        .from('community_groups')
+        .from('groups')
         .select('id, name, is_public, created_at, created_by')
         .limit(10);
 
@@ -565,7 +565,7 @@ export class CommunityService {
   }): Promise<CommunityGroup[]> {
     try {
       let searchQuery = supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
         .eq('is_public', true)
@@ -591,7 +591,7 @@ export class CommunityService {
   static async getTrendingGroups(limit: number = 10): Promise<CommunityGroup[]> {
     try {
       const { data, error } = await supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .eq('is_public', true)
         .order('member_count', { ascending: false })
@@ -609,7 +609,7 @@ export class CommunityService {
   static async getGroupsByCategory(category: string): Promise<CommunityGroup[]> {
     try {
       const { data, error } = await supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .eq('category', category)
         .eq('is_public', true)
@@ -630,7 +630,7 @@ export class CommunityService {
   }): Promise<CommunityGroup[]> {
     try {
       let query = supabase
-        .from('community_groups')
+        .from('groups')
         .select('*')
         .eq('is_public', true);
 

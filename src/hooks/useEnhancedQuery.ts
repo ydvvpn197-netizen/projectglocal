@@ -383,7 +383,7 @@ export function useRealtimeCommunities(communityId?: string) {
     if (!communityId) return;
     
     const subscription = communityApi.subscribe(
-      'community_groups',
+      'groups',
       'UPDATE',
       (payload) => {
         queryClient.invalidateQueries({ queryKey: ['community', communityId] });

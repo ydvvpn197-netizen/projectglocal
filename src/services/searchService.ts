@@ -222,7 +222,7 @@ export class SearchService {
 
   private async searchGroups(query: SearchQuery): Promise<SearchResult[]> {
     const { data: groups } = await supabase
-      .from('community_groups')
+      .from('groups')
       .select(`
         id,
         name,

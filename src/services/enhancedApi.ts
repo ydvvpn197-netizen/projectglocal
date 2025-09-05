@@ -314,16 +314,15 @@ export class CommunityApiService extends EnhancedApiService {
     const { category, search, limit = 20, offset = 0 } = options;
     
     let query = supabase
-      .from('community_groups')
+      .from('groups')
       .select(`
         *,
-        creator:users!community_groups_creator_id_fkey(
-          id,
-          full_name,
+        creator:profiles!groups_created_by_fkey(
+          user_id,
+          display_name,
           avatar_url
         ),
-        members:group_members(count),
-        category:categories(name)
+        members:group_members(count)
       `)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -352,17 +351,17 @@ export class CommunityApiService extends EnhancedApiService {
       `community:${id}`,
       async () => {
         const { data, error } = await supabase
-          .from('community_groups')
+          .from('groups')
           .select(`
             *,
-            creator:users!community_groups_creator_id_fkey(
-              id,
-              full_name,
+            creator:profiles!groups_created_by_fkey(
+              user_id,
+              display_name,
               avatar_url,
               bio
             ),
             members:group_members(
-              user:users(id, full_name, avatar_url),
+              user:profiles(user_id, display_name, avatar_url),
               role,
               joined_at
             ),
@@ -388,7 +387,7 @@ export class CommunityApiService extends EnhancedApiService {
 
   async createCommunity(communityData: Partial<CommunityGroup>) {
     const { data, error } = await supabase
-      .from('community_groups')
+      .from('groups')
       .insert(communityData)
       .select()
       .single();
@@ -468,7 +467,7 @@ export class UserApiService extends EnhancedApiService {
               attendees:event_attendees(count)
             ),
             communities:group_members(
-              group:community_groups(id, name, description)
+              group:groups(id, name, description)
             )
           `)
           .eq('user_id', userId)
