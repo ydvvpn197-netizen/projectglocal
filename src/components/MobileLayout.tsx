@@ -53,7 +53,7 @@ const newFeaturesItems = [
 ];
 
 const userItems = [
-  { title: 'Dashboard', url: '/user-dashboard', icon: User },
+  { title: 'Dashboard', url: '/dashboard', icon: User },
   { title: 'Messages', url: '/messages', icon: MessageSquare },
   { title: 'News Feed', url: '/news', icon: Newspaper },
   { title: 'Profile', url: '/profile', icon: User },

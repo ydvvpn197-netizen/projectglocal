@@ -52,7 +52,7 @@ const artistItems = [
 ];
 
 const regularUserItems = [
-  { title: "My Dashboard", url: "/user-dashboard", icon: User },
+  { title: "My Dashboard", url: "/dashboard", icon: User },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
