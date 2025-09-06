@@ -107,8 +107,7 @@ serve(async (req) => {
     const { data: cachedArticles, error: cacheError } = await supabaseClient
       .from('news_cache')
       .select('*')
-      .eq('city', city)
-      .eq('country', country)
+      .eq('location_name', city)
       .gte('expires_at', new Date().toISOString())
       .order('published_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1)
@@ -173,12 +172,10 @@ serve(async (req) => {
           url: article.url,
           image_url: article.image,
           source_name: article.source.name,
-          source_url: article.source.url,
           published_at: article.publishedAt,
-          city: city,
-          country: country,
-          language: 'en',
+          location_name: city,
           ai_summary: aiSummary,
+          cached_at: new Date().toISOString(),
           expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
         }
 

@@ -77,9 +77,12 @@ const ConfigStatus = React.lazy(() => import('@/components/ConfigStatus'));
 // Admin pages
 const AdminDashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
+const UserModeration = React.lazy(() => import('@/pages/admin/UserModeration'));
+const AdminManagement = React.lazy(() => import('@/pages/admin/AdminManagement'));
 const ContentModeration = React.lazy(() => import('@/pages/admin/ContentModeration'));
-const Analytics = React.lazy(() => import('@/pages/admin/Analytics'));
+const Analytics = React.lazy(() => import('@/pages/admin/AdminAnalytics'));
 const SystemSettings = React.lazy(() => import('@/pages/admin/SystemSettings'));
+const AdminSetup = React.lazy(() => import('@/pages/admin/AdminSetup'));
 
 /**
  * Main application routes configuration
@@ -157,8 +160,11 @@ export const AppRoutes: React.FC = () => {
       
       
       {/* Admin routes */}
+      <Route path="/admin/setup" element={<AdminSetup />} />
       <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+      <Route path="/admin/user-moderation" element={<ProtectedRoute><UserModeration /></ProtectedRoute>} />
+      <Route path="/admin/admin-management" element={<ProtectedRoute><AdminManagement /></ProtectedRoute>} />
       <Route path="/admin/moderation" element={<ProtectedRoute><ContentModeration /></ProtectedRoute>} />
       <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />

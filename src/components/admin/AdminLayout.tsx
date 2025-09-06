@@ -11,7 +11,8 @@ import {
   Menu, 
   X,
   Shield,
-  LogOut
+  LogOut,
+  UserCog
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
@@ -36,6 +37,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: '/admin/users',
       icon: Users,
       permission: 'users:manage'
+    },
+    {
+      name: 'User Moderation',
+      href: '/admin/user-moderation',
+      icon: Shield,
+      permission: 'users:moderate'
+    },
+    {
+      name: 'Admin Management',
+      href: '/admin/admin-management',
+      icon: UserCog,
+      permission: 'admin:manage'
     },
     {
       name: 'Content Moderation',

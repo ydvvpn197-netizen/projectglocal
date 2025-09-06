@@ -5,8 +5,8 @@
  * Verifies that all required configurations are in place for successful deployment
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 console.log('🔍 Checking deployment configuration...\n');
 

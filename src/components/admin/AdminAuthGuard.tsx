@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLogin } from './AdminLogin';
 import { Loader2 } from 'lucide-react';
+import { adminSetup } from '@/utils/adminSetup';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -19,9 +20,24 @@ export const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({
 }) => {
   const { adminUser, permissions, isLoading, checkPermission, hasRole } = useAdminAuth();
   const location = useLocation();
+  const [hasAdmins, setHasAdmins] = useState<boolean | null>(null);
 
-  // Show loading spinner while checking auth status
-  if (isLoading) {
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const hasAdmins = await adminSetup.hasAdminUsers();
+        setHasAdmins(hasAdmins);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setHasAdmins(true); // Assume admins exist on error
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  // Show loading spinner while checking auth status or admin existence
+  if (isLoading || hasAdmins === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -30,6 +46,11 @@ export const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({
         </div>
       </div>
     );
+  }
+
+  // Redirect to setup if no admins exist
+  if (hasAdmins === false) {
+    return <Navigate to="/admin/setup" replace />;
   }
 
   // If not authenticated as admin, show login

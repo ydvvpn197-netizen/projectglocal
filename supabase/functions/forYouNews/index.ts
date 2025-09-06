@@ -31,12 +31,57 @@ function extractUserPreferences(events: Record<string, unknown>[]): UserPreferen
 
   events.forEach(event => {
     if (event.event_type === 'like' || event.event_type === 'comment' || event.event_type === 'share') {
-      // This would need to be joined with news_cache to get article details
-      // For now, we'll use a simplified approach
+      const article = event.news_cache as Record<string, unknown>
+      if (article) {
+        // Count cities
+        if (article.location_name) {
+          const city = article.location_name as string
+          cityCounts.set(city, (cityCounts.get(city) || 0) + 1)
+        }
+
+        // Count sources
+        if (article.source_name) {
+          const source = article.source_name as string
+          sourceCounts.set(source, (sourceCounts.get(source) || 0) + 1)
+        }
+
+        // Count categories
+        if (article.category) {
+          const category = article.category as string
+          categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1)
+        }
+
+        // Extract keywords from article text
+        const articleText = `${article.title || ''} ${article.description || ''} ${article.ai_summary || ''}`.toLowerCase()
+        const words = articleText.split(/\s+/).filter(word => word.length > 3)
+        words.forEach(word => {
+          keywordCounts.set(word, (keywordCounts.get(word) || 0) + 1)
+        })
+      }
     }
   })
 
-  // Get top preferences (simplified logic)
+  // Get top preferences (top 5 for each category)
+  preferences.preferredCities = Array.from(cityCounts.entries())
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 5)
+    .map(([city]) => city)
+
+  preferences.preferredSources = Array.from(sourceCounts.entries())
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 5)
+    .map(([source]) => source)
+
+  preferences.preferredCategories = Array.from(categoryCounts.entries())
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 5)
+    .map(([category]) => category)
+
+  preferences.preferredKeywords = Array.from(keywordCounts.entries())
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 10)
+    .map(([keyword]) => keyword)
+
   return preferences
 }
 
@@ -50,19 +95,19 @@ function calculatePersonalizationScore(
   const reasons: string[] = []
 
   // City preference boost
-  if (preferences.preferredCities.includes(article.city)) {
+  if (preferences.preferredCities.includes(article.location_name as string)) {
     score *= 1.3
     reasons.push('From your preferred city')
   }
 
   // Source preference boost
-  if (preferences.preferredSources.includes(article.source_name)) {
+  if (preferences.preferredSources.includes(article.source_name as string)) {
     score *= 1.2
     reasons.push('From your preferred source')
   }
 
   // Category preference boost
-  if (preferences.preferredCategories.includes(article.category)) {
+  if (preferences.preferredCategories.includes(article.category as string)) {
     score *= 1.15
     reasons.push('In your preferred category')
   }
@@ -142,7 +187,7 @@ serve(async (req) => {
       .from('news_events')
       .select(`
         *,
-        news_cache!inner(city, source_name, category, title, description, ai_summary)
+        news_cache!inner(location_name, source_name, category, title, description, ai_summary)
       `)
       .eq('user_id', user.id)
       .gte('created_at', fourteenDaysAgo)
@@ -161,12 +206,11 @@ serve(async (req) => {
       .select(`
         *,
         news_likes(count),
-        news_comments(count),
+        news_article_comments(count),
         news_shares(count),
-        news_polls(count)
+        news_poll_votes(count)
       `)
-      .eq('city', city)
-      .eq('country', country)
+      .eq('location_name', city)
       .gte('expires_at', new Date().toISOString())
       .order('published_at', { ascending: false })
 
@@ -177,9 +221,9 @@ serve(async (req) => {
     // Calculate personalization scores
     const articlesWithScores = articles.map(article => {
       const likesCount = article.news_likes?.[0]?.count || 0
-      const commentsCount = article.news_comments?.[0]?.count || 0
+      const commentsCount = article.news_article_comments?.[0]?.count || 0
       const sharesCount = article.news_shares?.[0]?.count || 0
-      const pollsCount = article.news_polls?.[0]?.count || 0
+      const pollsCount = article.news_poll_votes?.[0]?.count || 0
 
       // Calculate base trending score
       const hoursSincePublished = (Date.now() - new Date(article.published_at).getTime()) / (1000 * 60 * 60)

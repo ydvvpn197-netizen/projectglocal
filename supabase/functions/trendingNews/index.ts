@@ -88,12 +88,11 @@ serve(async (req) => {
       .select(`
         *,
         news_likes(count),
-        news_comments(count),
+        news_article_comments(count),
         news_shares(count),
-        news_polls(count)
+        news_poll_votes(count)
       `)
-      .eq('city', city)
-      .eq('country', country)
+      .eq('location_name', city)
       .gte('expires_at', new Date().toISOString())
       .order('published_at', { ascending: false })
 
@@ -104,9 +103,9 @@ serve(async (req) => {
     // Calculate trending scores
     const articlesWithScores = articles.map(article => {
       const likesCount = article.news_likes?.[0]?.count || 0
-      const commentsCount = article.news_comments?.[0]?.count || 0
+      const commentsCount = article.news_article_comments?.[0]?.count || 0
       const sharesCount = article.news_shares?.[0]?.count || 0
-      const pollsCount = article.news_polls?.[0]?.count || 0
+      const pollsCount = article.news_poll_votes?.[0]?.count || 0
 
       const trendingScore = calculateTrendingScore(
         likesCount,
@@ -116,8 +115,8 @@ serve(async (req) => {
         article.published_at,
         city,
         country,
-        article.city,
-        article.country
+        article.location_name,
+        article.location_name // Using location_name for both city and country comparison
       )
 
       return {
