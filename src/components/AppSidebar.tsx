@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart, Shield } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -49,6 +50,7 @@ const artistItems = [
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
+  { title: "Admin Login", url: "/admin", icon: Shield },
 ];
 
 const regularUserItems = [
@@ -57,11 +59,13 @@ const regularUserItems = [
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
+  { title: "Admin Login", url: "/admin", icon: Shield },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user } = useAuth();
+  const { adminUser } = useAdminAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -90,7 +94,21 @@ export function AppSidebar() {
     checkUserType();
   }, [user]);
 
-  const userItems = isArtist ? artistItems : regularUserItems;
+  // Create dynamic user items based on artist status and admin status
+  const getUserItems = () => {
+    const baseItems = isArtist ? artistItems : regularUserItems;
+    return baseItems.map(item => {
+      if (item.title === "Admin Login") {
+        return {
+          ...item,
+          title: adminUser ? "Admin Dashboard" : "Admin Login"
+        };
+      }
+      return item;
+    });
+  };
+
+  const userItems = getUserItems();
   const isUserGroupExpanded = userItems.some((item) => isActive(item.url));
   
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
