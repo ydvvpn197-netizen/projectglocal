@@ -227,7 +227,14 @@ export class NewsService {
       return response;
     } catch (error) {
       console.error('Error fetching news:', error);
-      throw error;
+      
+      // Return empty response instead of throwing to prevent React errors
+      return {
+        articles: [],
+        total: 0,
+        page,
+        has_more: false
+      };
     }
   }
 

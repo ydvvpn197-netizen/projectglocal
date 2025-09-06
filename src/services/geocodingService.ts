@@ -130,43 +130,9 @@ export class GeocodingService {
 
   // Get current location with reverse geocoding
   async getCurrentLocationWithGeocoding(): Promise<LocationData> {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        // Fallback to Delhi, India
-        resolve({
-          city: 'Delhi',
-          country: 'India',
-          latitude: 28.6139,
-          longitude: 77.2090
-        });
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            const geocodingResult = await this.reverseGeocode(latitude, longitude);
-            
-            resolve({
-              city: geocodingResult.city,
-              country: geocodingResult.country,
-              latitude,
-              longitude
-            });
-          } catch (error) {
-            console.error('Error in geocoding:', error);
-            // Fallback to coordinates without geocoding
-            resolve({
-              city: 'Unknown',
-              country: 'Unknown',
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            });
-          }
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
+    return new Promise((resolve) => {
+      try {
+        if (!navigator.geolocation) {
           // Fallback to Delhi, India
           resolve({
             city: 'Delhi',
@@ -174,13 +140,58 @@ export class GeocodingService {
             latitude: 28.6139,
             longitude: 77.2090
           });
-        },
-        {
-          timeout: 10000,
-          enableHighAccuracy: false,
-          maximumAge: 300000 // 5 minutes
+          return;
         }
-      );
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude } = position.coords;
+              const geocodingResult = await this.reverseGeocode(latitude, longitude);
+              
+              resolve({
+                city: geocodingResult.city,
+                country: geocodingResult.country,
+                latitude,
+                longitude
+              });
+            } catch (error) {
+              console.error('Error in geocoding:', error);
+              // Fallback to coordinates without geocoding
+              resolve({
+                city: 'Unknown',
+                country: 'Unknown',
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              });
+            }
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            // Fallback to Delhi, India
+            resolve({
+              city: 'Delhi',
+              country: 'India',
+              latitude: 28.6139,
+              longitude: 77.2090
+            });
+          },
+          {
+            timeout: 10000,
+            enableHighAccuracy: false,
+            maximumAge: 300000 // 5 minutes
+          }
+        );
+      } catch (error) {
+        console.error('Error in getCurrentLocationWithGeocoding:', error);
+        // Fallback to Delhi, India
+        resolve({
+          city: 'Delhi',
+          country: 'India',
+          latitude: 28.6139,
+          longitude: 77.2090
+        });
+      }
     });
   }
 
