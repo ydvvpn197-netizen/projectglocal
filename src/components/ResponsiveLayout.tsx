@@ -4,9 +4,10 @@ import { MobileLayout } from './MobileLayout';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
+  showNewsFeed?: boolean;
 }
 
-function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
+function ResponsiveLayout({ children, showNewsFeed = true }: ResponsiveLayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   return isMobile ? (
     <MobileLayout>{children}</MobileLayout>
   ) : (
-    <MainLayout>{children}</MainLayout>
+    <MainLayout showNewsFeed={showNewsFeed}>{children}</MainLayout>
   );
 }
 

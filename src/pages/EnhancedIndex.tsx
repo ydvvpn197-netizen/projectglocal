@@ -387,7 +387,7 @@ export const EnhancedIndex: React.FC = () => {
   };
 
   return (
-    <ResponsiveLayout>
+    <ResponsiveLayout showNewsFeed={false}>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       
       {/* Hero Section */}
