@@ -6,7 +6,7 @@ export interface OfflineInteraction {
   id: string;
   type: 'like' | 'comment' | 'share' | 'poll_vote';
   articleId: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
   synced: boolean;
 }

@@ -72,7 +72,7 @@ export const useNews = (tab: NewsTab, location: LocationData) => {
 // Hook for managing news interactions (likes, shares, etc.)
 export const useNewsInteractions = () => {
   const queryClient = useQueryClient();
-  const [interactions, setInteractions] = useState<Map<string, any>>(new Map());
+  const [interactions, setInteractions] = useState<Map<string, Record<string, unknown>>>(new Map());
 
   // Like article mutation
   const likeMutation = useMutation({
@@ -247,7 +247,7 @@ export const useNewsComments = (articleId: string) => {
 
 // Hook for real-time news updates
 export const useNewsRealtime = (articleIds: string[]) => {
-  const [updates, setUpdates] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     if (articleIds.length === 0) return;

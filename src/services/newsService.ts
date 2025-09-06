@@ -37,7 +37,7 @@ const generateArticleId = async (url: string): Promise<string> => {
 // News API Service
 export class NewsService {
   private static instance: NewsService;
-  private cache = new Map<string, any>();
+  private cache = new Map<string, NewsArticle[]>();
   private readonly CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
   static getInstance(): NewsService {
@@ -373,7 +373,7 @@ export class NewsService {
   }
 
   // Track user event
-  async trackEvent(articleId: string, eventType: NewsEvent['event_type'], eventData?: Record<string, any>): Promise<void> {
+  async trackEvent(articleId: string, eventType: NewsEvent['event_type'], eventData?: Record<string, unknown>): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return; // Don't track events for anonymous users

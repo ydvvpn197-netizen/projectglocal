@@ -73,7 +73,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       // Load immediately
       setCurrentSrc(optimizedUrl);
     }
-  }, [src, width, height, quality, format, blur, grayscale, lazy, onLoad, onError]);
+  }, [src, width, height, quality, format, blur, grayscale, lazy, onLoad, onError, optimizationOptions]);
 
   const handleLoad = () => {
     setIsLoaded(true);

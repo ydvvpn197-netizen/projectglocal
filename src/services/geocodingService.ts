@@ -202,15 +202,18 @@ export class GeocodingService {
 
       const data = await response.json();
       
-      return data.map((item: any) => ({
-        city: this.extractCity(item),
-        country: this.extractCountry(item),
-        state: this.extractState(item),
-        countryCode: item.address?.country_code?.toUpperCase() || 'IN',
-        formattedAddress: item.display_name || '',
-        latitude: parseFloat(item.lat),
-        longitude: parseFloat(item.lon)
-      }));
+      return data.map((item: Record<string, unknown>) => {
+        const address = item.address as Record<string, unknown> | undefined;
+        return {
+          city: this.extractCity(item),
+          country: this.extractCountry(item),
+          state: this.extractState(item),
+          countryCode: (address?.country_code as string)?.toUpperCase() || 'IN',
+          formattedAddress: (item.display_name as string) || '',
+          latitude: parseFloat(item.lat as string),
+          longitude: parseFloat(item.lon as string)
+        };
+      });
     } catch (error) {
       console.error('Error searching cities:', error);
       return [];
@@ -218,23 +221,26 @@ export class GeocodingService {
   }
 
   // Helper methods to extract location components
-  private extractCity(data: any): string {
-    return data.address?.city || 
-           data.address?.town || 
-           data.address?.village || 
-           data.address?.municipality ||
-           data.address?.county ||
+  private extractCity(data: Record<string, unknown>): string {
+    const address = data.address as Record<string, unknown> | undefined;
+    return (address?.city as string) || 
+           (address?.town as string) || 
+           (address?.village as string) || 
+           (address?.municipality as string) ||
+           (address?.county as string) ||
            'Unknown';
   }
 
-  private extractCountry(data: any): string {
-    return data.address?.country || 'Unknown';
+  private extractCountry(data: Record<string, unknown>): string {
+    const address = data.address as Record<string, unknown> | undefined;
+    return (address?.country as string) || 'Unknown';
   }
 
-  private extractState(data: any): string | undefined {
-    return data.address?.state || 
-           data.address?.province || 
-           data.address?.region;
+  private extractState(data: Record<string, unknown>): string | undefined {
+    const address = data.address as Record<string, unknown> | undefined;
+    return (address?.state as string) || 
+           (address?.province as string) || 
+           (address?.region as string);
   }
 
   // Clear cache

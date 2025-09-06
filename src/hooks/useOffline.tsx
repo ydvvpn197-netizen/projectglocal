@@ -45,7 +45,7 @@ export const useOffline = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [syncPendingInteractions]);
 
   // Sync pending interactions
   const syncPendingInteractions = useCallback(async () => {
@@ -99,7 +99,7 @@ export const useOffline = () => {
   const storeOfflineInteraction = useCallback(async (
     type: OfflineInteraction['type'],
     articleId: string,
-    data: any
+    data: Record<string, unknown>
   ) => {
     if (!isInitialized) {
       return;
