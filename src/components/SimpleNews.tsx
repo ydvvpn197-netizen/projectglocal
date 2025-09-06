@@ -17,6 +17,17 @@ import {
   Loader2
 } from 'lucide-react';
 
+interface NewsArticle {
+  id: string;
+  title: string;
+  summary: string;
+  source: string;
+  publishedAt: string;
+  imageUrl: string | null;
+  city: string;
+  country: string;
+}
+
 interface SimpleNewsProps {
   className?: string;
 }
@@ -24,7 +35,7 @@ interface SimpleNewsProps {
 export const SimpleNews: React.FC<SimpleNewsProps> = ({ className }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
 
   useEffect(() => {
     // Simulate loading

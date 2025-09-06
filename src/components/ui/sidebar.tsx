@@ -714,6 +714,4 @@ export const SidebarMenuSubButton = React.forwardRef<
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
 
-// Export the useSidebar hook
-export { useSidebar }
 

@@ -22,5 +22,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
 } from "./sidebar";
+
+export { useSidebar } from "./useSidebar";
