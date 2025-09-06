@@ -960,6 +960,231 @@ export type Database = {
           },
         ]
       }
+      news_cache: {
+        Row: {
+          id: string
+          article_id: string
+          title: string
+          description: string | null
+          content: string | null
+          url: string
+          image_url: string | null
+          source_name: string
+          source_url: string | null
+          published_at: string
+          city: string | null
+          country: string | null
+          category: string | null
+          language: string
+          ai_summary: string | null
+          created_at: string
+          updated_at: string
+          expires_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          title: string
+          description?: string | null
+          content?: string | null
+          url: string
+          image_url?: string | null
+          source_name: string
+          source_url?: string | null
+          published_at: string
+          city?: string | null
+          country?: string | null
+          category?: string | null
+          language?: string
+          ai_summary?: string | null
+          created_at?: string
+          updated_at?: string
+          expires_at?: string
+        }
+        Update: {
+          id?: string
+          article_id?: string
+          title?: string
+          description?: string | null
+          content?: string | null
+          url?: string
+          image_url?: string | null
+          source_name?: string
+          source_url?: string | null
+          published_at?: string
+          city?: string | null
+          country?: string | null
+          category?: string | null
+          language?: string
+          ai_summary?: string | null
+          created_at?: string
+          updated_at?: string
+          expires_at?: string
+        }
+        Relationships: []
+      }
+      news_likes: {
+        Row: {
+          id: string
+          article_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          article_id?: string
+          user_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      news_comments: {
+        Row: {
+          id: string
+          article_id: string
+          user_id: string
+          parent_id: string | null
+          content: string
+          created_at: string
+          updated_at: string
+          is_deleted: boolean
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          user_id: string
+          parent_id?: string | null
+          content: string
+          created_at?: string
+          updated_at?: string
+          is_deleted?: boolean
+        }
+        Update: {
+          id?: string
+          article_id?: string
+          user_id?: string
+          parent_id?: string | null
+          content?: string
+          created_at?: string
+          updated_at?: string
+          is_deleted?: boolean
+        }
+        Relationships: []
+      }
+      news_polls: {
+        Row: {
+          id: string
+          article_id: string
+          user_id: string
+          question: string
+          options: Json
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          user_id: string
+          question: string
+          options: Json
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          article_id?: string
+          user_id?: string
+          question?: string
+          options?: Json
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news_poll_votes: {
+        Row: {
+          id: string
+          poll_id: string
+          user_id: string
+          option_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          poll_id: string
+          user_id: string
+          option_index: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          poll_id?: string
+          user_id?: string
+          option_index?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      news_shares: {
+        Row: {
+          id: string
+          article_id: string
+          user_id: string
+          platform: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          article_id: string
+          user_id: string
+          platform?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          article_id?: string
+          user_id?: string
+          platform?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      news_events: {
+        Row: {
+          id: string
+          user_id: string
+          article_id: string
+          event_type: string
+          event_data: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          article_id: string
+          event_type: string
+          event_data?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          article_id?: string
+          event_type?: string
+          event_data?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

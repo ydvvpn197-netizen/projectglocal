@@ -42,6 +42,7 @@ import {
   Globe,
   Sparkles,
   Zap,
+  Newspaper,
   Crown,
   Shield,
   HelpCircle,
@@ -116,6 +117,12 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       label: 'Feed',
       href: '/feed',
       icon: <BookOpen className="h-4 w-4" />,
+      mobile: true,
+    },
+    {
+      label: 'News',
+      href: '/news',
+      icon: <Newspaper className="h-4 w-4" />,
       mobile: true,
     },
     {
