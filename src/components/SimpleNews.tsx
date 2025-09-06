@@ -79,7 +79,7 @@ export const SimpleNews: React.FC<SimpleNewsProps> = ({ className }) => {
 
   if (loading) {
     return (
-      <div className={`container mx-auto px-4 py-8 ${className}`}>
+      <div className={`px-4 py-8 ${className}`}>
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -129,7 +129,7 @@ export const SimpleNews: React.FC<SimpleNewsProps> = ({ className }) => {
 
   if (error) {
     return (
-      <div className={`container mx-auto px-4 py-8 ${className}`}>
+      <div className={`px-4 py-8 ${className}`}>
         <Alert>
           <AlertDescription>
             {error}
@@ -140,7 +140,7 @@ export const SimpleNews: React.FC<SimpleNewsProps> = ({ className }) => {
   }
 
   return (
-    <div className={`container mx-auto px-4 py-8 ${className}`}>
+    <div className={`px-4 py-8 ${className}`}>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
