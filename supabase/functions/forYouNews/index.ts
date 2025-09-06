@@ -15,7 +15,7 @@ interface UserPreferences {
 }
 
 // Extract user preferences from news events
-function extractUserPreferences(events: any[]): UserPreferences {
+function extractUserPreferences(events: Record<string, unknown>[]): UserPreferences {
   const preferences: UserPreferences = {
     preferredCities: [],
     preferredSources: [],
@@ -42,7 +42,7 @@ function extractUserPreferences(events: any[]): UserPreferences {
 
 // Calculate personalization score
 function calculatePersonalizationScore(
-  article: any,
+  article: Record<string, unknown>,
   preferences: UserPreferences,
   trendingScore: number
 ): number {

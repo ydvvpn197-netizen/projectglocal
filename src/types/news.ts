@@ -82,7 +82,7 @@ export interface NewsEvent {
   user_id: string;
   article_id: string;
   event_type: 'view' | 'like' | 'comment' | 'share' | 'poll_vote';
-  event_data?: Record<string, any>;
+  event_data?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -157,7 +157,7 @@ export interface UseNewsInteractionsReturn {
   likeArticle: (articleId: string) => Promise<void>;
   unlikeArticle: (articleId: string) => Promise<void>;
   shareArticle: (articleId: string, platform?: string) => Promise<void>;
-  trackEvent: (articleId: string, eventType: NewsEvent['event_type'], eventData?: Record<string, any>) => Promise<void>;
+  trackEvent: (articleId: string, eventType: NewsEvent['event_type'], eventData?: Record<string, unknown>) => Promise<void>;
   isLiked: (articleId: string) => boolean;
   getLikesCount: (articleId: string) => number;
   getCommentsCount: (articleId: string) => number;
@@ -238,7 +238,7 @@ export interface UserPreferences {
 export interface NewsError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 // Cache types
@@ -252,6 +252,6 @@ export interface NewsCacheEntry {
 export interface NewsRealtimeUpdate {
   type: 'like' | 'comment' | 'share' | 'poll_vote';
   article_id: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: string;
 }

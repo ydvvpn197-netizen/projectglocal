@@ -14,7 +14,7 @@ export interface PushNotificationData {
   badge?: string;
   image?: string;
   tag?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   actions?: NotificationAction[];
   requireInteraction?: boolean;
   silent?: boolean;
@@ -195,7 +195,7 @@ export class PushNotificationService {
   }
 
   // Send breaking news notification
-  async sendBreakingNewsNotification(article: any): Promise<void> {
+  async sendBreakingNewsNotification(article: Record<string, unknown>): Promise<void> {
     const notificationData: PushNotificationData = {
       title: '🚨 Breaking News',
       body: article.title,

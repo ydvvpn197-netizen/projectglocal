@@ -1,5 +1,5 @@
 // Optimized image component with lazy loading and optimization
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { imageOptimizationService, type ImageOptimizationOptions } from '@/services/imageOptimizationService';
 import { cn } from '@/lib/utils';
@@ -41,14 +41,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [currentSrc, setCurrentSrc] = useState<string>('');
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const optimizationOptions: ImageOptimizationOptions = {
+  const optimizationOptions: ImageOptimizationOptions = useMemo(() => ({
     width,
     height,
     quality,
     format,
     blur,
     grayscale
-  };
+  }), [width, height, quality, format, blur, grayscale]);
 
   useEffect(() => {
     if (!src) {

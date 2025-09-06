@@ -154,7 +154,7 @@ export class OfflineService {
   async storeOfflineInteraction(
     type: OfflineInteraction['type'],
     articleId: string,
-    data: any
+    data: Record<string, unknown>
   ): Promise<void> {
     if (!this.db) {
       await this.initialize();
