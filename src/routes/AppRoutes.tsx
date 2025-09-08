@@ -105,6 +105,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/life-wish" element={<ProtectedRoute><LifeWish /></ProtectedRoute>} />
       <Route path="/voice-demo" element={<VoiceControlDemo />} />
       <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
+      <Route path="/news/:articleId" element={<ProtectedRoute><News /></ProtectedRoute>} />
       
       {/* Document type routes */}
       <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />
