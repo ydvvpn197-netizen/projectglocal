@@ -88,6 +88,9 @@ const Analytics = React.lazy(() => import('@/pages/admin/AdminAnalytics'));
 const SystemSettings = React.lazy(() => import('@/pages/admin/SystemSettings'));
 const AdminSetup = React.lazy(() => import('@/pages/admin/AdminSetup'));
 
+// Admin Auth Guard component
+const AdminAuthGuard = React.lazy(() => import('@/components/admin/AdminAuthGuard').then(module => ({ default: module.AdminAuthGuard })));
+
 /**
  * Main application routes configuration
  */
@@ -167,13 +170,41 @@ export const AppRoutes: React.FC = () => {
       {/* Admin routes */}
       <Route path="/admin/setup" element={<AdminSetup />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/admin/users" element={<UserManagement />} />
-      <Route path="/admin/user-moderation" element={<UserModeration />} />
-      <Route path="/admin/admin-management" element={<AdminManagement />} />
-      <Route path="/admin/moderation" element={<ContentModeration />} />
-      <Route path="/admin/analytics" element={<Analytics />} />
-      <Route path="/admin/settings" element={<SystemSettings />} />
+      <Route path="/admin" element={
+        <AdminAuthGuard>
+          <AdminDashboard />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/users" element={
+        <AdminAuthGuard requiredPermission="user_management">
+          <UserManagement />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/user-moderation" element={
+        <AdminAuthGuard requiredPermission="user_moderation">
+          <UserModeration />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/admin-management" element={
+        <AdminAuthGuard requiredPermission="admin_management">
+          <AdminManagement />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/moderation" element={
+        <AdminAuthGuard requiredPermission="content_moderation">
+          <ContentModeration />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/analytics" element={
+        <AdminAuthGuard requiredPermission="analytics">
+          <Analytics />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/settings" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <SystemSettings />
+        </AdminAuthGuard>
+      } />
       
       {/* Test routes - moved to end to avoid conflicts */}
       <Route path="/test-router" element={<TestRouter />} />

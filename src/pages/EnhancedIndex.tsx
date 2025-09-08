@@ -46,7 +46,7 @@ import {
   Building,
   Leaf,
   Mountain,
-
+  Shield,
   HeartHandshake,
   Lightbulb,
   Rocket,
@@ -360,6 +360,19 @@ export const EnhancedIndex: React.FC = () => {
       toast({
         title: "Navigation Error",
         description: "Unable to navigate to trending feed. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAdminLogin = () => {
+    try {
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Navigation error to admin login:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to admin login. Please try again.",
         variant: "destructive",
       });
     }
@@ -833,6 +846,18 @@ export const EnhancedIndex: React.FC = () => {
               >
                 Learn More
               </AdvancedButton>
+              {/* Admin Login Button - Only show when user is not logged in */}
+              {!user && (
+                <AdvancedButton
+                  onClick={handleAdminLogin}
+                  size="lg"
+                  variant="outline"
+                  leftIcon={<Shield className="h-5 w-5" />}
+                  className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                >
+                  Admin Login
+                </AdvancedButton>
+              )}
             </motion.div>
           </motion.div>
         </div>
