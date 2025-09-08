@@ -8,7 +8,7 @@ export interface TestResult {
   success: boolean;
   duration: number;
   error?: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface RealTimeTestSuite {
@@ -27,7 +27,7 @@ export class RealTimeTestingService {
   private aggregationService: EnhancedNewsAggregationService;
   private summarizationService: EnhancedNewsSummarizationService;
   private scheduler: NewsAggregationScheduler;
-  private activeConnections: Map<string, any> = new Map();
+  private activeConnections: Map<string, { unsubscribe: () => void }> = new Map();
   private testResults: TestResult[] = [];
 
   private constructor() {
@@ -412,7 +412,7 @@ export class RealTimeTestingService {
     try {
       // Simulate multiple users subscribing to real-time updates
       const userCount = 5;
-      const subscriptions: any[] = [];
+      const subscriptions: Array<{ unsubscribe: () => void }> = [];
       let receivedUpdates = 0;
 
       // Create multiple subscriptions

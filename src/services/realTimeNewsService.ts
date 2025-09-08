@@ -347,13 +347,13 @@ export class RealTimeNewsService {
         },
         (payload) => {
           console.log('Article interaction updated:', payload);
-          this.updateArticleEngagement(payload.new as any);
+          this.updateArticleEngagement(payload.new as { article_id: string; interaction_type: string; user_id: string });
         }
       )
       .subscribe();
   }
 
-  private async updateArticleEngagement(interaction: any) {
+  private async updateArticleEngagement(interaction: { article_id: string; interaction_type: string; user_id: string }) {
     try {
       // Update engagement score
       await supabase.rpc('update_article_engagement_score', {

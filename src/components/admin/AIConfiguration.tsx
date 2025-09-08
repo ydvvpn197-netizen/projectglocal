@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,14 +38,14 @@ export const AIConfiguration: React.FC = () => {
     loadConfiguration();
   }, [loadConfiguration]);
 
-  const loadConfiguration = () => {
+  const loadConfiguration = useCallback(() => {
     const providers = aiService.getAvailableProviders();
     const current = aiService.getCurrentProvider();
     
     setAvailableProviders(providers);
     setCurrentProvider(current);
     setFallbackEnabled(true); // Default to enabled
-  };
+  }, [aiService]);
 
   const handleProviderChange = async (provider: string) => {
     try {

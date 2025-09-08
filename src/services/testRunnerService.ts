@@ -16,7 +16,7 @@ export interface TestRunResult {
   config: TestRunConfig;
   realTimeResults?: RealTimeTestSuite;
   simulationResults?: SimulationResult[];
-  monitoringResults?: any;
+  monitoringResults?: Record<string, unknown>;
   overallSuccess: boolean;
   duration: number;
   summary: {

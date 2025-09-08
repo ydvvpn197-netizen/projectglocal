@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ export const NewsSourceManager: React.FC = () => {
     loadSources();
   }, [loadSources]);
 
-  const loadSources = async () => {
+  const loadSources = useCallback(async () => {
     try {
       setLoading(true);
       const data = await aggregationService.getNewsSources();
@@ -55,7 +55,7 @@ export const NewsSourceManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [aggregationService, toast]);
 
   const handleAddSource = async (sourceData: Omit<NewsSource, 'id'>) => {
     try {

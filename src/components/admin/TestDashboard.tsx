@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,13 +71,13 @@ export const TestDashboard: React.FC = () => {
     loadStatistics();
   }, [loadTestHistory, loadStatistics]);
 
-  const loadTestHistory = () => {
+  const loadTestHistory = useCallback(() => {
     setTestHistory(testRunner.getTestHistory());
-  };
+  }, [testRunner]);
 
-  const loadStatistics = () => {
+  const loadStatistics = useCallback(() => {
     setStatistics(testRunner.getTestStatistics());
-  };
+  }, [testRunner]);
 
   const handleRunQuickTest = async () => {
     setIsRunning(true);

@@ -110,7 +110,6 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({
         variant: "destructive",
       });
     }
-    }
   };
 
   const handleDeleteComment = async (commentId: string) => {

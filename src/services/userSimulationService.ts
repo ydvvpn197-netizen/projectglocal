@@ -287,7 +287,7 @@ export class UserSimulationService {
    * Get random interaction type
    */
   private getRandomInteractionType(): 'like' | 'comment' | 'share' | 'bookmark' {
-    const types = ['like', 'comment', 'share', 'bookmark'];
+    const types: ('like' | 'comment' | 'share' | 'bookmark')[] = ['like', 'comment', 'share', 'bookmark'];
     const weights = [0.4, 0.2, 0.2, 0.2]; // Like is most common
     
     const random = Math.random();
@@ -296,7 +296,7 @@ export class UserSimulationService {
     for (let i = 0; i < types.length; i++) {
       cumulative += weights[i];
       if (random <= cumulative) {
-        return types[i] as any;
+        return types[i];
       }
     }
     
@@ -344,11 +344,11 @@ export class UserSimulationService {
     events: Array<{
       type: string;
       timestamp: Date;
-      data: any;
+      data: Record<string, unknown>;
     }>;
     totalEvents: number;
   }> {
-    const events: Array<{ type: string; timestamp: Date; data: any }> = [];
+    const events: Array<{ type: string; timestamp: Date; data: Record<string, unknown> }> = [];
     const endTime = new Date(Date.now() + durationMinutes * 60 * 1000);
 
     // Subscribe to news articles changes

@@ -233,7 +233,7 @@ export class EnhancedNewsAggregationService {
   /**
    * Parse API response
    */
-  private parseAPIResponse(data: any, source: NewsSource): NewsApiArticle[] {
+  private parseAPIResponse(data: Record<string, unknown> | Record<string, unknown>[], source: NewsSource): NewsApiArticle[] {
     // Generic API response parser
     // This would need to be customized based on the specific API format
     if (Array.isArray(data)) {

@@ -118,7 +118,7 @@ export class NewsAPIService {
     category?: string;
     language?: string;
     country?: string;
-  } = {}): Promise<any[]> {
+  } = {}): Promise<{ id: string; name: string; description: string; url: string; category: string; language: string; country: string }[]> {
     const endpoint = '/sources';
     const queryParams = new URLSearchParams();
 
@@ -133,7 +133,7 @@ export class NewsAPIService {
   /**
    * Make API request
    */
-  private async makeRequest(endpoint: string, queryParams: URLSearchParams, dataKey: string = 'articles'): Promise<any[]> {
+  private async makeRequest(endpoint: string, queryParams: URLSearchParams, dataKey: string = 'articles'): Promise<Record<string, unknown>[]> {
     if (!this.config.apiKey) {
       throw new Error('News API key not configured');
     }
@@ -160,7 +160,7 @@ export class NewsAPIService {
       }
 
       this.requestCount++;
-      return data[dataKey as keyof NewsAPIResponse] as any[] || [];
+      return data[dataKey as keyof NewsAPIResponse] as Record<string, unknown>[] || [];
     } catch (error) {
       console.error('News API request failed:', error);
       throw error;

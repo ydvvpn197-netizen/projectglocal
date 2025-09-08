@@ -109,7 +109,7 @@ export class NewsAggregationScheduler {
   /**
    * Handle aggregation errors
    */
-  private async handleAggregationError(error: any): Promise<void> {
+  private async handleAggregationError(error: Error | unknown): Promise<void> {
     console.error('Handling aggregation error:', error);
     
     // In a production environment, you might want to:
@@ -202,6 +202,6 @@ if (typeof window !== 'undefined') {
     scheduler.start();
     
     // Make scheduler available globally for debugging
-    (window as any).newsScheduler = scheduler;
+    (window as Window & { newsScheduler?: NewsAggregationScheduler }).newsScheduler = scheduler;
   }
 }
