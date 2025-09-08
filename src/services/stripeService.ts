@@ -1,497 +1,545 @@
-
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { 
-  PaymentIntent, 
-  PaymentFormData, 
-  PaymentSuccess, 
-  PaymentError,
-  Subscription,
-  SubscriptionPlan
-} from '../types/payment';
-import { 
-  StripePaymentIntent, 
-  StripeConfig, 
-  StripeWebhookEvent,
-  StripeCustomer,
-  StripeSubscription
-} from '../types/stripe';
+  STRIPE_CONFIG, 
+  CheckoutSessionConfig, 
+  PaymentResult, 
+  PaymentType,
+  validateStripeConfig 
+} from '@/config/stripe';
+import type { 
+  Service, 
+  ServiceBooking, 
+  Subscription, 
+  Payment,
+  ServiceData,
+  ServiceBookingData,
+  UserPlanInfo
+} from '@/types/monetization';
 
 export class StripeService {
-  private config: StripeConfig;
+  private baseUrl: string;
 
-  constructor(config: StripeConfig) {
-    this.config = config;
-  }
-
-  /**
-   * Create a payment intent directly with Stripe
-   */
-  async createStripePaymentIntent(data: PaymentFormData): Promise<StripePaymentIntent> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Get or create customer
-      const customer = await this.getOrCreateCustomer(user.id, user.email || '');
-
-      const response = await fetch('/api/stripe/create-payment-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: data.amount,
-          currency: data.currency,
-          customer_id: customer.stripe_customer_id,
-          description: data.description,
-          metadata: data.metadata,
-          payment_method_types: data.payment_method_types || ['card']
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create payment intent');
-      }
-
-      const paymentIntent = await response.json();
-      return paymentIntent;
-    } catch (error) {
-      console.error('Error creating Stripe payment intent:', error);
-      throw error;
+  constructor() {
+    this.baseUrl = import.meta.env.VITE_API_URL || '/api';
+    if (!validateStripeConfig()) {
+      throw new Error('Stripe configuration is invalid');
     }
   }
 
   /**
-   * Confirm a payment intent with Stripe
+   * Create a Stripe checkout session for payments
    */
-  async confirmStripePayment(paymentIntentId: string, paymentMethodId: string): Promise<PaymentSuccess> {
+  async createCheckoutSession(config: CheckoutSessionConfig): Promise<PaymentResult> {
     try {
-      const response = await fetch('/api/stripe/confirm-payment', {
+      const response = await fetch(`${this.baseUrl}/payments/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await this.getAuthToken()}`,
         },
-        body: JSON.stringify({
-          payment_intent_id: paymentIntentId,
-          payment_method_id: paymentMethodId
-        })
+        body: JSON.stringify(config),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Payment confirmation failed');
+        throw new Error(error.message || 'Failed to create checkout session');
       }
 
-      const result = await response.json();
-      return result;
+      const data = await response.json();
+      return {
+        success: true,
+        sessionId: data.sessionId,
+        url: data.url,
+      };
     } catch (error) {
-      console.error('Error confirming Stripe payment:', error);
-      throw error;
+      console.error('Error creating checkout session:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
     }
   }
 
   /**
-   * Get or create a Stripe customer
+   * Redirect to Stripe checkout
    */
-  async getOrCreateCustomer(userId: string, email: string): Promise<StripeCustomer> {
+  async redirectToCheckout(sessionId: string): Promise<void> {
+    const stripe = await import('@stripe/stripe-js').then(m => m.loadStripe(STRIPE_CONFIG.PUBLISHABLE_KEY));
+    if (!stripe) {
+      throw new Error('Failed to load Stripe');
+    }
+
+    const { error } = await stripe.redirectToCheckout({ sessionId });
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  /**
+   * Get user's current subscription status
+   */
+  async getUserSubscription(userId: string): Promise<Subscription | null> {
     try {
-      // Check if customer exists in database
-      const { data: existingCustomer, error: fetchError } = await supabase
-        .from('billing_profiles')
-        .select('stripe_customer_id')
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching user subscription:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get user's payment history
+   */
+  async getUserPayments(userId: string, limit = 10): Promise<Payment[]> {
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching user payments:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user's plan information
+   */
+  async getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          plan_type,
+          is_verified,
+          is_premium,
+          premium_expires_at,
+          verification_expires_at
+        `)
         .eq('user_id', userId)
         .single();
 
-      if (existingCustomer?.stripe_customer_id) {
-        // Get customer from Stripe
-        const response = await fetch(`/api/stripe/customers/${existingCustomer.stripe_customer_id}`);
-        if (response.ok) {
-          return await response.json();
-        }
-      }
+      if (error) throw error;
 
-      // Create new customer
-      const response = await fetch('/api/stripe/customers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          email: email
-        })
-      });
+      const now = new Date();
+      const isVerified = data.is_verified && 
+        (!data.verification_expires_at || new Date(data.verification_expires_at) > now);
+      const isPremium = data.is_premium && 
+        (!data.premium_expires_at || new Date(data.premium_expires_at) > now);
 
-      if (!response.ok) {
-        throw new Error('Failed to create customer');
-      }
-
-      const customer = await response.json();
-
-      // Save customer ID to database
-      await supabase
-        .from('billing_profiles')
-        .upsert({
-          user_id: userId,
-          stripe_customer_id: customer.id,
-          email: email
-        });
-
-      return customer;
+      return {
+        plan_type: data.plan_type || 'free',
+        is_verified: isVerified,
+        is_premium: isPremium,
+        premium_expires_at: data.premium_expires_at,
+        verification_expires_at: data.verification_expires_at,
+        can_create_services: isPremium,
+        can_feature_events: isVerified || isPremium,
+        max_services: isPremium ? 10 : 0,
+        max_featured_events: isVerified || isPremium ? 5 : 0,
+      };
     } catch (error) {
-      console.error('Error getting or creating customer:', error);
-      throw error;
+      console.error('Error fetching user plan info:', error);
+      return {
+        plan_type: 'free',
+        is_verified: false,
+        is_premium: false,
+        premium_expires_at: null,
+        verification_expires_at: null,
+        can_create_services: false,
+        can_feature_events: false,
+        max_services: 0,
+        max_featured_events: 0,
+      };
     }
   }
 
   /**
-   * Create a subscription
+   * Create a service (premium users only)
    */
-  async createSubscription(planId: string, paymentMethodId: string): Promise<Subscription> {
+  async createService(serviceData: ServiceData): Promise<Service> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
+      if (!user) throw new Error('User not authenticated');
+
+      // Check if user is premium
+      const planInfo = await this.getUserPlanInfo(user.id);
+      if (!planInfo.can_create_services) {
+        throw new Error('Premium subscription required to create services');
       }
 
-      const customer = await this.getOrCreateCustomer(user.id, user.email || '');
-
-      const response = await fetch('/api/stripe/subscriptions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer_id: customer.id,
-          price_id: planId,
-          payment_method_id: paymentMethodId
-        })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create subscription');
-      }
-
-      const stripeSubscription = await response.json();
-
-      // Save subscription to database
-      const { data: subscription, error } = await supabase
-        .from('subscriptions')
+      const { data, error } = await supabase
+        .from('services')
         .insert({
-          stripe_subscription_id: stripeSubscription.id,
           user_id: user.id,
-          stripe_customer_id: customer.id,
-          status: stripeSubscription.status,
-          plan_id: planId,
-          plan_name: stripeSubscription.items.data[0]?.price.nickname || 'Unknown Plan',
-          plan_price: stripeSubscription.items.data[0]?.price.unit_amount || 0,
-          currency: stripeSubscription.currency,
-          interval: stripeSubscription.items.data[0]?.price.recurring?.interval || 'monthly',
-          current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
-          cancel_at_period_end: stripeSubscription.cancel_at_period_end,
-          metadata: stripeSubscription.metadata
+          ...serviceData,
+          currency: serviceData.currency || 'usd',
         })
-        .select()
+        .select(`
+          *,
+          provider:profiles!services_user_id_fkey(
+            id,
+            display_name,
+            avatar_url,
+            is_verified,
+            is_premium
+          )
+        `)
         .single();
 
       if (error) throw error;
-
-      return subscription;
+      return data;
     } catch (error) {
-      console.error('Error creating subscription:', error);
+      console.error('Error creating service:', error);
       throw error;
     }
   }
 
   /**
-   * Cancel a subscription
+   * Update a service
    */
-  async cancelSubscription(subscriptionId: string, cancelAtPeriodEnd = true): Promise<void> {
+  async updateService(serviceId: string, serviceData: Partial<ServiceData>): Promise<Service> {
     try {
-      const response = await fetch(`/api/stripe/subscriptions/${subscriptionId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          cancel_at_period_end: cancelAtPeriodEnd
-        })
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
-      if (!response.ok) {
-        throw new Error('Failed to cancel subscription');
-      }
+      const { data, error } = await supabase
+        .from('services')
+        .update(serviceData)
+        .eq('id', serviceId)
+        .eq('user_id', user.id)
+        .select(`
+          *,
+          provider:profiles!services_user_id_fkey(
+            id,
+            display_name,
+            avatar_url,
+            is_verified,
+            is_premium
+          )
+        `)
+        .single();
 
-      // Update subscription in database
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating service:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a service
+   */
+  async deleteService(serviceId: string): Promise<void> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { error } = await supabase
-        .from('subscriptions')
-        .update({
-          status: cancelAtPeriodEnd ? 'active' : 'canceled',
-          cancel_at_period_end: cancelAtPeriodEnd
-        })
-        .eq('stripe_subscription_id', subscriptionId);
+        .from('services')
+        .delete()
+        .eq('id', serviceId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error canceling subscription:', error);
+      console.error('Error deleting service:', error);
       throw error;
     }
   }
 
   /**
-   * Update subscription payment method
+   * Get user's services
    */
-  async updateSubscriptionPaymentMethod(subscriptionId: string, paymentMethodId: string): Promise<void> {
+  async getUserServices(userId: string): Promise<Service[]> {
     try {
-      const response = await fetch(`/api/stripe/subscriptions/${subscriptionId}/payment-method`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          payment_method_id: paymentMethodId
-        })
-      });
+      const { data, error } = await supabase
+        .from('services')
+        .select(`
+          *,
+          provider:profiles!services_user_id_fkey(
+            id,
+            display_name,
+            avatar_url,
+            is_verified,
+            is_premium
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-      if (!response.ok) {
-        throw new Error('Failed to update subscription payment method');
-      }
+      if (error) throw error;
+      return data || [];
     } catch (error) {
-      console.error('Error updating subscription payment method:', error);
-      throw error;
+      console.error('Error fetching user services:', error);
+      return [];
     }
   }
 
   /**
-   * Get subscription plans
+   * Get all active services
    */
-  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+  async getActiveServices(limit = 20, offset = 0): Promise<Service[]> {
     try {
-      const response = await fetch('/api/stripe/prices');
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscription plans');
-      }
+      const { data, error } = await supabase
+        .from('services')
+        .select(`
+          *,
+          provider:profiles!services_user_id_fkey(
+            id,
+            display_name,
+            avatar_url,
+            is_verified,
+            is_premium
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
 
-      const prices = await response.json();
-      
-      return prices.data
-        .filter((price: Record<string, unknown>) => price.active && price.type === 'recurring')
-        .map((price: Record<string, unknown>) => ({
-          id: price.id,
-          name: price.nickname || 'Unknown Plan',
-          description: price.metadata?.description || '',
-          price: price.unit_amount || 0,
-          currency: price.currency,
-          interval: price.recurring?.interval || 'monthly',
-          features: price.metadata?.features ? JSON.parse(price.metadata.features) : [],
-          stripe_price_id: price.id
-        }));
+      if (error) throw error;
+      return data || [];
     } catch (error) {
-      console.error('Error fetching subscription plans:', error);
-      throw error;
+      console.error('Error fetching active services:', error);
+      return [];
     }
   }
 
   /**
-   * Create a checkout session for subscription
+   * Book a service
    */
-  async createCheckoutSession(planId: string, successUrl: string, cancelUrl: string): Promise<{ url: string }> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      const customer = await this.getOrCreateCustomer(user.id, user.email || '');
-
-      const response = await fetch('/api/stripe/checkout-sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer_id: customer.id,
-          price_id: planId,
-          success_url: successUrl,
-          cancel_url: cancelUrl,
-          mode: 'subscription'
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
-
-      const session = await response.json();
-      return { url: session.url };
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create a billing portal session
-   */
-  async createBillingPortalSession(returnUrl: string): Promise<{ url: string }> {
+  async bookService(bookingData: ServiceBookingData): Promise<ServiceBooking> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
+      if (!user) throw new Error('User not authenticated');
 
-      const customer = await this.getOrCreateCustomer(user.id, user.email || '');
+      // Get service details
+      const { data: service, error: serviceError } = await supabase
+        .from('services')
+        .select('*, provider:profiles!services_user_id_fkey(*)')
+        .eq('id', bookingData.service_id)
+        .single();
 
-      const response = await fetch('/api/stripe/billing-portal/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer_id: customer.id,
-          return_url: returnUrl
-        })
-      });
+      if (serviceError) throw serviceError;
+      if (!service) throw new Error('Service not found');
 
-      if (!response.ok) {
-        throw new Error('Failed to create billing portal session');
-      }
-
-      const session = await response.json();
-      return { url: session.url };
-    } catch (error) {
-      console.error('Error creating billing portal session:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Process webhook events
-   */
-  async processWebhookEvent(event: StripeWebhookEvent): Promise<void> {
-    try {
-      switch (event.type) {
-        case 'payment_intent.succeeded':
-          await this.handlePaymentIntentSucceeded(event.data.object as StripePaymentIntent);
-          break;
-        case 'payment_intent.payment_failed':
-          await this.handlePaymentIntentFailed(event.data.object as StripePaymentIntent);
-          break;
-        case 'customer.subscription.created':
-          await this.handleSubscriptionCreated(event.data.object as StripeSubscription);
-          break;
-        case 'customer.subscription.updated':
-          await this.handleSubscriptionUpdated(event.data.object as StripeSubscription);
-          break;
-        case 'customer.subscription.deleted':
-          await this.handleSubscriptionDeleted(event.data.object as StripeSubscription);
-          break;
-        case 'invoice.payment_succeeded':
-          await this.handleInvoicePaymentSucceeded(event.data.object);
-          break;
-        case 'invoice.payment_failed':
-          await this.handleInvoicePaymentFailed(event.data.object);
-          break;
-        default:
-          console.log(`Unhandled webhook event type: ${event.type}`);
-      }
-    } catch (error) {
-      console.error('Error processing webhook event:', error);
-      throw error;
-    }
-  }
-
-  private async handlePaymentIntentSucceeded(paymentIntent: StripePaymentIntent): Promise<void> {
-    // Update payment intent status in database
-    await supabase
-      .from('payment_intents')
-      .update({ status: paymentIntent.status })
-      .eq('stripe_payment_intent_id', paymentIntent.id);
-
-    // Create transaction record if not exists
-    const { data: existingTransaction } = await supabase
-      .from('transactions')
-      .select('id')
-      .eq('stripe_charge_id', paymentIntent.latest_charge)
-      .single();
-
-    if (!existingTransaction) {
-      await supabase
-        .from('transactions')
+      // Create booking
+      const { data, error } = await supabase
+        .from('service_bookings')
         .insert({
-          stripe_charge_id: paymentIntent.latest_charge,
-          payment_intent_id: paymentIntent.id,
-          user_id: paymentIntent.customer,
-          amount: paymentIntent.amount,
-          currency: paymentIntent.currency,
-          status: 'succeeded',
-          description: paymentIntent.description,
-          metadata: paymentIntent.metadata
-        });
+          service_id: bookingData.service_id,
+          customer_id: user.id,
+          provider_id: service.user_id,
+          booking_date: bookingData.booking_date,
+          duration_minutes: bookingData.duration_minutes || 60,
+          total_amount: service.price,
+          currency: service.currency,
+          notes: bookingData.notes,
+          customer_notes: bookingData.customer_notes,
+        })
+        .select(`
+          *,
+          service:services(*),
+          customer:profiles!service_bookings_customer_id_fkey(
+            id,
+            display_name,
+            avatar_url
+          ),
+          provider:profiles!service_bookings_provider_id_fkey(
+            id,
+            display_name,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error booking service:', error);
+      throw error;
     }
   }
 
-  private async handlePaymentIntentFailed(paymentIntent: StripePaymentIntent): Promise<void> {
-    await supabase
-      .from('payment_intents')
-      .update({ status: paymentIntent.status })
-      .eq('stripe_payment_intent_id', paymentIntent.id);
-  }
+  /**
+   * Get user's bookings
+   */
+  async getUserBookings(userId: string, type: 'customer' | 'provider' = 'customer'): Promise<ServiceBooking[]> {
+    try {
+      const column = type === 'customer' ? 'customer_id' : 'provider_id';
+      const { data, error } = await supabase
+        .from('service_bookings')
+        .select(`
+          *,
+          service:services(*),
+          customer:profiles!service_bookings_customer_id_fkey(
+            id,
+            display_name,
+            avatar_url
+          ),
+          provider:profiles!service_bookings_provider_id_fkey(
+            id,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq(column, userId)
+        .order('created_at', { ascending: false });
 
-  private async handleSubscriptionCreated(subscription: StripeSubscription): Promise<void> {
-    // Subscription creation is handled in createSubscription method
-    console.log('Subscription created:', subscription.id);
-  }
-
-  private async handleSubscriptionUpdated(subscription: StripeSubscription): Promise<void> {
-    await supabase
-      .from('subscriptions')
-      .update({
-        status: subscription.status,
-        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-        cancel_at_period_end: subscription.cancel_at_period_end
-      })
-      .eq('stripe_subscription_id', subscription.id);
-  }
-
-  private async handleSubscriptionDeleted(subscription: StripeSubscription): Promise<void> {
-    await supabase
-      .from('subscriptions')
-      .update({ status: 'canceled' })
-      .eq('stripe_subscription_id', subscription.id);
-  }
-
-  private async handleInvoicePaymentSucceeded(invoice: Record<string, unknown>): Promise<void> {
-    // Handle successful invoice payment
-    console.log('Invoice payment succeeded:', invoice.id);
-  }
-
-  private async handleInvoicePaymentFailed(invoice: Record<string, unknown>): Promise<void> {
-    // Handle failed invoice payment
-    console.log('Invoice payment failed:', invoice.id);
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching user bookings:', error);
+      return [];
+    }
   }
 
   /**
-   * Verify webhook signature
+   * Update booking status
    */
-  verifyWebhookSignature(payload: string, signature: string): boolean {
-    // This should be implemented with crypto to verify the webhook signature
-    // For now, we'll return true (implement proper verification in production)
-    return true;
+  async updateBookingStatus(bookingId: string, status: string, notes?: string): Promise<ServiceBooking> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const updateData: any = { status };
+      if (notes) {
+        updateData.provider_notes = notes;
+      }
+
+      const { data, error } = await supabase
+        .from('service_bookings')
+        .update(updateData)
+        .eq('id', bookingId)
+        .eq('provider_id', user.id)
+        .select(`
+          *,
+          service:services(*),
+          customer:profiles!service_bookings_customer_id_fkey(
+            id,
+            display_name,
+            avatar_url
+          ),
+          provider:profiles!service_bookings_provider_id_fkey(
+            id,
+            display_name,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Feature an event
+   */
+  async featureEvent(eventId: string): Promise<PaymentResult> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const config: CheckoutSessionConfig = {
+        type: 'event_feature',
+        userId: user.id,
+        eventId,
+        successUrl: `${window.location.origin}/events/${eventId}?featured=true`,
+        cancelUrl: `${window.location.origin}/events/${eventId}`,
+        metadata: {
+          event_id: eventId,
+        },
+      };
+
+      return await this.createCheckoutSession(config);
+    } catch (error) {
+      console.error('Error featuring event:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Upgrade to verified user
+   */
+  async upgradeToVerified(): Promise<PaymentResult> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const config: CheckoutSessionConfig = {
+        type: 'verification',
+        userId: user.id,
+        successUrl: `${window.location.origin}/profile?verified=true`,
+        cancelUrl: `${window.location.origin}/profile`,
+      };
+
+      return await this.createCheckoutSession(config);
+    } catch (error) {
+      console.error('Error upgrading to verified:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Upgrade to premium
+   */
+  async upgradeToPremium(): Promise<PaymentResult> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const config: CheckoutSessionConfig = {
+        type: 'premium_subscription',
+        userId: user.id,
+        successUrl: `${window.location.origin}/profile?premium=true`,
+        cancelUrl: `${window.location.origin}/profile`,
+      };
+
+      return await this.createCheckoutSession(config);
+    } catch (error) {
+      console.error('Error upgrading to premium:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Get authentication token
+   */
+  private async getAuthToken(): Promise<string> {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || '';
   }
 }
 
-import { stripeConfig } from '../config/environment';
-
 // Export singleton instance
-export const stripeService = new StripeService({
-  publishableKey: stripeConfig.publishableKey,
-  secretKey: stripeConfig.secretKey,
-  webhookSecret: stripeConfig.webhookSecret,
-  apiVersion: '2023-10-16'
-});
+export const stripeService = new StripeService();

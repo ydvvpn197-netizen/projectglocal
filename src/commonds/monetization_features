@@ -1,0 +1,133 @@
+You are to extend my project by implementing **subscription, verification, premium plans, and Stripe integration**. Follow the requirements step by step and implement clean, production-ready code without breaking existing functionality.  
+
+### New Features to Implement:
+1. **User Verification via Subscription**
+   - A normal user can upgrade to "Authorised / Verified User" by paying a subscription fee through Stripe.  
+   - Once payment succeeds, update their profile in the database (`is_verified: true` or similar flag).  
+   - Show a verified badge next to their name in the UI.  
+
+2. **Featured Event Posting**
+   - If a user wants their posted event to become a **Featured Event**, they must pay a one-time featured fee.  
+   - Stripe checkout/payment should be triggered when they choose to feature an event.  
+   - On success, update the event record (`is_featured: true`) so it shows up prominently in the event listings.
+
+3. **Premium Plans for Artists / Service Providers / Event Organizers**
+   - Add an option for these user types to subscribe to a **Premium Plan**.  
+   - Premium users should get a verified/premium badge and ability to **sell services directly on the platform**.  
+   - Include a simple flow for service providers to list services (name, description, price, availability).  
+   - Payments for these services should also be processed via Stripe.  
+
+4. **Stripe Payment Integration**
+   - Properly integrate **Stripe** (subscription + one-time payments).  
+   - Configure backend API routes for creating checkout sessions.  
+   - Ensure webhook handling is in place for updating payment/verification status in the database after successful payment.  
+   - Use environment variables for API keys (`VITE_STRIPE_PUBLISHABLE_KEY`, `VITE_STRIPE_SECRET_KEY`, `VITE_STRIPE_WEBHOOK_SECRET`).  
+
+### Deliverables:
+- Backend: All necessary API routes for subscriptions, event featuring, and premium plan payments.  
+- Database: Extend user and event schemas with fields like `is_verified`, `is_premium`, `is_featured`.  
+- Frontend:  
+  - UI flows for subscribing, featuring events, and upgrading to premium.  
+  - Stripe Checkout integrated seamlessly.  
+  - Verified / Premium / Featured badges in the UI.  
+- Webhooks: Implement robust webhook handler to update database upon successful Stripe events.  
+- Testing: Ensure the flow works end-to-end for users making payments, receiving verified/premium status, and posting featured events.  
+
+Make sure the implementation is modular, clean, and follows best practices. Do not remove existing features of the platform.  
+
+You are to extend my project by implementing **subscription, verification, premium plans, and Stripe integration**.  
+Follow the requirements step by step and implement clean, production-ready code without breaking existing functionality.  
+
+---
+
+### 1. Database Schema Changes
+Update database models (e.g., Supabase or Prisma depending on setup):
+
+**Users Table**
+- `is_verified: boolean` (default false) → True if user has paid verification subscription.  
+- `is_premium: boolean` (default false) → True if artist/service provider/event organizer is on premium plan.  
+- `stripe_customer_id: string` → To track Stripe customer.  
+- `plan_type: enum('free', 'verified', 'premium')` → Current plan.  
+
+**Events Table**
+- `is_featured: boolean` (default false) → True if user paid to feature event.  
+- `featured_until: datetime` (optional) → Expiry date for featured status if applicable.  
+
+**Services Table** (new table for service providers)  
+- `id: uuid`  
+- `user_id: uuid` (FK → users.id)  
+- `title: string`  
+- `description: text`  
+- `price: decimal`  
+- `available: boolean`  
+
+---
+
+### 2. Backend API Routes
+Create the following secure API routes:
+
+- `POST /api/payments/create-checkout-session`  
+   - Accepts payload: `{ type: 'verification' | 'event_feature' | 'premium' | 'service_purchase', eventId?, serviceId? }`  
+   - Creates a Stripe Checkout Session with correct amount + metadata.  
+   - Returns Stripe session URL.  
+
+- `POST /api/webhooks/stripe`  
+   - Handles Stripe webhook events (`checkout.session.completed`, `invoice.paid`).  
+   - Updates database accordingly:  
+     - If verification → set `is_verified = true`.  
+     - If premium → set `is_premium = true, plan_type = 'premium'`.  
+     - If event_feature → set `is_featured = true` for event.  
+     - If service purchase → mark service booking in new `orders` table.  
+
+- `GET /api/services/:userId` → Fetch all services offered by a provider.  
+- `POST /api/services` → Create a new service (only for premium users).  
+
+---
+
+### 3. Frontend Flows
+Implement the following UI/UX flows:
+
+- **Verification Upgrade Flow**  
+  - On profile page → “Become Verified” button.  
+  - Calls backend to create checkout session.  
+  - On payment success → verified badge shown in UI.  
+
+- **Featured Event Flow**  
+  - On event creation/edit → “Make Featured” option.  
+  - Redirect to Stripe Checkout.  
+  - On success → event shows “Featured” label in listings.  
+
+- **Premium Artist/Organizer Flow**  
+  - On artist/organizer profile → “Upgrade to Premium” button.  
+  - On success → premium badge displayed.  
+  - Unlock ability to list services.  
+
+- **Service Marketplace Flow**  
+  - Premium users can create/edit/delete services.  
+  - Other users can view services and purchase via Stripe.  
+
+---
+
+### 4. Stripe Integration
+- Use environment variables:  
+  - `VITE_STRIPE_PUBLISHABLE_KEY`  
+  - `STRIPE_SECRET_KEY`  
+  - `STRIPE_WEBHOOK_SECRET`  
+- Implement checkout with `stripe.redirectToCheckout`.  
+- Secure webhook endpoint that validates Stripe signatures.  
+- Store transaction details in `payments` table:  
+  - `id`, `user_id`, `amount`, `currency`, `status`, `type`, `created_at`.  
+
+---
+
+### 5. Deliverables
+- Full backend API with subscription/payment logic.  
+- Database migrations with new fields and tables.  
+- Stripe integration (checkout + webhooks).  
+- Frontend UI flows for verification, premium upgrade, featured event, and services.  
+- Display verified/premium/featured badges consistently across the platform.  
+- End-to-end testing for payment + role/plan upgrades.  
+
+---
+
+Make sure the implementation is **modular, clean, production-ready**, and does not break existing features.  
