@@ -9,17 +9,23 @@
 export interface AdminUser extends BaseEntity {
   id: string;
   user_id: string;
-  role: AdminRole;
-  permissions: Permission[];
-  assigned_areas: string[];
-  last_moderation_action?: string;
-  moderation_stats: ModerationStats;
+  role_id: string;
+  role?: AdminRole;
   is_active: boolean;
+  two_factor_enabled: boolean;
+  ip_whitelist: string[];
+  last_login_at?: string;
+  login_count: number;
   created_at: string;
   updated_at: string;
+  profile?: {
+    username: string;
+    full_name: string;
+    email: string;
+    avatar_url?: string;
+  };
 }
 
-export type AdminRole = 'super_admin' | 'admin' | 'moderator' | 'support';
 
 export interface Permission {
   id: string;
@@ -573,6 +579,195 @@ export interface QuickAction {
   action: string;
   requires_confirmation: boolean;
   is_dangerous: boolean;
+}
+
+// =========================
+// Additional Types for Admin Service
+// =========================
+
+export interface AdminRole {
+  id: string;
+  name: string;
+  display_name: string;
+  description?: string;
+  permissions: AdminPermissions;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminPermissions {
+  [key: string]: string[];
+}
+
+export interface AdminAction {
+  id: string;
+  admin_user_id: string;
+  action_type: string;
+  resource_type: string;
+  resource_id?: string;
+  action_data?: Record<string, unknown>;
+  success: boolean;
+  error_message?: string;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+export interface AdminApiResponse<T> {
+  data: T;
+  success: boolean;
+  error?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
+export interface SystemSetting {
+  id: string;
+  setting_key: string;
+  setting_value: string;
+  setting_type: 'string' | 'number' | 'boolean' | 'json' | 'array';
+  description?: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserManagementFilters {
+  page: number;
+  limit: number;
+  search?: string;
+  role?: string;
+  status?: string;
+}
+
+export interface ContentReportFilters {
+  page: number;
+  limit: number;
+  search?: string;
+  contentType?: string;
+  reportStatus?: string;
+  reportReason?: string;
+}
+
+export interface ContentReport {
+  id: string;
+  reporter_id: string;
+  content_type: string;
+  content_id: string;
+  report_reason: string;
+  report_details: string;
+  report_status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  username: string;
+  full_name: string;
+  email: string;
+  avatar_url?: string;
+  status: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminAnalyticsFilters {
+  start_date?: string;
+  end_date?: string;
+  period?: string;
+}
+
+export interface AdminAnalytics {
+  totalUsers?: number;
+  activeUsers?: number;
+  newUsers?: number;
+  previousPeriodUsers?: number;
+  dailyActiveUsers?: number;
+  weeklyActiveUsers?: number;
+  monthlyActiveUsers?: number;
+  usersWithLocation?: number;
+  verifiedUsers?: number;
+  day1Retention?: number;
+  day7Retention?: number;
+  day30Retention?: number;
+  totalContent?: number;
+  newContent?: number;
+  previousPeriodContent?: number;
+  posts?: number;
+  events?: number;
+  reviews?: number;
+  avgViewsPerPost?: number;
+  avgLikesPerPost?: number;
+  avgCommentsPerPost?: number;
+  reportedContent?: number;
+  removedContent?: number;
+  contentApprovalRate?: number;
+  engagementRate?: number;
+  avgSessionDuration?: number;
+  totalViews?: number;
+  totalLikes?: number;
+  totalShares?: number;
+  pagesPerSession?: number;
+  bounceRate?: number;
+  uptime?: number;
+  avgResponseTime?: number;
+  errorRate?: number;
+}
+
+export interface AdminDashboardState {
+  isLoading: boolean;
+  error: string | null;
+  stats: {
+    totalUsers: number;
+    activeUsers: number;
+    newUsersToday: number;
+    totalContent: number;
+    pendingReports: number;
+    totalEvents: number;
+    totalPosts: number;
+    totalReviews: number;
+  };
+  recentActivity: AdminAction[];
+  systemHealth: {
+    status: 'healthy' | 'warning' | 'error';
+    uptime: number;
+    responseTime: number;
+    errorRate: number;
+  };
+}
+
+export interface PlatformMetrics {
+  totalUsers: number;
+  activeUsers: number;
+  newUsersToday: number;
+  totalContent: number;
+  pendingReports: number;
+  totalEvents: number;
+  totalPosts: number;
+  totalReviews: number;
+}
+
+export interface UseAdminAuthReturn {
+  adminUser: AdminUser | null;
+  permissions: AdminPermissions | null;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkPermission: (permission: string) => boolean;
+  hasRole: (role: string) => boolean;
 }
 
 // =========================

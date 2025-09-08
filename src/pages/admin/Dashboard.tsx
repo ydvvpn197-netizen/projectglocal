@@ -52,10 +52,6 @@ const AdminDashboard: React.FC = () => {
     }
   });
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
   const loadDashboardData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -94,6 +90,10 @@ const AdminDashboard: React.FC = () => {
       }));
     }
   }, [adminService]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
