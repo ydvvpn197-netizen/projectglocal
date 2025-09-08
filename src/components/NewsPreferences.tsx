@@ -182,13 +182,13 @@ export const NewsPreferences: React.FC<NewsPreferencesProps> = ({ isOpen, onClos
   }, [user, preferences, toast]);
 
   // Update preference field
-  const updatePreference = useCallback((path: string, value: any) => {
+  const updatePreference = useCallback((path: string, value: unknown) => {
     setPreferences(prev => {
       if (!prev) return prev;
 
       const newPrefs = { ...prev };
       const keys = path.split('.');
-      let current = newPrefs as any;
+      let current = newPrefs as Record<string, unknown>;
 
       for (let i = 0; i < keys.length - 1; i++) {
         current = current[keys[i]];

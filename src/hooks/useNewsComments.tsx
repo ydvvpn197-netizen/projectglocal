@@ -89,7 +89,7 @@ export const useNewsComments = (articleId: string) => {
     } finally {
       setLoading(false);
     }
-  }, [articleId, user]);
+  }, [articleId, user, fetchVoteData]);
 
   // Build threaded comment structure
   const buildCommentThread = (comments: NewsComment[]): NewsComment[] => {

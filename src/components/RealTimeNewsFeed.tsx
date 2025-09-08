@@ -473,7 +473,7 @@ export const RealTimeNewsFeed: React.FC<RealTimeNewsFeedProps> = ({
             </Select>
             <Select 
               value={filters.timeRange} 
-              onValueChange={(value) => setFilters(prev => ({ ...prev, timeRange: value as any }))}
+              onValueChange={(value) => setFilters(prev => ({ ...prev, timeRange: value as '1h' | '6h' | '24h' | '7d' }))}
             >
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Time Range" />

@@ -39,7 +39,7 @@ export const NewsSourceManager: React.FC = () => {
 
   useEffect(() => {
     loadSources();
-  }, []);
+  }, [loadSources]);
 
   const loadSources = async () => {
     try {
@@ -337,7 +337,7 @@ const AddSourceDialog: React.FC<AddSourceDialogProps> = ({ open, onOpenChange, o
               <Label htmlFor="source_type">Type</Label>
               <Select
                 value={formData.source_type}
-                onValueChange={(value: any) => setFormData({ ...formData, source_type: value })}
+                onValueChange={(value: string) => setFormData({ ...formData, source_type: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -480,7 +480,7 @@ const EditSourceDialog: React.FC<EditSourceDialogProps> = ({ source, open, onOpe
               <Label htmlFor="source_type">Type</Label>
               <Select
                 value={formData.source_type}
-                onValueChange={(value: any) => setFormData({ ...formData, source_type: value })}
+                onValueChange={(value: string) => setFormData({ ...formData, source_type: value })}
               >
                 <SelectTrigger>
                   <SelectValue />

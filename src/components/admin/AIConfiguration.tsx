@@ -36,7 +36,7 @@ export const AIConfiguration: React.FC = () => {
 
   useEffect(() => {
     loadConfiguration();
-  }, []);
+  }, [loadConfiguration]);
 
   const loadConfiguration = () => {
     const providers = aiService.getAvailableProviders();

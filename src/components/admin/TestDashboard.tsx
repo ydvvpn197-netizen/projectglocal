@@ -42,7 +42,14 @@ export const TestDashboard: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [currentTest, setCurrentTest] = useState<TestRunResult | null>(null);
   const [testHistory, setTestHistory] = useState<TestRunResult[]>([]);
-  const [statistics, setStatistics] = useState<any>(null);
+  const [statistics, setStatistics] = useState<{
+    totalRuns: number;
+    successRate: number;
+    averageDuration: number;
+    totalTestsRun: number;
+    totalUsersSimulated: number;
+    totalActionsPerformed: number;
+  } | null>(null);
   
   // Test configuration
   const [testConfig, setTestConfig] = useState<TestRunConfig>({
@@ -62,7 +69,7 @@ export const TestDashboard: React.FC = () => {
   useEffect(() => {
     loadTestHistory();
     loadStatistics();
-  }, []);
+  }, [loadTestHistory, loadStatistics]);
 
   const loadTestHistory = () => {
     setTestHistory(testRunner.getTestHistory());

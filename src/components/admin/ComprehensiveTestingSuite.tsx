@@ -40,7 +40,11 @@ export const ComprehensiveTestingSuite: React.FC = () => {
   // Test results
   const [testSuite, setTestSuite] = useState<RealTimeTestSuite | null>(null);
   const [simulationResults, setSimulationResults] = useState<SimulationResult[]>([]);
-  const [monitoringEvents, setMonitoringEvents] = useState<any[]>([]);
+  const [monitoringEvents, setMonitoringEvents] = useState<{
+    type: string;
+    timestamp: string;
+    data: Record<string, unknown>;
+  }[]>([]);
   
   // Simulation settings
   const [userCount, setUserCount] = useState(5);
@@ -132,7 +136,7 @@ export const ComprehensiveTestingSuite: React.FC = () => {
     }
   };
 
-  const getTestIcon = (test: any) => {
+  const getTestIcon = (test: { success: boolean }) => {
     return test.success ? (
       <CheckCircle className="h-4 w-4 text-green-500" />
     ) : (
@@ -140,7 +144,7 @@ export const ComprehensiveTestingSuite: React.FC = () => {
     );
   };
 
-  const getTestColor = (test: any) => {
+  const getTestColor = (test: { success: boolean }) => {
     return test.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
