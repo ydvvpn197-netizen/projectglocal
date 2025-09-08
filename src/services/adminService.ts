@@ -96,26 +96,40 @@ export class AdminService {
     actionType: string,
     resourceType: string,
     resourceId?: string,
-    actionData?: Record<string, unknown>,
-    success: boolean = true,
-    errorMessage?: string
+    actionData?: Record<string, unknown>
   ): Promise<string | null> {
     try {
-      const { data, error } = await supabase.rpc('log_admin_action', {
-        action_type: actionType,
-        resource_type: resourceType,
-        resource_id: resourceId,
-        action_data: actionData,
-        success: success,
-        error_message: errorMessage
-      });
+      // Get current admin user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+
+      if (!adminUser) return null;
+
+      const { data, error } = await supabase
+        .from('admin_actions')
+        .insert({
+          admin_user_id: adminUser.id,
+          action_type: actionType,
+          resource_type: resourceType,
+          resource_id: resourceId,
+          details: actionData || {}
+        })
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Error logging admin action:', error);
         return null;
       }
 
-      return data;
+      return data.id;
     } catch (error) {
       console.error('Error logging admin action:', error);
       return null;
@@ -385,7 +399,6 @@ export class AdminService {
       action_type?: string;
       resource_type?: string;
       admin_user_id?: string;
-      success?: boolean;
       date_from?: string;
       date_to?: string;
     }
@@ -414,9 +427,6 @@ export class AdminService {
         query = query.eq('admin_user_id', filters.admin_user_id);
       }
 
-      if (filters?.success !== undefined) {
-        query = query.eq('success', filters.success);
-      }
 
       if (filters?.date_from) {
         query = query.gte('created_at', filters.date_from);
