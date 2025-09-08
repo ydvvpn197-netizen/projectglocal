@@ -33,12 +33,12 @@ export interface Service {
   price: number; // Price in cents
   currency: string;
   category: string | null;
-  availability_schedule: Record<string, any>;
+  availability_schedule: Record<string, unknown>;
   is_active: boolean;
   max_bookings_per_day: number;
   requires_approval: boolean;
   cancellation_policy: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   // Joined fields
@@ -67,7 +67,7 @@ export interface ServiceBooking {
   notes: string | null;
   customer_notes: string | null;
   provider_notes: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   // Joined fields
@@ -98,7 +98,7 @@ export interface Subscription {
   canceled_at: string | null;
   trial_start: string | null;
   trial_end: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -114,7 +114,7 @@ export interface Payment {
   status: PaymentStatus;
   payment_type: PaymentType;
   description: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   related_id: string | null;
   related_type: string | null;
   created_at: string;
@@ -197,11 +197,11 @@ export interface ServiceData {
   price: number; // Price in cents
   currency?: string;
   category?: string;
-  availability_schedule?: Record<string, any>;
+  availability_schedule?: Record<string, unknown>;
   max_bookings_per_day?: number;
   requires_approval?: boolean;
   cancellation_policy?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Service booking data

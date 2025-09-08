@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { stripeService } from '@/services/stripeService';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserPlanInfo } from '@/types/monetization';
@@ -16,9 +16,9 @@ export function useUserPlan() {
       setPlanInfo(null);
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, loadUserPlanInfo]);
 
-  const loadUserPlanInfo = async () => {
+  const loadUserPlanInfo = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -32,7 +32,7 @@ export function useUserPlan() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   const refreshPlanInfo = () => {
     loadUserPlanInfo();

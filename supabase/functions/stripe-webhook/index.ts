@@ -128,7 +128,7 @@ serve(async (req) => {
   }
 })
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: any) {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: ReturnType<typeof createClient>) {
   console.log('Processing checkout session completed:', session.id)
   
   const userId = session.metadata?.userId
@@ -182,7 +182,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
   }
 }
 
-async function handleVerificationPayment(userId: string, supabase: any) {
+async function handleVerificationPayment(userId: string, supabase: ReturnType<typeof createClient>) {
   console.log('Processing verification payment for user:', userId)
   
   const verificationExpiresAt = new Date()
@@ -204,7 +204,7 @@ async function handleVerificationPayment(userId: string, supabase: any) {
   }
 }
 
-async function handlePremiumSubscriptionPayment(userId: string, supabase: any) {
+async function handlePremiumSubscriptionPayment(userId: string, supabase: ReturnType<typeof createClient>) {
   console.log('Processing premium subscription payment for user:', userId)
   
   const premiumExpiresAt = new Date()
@@ -226,7 +226,7 @@ async function handlePremiumSubscriptionPayment(userId: string, supabase: any) {
   }
 }
 
-async function handleEventFeaturePayment(userId: string, eventId: string, supabase: any) {
+async function handleEventFeaturePayment(userId: string, eventId: string, supabase: ReturnType<typeof createClient>) {
   console.log('Processing event feature payment for event:', eventId)
   
   const featuredUntil = new Date()
@@ -250,7 +250,7 @@ async function handleEventFeaturePayment(userId: string, eventId: string, supaba
   }
 }
 
-async function handleServicePurchasePayment(userId: string, serviceId: string, session: Stripe.Checkout.Session, supabase: any) {
+async function handleServicePurchasePayment(userId: string, serviceId: string, session: Stripe.Checkout.Session, supabase: ReturnType<typeof createClient>) {
   console.log('Processing service purchase payment for service:', serviceId)
   
   // Get service details
@@ -288,7 +288,7 @@ async function handleServicePurchasePayment(userId: string, serviceId: string, s
   }
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice, supabase: any) {
+async function handleInvoicePaid(invoice: Stripe.Invoice, supabase: ReturnType<typeof createClient>) {
   console.log('Processing invoice paid:', invoice.id)
   
   if (invoice.subscription) {
@@ -322,7 +322,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, supabase: any) {
   }
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabase: any) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabase: ReturnType<typeof createClient>) {
   console.log('Processing invoice payment failed:', invoice.id)
   
   if (invoice.subscription) {
@@ -351,7 +351,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabase: any
   }
 }
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: ReturnType<typeof createClient>) {
   console.log('Processing subscription created:', subscription.id)
   
   const customerId = subscription.customer as string
@@ -390,7 +390,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription, supa
   }
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: ReturnType<typeof createClient>) {
   console.log('Processing subscription updated:', subscription.id)
   
   const { error } = await supabase
@@ -410,7 +410,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
   }
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: ReturnType<typeof createClient>) {
   console.log('Processing subscription deleted:', subscription.id)
   
   const { error } = await supabase
@@ -448,7 +448,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
   }
 }
 
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, supabase: any) {
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent, supabase: ReturnType<typeof createClient>) {
   console.log('Processing payment intent succeeded:', paymentIntent.id)
   
   // Update payment status
@@ -465,7 +465,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent,
   }
 }
 
-async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, supabase: any) {
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent, supabase: ReturnType<typeof createClient>) {
   console.log('Processing payment intent failed:', paymentIntent.id)
   
   // Update payment status

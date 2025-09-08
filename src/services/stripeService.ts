@@ -419,7 +419,7 @@ export class StripeService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const updateData: any = { status };
+      const updateData: Record<string, unknown> = { status };
       if (notes) {
         updateData.provider_notes = notes;
       }

@@ -83,7 +83,7 @@ export function MonetizationDashboard({ activeTab = 'overview' }: MonetizationDa
   );
 }
 
-function OverviewTab({ planInfo }: { planInfo: any }) {
+function OverviewTab({ planInfo }: { planInfo: UserPlanInfo | null }) {
   return (
     <div className="space-y-6">
       {/* Plan Status Cards */}
@@ -243,7 +243,7 @@ function OverviewTab({ planInfo }: { planInfo: any }) {
   );
 }
 
-function UpgradeTab({ planInfo }: { planInfo: any }) {
+function UpgradeTab({ planInfo }: { planInfo: UserPlanInfo | null }) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">

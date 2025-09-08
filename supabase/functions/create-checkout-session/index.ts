@@ -120,7 +120,7 @@ serve(async (req) => {
         .eq('user_id', userId)
     }
 
-    let sessionConfig: any = {
+    let sessionConfig: Record<string, unknown> = {
       customer: customerId,
       success_url: successUrl,
       cancel_url: cancelUrl,
@@ -177,7 +177,7 @@ serve(async (req) => {
         }
         break
 
-      case 'event_feature':
+      case 'event_feature': {
         if (!eventId) {
           return new Response(
             JSON.stringify({ error: 'Event ID is required for event featuring' }),
@@ -229,8 +229,9 @@ serve(async (req) => {
           },
         }
         break
+      }
 
-      case 'service_purchase':
+      case 'service_purchase': {
         if (!serviceId) {
           return new Response(
             JSON.stringify({ error: 'Service ID is required for service purchase' }),
@@ -292,6 +293,7 @@ serve(async (req) => {
           },
         }
         break
+      }
 
       default:
         return new Response(

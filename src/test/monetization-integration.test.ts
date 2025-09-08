@@ -154,7 +154,7 @@ describe('Monetization Integration Tests', () => {
   describe('Payment Flows', () => {
     it('should handle verification upgrade request', async () => {
       // Mock successful fetch response
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           sessionId: 'test-session-id',
@@ -171,7 +171,7 @@ describe('Monetization Integration Tests', () => {
 
     it('should handle premium upgrade request', async () => {
       // Mock successful fetch response
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           sessionId: 'test-session-id',
@@ -187,7 +187,7 @@ describe('Monetization Integration Tests', () => {
 
     it('should handle event featuring request', async () => {
       // Mock successful fetch response
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           sessionId: 'test-session-id',
@@ -221,7 +221,7 @@ describe('Monetization Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle network errors gracefully', async () => {
       // Mock network error
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
 
       const result = await stripeService.upgradeToVerified();
       
@@ -231,7 +231,7 @@ describe('Monetization Integration Tests', () => {
 
     it('should handle API errors gracefully', async () => {
       // Mock API error response
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         json: async () => ({
           error: 'Invalid request',

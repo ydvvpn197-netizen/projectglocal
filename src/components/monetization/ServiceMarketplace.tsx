@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,9 +31,9 @@ export function ServiceMarketplace({ userPlanInfo }: ServiceMarketplaceProps) {
       loadUserServices();
       loadUserBookings();
     }
-  }, [user]);
+  }, [user, loadUserServices, loadUserBookings]);
 
-  const loadUserServices = async () => {
+  const loadUserServices = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -45,9 +45,9 @@ export function ServiceMarketplace({ userPlanInfo }: ServiceMarketplaceProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
-  const loadUserBookings = async () => {
+  const loadUserBookings = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -56,7 +56,7 @@ export function ServiceMarketplace({ userPlanInfo }: ServiceMarketplaceProps) {
     } catch (error) {
       console.error('Error loading bookings:', error);
     }
-  };
+  }, [user]);
 
   const handleCreateService = async (serviceData: ServiceData) => {
     try {
