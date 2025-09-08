@@ -9,9 +9,9 @@ import {
   AdminOnly, 
   SuperAdminOnly, 
   ModeratorOnly, 
-  PermissionGuard,
-  useRoleGuard 
+  PermissionGuard
 } from '../RoleGuard';
+import { useRoleGuard } from '../../hooks/useRoleGuard';
 import { useRole, useIsAdmin, useHasPermission } from '../../hooks/useRBAC';
 
 export function RBACExample() {
