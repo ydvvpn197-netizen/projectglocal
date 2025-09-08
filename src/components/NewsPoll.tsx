@@ -18,7 +18,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { useNewsPolls } from '@/hooks/useNews';
+import { useNewsPolls } from '@/hooks/useNewsHooks';
 import { formatDistanceToNow } from 'date-fns';
 import type { NewsPoll as NewsPollType } from '@/types/news';
 

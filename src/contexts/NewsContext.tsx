@@ -1,29 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { useState, useCallback, ReactNode } from 'react';
 import type { NewsArticle } from '@/hooks/useNewsData';
-
-interface NewsContextType {
-  // Current view state
-  currentView: 'feed' | 'article';
-  currentArticle: NewsArticle | null;
-  
-  // Navigation history
-  articleHistory: NewsArticle[];
-  currentArticleIndex: number;
-  
-  // Navigation functions
-  showArticle: (article: NewsArticle) => void;
-  showFeed: () => void;
-  goToNextArticle: () => void;
-  goToPreviousArticle: () => void;
-  canGoNext: boolean;
-  canGoPrevious: boolean;
-  
-  // Article management
-  addToHistory: (article: NewsArticle) => void;
-  clearHistory: () => void;
-}
-
-const NewsContext = createContext<NewsContextType | undefined>(undefined);
+import { NewsContext, type NewsContextType } from './NewsContextDefinition';
 
 interface NewsProviderProps {
   children: ReactNode;
@@ -118,10 +95,3 @@ export const NewsProvider: React.FC<NewsProviderProps> = ({ children }) => {
   );
 };
 
-export const useNews = (): NewsContextType => {
-  const context = useContext(NewsContext);
-  if (context === undefined) {
-    throw new Error('useNews must be used within a NewsProvider');
-  }
-  return context;
-};

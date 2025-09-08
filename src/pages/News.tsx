@@ -4,8 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { EnhancedNewsFeed } from '@/components/EnhancedNewsFeed';
 import { NewsArticleView } from '@/components/NewsArticleView';
-import { NewsProvider, useNews } from '@/contexts/NewsContext';
-import { useNewsData } from '@/hooks/useNewsData';
+import { NewsProvider } from '@/contexts/NewsContext';
+import { useNews } from '@/hooks/useNews';
+import { useNewsData, type NewsArticle } from '@/hooks/useNewsData';
 
 const NewsContent: React.FC = () => {
   const { articleId } = useParams<{ articleId?: string }>();
@@ -55,7 +56,7 @@ const NewsContent: React.FC = () => {
     }
   };
 
-  const handleArticleClick = (article: any) => {
+  const handleArticleClick = (article: NewsArticle) => {
     showArticle(article);
     navigate(`/news/${article.id}`);
   };

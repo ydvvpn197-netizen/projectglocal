@@ -17,7 +17,7 @@ import {
   Clock,
   User
 } from 'lucide-react';
-import { useNewsComments } from '@/hooks/useNews';
+import { useNewsComments } from '@/hooks/useNewsHooks';
 import { formatDistanceToNow } from 'date-fns';
 import type { NewsComment } from '@/types/news';
 
