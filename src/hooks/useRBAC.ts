@@ -10,6 +10,7 @@ import {
   UserRole, 
   RoleCheckResult, 
   RolePermissions,
+  AuditLog,
   getRolePermissions 
 } from '../types/rbac';
 
@@ -289,7 +290,7 @@ export function useRoleManagement() {
  * Hook to access audit logs (admin only)
  */
 export function useAuditLogs() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -328,7 +329,7 @@ export function useAdminActionLogger() {
     action: string;
     resourceType: string;
     resourceId?: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     ipAddress?: string;
     userAgent?: string;
   }) => {

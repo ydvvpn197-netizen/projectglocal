@@ -80,22 +80,6 @@ export function RoleGuard({
 }
 
 /**
- * Higher-order component for role-based access control
- */
-export function withRoleGuard<P extends object>(
-  Component: React.ComponentType<P>,
-  guardProps: Omit<RoleGuardProps, 'children'>
-) {
-  return function RoleGuardedComponent(props: P) {
-    return (
-      <RoleGuard {...guardProps}>
-        <Component {...props} />
-      </RoleGuard>
-    );
-  };
-}
-
-/**
  * Hook for conditional rendering based on role
  */
 export function useRoleGuard(requirements: {

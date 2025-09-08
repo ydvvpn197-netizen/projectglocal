@@ -19,7 +19,7 @@ export interface AuditLog {
   action: string;
   resource_type: string;
   resource_id: string | null;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
@@ -53,7 +53,7 @@ export interface AdminAction {
   action: string;
   resourceType: string;
   resourceId?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
