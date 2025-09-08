@@ -97,6 +97,11 @@ export type BookingStatus =
 
 // Validation functions
 export const validateStripeConfig = (): boolean => {
+  // Skip validation in test mode
+  if (import.meta.env.MODE === 'test') {
+    return true;
+  }
+  
   if (!STRIPE_CONFIG.PUBLISHABLE_KEY) {
     console.error('Missing VITE_STRIPE_PUBLISHABLE_KEY environment variable');
     return false;

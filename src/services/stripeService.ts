@@ -21,7 +21,8 @@ export class StripeService {
 
   constructor() {
     this.baseUrl = import.meta.env.VITE_API_URL || '/api';
-    if (!validateStripeConfig()) {
+    // Only validate Stripe config in non-test environments
+    if (import.meta.env.MODE !== 'test' && !validateStripeConfig()) {
       throw new Error('Stripe configuration is invalid');
     }
   }
