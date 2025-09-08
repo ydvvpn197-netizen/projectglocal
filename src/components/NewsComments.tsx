@@ -1,92 +1,183 @@
-// NewsComments component for displaying and managing comments
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { 
   MessageCircle, 
-  Send, 
+  ThumbsUp, 
+  ThumbsDown, 
   Reply, 
-  MoreVertical,
-  Edit,
-  Trash2,
-  Clock,
-  User
+  Edit, 
+  Trash2, 
+  MoreHorizontal,
+  Send,
+  Loader2,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-import { useNewsComments } from '@/hooks/useNewsHooks';
 import { formatDistanceToNow } from 'date-fns';
-import type { NewsComment } from '@/types/news';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNewsComments, NewsComment, CreateCommentRequest } from '@/hooks/useNewsComments';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface NewsCommentsProps {
   articleId: string;
+  isOpen: boolean;
   onClose: () => void;
 }
 
-export const NewsComments: React.FC<NewsCommentsProps> = ({ articleId, onClose }) => {
+export const NewsComments: React.FC<NewsCommentsProps> = ({ 
+  articleId, 
+  isOpen, 
+  onClose 
+}) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { 
+    comments, 
+    loading, 
+    submitting, 
+    error, 
+    addComment, 
+    editComment, 
+    deleteComment, 
+    voteComment 
+  } = useNewsComments(articleId);
+
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [editingComment, setEditingComment] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
 
-  const { comments, loading, error, addComment } = useNewsComments(articleId);
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
-
+  const getTimeAgo = (dateString: string) => {
     try {
-      await addComment(newComment.trim(), replyingTo || undefined);
-      setNewComment('');
-      setReplyingTo(null);
-    } catch (error) {
-      console.error('Error adding comment:', error);
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch {
+      return 'Unknown time';
     }
   };
 
-  const handleReply = (commentId: string) => {
-    setReplyingTo(commentId);
-    setEditingComment(null);
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() || submitting) return;
+
+    const commentData: CreateCommentRequest = {
+      article_id: articleId,
+      content: newComment,
+      parent_comment_id: replyingTo || undefined
+    };
+
+    const result = await addComment(commentData);
+    if (result.success) {
+      setNewComment('');
+      setReplyingTo(null);
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted successfully.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to add comment",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEdit = (comment: NewsComment) => {
+  const handleEditComment = async (commentId: string) => {
+    if (!editContent.trim() || submitting) return;
+
+    const result = await editComment(commentId, editContent);
+    if (result.success) {
+      setEditingComment(null);
+      setEditContent('');
+      toast({
+        title: "Comment updated",
+        description: "Your comment has been updated successfully.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to update comment",
+        variant: "destructive",
+      });
+    }
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    const result = await deleteComment(commentId);
+    if (result.success) {
+      toast({
+        title: "Comment deleted",
+        description: "Your comment has been deleted successfully.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to delete comment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleVote = async (commentId: string, voteType: -1 | 0 | 1) => {
+    const result = await voteComment(commentId, voteType);
+    if (!result.success) {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to vote",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleReplies = (commentId: string) => {
+    setExpandedReplies(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId);
+      } else {
+        newSet.add(commentId);
+      }
+      return newSet;
+    });
+  };
+
+  const startReply = (commentId: string) => {
+    setReplyingTo(commentId);
+    setNewComment('');
+  };
+
+  const startEdit = (comment: NewsComment) => {
     setEditingComment(comment.id);
     setEditContent(comment.content);
-    setReplyingTo(null);
   };
 
-  const handleCancelEdit = () => {
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setNewComment('');
+  };
+
+  const cancelEdit = () => {
     setEditingComment(null);
     setEditContent('');
   };
 
-  const handleSaveEdit = async () => {
-    if (!editContent.trim() || !editingComment) return;
-
-    try {
-      // This would call an edit comment function
-      // await editComment(editingComment, editContent.trim());
-      setEditingComment(null);
-      setEditContent('');
-    } catch (error) {
-      console.error('Error editing comment:', error);
-    }
-  };
-
-  const handleDelete = async (commentId: string) => {
-    try {
-      // This would call a delete comment function
-      // await deleteComment(commentId);
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-    }
-  };
-
-  const renderComment = (comment: NewsComment, isReply = false) => {
-    const isEditing = editingComment === comment.id;
-    const isReplying = replyingTo === comment.id;
+  const renderComment = (comment: NewsComment, isReply: boolean = false) => {
+    const isExpanded = expandedReplies.has(comment.id);
+    const canEdit = user?.id === comment.user_id;
+    const canDelete = user?.id === comment.user_id;
 
     return (
       <motion.div
@@ -95,215 +186,302 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({ articleId, onClose }
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
-        className={`${isReply ? 'ml-8 border-l-2 border-gray-200 dark:border-gray-700 pl-4' : ''}`}
+        className={`${isReply ? 'ml-8 mt-4' : 'mb-4'}`}
       >
-        <Card className="mb-4">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">
-                    {comment.user_name?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm text-gray-900 dark:text-white">
-                      {comment.user_name || 'Anonymous'}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+        <Card className={`${isReply ? 'border-l-4 border-l-blue-200' : ''} feed-item`}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={comment.author_avatar} />
+                <AvatarFallback className="text-xs">
+                  {getInitials(comment.author_name)}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium text-sm text-gray-900 dark:text-white">
+                    {comment.author_name}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {getTimeAgo(comment.created_at)}
+                  </span>
+                  {comment.is_edited && (
+                    <Badge variant="outline" className="text-xs">
+                      edited
                     </Badge>
-                  </div>
+                  )}
                 </div>
+
+                {editingComment === comment.id ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      placeholder="Edit your comment..."
+                      className="min-h-[80px]"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleEditComment(comment.id)}
+                        disabled={submitting || !editContent.trim()}
+                      >
+                        {submitting ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          'Save'
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={cancelEdit}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm mb-3">
+                      {comment.content}
+                    </p>
+
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-gray-600 hover:text-green-600"
+                          onClick={() => handleVote(comment.id, comment.user_vote === 1 ? 0 : 1)}
+                        >
+                          <ThumbsUp className={`h-3 w-3 ${comment.user_vote === 1 ? 'text-green-600' : ''}`} />
+                          <span className="ml-1 text-xs">{comment.upvotes}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-gray-600 hover:text-red-600"
+                          onClick={() => handleVote(comment.id, comment.user_vote === -1 ? 0 : -1)}
+                        >
+                          <ThumbsDown className={`h-3 w-3 ${comment.user_vote === -1 ? 'text-red-600' : ''}`} />
+                          <span className="ml-1 text-xs">{comment.downvotes}</span>
+                        </Button>
+                      </div>
+
+                      {!isReply && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-gray-600 hover:text-blue-600"
+                          onClick={() => startReply(comment.id)}
+                        >
+                          <Reply className="h-3 w-3" />
+                          <span className="ml-1 text-xs">Reply</span>
+                        </Button>
+                      )}
+
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-gray-600 hover:text-blue-600"
+                          onClick={() => startEdit(comment)}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-gray-600 hover:text-red-600"
+                          onClick={() => handleDeleteComment(comment.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+
+                      {comment.reply_count > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-gray-600 hover:text-blue-600"
+                          onClick={() => toggleReplies(comment.id)}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                          <span className="ml-1 text-xs">
+                            {isExpanded ? 'Hide' : 'Show'} {comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'}
+                          </span>
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Reply form */}
+                    {replyingTo === comment.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      >
+                        <Textarea
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder={`Reply to ${comment.author_name}...`}
+                          className="min-h-[80px] mb-2"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={handleSubmitComment}
+                            disabled={submitting || !newComment.trim()}
+                          >
+                            {submitting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4 mr-1" />
+                                Reply
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelReply}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Replies */}
+                    {isExpanded && comment.replies && comment.replies.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-4"
+                      >
+                        {comment.replies.map(reply => renderComment(reply, true))}
+                      </motion.div>
+                    )}
+                  </>
+                )}
               </div>
-              <Button variant="ghost" size="sm">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
             </div>
-          </CardHeader>
-
-          <CardContent className="pt-0">
-            {isEditing ? (
-              <div className="space-y-3">
-                <Textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="min-h-[80px]"
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSaveEdit}>
-                    Save
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleCancelEdit}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3">
-                  {comment.content}
-                </p>
-                
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleReply(comment.id)}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    <Reply className="h-3 w-3 mr-1" />
-                    Reply
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(comment)}
-                    className="text-gray-600 hover:text-gray-700"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(comment.id)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Reply Form */}
-            {isReplying && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
-              >
-                <div className="space-y-3">
-                  <Textarea
-                    placeholder="Write a reply..."
-                    className="min-h-[80px]"
-                    autoFocus
-                  />
-                  <div className="flex gap-2">
-                    <Button size="sm">
-                      <Send className="h-3 w-3 mr-1" />
-                      Reply
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setReplyingTo(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Replies */}
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="mt-4 space-y-3">
-                {comment.replies.map((reply) => renderComment(reply, true))}
-              </div>
-            )}
           </CardContent>
         </Card>
       </motion.div>
     );
   };
 
-  return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            Comments ({comments.length})
-          </DialogTitle>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-6">
-          {/* Add Comment Form */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Share your thoughts on this news..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[100px]"
-                />
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={handleSubmitComment}
-                    disabled={!newComment.trim()}
-                    className="flex items-center gap-2"
-                  >
-                    <Send className="h-4 w-4" />
-                    Comment
-                  </Button>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.95 }}
+        className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <CardHeader className="flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-gradient">
+              <MessageCircle className="h-5 w-5" />
+              Comments ({comments.length})
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              ×
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="flex-1 overflow-y-auto">
+          {/* New comment form */}
+          {user && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-start gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.user_metadata?.avatar_url} />
+                  <AvatarFallback className="text-xs">
+                    {getInitials(user.user_metadata?.display_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Share your thoughts on this article..."
+                    className="min-h-[100px] mb-3"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSubmitComment}
+                      disabled={submitting || !newComment.trim()}
+                      className="btn-community"
+                    >
+                      {submitting ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Send className="h-4 w-4 mr-2" />
+                      )}
+                      Post Comment
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
 
-          {/* Comments List */}
+          {/* Comments list */}
           {loading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="animate-pulse space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
-                        <div className="space-y-2">
-                          <div className="h-3 bg-gray-200 rounded w-24"></div>
-                          <div className="h-3 bg-gray-200 rounded w-16"></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-3 bg-gray-200 rounded w-full"></div>
-                        <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2">Loading comments...</span>
             </div>
           ) : error ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="text-red-500 mb-2">Error loading comments</div>
-                <p className="text-gray-600 dark:text-gray-400">{error}</p>
-              </CardContent>
-            </Card>
+            <div className="text-center py-8">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
           ) : comments.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <MessageCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  No comments yet
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Be the first to share your thoughts on this news!
-                </p>
-              </CardContent>
-            </Card>
+            <div className="text-center py-8">
+              <MessageCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                No comments yet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Be the first to share your thoughts on this article.
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
               <AnimatePresence>
-                {comments.map((comment) => renderComment(comment))}
+                {comments.map(comment => renderComment(comment))}
               </AnimatePresence>
             </div>
           )}
-        </div>
-      </DialogContent>
-    </Dialog>
+        </CardContent>
+      </motion.div>
+    </motion.div>
   );
 };

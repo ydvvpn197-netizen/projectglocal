@@ -88,6 +88,13 @@ const Analytics = React.lazy(() => import('@/pages/admin/AdminAnalytics'));
 const SystemSettings = React.lazy(() => import('@/pages/admin/SystemSettings'));
 const AdminSetup = React.lazy(() => import('@/pages/admin/AdminSetup'));
 
+// Admin testing components
+const TestDashboard = React.lazy(() => import('@/components/admin/TestDashboard'));
+const ComprehensiveTestingSuite = React.lazy(() => import('@/components/admin/ComprehensiveTestingSuite'));
+const RealTimeTestingDashboard = React.lazy(() => import('@/components/admin/RealTimeTestingDashboard'));
+const NewsSourceManager = React.lazy(() => import('@/components/admin/NewsSourceManager'));
+const AIConfiguration = React.lazy(() => import('@/components/admin/AIConfiguration'));
+
 // Admin Auth Guard component
 const AdminAuthGuard = React.lazy(() => import('@/components/admin/AdminAuthGuard').then(module => ({ default: module.AdminAuthGuard })));
 
@@ -203,6 +210,33 @@ export const AppRoutes: React.FC = () => {
       <Route path="/admin/settings" element={
         <AdminAuthGuard requiredPermission="system_settings">
           <SystemSettings />
+        </AdminAuthGuard>
+      } />
+      
+      {/* Admin Testing Routes */}
+      <Route path="/admin/testing" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <TestDashboard />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/testing/comprehensive" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <ComprehensiveTestingSuite />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/testing/realtime" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <RealTimeTestingDashboard />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/news-sources" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <NewsSourceManager />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/ai-config" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <AIConfiguration />
         </AdminAuthGuard>
       } />
       

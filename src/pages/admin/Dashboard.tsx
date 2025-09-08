@@ -19,7 +19,11 @@ import {
   Eye,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  TestTube,
+  Zap,
+  Brain,
+  Globe
 } from 'lucide-react';
 import { AdminAuthGuard } from '@/components/admin/AdminAuthGuard';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -255,6 +259,18 @@ const AdminDashboard: React.FC = () => {
                     <Button variant="outline" className="w-full justify-start" size="sm">
                       <Settings className="mr-2 h-4 w-4" />
                       System Settings
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => window.location.href = '/admin/testing'}>
+                      <TestTube className="mr-2 h-4 w-4" />
+                      Testing Suite
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => window.location.href = '/admin/news-sources'}>
+                      <Globe className="mr-2 h-4 w-4" />
+                      News Sources
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => window.location.href = '/admin/ai-config'}>
+                      <Brain className="mr-2 h-4 w-4" />
+                      AI Configuration
                     </Button>
                   </CardContent>
                 </Card>
