@@ -50,7 +50,6 @@ const artistItems = [
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
-  { title: "Admin Login", url: "/admin", icon: Shield },
 ];
 
 const regularUserItems = [
@@ -59,7 +58,14 @@ const regularUserItems = [
   { title: "Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
-  { title: "Admin Login", url: "/admin", icon: Shield },
+];
+
+const adminItems = [
+  { title: "Admin Dashboard", url: "/admin", icon: Shield },
+];
+
+const adminLoginItem = [
+  { title: "Admin Login", url: "/admin/login", icon: Shield },
 ];
 
 export function AppSidebar() {
@@ -97,15 +103,18 @@ export function AppSidebar() {
   // Create dynamic user items based on artist status and admin status
   const getUserItems = () => {
     const baseItems = isArtist ? artistItems : regularUserItems;
-    return baseItems.map(item => {
-      if (item.title === "Admin Login") {
-        return {
-          ...item,
-          title: adminUser ? "Admin Dashboard" : "Admin Login"
-        };
-      }
-      return item;
-    });
+    
+    // If user is an admin, add admin dashboard to their navigation
+    if (adminUser) {
+      return [...baseItems, ...adminItems];
+    }
+    
+    // If user is logged in but not an admin, show admin login option
+    if (user) {
+      return [...baseItems, ...adminLoginItem];
+    }
+    
+    return baseItems;
   };
 
   const userItems = getUserItems();

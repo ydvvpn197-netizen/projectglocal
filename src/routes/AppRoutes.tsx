@@ -78,6 +78,7 @@ const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const ConfigStatus = React.lazy(() => import('@/components/ConfigStatus'));
 
 // Admin pages
+const AdminLoginPage = React.lazy(() => import('@/pages/AdminLogin'));
 const AdminDashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
 const UserModeration = React.lazy(() => import('@/pages/admin/UserModeration'));
@@ -165,13 +166,14 @@ export const AppRoutes: React.FC = () => {
       
       {/* Admin routes */}
       <Route path="/admin/setup" element={<AdminSetup />} />
-      <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
-      <Route path="/admin/user-moderation" element={<ProtectedRoute><UserModeration /></ProtectedRoute>} />
-      <Route path="/admin/admin-management" element={<ProtectedRoute><AdminManagement /></ProtectedRoute>} />
-      <Route path="/admin/moderation" element={<ProtectedRoute><ContentModeration /></ProtectedRoute>} />
-      <Route path="/admin/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-      <Route path="/admin/settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/admin/users" element={<UserManagement />} />
+      <Route path="/admin/user-moderation" element={<UserModeration />} />
+      <Route path="/admin/admin-management" element={<AdminManagement />} />
+      <Route path="/admin/moderation" element={<ContentModeration />} />
+      <Route path="/admin/analytics" element={<Analytics />} />
+      <Route path="/admin/settings" element={<SystemSettings />} />
       
       {/* Test routes - moved to end to avoid conflicts */}
       <Route path="/test-router" element={<TestRouter />} />
