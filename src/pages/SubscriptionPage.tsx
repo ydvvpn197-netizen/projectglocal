@@ -30,12 +30,6 @@ export function SubscriptionPage() {
   const [subscriptionHistory, setSubscriptionHistory] = useState<UserSubscription[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadSubscriptionHistory();
-    }
-  }, [user?.id, loadSubscriptionHistory]);
-
   const loadSubscriptionHistory = useCallback(async () => {
     if (!user?.id) return;
 
@@ -50,6 +44,12 @@ export function SubscriptionPage() {
       setLoading(false);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadSubscriptionHistory();
+    }
+  }, [user?.id, loadSubscriptionHistory]);
 
   const handleCancelSubscription = async () => {
     if (!user?.id) return;

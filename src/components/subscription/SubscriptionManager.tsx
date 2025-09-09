@@ -19,10 +19,6 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [userType, user?.id, loadData]);
-
   const loadData = useCallback(async () => {
     if (!user?.id) return;
     
@@ -42,6 +38,10 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
       setLoading(false);
     }
   }, [user?.id, userType]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSubscribe = async (planId: string) => {
     if (!user?.id) return;

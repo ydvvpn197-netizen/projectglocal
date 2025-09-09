@@ -148,29 +148,22 @@ export class SubscriptionService {
         throw new Error('User already has an active subscription');
       }
 
-      // Create Stripe checkout session
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getAuthToken()}`,
-        },
-        body: JSON.stringify({
+      // Create Stripe checkout session using Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
           priceId: plan.stripe_price_id,
           mode: 'subscription',
           userId: userId,
           planId: planId,
           successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/subscription/cancel`,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (error) {
         throw new Error(error.message || 'Failed to create checkout session');
       }
 
-      const data = await response.json();
       return {
         success: true,
         url: data.url,
@@ -205,22 +198,16 @@ export class SubscriptionService {
         throw new Error('No Stripe subscription ID found');
       }
 
-      // Cancel the subscription in Stripe
-      const response = await fetch('/api/cancel-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getAuthToken()}`,
-        },
-        body: JSON.stringify({
+      // Cancel the subscription in Stripe using Supabase Edge Function
+      const { error: cancelError } = await supabase.functions.invoke('cancel-subscription', {
+        body: {
           subscriptionId: subscription.stripe_subscription_id,
           userId: userId,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to cancel subscription');
+      if (cancelError) {
+        throw new Error(cancelError.message || 'Failed to cancel subscription');
       }
 
       return { success: true };

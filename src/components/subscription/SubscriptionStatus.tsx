@@ -17,12 +17,6 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatusType | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.id) {
-      loadSubscriptionStatus();
-    }
-  }, [user?.id, loadSubscriptionStatus]);
-
   const loadSubscriptionStatus = useCallback(async () => {
     if (!user?.id) return;
     
@@ -36,6 +30,12 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
       setLoading(false);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadSubscriptionStatus();
+    }
+  }, [user?.id, loadSubscriptionStatus]);
 
   const handleUpgrade = () => {
     if (onUpgradeClick) {
