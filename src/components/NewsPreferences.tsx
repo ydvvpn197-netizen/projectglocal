@@ -93,11 +93,11 @@ export const NewsPreferences: React.FC<NewsPreferencesProps> = ({ isOpen, onClos
     if (!user) return;
 
     setLoading(true);
-    setError(null);
+    // setError(null);
 
     try {
       const { data, error } = await supabase
-        .from('news_user_preferences')
+        .from('user_news_preferences')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -141,7 +141,35 @@ export const NewsPreferences: React.FC<NewsPreferencesProps> = ({ isOpen, onClos
       }
     } catch (err) {
       console.error('Error loading preferences:', err);
-      setError('Failed to load preferences');
+      // Don't set error, just use defaults
+      const defaultPreferences: NewsPreferences = {
+        user_id: user.id,
+        preferred_categories: ['community', 'infrastructure', 'business'],
+        excluded_categories: [],
+        preferred_sources: [],
+        location_radius_km: 50,
+        home_location: {
+          city: 'Delhi',
+          state: 'Delhi',
+          country: 'India',
+          coordinates: { lat: 28.6139, lng: 77.2090 }
+        },
+        notification_settings: {
+          email_notifications: true,
+          push_notifications: true,
+          breaking_news: true,
+          daily_digest: false,
+          weekly_summary: true
+        },
+        display_preferences: {
+          show_summaries: true,
+          show_sentiment: true,
+          show_reading_time: true,
+          articles_per_page: 20,
+          auto_refresh_interval: 5
+        }
+      };
+      setPreferences(defaultPreferences);
     } finally {
       setLoading(false);
     }
@@ -152,11 +180,11 @@ export const NewsPreferences: React.FC<NewsPreferencesProps> = ({ isOpen, onClos
     if (!user || !preferences) return;
 
     setSaving(true);
-    setError(null);
+    // setError(null);
 
     try {
       const { error } = await supabase
-        .from('news_user_preferences')
+        .from('user_news_preferences')
         .upsert({
           ...preferences,
           updated_at: new Date().toISOString()
@@ -170,7 +198,7 @@ export const NewsPreferences: React.FC<NewsPreferencesProps> = ({ isOpen, onClos
       });
     } catch (err) {
       console.error('Error saving preferences:', err);
-      setError('Failed to save preferences');
+      // setError('Failed to save preferences');
       toast({
         title: "Error",
         description: "Failed to save preferences. Please try again.",

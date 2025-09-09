@@ -18,7 +18,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { useNewsPolls } from '@/hooks/useNewsHooks';
+import { useNewsPolls, useNewsRealtime } from '@/hooks/useNews.tsx';
 import { formatDistanceToNow } from 'date-fns';
 import type { NewsPoll as NewsPollType } from '@/types/news';
 
@@ -33,7 +33,18 @@ export const NewsPoll: React.FC<NewsPollProps> = ({ articleId, onClose }) => {
   const [options, setOptions] = useState(['', '']);
   const [selectedPoll, setSelectedPoll] = useState<NewsPollType | null>(null);
 
-  const { polls, loading, createPoll, votePoll } = useNewsPolls(articleId);
+  const { polls, loading, createPoll, votePoll, refetch } = useNewsPolls(articleId);
+  
+  // Real-time subscriptions for live poll updates
+  const realtimeUpdates = useNewsRealtime([articleId]);
+  
+  // Handle real-time updates
+  React.useEffect(() => {
+    if (realtimeUpdates.length > 0) {
+      // Refresh polls when real-time updates are received
+      refetch();
+    }
+  }, [realtimeUpdates, refetch]);
 
   const handleAddOption = () => {
     if (options.length < 6) {

@@ -19,7 +19,8 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNewsComments, NewsComment, CreateCommentRequest } from '@/hooks/useNewsComments';
+import { useNewsComments, useNewsRealtime } from '@/hooks/useNews.tsx';
+import type { NewsComment, CreateCommentRequest } from '@/types/news';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,8 +45,20 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({
     addComment, 
     editComment, 
     deleteComment, 
-    voteComment 
+    voteComment,
+    refetch
   } = useNewsComments(articleId);
+  
+  // Real-time subscriptions for live comment updates
+  const realtimeUpdates = useNewsRealtime([articleId]);
+  
+  // Handle real-time updates
+  React.useEffect(() => {
+    if (realtimeUpdates.length > 0) {
+      // Refresh comments when real-time updates are received
+      refetch();
+    }
+  }, [realtimeUpdates, refetch]);
 
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);

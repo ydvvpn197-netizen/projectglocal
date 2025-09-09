@@ -47,11 +47,13 @@ This document outlines the comprehensive real-time news system implemented for T
 #### 1. **RealTimeNewsService** (`src/services/realTimeNewsService.ts`)
 ```typescript
 // Main service for news aggregation and real-time updates
-- fetchNewsFromAllSources()
-- startRealTimeFetching()
-- subscribeToNews()
+- fetchRealTimeNews()
+- startRealTimeUpdates(callback)
+- stopRealTimeUpdates()
 - getLatestArticles()
-- getArticlesByLocation()
+- getTrendingArticles()
+- getArticlesByCategory()
+- searchArticles()
 ```
 
 #### 2. **NewsSummarizationService** (`src/services/newsSummarizationService.ts`)
@@ -353,11 +355,11 @@ npm run dev
 
 ### **RealTimeNewsService Methods**
 ```typescript
-// Start real-time news fetching
-await realTimeNewsService.startRealTimeFetching();
+// Start real-time news updates with callback
+realTimeNewsService.startRealTimeUpdates(callback);
 
-// Subscribe to news updates
-const subscriptionId = realTimeNewsService.subscribeToNews(callback);
+// Stop real-time updates
+realTimeNewsService.stopRealTimeUpdates();
 
 // Get latest articles
 const articles = await realTimeNewsService.getLatestArticles(20);

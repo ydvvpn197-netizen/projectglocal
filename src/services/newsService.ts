@@ -240,12 +240,11 @@ export class NewsService {
 
   // Get latest news
   private async getLatestNews(location: LocationData, page: number, limit: number): Promise<NewsArticle[]> {
-    // First, try to get from cache
+    // First, try to get from cache - be less restrictive about location
     const { data: cachedArticles } = await supabase
       .from('news_cache')
       .select('*')
-      .eq('city', location.city)
-      .eq('country', location.country)
+      .or(`city.eq.${location.city},country.eq.${location.country}`)
       .gte('expires_at', new Date().toISOString())
       .order('published_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
@@ -279,8 +278,7 @@ export class NewsService {
         news_shares(count),
         news_polls(count)
       `)
-      .eq('city', location.city)
-      .eq('country', location.country)
+      .or(`city.eq.${location.city},country.eq.${location.country}`)
       .gte('expires_at', new Date().toISOString())
       .order('published_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
@@ -307,8 +305,7 @@ export class NewsService {
     const { data: articles } = await supabase
       .from('news_cache')
       .select('*')
-      .eq('city', location.city)
-      .eq('country', location.country)
+      .or(`city.eq.${location.city},country.eq.${location.country}`)
       .gte('expires_at', new Date().toISOString())
       .order('published_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);

@@ -65,6 +65,11 @@ const LifeWish = React.lazy(() => import('@/pages/LifeWish'));
 const VoiceControlDemo = React.lazy(() => import('@/pages/VoiceControlDemo'));
 const News = React.lazy(() => import('@/pages/News'));
 
+// Payment pages
+const Pricing = React.lazy(() => import('@/pages/Pricing'));
+const PaymentSuccess = React.lazy(() => import('@/pages/PaymentSuccess'));
+const PaymentCancel = React.lazy(() => import('@/pages/PaymentCancel'));
+
 // Document type pages
 const RentalAgreement = React.lazy(() => import('@/pages/RentalAgreement'));
 const EmploymentContract = React.lazy(() => import('@/pages/EmploymentContract'));
@@ -120,6 +125,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/voice-demo" element={<VoiceControlDemo />} />
       <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
       <Route path="/news/:articleId" element={<ProtectedRoute><News /></ProtectedRoute>} />
+      
+      {/* Payment routes */}
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/cancel" element={<PaymentCancel />} />
       
       {/* Document type routes */}
       <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />

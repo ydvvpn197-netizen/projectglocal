@@ -255,3 +255,24 @@ export interface NewsRealtimeUpdate {
   data: Record<string, unknown>;
   timestamp: string;
 }
+
+// Component prop types
+export interface NewsCardProps {
+  article: NewsArticle;
+  showActions?: boolean;
+  onLike?: (articleId: string) => void;
+  onComment?: (articleId: string) => void;
+  onShare?: (articleId: string) => void;
+  onPoll?: (articleId: string) => void;
+  isLiked?: boolean;
+  likesCount?: number;
+  commentsCount?: number;
+  sharesCount?: number;
+  pollsCount?: number;
+}
+
+export interface CreateCommentRequest {
+  article_id: string;
+  content: string;
+  parent_id?: string;
+}

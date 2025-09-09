@@ -31,7 +31,6 @@ export const useRealTimeNews = (filters: NewsFilters = {}) => {
     isConnected: false
   });
 
-  const subscriptionRef = useRef<string | null>(null);
   const filtersRef = useRef(filters);
 
   // Update filters ref when filters change
@@ -153,12 +152,8 @@ export const useRealTimeNews = (filters: NewsFilters = {}) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      // Start real-time fetching
-      await realTimeNewsService.startRealTimeFetching();
-
-      // Subscribe to new articles
-      const subscriptionId = realTimeNewsService.subscribeToNews(handleNewArticles);
-      subscriptionRef.current = subscriptionId;
+      // Start real-time updates with callback
+      realTimeNewsService.startRealTimeUpdates(handleNewArticles);
 
       // Load initial articles
       const initialArticles = await realTimeNewsService.getLatestArticles(50);
@@ -284,13 +279,8 @@ export const useRealTimeNews = (filters: NewsFilters = {}) => {
     initializeService();
 
     return () => {
-      // Cleanup subscription
-      if (subscriptionRef.current) {
-        realTimeNewsService.unsubscribeFromNews(subscriptionRef.current);
-      }
-      
-      // Stop real-time fetching
-      realTimeNewsService.stopRealTimeFetching();
+      // Stop real-time updates
+      realTimeNewsService.stopRealTimeUpdates();
     };
   }, [initializeService]);
 

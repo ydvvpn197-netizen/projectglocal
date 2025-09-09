@@ -286,6 +286,28 @@ export class RealTimeNewsService {
   }
 
   /**
+   * Get latest articles
+   */
+  async getLatestArticles(limit: number = 20): Promise<NewsArticle[]> {
+    try {
+      const { data, error } = await supabase
+        .from('news_cache')
+        .select('*')
+        .order('published_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(this.mapDatabaseToNewsArticle);
+    } catch (error) {
+      console.error('Error fetching latest articles:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get trending articles
    */
   async getTrendingArticles(limit: number = 10): Promise<NewsArticle[]> {

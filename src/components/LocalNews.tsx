@@ -21,7 +21,7 @@ import {
   Globe,
   Loader2
 } from 'lucide-react';
-import { useNewsData, useNewsInteractions, useLocation } from '@/hooks/useNewsHooks';
+import { useNewsData, useNewsInteractions, useLocation, useNewsRealtime } from '@/hooks/useNews.tsx';
 import { NewsCard } from './NewsCard';
 import { NewsPoll } from './NewsPoll';
 import { NewsComments } from './NewsComments';
@@ -41,6 +41,18 @@ export const LocalNews: React.FC<LocalNewsProps> = ({ className }) => {
   const { location, loading: locationLoading, error: locationError, updateLocation } = useLocation();
   const { articles, loading, error, hasMore, loadMore, refresh, isFetching } = useNewsData(activeTab, location || { city: 'Delhi', country: 'India' });
   const { toggleLike, shareArticle, getInteractionData } = useNewsInteractions();
+  
+  // Real-time subscriptions for live updates
+  const articleIds = articles.map(article => article.article_id);
+  const realtimeUpdates = useNewsRealtime(articleIds);
+
+  // Handle real-time updates
+  useEffect(() => {
+    if (realtimeUpdates.length > 0) {
+      // Refresh articles when real-time updates are received
+      refresh();
+    }
+  }, [realtimeUpdates, refresh]);
 
   // Handle location change
   const handleLocationChange = useCallback((newLocation: LocationData) => {

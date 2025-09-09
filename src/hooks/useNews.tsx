@@ -28,7 +28,7 @@ export const useNewsData = (tab: NewsTab, location: LocationData) => {
     isFetching
   } = useQuery({
     queryKey: ['news', tab, location.city, location.country, page],
-    queryFn: () => newsService.getNews(tab, location, page, 20),
+    queryFn: () => newsService.getNews(tab, location, page, 50),
     enabled: !!location.city,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2

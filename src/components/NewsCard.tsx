@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { OptimizedImage } from './OptimizedImage';
+import { useNewsRealtime } from '@/hooks/useNews.tsx';
 import type { NewsCardProps } from '@/types/news';
 
 export const NewsCard: React.FC<NewsCardProps> = ({
@@ -31,6 +32,17 @@ export const NewsCard: React.FC<NewsCardProps> = ({
   sharesCount = 0,
   pollsCount = 0
 }) => {
+  // Real-time subscriptions for live interaction updates
+  const realtimeUpdates = useNewsRealtime([article.article_id]);
+  
+  // Handle real-time updates
+  React.useEffect(() => {
+    if (realtimeUpdates.length > 0) {
+      // The parent component will handle refreshing the data
+      // This is just to ensure the component is aware of real-time updates
+    }
+  }, [realtimeUpdates]);
+
   const handleExternalLink = () => {
     window.open(article.url, '_blank', 'noopener,noreferrer');
   };
