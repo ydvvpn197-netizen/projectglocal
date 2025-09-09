@@ -70,6 +70,11 @@ const Pricing = React.lazy(() => import('@/pages/Pricing'));
 const PaymentSuccess = React.lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentCancel = React.lazy(() => import('@/pages/PaymentCancel'));
 
+// Subscription pages
+const SubscriptionPage = React.lazy(() => import('@/pages/SubscriptionPage'));
+const SubscriptionPlansPage = React.lazy(() => import('@/pages/SubscriptionPlansPage'));
+const SubscriptionTest = React.lazy(() => import('@/components/SubscriptionTest').then(module => ({ default: module.SubscriptionTest })));
+
 // Document type pages
 const RentalAgreement = React.lazy(() => import('@/pages/RentalAgreement'));
 const EmploymentContract = React.lazy(() => import('@/pages/EmploymentContract'));
@@ -130,6 +135,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/payment/success" element={<PaymentSuccess />} />
       <Route path="/payment/cancel" element={<PaymentCancel />} />
+      
+      {/* Subscription routes */}
+      <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+      <Route path="/subscription/plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
+      <Route path="/subscription/test" element={<ProtectedRoute><SubscriptionTest /></ProtectedRoute>} />
       
       {/* Document type routes */}
       <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />

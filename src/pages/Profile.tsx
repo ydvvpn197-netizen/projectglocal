@@ -47,6 +47,8 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { UserPointsDisplay } from "@/components/UserPointsDisplay";
 import { MessagesTabContent } from "@/components/MessagesTabContent";
+import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
+import { SubscriptionManager } from "@/components/subscription/SubscriptionManager";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -411,7 +413,7 @@ const Profile = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="messages" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="messages" className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
               Messages
@@ -423,6 +425,10 @@ const Profile = () => {
             <TabsTrigger value="communities" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Communities
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center gap-2">
+              <Crown className="w-4 h-4" />
+              Subscription
             </TabsTrigger>
             <TabsTrigger value="badges" className="flex items-center gap-2">
               <Trophy className="w-4 h-4" />
@@ -557,6 +563,18 @@ const Profile = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Subscription Tab */}
+          <TabsContent value="subscription" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Subscription Management</h2>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <SubscriptionStatus showUpgradeButton={true} />
+              <SubscriptionManager userType={user?.user_metadata?.user_type || 'user'} />
+            </div>
           </TabsContent>
 
           {/* Badges Tab */}

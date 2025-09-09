@@ -23,6 +23,7 @@ import { useNewsComments, useNewsRealtime } from '@/hooks/useNews.tsx';
 import type { NewsComment, CreateCommentRequest } from '@/types/news';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { NewsCommentGuard } from '@/components/subscription/ProFeatureGuard';
 
 interface NewsCommentsProps {
   articleId: string;
@@ -337,42 +338,44 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({
 
                     {/* Reply form */}
                     {replyingTo === comment.id && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                      >
-                        <Textarea
-                          value={newComment}
-                          onChange={(e) => setNewComment(e.target.value)}
-                          placeholder={`Reply to ${comment.author_name}...`}
-                          className="min-h-[80px] mb-2"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={handleSubmitComment}
-                            disabled={submitting || !newComment.trim()}
-                          >
-                            {submitting ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <Send className="h-4 w-4 mr-1" />
-                                Reply
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={cancelReply}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </motion.div>
+                      <NewsCommentGuard>
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        >
+                          <Textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder={`Reply to ${comment.author_name}...`}
+                            className="min-h-[80px] mb-2"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={handleSubmitComment}
+                              disabled={submitting || !newComment.trim()}
+                            >
+                              {submitting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-1" />
+                                  Reply
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={cancelReply}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </motion.div>
+                      </NewsCommentGuard>
                     )}
 
                     {/* Replies */}
@@ -428,38 +431,40 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({
         <CardContent className="flex-1 overflow-y-auto">
           {/* New comment form */}
           {user && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex items-start gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback className="text-xs">
-                    {getInitials(user.user_metadata?.display_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <Textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Share your thoughts on this article..."
-                    className="min-h-[100px] mb-3"
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleSubmitComment}
-                      disabled={submitting || !newComment.trim()}
-                      className="btn-community"
-                    >
-                      {submitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Send className="h-4 w-4 mr-2" />
-                      )}
-                      Post Comment
-                    </Button>
+            <NewsCommentGuard>
+              <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {getInitials(user.user_metadata?.display_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <Textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Share your thoughts on this article..."
+                      className="min-h-[100px] mb-3"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={handleSubmitComment}
+                        disabled={submitting || !newComment.trim()}
+                        className="btn-community"
+                      >
+                        {submitting ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Send className="h-4 w-4 mr-2" />
+                        )}
+                        Post Comment
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </NewsCommentGuard>
           )}
 
           {/* Comments list */}
