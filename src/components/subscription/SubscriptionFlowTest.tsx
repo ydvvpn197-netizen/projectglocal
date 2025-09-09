@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ interface TestResult {
   test: string;
   status: 'pending' | 'running' | 'passed' | 'failed';
   message?: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export function SubscriptionFlowTest() {
@@ -130,7 +130,7 @@ export function SubscriptionFlowTest() {
     setIsRunning(false);
   };
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -146,11 +146,11 @@ export function SubscriptionFlowTest() {
       console.error('Error loading subscription data:', error);
       toast.error('Failed to load subscription data');
     }
-  };
+  }, [user?.id, user?.user_metadata?.user_type]);
 
   useEffect(() => {
     loadData();
-  }, [user?.id]);
+  }, [user?.id, loadData]);
 
   const getStatusIcon = (status: TestResult['status']) => {
     switch (status) {

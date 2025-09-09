@@ -1,8 +1,10 @@
 // Custom hooks for news functionality - renamed to avoid conflicts
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { newsService } from '@/services/newsService';
+import { NewsContext } from '@/contexts/NewsContextDefinition';
+import { NewsContextType } from '@/contexts/NewsContextTypes';
 import type { 
   NewsArticle, 
   NewsTab, 
@@ -12,6 +14,15 @@ import type {
   NewsPoll,
   NewsError
 } from '@/types/news';
+
+// Context hook for news
+export const useNews = (): NewsContextType => {
+  const context = useContext(NewsContext);
+  if (context === undefined) {
+    throw new Error('useNews must be used within a NewsProvider');
+  }
+  return context;
+};
 
 // Hook for managing news articles
 export const useNewsData = (tab: NewsTab, location: LocationData) => {

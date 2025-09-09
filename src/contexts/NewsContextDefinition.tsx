@@ -5,14 +5,5 @@ import { NewsContextType } from './NewsContextTypes';
 
 const NewsContext = createContext<NewsContextType | undefined>(undefined);
 
-export const useNews = (): NewsContextType => {
-  const context = useContext(NewsContext);
-  if (context === undefined) {
-    throw new Error('useNews must be used within a NewsProvider');
-  }
-  return context;
-};
 
-// Export types separately to avoid Fast Refresh issues
-export type { NewsContextType };
 export { NewsContext };

@@ -2,20 +2,11 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
-import { AuthContextType } from '../../contexts/AuthContextTypes';
+import { AuthContextType } from '@/contexts/AuthContextTypes';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
 
-// Export types separately to avoid Fast Refresh issues
-export type { AuthContextType };
 
 interface AuthProviderProps {
   children: ReactNode;

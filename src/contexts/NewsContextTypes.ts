@@ -1,31 +1,16 @@
-import type { NewsArticle, NewsTab, LocationData } from '../types/news';
+// News context types for TheGlocal project
+import type { NewsArticle, NewsTab, LocationData } from '@/types/news';
 
 export interface NewsContextType {
-  // News data
   articles: NewsArticle[];
+  tabs: NewsTab[];
+  selectedTab: string;
+  selectedLocation: LocationData | null;
   loading: boolean;
   error: string | null;
-  
-  // Location
-  location: LocationData | null;
-  
-  // Active tab
-  activeTab: NewsTab;
-  setActiveTab: (tab: NewsTab) => void;
-  
-  // Search
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  
-  // Actions
-  refresh: () => void;
-  loadMore: () => void;
-  hasMore: boolean;
-}
-
-export interface NewsPagination {
-  page: number;
-  limit: number;
-  total: number;
+  setSelectedTab: (tab: string) => void;
+  setSelectedLocation: (location: LocationData | null) => void;
+  refreshArticles: () => Promise<void>;
+  loadMoreArticles: () => Promise<void>;
   hasMore: boolean;
 }

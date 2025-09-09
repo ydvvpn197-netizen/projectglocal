@@ -12,7 +12,7 @@ export function SubscriptionSuccess() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<import('@/services/subscriptionService').SubscriptionStatus | null>(null);
 
   const sessionId = searchParams.get('session_id');
 

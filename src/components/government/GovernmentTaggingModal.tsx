@@ -71,7 +71,7 @@ export function GovernmentTaggingModal({
     if (isOpen) {
       loadAuthorities();
     }
-  }, [isOpen]);
+  }, [isOpen, loadAuthorities]);
 
   useEffect(() => {
     if (searchQuery) {
@@ -102,7 +102,7 @@ export function GovernmentTaggingModal({
     } finally {
       setIsLoading(false);
     }
-  }, [loadAuthorities]);
+  }, [toast]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +157,7 @@ export function GovernmentTaggingModal({
     } finally {
       setIsSubmitting(false);
     }
-  }, [selectedAuthority, description, tagType, priority, toast, onTagCreated, anonymousPostId, postId, loadAuthorities]);
+  }, [selectedAuthority, description, tagType, priority, toast, onTagCreated, anonymousPostId, postId]);
 
   const selectedTagType = tagTypeOptions.find(option => option.value === tagType);
   const selectedPriority = priorityOptions.find(option => option.value === priority);
