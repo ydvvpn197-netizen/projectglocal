@@ -2,25 +2,38 @@ import { loadStripe } from '@stripe/stripe-js';
 
 // Stripe configuration
 export const STRIPE_CONFIG = {
-  // Pricing configuration
+  // Pricing configuration - Updated for Indian market
   PRICING: {
+    NORMAL_USER: {
+      amount: 2000, // ₹20 in paise (Indian currency)
+      currency: 'inr',
+      description: 'Normal User Pro Subscription',
+      interval: 'month' as const,
+    },
+    ARTIST_USER: {
+      amount: 10000, // ₹100 in paise (Indian currency)
+      currency: 'inr',
+      description: 'Artist Pro Subscription',
+      interval: 'month' as const,
+    },
+    EVENT_FEATURE: {
+      amount: 5000, // ₹50 in paise for featuring events
+      currency: 'inr',
+      description: 'Featured Event Listing',
+      duration_days: 30, // Featured for 30 days
+    },
+    // Legacy pricing for backward compatibility
     VERIFICATION: {
-      amount: 999, // $9.99 in cents
-      currency: 'usd',
+      amount: 2000, // ₹20 in paise
+      currency: 'inr',
       description: 'User Verification Subscription',
       interval: 'month' as const,
     },
     PREMIUM: {
-      amount: 2999, // $29.99 in cents
-      currency: 'usd',
+      amount: 10000, // ₹100 in paise
+      currency: 'inr',
       description: 'Premium Plan Subscription',
       interval: 'month' as const,
-    },
-    EVENT_FEATURE: {
-      amount: 1999, // $19.99 in cents
-      currency: 'usd',
-      description: 'Featured Event Listing',
-      duration_days: 30, // Featured for 30 days
     },
   },
   

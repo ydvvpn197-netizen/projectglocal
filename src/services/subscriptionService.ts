@@ -16,6 +16,15 @@ export interface SubscriptionPlan {
   updated_at: string;
 }
 
+// Indian pricing configuration
+export const INDIAN_PRICING = {
+  NORMAL_USER_MONTHLY: 2000, // ₹20 in paise
+  NORMAL_USER_YEARLY: 20000, // ₹200 in paise (2 months free)
+  ARTIST_MONTHLY: 10000, // ₹100 in paise
+  ARTIST_YEARLY: 100000, // ₹1000 in paise (2 months free)
+  CURRENCY: 'inr' as const,
+} as const;
+
 export interface UserSubscription {
   id: string;
   user_id: string;

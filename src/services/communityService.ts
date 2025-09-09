@@ -1,656 +1,737 @@
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  CommunityGroup, 
-  GroupMember, 
-  CreateGroupRequest 
-} from '@/types/community';
+
+export interface EventDiscussion {
+  id: string;
+  event_id: string;
+  user_id?: string;
+  session_id?: string;
+  content: string;
+  is_anonymous: boolean;
+  anonymous_username?: string;
+  parent_id?: string;
+  upvotes: number;
+  downvotes: number;
+  score: number;
+  depth: number;
+  is_pinned: boolean;
+  is_moderated: boolean;
+  moderation_reason?: string;
+  created_at: string;
+  updated_at: string;
+  replies?: EventDiscussion[];
+}
+
+export interface CommunityPoll {
+  id: string;
+  post_id?: string;
+  anonymous_post_id?: string;
+  user_id?: string;
+  session_id?: string;
+  question: string;
+  description?: string;
+  options: Array<{
+    id: string;
+    text: string;
+    votes: number;
+    color?: string;
+  }>;
+  total_votes: number;
+  is_multiple_choice: boolean;
+  is_anonymous: boolean;
+  is_public: boolean;
+  expires_at?: string;
+  is_active: boolean;
+  allow_comments: boolean;
+  show_results_before_voting: boolean;
+  created_at: string;
+  updated_at: string;
+  user_vote?: string[];
+}
+
+export interface PollVote {
+  id: string;
+  poll_id: string;
+  user_id?: string;
+  session_id?: string;
+  selected_options: string[];
+  is_anonymous: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ArtistEngagement {
+  id: string;
+  artist_id: string;
+  follower_id?: string;
+  session_id?: string;
+  engagement_type: 'follow' | 'unfollow' | 'like' | 'comment' | 'share' | 'bookmark' | 'message';
+  content_id?: string;
+  content_type?: string;
+  is_anonymous: boolean;
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ArtistFollower {
+  id: string;
+  artist_id: string;
+  follower_id?: string;
+  session_id?: string;
+  is_anonymous: boolean;
+  notification_preferences: {
+    new_posts: boolean;
+    events: boolean;
+    services: boolean;
+    messages: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ArtistPortfolio {
+  id: string;
+  artist_id: string;
+  title: string;
+  description?: string;
+  media_urls: string[];
+  media_type?: 'image' | 'video' | 'audio' | 'document';
+  category?: string;
+  tags: string[];
+  is_featured: boolean;
+  is_public: boolean;
+  view_count: number;
+  like_count: number;
+  created_at: string;
+  updated_at: string;
+  is_liked?: boolean;
+}
+
+export interface LocalEvent {
+  id: string;
+  post_id?: string;
+  organizer_id: string;
+  title: string;
+  description: string;
+  event_type: 'community' | 'cultural' | 'sports' | 'educational' | 'business' | 'social' | 'religious' | 'political' | 'environmental' | 'health' | 'other';
+  start_date: string;
+  end_date?: string;
+  location_name?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  max_attendees?: number;
+  current_attendees: number;
+  registration_required: boolean;
+  registration_deadline?: string;
+  is_free: boolean;
+  ticket_price: number;
+  currency: string;
+  contact_email?: string;
+  contact_phone?: string;
+  website?: string;
+  social_media: Record<string, string>;
+  tags: string[];
+  is_public: boolean;
+  is_featured: boolean;
+  featured_until?: string;
+  status: 'draft' | 'active' | 'cancelled' | 'completed' | 'postponed';
+  created_at: string;
+  updated_at: string;
+  is_attending?: boolean;
+  attendance_status?: 'registered' | 'attending' | 'not_attending' | 'waitlist';
+}
+
+export interface EventAttendee {
+  id: string;
+  event_id: string;
+  user_id?: string;
+  session_id?: string;
+  is_anonymous: boolean;
+  anonymous_name?: string;
+  status: 'registered' | 'attending' | 'not_attending' | 'waitlist';
+  registration_date: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export class CommunityService {
-  // Helper method to ensure user is authenticated
-  private static async ensureAuthenticated() {
-    try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('Auth error:', error);
-        throw new Error('Authentication error');
-      }
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-      return user;
-    } catch (error) {
-      console.error('Authentication check failed:', error);
-      throw new Error('User not authenticated');
+  private static instance: CommunityService;
+
+  public static getInstance(): CommunityService {
+    if (!CommunityService.instance) {
+      CommunityService.instance = new CommunityService();
     }
+    return CommunityService.instance;
   }
 
-  // Helper method to retry operations
-  private static async retryOperation<T>(
-    operation: () => Promise<T>,
-    maxRetries: number = 3,
-    delay: number = 1000
-  ): Promise<T> {
-    let lastError: unknown;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        return await operation();
-      } catch (error) {
-        lastError = error;
-        console.warn(`Operation failed (attempt ${attempt}/${maxRetries}):`, error);
-        
-        if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, delay * attempt));
-        }
-      }
+  // Event Discussions
+  async createEventDiscussion(
+    eventId: string,
+    content: string,
+    options?: {
+      parentId?: string;
+      isAnonymous?: boolean;
+      anonymousUsername?: string;
     }
-    
-    throw lastError;
-  }
-
-  // Group Management
-  static async createGroup(groupData: CreateGroupRequest): Promise<CommunityGroup | null> {
+  ): Promise<EventDiscussion> {
     try {
-      const user = await this.ensureAuthenticated();
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = options?.isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
 
       const { data, error } = await supabase
-        .from('groups')
+        .from('event_discussions')
         .insert({
-          ...groupData,
-          created_by: user.id
+          event_id: eventId,
+          user_id: user?.id,
+          session_id: sessionId,
+          content,
+          is_anonymous: options?.isAnonymous || false,
+          anonymous_username: options?.anonymousUsername,
+          parent_id: options?.parentId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creating event discussion:', error);
+      throw error;
+    }
+  }
+
+  async getEventDiscussions(
+    eventId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      includeReplies?: boolean;
+    }
+  ): Promise<EventDiscussion[]> {
+    try {
+      let query = supabase
+        .from('event_discussions')
+        .select('*')
+        .eq('event_id', eventId)
+        .eq('is_moderated', false)
+        .order('is_pinned', { ascending: false })
+        .order('score', { ascending: false })
+        .order('created_at', { ascending: true });
+
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+
+      if (options?.offset) {
+        query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      if (options?.includeReplies) {
+        // Load replies for each discussion
+        const discussionsWithReplies = await Promise.all(
+          (data || []).map(async (discussion) => {
+            const { data: replies } = await supabase
+              .from('event_discussions')
+              .select('*')
+              .eq('parent_id', discussion.id)
+              .eq('is_moderated', false)
+              .order('created_at', { ascending: true });
+
+            return {
+              ...discussion,
+              replies: replies || []
+            };
+          })
+        );
+
+        return discussionsWithReplies;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching event discussions:', error);
+      return [];
+    }
+  }
+
+  // Community Polls
+  async createPoll(
+    question: string,
+    options: Array<{ text: string; color?: string }>,
+    pollOptions?: {
+      description?: string;
+      isMultipleChoice?: boolean;
+      isAnonymous?: boolean;
+      isPublic?: boolean;
+      expiresAt?: string;
+      allowComments?: boolean;
+      showResultsBeforeVoting?: boolean;
+      postId?: string;
+      anonymousPostId?: string;
+    }
+  ): Promise<CommunityPoll> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = pollOptions?.isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      const pollOptionsData = options.map((option, index) => ({
+        id: `option_${index + 1}`,
+        text: option.text,
+        votes: 0,
+        color: option.color || `hsl(${index * 60}, 70%, 50%)`
+      }));
+
+      const { data, error } = await supabase
+        .from('community_polls')
+        .insert({
+          user_id: user?.id,
+          session_id: sessionId,
+          question,
+          description: pollOptions?.description,
+          options: pollOptionsData,
+          is_multiple_choice: pollOptions?.isMultipleChoice || false,
+          is_anonymous: pollOptions?.isAnonymous || false,
+          is_public: pollOptions?.isPublic !== false,
+          expires_at: pollOptions?.expiresAt,
+          allow_comments: pollOptions?.allowComments !== false,
+          show_results_before_voting: pollOptions?.showResultsBeforeVoting || false,
+          post_id: pollOptions?.postId,
+          anonymous_post_id: pollOptions?.anonymousPostId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creating poll:', error);
+      throw error;
+    }
+  }
+
+  async getPolls(
+    filters?: {
+      postId?: string;
+      anonymousPostId?: string;
+      isActive?: boolean;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<CommunityPoll[]> {
+    try {
+      let query = supabase
+        .from('community_polls')
+        .select('*')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false });
+
+      if (filters?.postId) {
+        query = query.eq('post_id', filters.postId);
+      }
+
+      if (filters?.anonymousPostId) {
+        query = query.eq('anonymous_post_id', filters.anonymousPostId);
+      }
+
+      if (filters?.isActive !== undefined) {
+        query = query.eq('is_active', filters.isActive);
+      }
+
+      if (filters?.limit) {
+        query = query.limit(filters.limit);
+      }
+
+      if (filters?.offset) {
+        query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Check if user has voted on each poll
+      const pollsWithVotes = await Promise.all(
+        (data || []).map(async (poll) => {
+          const { data: { user } } = await supabase.auth.getUser();
+          const sessionId = (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId();
+
+          let userVote: string[] = [];
+          if (user || sessionId) {
+            const { data: vote } = await supabase
+              .from('poll_votes')
+              .select('selected_options')
+              .eq('poll_id', poll.id)
+              .or(`user_id.eq.${user?.id},session_id.eq.${sessionId}`)
+              .single();
+
+            userVote = vote?.selected_options || [];
+          }
+
+          return {
+            ...poll,
+            user_vote: userVote
+          };
+        })
+      );
+
+      return pollsWithVotes;
+    } catch (error) {
+      console.error('Error fetching polls:', error);
+      return [];
+    }
+  }
+
+  async voteOnPoll(
+    pollId: string,
+    selectedOptions: string[],
+    isAnonymous: boolean = false
+  ): Promise<void> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      if (!user && !sessionId) {
+        throw new Error('User must be authenticated or have an anonymous session');
+      }
+
+      const { error } = await supabase
+        .from('poll_votes')
+        .upsert({
+          poll_id: pollId,
+          user_id: user?.id,
+          session_id: sessionId,
+          selected_options: selectedOptions,
+          is_anonymous: isAnonymous,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error voting on poll:', error);
+      throw error;
+    }
+  }
+
+  // Artist Engagement
+  async followArtist(
+    artistId: string,
+    isAnonymous: boolean = false
+  ): Promise<ArtistFollower> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      if (!user && !sessionId) {
+        throw new Error('User must be authenticated or have an anonymous session');
+      }
+
+      const { data, error } = await supabase
+        .from('artist_followers')
+        .insert({
+          artist_id: artistId,
+          follower_id: user?.id,
+          session_id: sessionId,
+          is_anonymous: isAnonymous,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Add creator as admin member
-      await this.addGroupMember(data.id, user.id, 'admin');
+      // Record engagement
+      await this.recordArtistEngagement(artistId, 'follow', undefined, undefined, isAnonymous);
 
       return data;
     } catch (error) {
-      console.error('Error creating group:', error);
-      return null;
+      console.error('Error following artist:', error);
+      throw error;
     }
   }
 
-  static async getGroups(filters?: {
-    category?: string;
-    is_public?: boolean;
-    location_city?: string;
-    member_count_min?: number;
-  }): Promise<CommunityGroup[]> {
+  async unfollowArtist(artistId: string, isAnonymous: boolean = false): Promise<void> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      const { error } = await supabase
+        .from('artist_followers')
+        .delete()
+        .or(`user_id.eq.${user?.id},session_id.eq.${sessionId}`)
+        .eq('artist_id', artistId);
+
+      if (error) throw error;
+
+      // Record engagement
+      await this.recordArtistEngagement(artistId, 'unfollow', undefined, undefined, isAnonymous);
+    } catch (error) {
+      console.error('Error unfollowing artist:', error);
+      throw error;
+    }
+  }
+
+  async recordArtistEngagement(
+    artistId: string,
+    engagementType: ArtistEngagement['engagement_type'],
+    contentId?: string,
+    contentType?: string,
+    isAnonymous: boolean = false
+  ): Promise<void> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      const { error } = await supabase
+        .from('artist_engagements')
+        .insert({
+          artist_id: artistId,
+          follower_id: user?.id,
+          session_id: sessionId,
+          engagement_type: engagementType,
+          content_id: contentId,
+          content_type: contentType,
+          is_anonymous: isAnonymous,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error recording artist engagement:', error);
+      throw error;
+    }
+  }
+
+  async getArtistFollowers(
+    artistId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<ArtistFollower[]> {
     try {
       let query = supabase
-        .from('groups')
+        .from('artist_followers')
         .select('*')
+        .eq('artist_id', artistId)
         .order('created_at', { ascending: false });
 
-      if (filters?.category) {
-        query = query.eq('category', filters.category);
+      if (options?.limit) {
+        query = query.limit(options.limit);
       }
-      if (filters?.is_public !== undefined) {
-        query = query.eq('is_public', filters.is_public);
-      }
-      if (filters?.location_city) {
-        query = query.eq('location_city', filters.location_city);
-      }
-      if (filters?.member_count_min) {
-        query = query.gte('member_count', filters.member_count_min);
+
+      if (options?.offset) {
+        query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-
-      // If no groups found, create some sample groups
-      if (!data || data.length === 0) {
-        console.log('No groups found, creating sample groups...');
-        await this.createSampleGroups();
-        // Try fetching again
-        const { data: newData, error: newError } = await query;
-        if (newError) throw newError;
-        return newData || [];
-      }
-
       return data || [];
     } catch (error) {
-      console.error('Error fetching groups:', error);
+      console.error('Error fetching artist followers:', error);
       return [];
     }
   }
 
-  // Create sample groups if none exist
-  private static async createSampleGroups(): Promise<void> {
+  async isFollowingArtist(artistId: string, isAnonymous: boolean = false): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const creatorId = user?.id || '00000000-0000-0000-0000-000000000000';
+      const sessionId = isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
 
-      const sampleGroups = [
-        {
-          name: 'Local Artists Network',
-          description: 'Connect with local artists and share your work',
-          category: 'Arts & Culture',
-          created_by: creatorId,
-          location_city: 'New York',
-          location_state: 'NY',
-          location_country: 'USA',
-          is_public: true,
-          member_count: 0,
-          post_count: 0
-        },
-        {
-          name: 'Tech Enthusiasts',
-          description: 'Discuss the latest in technology and innovation',
-          category: 'Technology',
-          created_by: creatorId,
-          location_city: 'San Francisco',
-          location_state: 'CA',
-          location_country: 'USA',
-          is_public: true,
-          member_count: 0,
-          post_count: 0
-        },
-        {
-          name: 'Food Lovers',
-          description: 'Share recipes and discover local restaurants',
-          category: 'Food & Dining',
-          created_by: creatorId,
-          location_city: 'Chicago',
-          location_state: 'IL',
-          location_country: 'USA',
-          is_public: true,
-          member_count: 0,
-          post_count: 0
-        }
-      ];
-
-      for (const groupData of sampleGroups) {
-        const { error } = await supabase
-          .from('groups')
-          .insert(groupData);
-        
-        if (error && error.code !== '23505') { // Ignore unique constraint violations
-          console.error('Error creating sample group:', error);
-        }
-      }
-
-      console.log('Sample groups created successfully');
-    } catch (error) {
-      console.error('Error creating sample groups:', error);
-    }
-  }
-
-  static async getGroupById(groupId: string): Promise<CommunityGroup | null> {
-    try {
       const { data, error } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('id', groupId)
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error fetching group:', error);
-      return null;
-    }
-  }
-
-  static async updateGroup(groupId: string, updates: Partial<CommunityGroup>): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('groups')
-        .update(updates)
-        .eq('id', groupId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error updating group:', error);
-      return false;
-    }
-  }
-
-  static async deleteGroup(groupId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('groups')
-        .delete()
-        .eq('id', groupId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error deleting group:', error);
-      return false;
-    }
-  }
-
-  // Membership Management
-  static async addGroupMember(groupId: string, userId: string, role: 'admin' | 'moderator' | 'member' = 'member'): Promise<boolean> {
-    return this.retryOperation(async () => {
-      try {
-        console.log('=== DEBUG: addGroupMember ===');
-        console.log('Group ID:', groupId);
-        console.log('User ID:', userId);
-        console.log('Role:', role);
-
-        // Ensure user is authenticated
-        const user = await this.ensureAuthenticated();
-        console.log('Authenticated user:', user?.id);
-
-        // First, verify the group exists and is public
-        console.log('Checking if group exists...');
-        const group = await this.getGroupById(groupId);
-        console.log('Group found:', group);
-        
-        if (!group) {
-          console.error('Group not found:', groupId);
-          throw new Error('Group not found');
-        }
-        if (!group.is_public) {
-          throw new Error('Cannot join private group');
-        }
-
-        // Check if user is already a member
-        console.log('Checking if user is already a member...');
-        const isMember = await this.isGroupMember(groupId, userId);
-        console.log('Is member:', isMember);
-        
-        if (isMember) {
-          console.log('User is already a member of group:', groupId);
-          return true; // Return true since they're already a member
-        }
-
-        console.log('Attempting to add user', userId, 'to group', groupId);
-
-        // Verify the user exists in auth.users
-        console.log('Verifying user exists in auth.users...');
-        const { data: userData, error: userError } = await supabase
-          .from('auth.users')
-          .select('id')
-          .eq('id', userId)
-          .single();
-        
-        console.log('User verification result:', { userData, userError });
-
-        const { error } = await supabase
-          .from('group_members')
-          .insert({
-            group_id: groupId,
-            user_id: userId,
-            role
-          });
-
-        if (error) {
-          console.error('Supabase error adding group member:', error);
-          if (error.code === '23505') {
-            // Unique constraint violation - user is already a member
-            console.log('User already a member (unique constraint)');
-            return true;
-          }
-          if (error.code === '23503') {
-            // Foreign key constraint violation
-            console.error('Foreign key constraint violation. Group ID:', groupId, 'User ID:', userId);
-            
-            // Additional debugging for foreign key issues
-            const { data: groupCheck } = await supabase
-              .from('groups')
-              .select('id, name')
-              .eq('id', groupId);
-            console.log('Group check result:', groupCheck);
-            
-            const { data: userCheck } = await supabase
-              .from('auth.users')
-              .select('id')
-              .eq('id', userId);
-            console.log('User check result:', userCheck);
-            
-            throw new Error('Invalid group or user ID');
-          }
-          throw error;
-        }
-
-        console.log('Successfully added user to group');
-
-        // Update member count
-        await this.updateGroupMemberCount(groupId);
-        return true;
-      } catch (error) {
-        console.error('Error adding group member:', error);
-        throw error;
-      }
-    });
-  }
-
-  static async removeGroupMember(groupId: string, userId: string): Promise<boolean> {
-    return this.retryOperation(async () => {
-      try {
-        // Ensure user is authenticated
-        await this.ensureAuthenticated();
-
-        const { error } = await supabase
-          .from('group_members')
-          .delete()
-          .eq('group_id', groupId)
-          .eq('user_id', userId);
-
-        if (error) throw error;
-
-        // Update member count
-        await this.updateGroupMemberCount(groupId);
-        return true;
-      } catch (error) {
-        console.error('Error removing group member:', error);
-        throw error;
-      }
-    });
-  }
-
-  static async getGroupMembers(groupId: string): Promise<GroupMember[]> {
-    try {
-      const { data, error } = await supabase
-        .from('group_members')
-        .select(`
-          *,
-          profiles:user_id (
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq('group_id', groupId)
-        .order('joined_at', { ascending: true });
-
-      if (error) throw error;
-
-      return (data || []).map(member => ({
-        ...member,
-        user_name: member.profiles?.display_name,
-        user_avatar: member.profiles?.avatar_url
-      }));
-    } catch (error) {
-      console.error('Error fetching group members:', error);
-      return [];
-    }
-  }
-
-  static async getUserGroups(userId: string): Promise<CommunityGroup[]> {
-    return this.retryOperation(async () => {
-      try {
-        // Ensure user is authenticated
-        await this.ensureAuthenticated();
-
-        const { data, error } = await supabase
-          .from('group_members')
-          .select(`
-            groups (*)
-          `)
-          .eq('user_id', userId);
-
-        if (error) {
-          console.error('Supabase error fetching user groups:', error);
-          throw error;
-        }
-
-        return (data || []).map(item => item.groups);
-      } catch (error) {
-        console.error('Error fetching user groups:', error);
-        throw error;
-      }
-    });
-  }
-
-  static async isGroupMember(groupId: string, userId: string): Promise<boolean> {
-    try {
-      const { data, error } = await supabase
-        .from('group_members')
+        .from('artist_followers')
         .select('id')
-        .eq('group_id', groupId)
-        .eq('user_id', userId)
+        .eq('artist_id', artistId)
+        .or(`user_id.eq.${user?.id},session_id.eq.${sessionId}`)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
       return !!data;
     } catch (error) {
-      console.error('Error checking group membership:', error);
+      console.error('Error checking artist follow status:', error);
       return false;
     }
   }
 
-  static async getUserRole(groupId: string, userId: string): Promise<'admin' | 'moderator' | 'member' | null> {
+  // Local Events
+  async createEvent(eventData: Omit<LocalEvent, 'id' | 'created_at' | 'updated_at' | 'current_attendees'>): Promise<LocalEvent> {
     try {
       const { data, error } = await supabase
-        .from('group_members')
-        .select('role')
-        .eq('group_id', groupId)
-        .eq('user_id', userId)
+        .from('local_events')
+        .insert(eventData)
+        .select()
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data?.role || null;
-    } catch (error) {
-      console.error('Error getting user role:', error);
-      return null;
-    }
-  }
-
-  // Helper methods
-  private static async updateGroupMemberCount(groupId: string): Promise<void> {
-    try {
-      const { count, error } = await supabase
-        .from('group_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('group_id', groupId);
-
       if (error) throw error;
-
-      await supabase
-        .from('groups')
-        .update({ member_count: count || 0 })
-        .eq('id', groupId);
+      return data;
     } catch (error) {
-      console.error('Error updating member count:', error);
+      console.error('Error creating event:', error);
+      throw error;
     }
   }
 
-  // Validate group before joining
-  static async validateGroupForJoining(groupId: string, userId: string): Promise<{
-    isValid: boolean;
-    group?: Record<string, unknown>;
-    user?: Record<string, unknown>;
-    errors: string[];
-  }> {
-    const errors: string[] = [];
-    
-    try {
-      // Check if group exists
-      const group = await this.getGroupById(groupId);
-      if (!group) {
-        errors.push('Group does not exist');
-      } else if (!group.is_public) {
-        errors.push('Group is not public');
-      }
-
-      // Check if user exists and is authenticated
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        errors.push('User not authenticated');
-      } else if (user.id !== userId) {
-        errors.push('User ID mismatch');
-      }
-
-      // Check if user is already a member
-      if (group && user) {
-        const isMember = await this.isGroupMember(groupId, userId);
-        if (isMember) {
-          errors.push('User is already a member');
-        }
-      }
-
-      return {
-        isValid: errors.length === 0,
-        group,
-        user,
-        errors
-      };
-    } catch (error) {
-      errors.push(`Validation error: ${error}`);
-      return {
-        isValid: false,
-        errors
-      };
+  async getEvents(
+    filters?: {
+      city?: string;
+      state?: string;
+      eventType?: LocalEvent['event_type'];
+      isPublic?: boolean;
+      isActive?: boolean;
+      limit?: number;
+      offset?: number;
     }
-  }
-
-  // Debug method to help troubleshoot issues
-  static async debugGroupIssues(): Promise<Record<string, unknown>> {
-    try {
-      console.log('=== DEBUG: Group Issues ===');
-      
-      const { data: groups, error: groupsError } = await supabase
-        .from('groups')
-        .select('id, name, is_public, created_at, created_by')
-        .limit(10);
-
-      const { data: members, error: membersError } = await supabase
-        .from('group_members')
-        .select('id, group_id, user_id, role')
-        .limit(10);
-
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      // Check for orphaned group_members
-      const { data: orphanedMembers, error: orphanedError } = await supabase
-        .from('group_members')
-        .select('group_id, user_id')
-        .not('group_id', 'in', `(${groups?.map(g => `'${g.id}'`).join(',') || ''})`);
-
-      // Check RLS policies
-      const { data: rlsPolicies, error: rlsError } = await supabase
-        .rpc('get_rls_policies', { table_name: 'group_members' })
-        .catch(() => ({ data: null, error: 'RPC not available' }));
-
-      const debugInfo = {
-        groups: groups || [],
-        members: members || [],
-        orphanedMembers: orphanedMembers || [],
-        currentUser: user,
-        errors: {
-          groups: groupsError,
-          members: membersError,
-          user: userError,
-          orphaned: orphanedError,
-          rls: rlsError
-        },
-        summary: {
-          totalGroups: groups?.length || 0,
-          totalMembers: members?.length || 0,
-          orphanedMembers: orphanedMembers?.length || 0,
-          userAuthenticated: !!user
-        }
-      };
-
-      console.log('Debug Info:', debugInfo);
-      return debugInfo;
-    } catch (error) {
-      console.error('Debug error:', error);
-      return { error };
-    }
-  }
-
-  // Search and Discovery
-  static async searchGroups(query: string, filters?: {
-    category?: string;
-    location_city?: string;
-  }): Promise<CommunityGroup[]> {
-    try {
-      let searchQuery = supabase
-        .from('groups')
-        .select('*')
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-        .eq('is_public', true)
-        .order('member_count', { ascending: false });
-
-      if (filters?.category) {
-        searchQuery = searchQuery.eq('category', filters.category);
-      }
-      if (filters?.location_city) {
-        searchQuery = searchQuery.eq('location_city', filters.location_city);
-      }
-
-      const { data, error } = await searchQuery;
-      if (error) throw error;
-
-      return data || [];
-    } catch (error) {
-      console.error('Error searching groups:', error);
-      return [];
-    }
-  }
-
-  static async getTrendingGroups(limit: number = 10): Promise<CommunityGroup[]> {
-    try {
-      const { data, error } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('is_public', true)
-        .order('member_count', { ascending: false })
-        .order('post_count', { ascending: false })
-        .limit(limit);
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching trending groups:', error);
-      return [];
-    }
-  }
-
-  static async getGroupsByCategory(category: string): Promise<CommunityGroup[]> {
-    try {
-      const { data, error } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('category', category)
-        .eq('is_public', true)
-        .order('member_count', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching groups by category:', error);
-      return [];
-    }
-  }
-
-  static async getGroupsByLocation(location: {
-    city?: string;
-    state?: string;
-    country?: string;
-  }): Promise<CommunityGroup[]> {
+  ): Promise<LocalEvent[]> {
     try {
       let query = supabase
-        .from('groups')
+        .from('local_events')
         .select('*')
-        .eq('is_public', true);
+        .order('start_date', { ascending: true });
 
-      if (location.city) {
-        query = query.eq('location_city', location.city);
-      }
-      if (location.state) {
-        query = query.eq('location_state', location.state);
-      }
-      if (location.country) {
-        query = query.eq('location_country', location.country);
+      if (filters?.city) {
+        query = query.ilike('city', `%${filters.city}%`);
       }
 
-      const { data, error } = await query.order('member_count', { ascending: false });
+      if (filters?.state) {
+        query = query.ilike('state', `%${filters.state}%`);
+      }
+
+      if (filters?.eventType) {
+        query = query.eq('event_type', filters.eventType);
+      }
+
+      if (filters?.isPublic !== undefined) {
+        query = query.eq('is_public', filters.isPublic);
+      }
+
+      if (filters?.isActive !== undefined) {
+        query = query.eq('status', filters.isActive ? 'active' : 'inactive');
+      }
+
+      if (filters?.limit) {
+        query = query.limit(filters.limit);
+      }
+
+      if (filters?.offset) {
+        query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
-      return data || [];
+      // Check if user is attending each event
+      const eventsWithAttendance = await Promise.all(
+        (data || []).map(async (event) => {
+          const { data: { user } } = await supabase.auth.getUser();
+          const sessionId = (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId();
+
+          let attendanceStatus: EventAttendee['status'] | undefined;
+          if (user || sessionId) {
+            const { data: attendance } = await supabase
+              .from('event_attendees')
+              .select('status')
+              .eq('event_id', event.id)
+              .or(`user_id.eq.${user?.id},session_id.eq.${sessionId}`)
+              .single();
+
+            attendanceStatus = attendance?.status;
+          }
+
+          return {
+            ...event,
+            is_attending: !!attendanceStatus,
+            attendance_status: attendanceStatus
+          };
+        })
+      );
+
+      return eventsWithAttendance;
     } catch (error) {
-      console.error('Error fetching groups by location:', error);
+      console.error('Error fetching events:', error);
       return [];
+    }
+  }
+
+  async registerForEvent(
+    eventId: string,
+    options?: {
+      isAnonymous?: boolean;
+      anonymousName?: string;
+      notes?: string;
+    }
+  ): Promise<EventAttendee> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = options?.isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      if (!user && !sessionId) {
+        throw new Error('User must be authenticated or have an anonymous session');
+      }
+
+      const { data, error } = await supabase
+        .from('event_attendees')
+        .insert({
+          event_id: eventId,
+          user_id: user?.id,
+          session_id: sessionId,
+          is_anonymous: options?.isAnonymous || false,
+          anonymous_name: options?.anonymousName,
+          notes: options?.notes,
+          status: 'registered',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error registering for event:', error);
+      throw error;
+    }
+  }
+
+  async updateEventAttendance(
+    eventId: string,
+    status: EventAttendee['status'],
+    isAnonymous: boolean = false
+  ): Promise<void> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = isAnonymous ? 
+        (await import('@/services/anonymousUserService')).anonymousUserService.getCurrentSessionId() : 
+        undefined;
+
+      const { error } = await supabase
+        .from('event_attendees')
+        .update({ status })
+        .eq('event_id', eventId)
+        .or(`user_id.eq.${user?.id},session_id.eq.${sessionId}`);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating event attendance:', error);
+      throw error;
     }
   }
 }
+
+// Export singleton instance
+export const communityService = CommunityService.getInstance();
