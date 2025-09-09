@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,9 +68,9 @@ export function EnhancedNewsCard({
       // Generate new summary
       generateSummary();
     }
-  }, [article]);
+  }, [article, generateSummary]);
 
-  const generateSummary = async () => {
+  const generateSummary = useCallback(async () => {
     setIsLoadingSummary(true);
     try {
       const aiSummary = await aiSummarizationService.generateSummary(article);
@@ -85,7 +85,7 @@ export function EnhancedNewsCard({
     } finally {
       setIsLoadingSummary(false);
     }
-  };
+  }, [article, toast]);
 
   const handleVote = async (voteType: 1 | -1 | 0) => {
     if (isVoting) return;

@@ -2,16 +2,7 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
-
-export interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-}
+import { AuthContextType } from '../../contexts/AuthContextTypes';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -22,6 +13,9 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+// Export types separately to avoid Fast Refresh issues
+export type { AuthContextType };
 
 interface AuthProviderProps {
   children: ReactNode;

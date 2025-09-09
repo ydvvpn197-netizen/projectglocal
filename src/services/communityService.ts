@@ -68,7 +68,7 @@ export interface ArtistEngagement {
   content_id?: string;
   content_type?: string;
   is_anonymous: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, string | number | boolean | null>;
   created_at: string;
   updated_at: string;
 }

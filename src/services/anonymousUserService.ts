@@ -96,7 +96,7 @@ export interface PrivacySettings {
   user_id?: string;
   session_id?: string;
   setting_name: string;
-  setting_value: Record<string, any>;
+  setting_value: Record<string, string | number | boolean | null>;
   created_at: string;
   updated_at: string;
 }
@@ -409,7 +409,7 @@ export class AnonymousUserService {
    */
   async updatePrivacySettings(
     settingName: string,
-    settingValue: Record<string, any>,
+    settingValue: Record<string, string | number | boolean | null>,
     userId?: string,
     sessionId?: string
   ): Promise<PrivacySettings> {

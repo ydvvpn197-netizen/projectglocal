@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,7 +86,7 @@ export function GovernmentTaggingModal({
     }
   }, [searchQuery, authorities]);
 
-  const loadAuthorities = async () => {
+  const loadAuthorities = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await anonymousUserService.getGovernmentAuthorities();
@@ -102,9 +102,9 @@ export function GovernmentTaggingModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [loadAuthorities]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedAuthority) {
@@ -157,7 +157,7 @@ export function GovernmentTaggingModal({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [selectedAuthority, description, tagType, priority, toast, onTagCreated, anonymousPostId, postId, loadAuthorities]);
 
   const selectedTagType = tagTypeOptions.find(option => option.value === tagType);
   const selectedPriority = priorityOptions.find(option => option.value === priority);

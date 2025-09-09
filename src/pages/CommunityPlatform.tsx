@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,9 +30,9 @@ export function CommunityPlatform() {
 
   useEffect(() => {
     initializePlatform();
-  }, []);
+  }, [initializePlatform]);
 
-  const initializePlatform = async () => {
+  const initializePlatform = useCallback(async () => {
     try {
       // Initialize anonymous session
       await anonymousUserService.getOrCreateAnonymousSession();
@@ -47,7 +47,7 @@ export function CommunityPlatform() {
     } catch (error) {
       console.error('Error initializing platform:', error);
     }
-  };
+  }, [toast]);
 
   const loadSampleNews = async () => {
     setIsLoading(true);

@@ -102,15 +102,15 @@ describe('Monetization Integration Tests', () => {
 
   describe('Stripe Configuration', () => {
     it('should have correct pricing configuration', () => {
-      expect(STRIPE_CONFIG.PRICING.VERIFICATION.amount).toBe(999);
-      expect(STRIPE_CONFIG.PRICING.PREMIUM.amount).toBe(2999);
-      expect(STRIPE_CONFIG.PRICING.EVENT_FEATURE.amount).toBe(1999);
+      expect(STRIPE_CONFIG.PRICING.VERIFICATION.amount).toBe(2000); // ₹20 in paise
+      expect(STRIPE_CONFIG.PRICING.PREMIUM.amount).toBe(10000); // ₹100 in paise
+      expect(STRIPE_CONFIG.PRICING.EVENT_FEATURE.amount).toBe(5000); // ₹50 in paise
     });
 
     it('should have correct currency configuration', () => {
-      expect(STRIPE_CONFIG.PRICING.VERIFICATION.currency).toBe('usd');
-      expect(STRIPE_CONFIG.PRICING.PREMIUM.currency).toBe('usd');
-      expect(STRIPE_CONFIG.PRICING.EVENT_FEATURE.currency).toBe('usd');
+      expect(STRIPE_CONFIG.PRICING.VERIFICATION.currency).toBe('inr');
+      expect(STRIPE_CONFIG.PRICING.PREMIUM.currency).toBe('inr');
+      expect(STRIPE_CONFIG.PRICING.EVENT_FEATURE.currency).toBe('inr');
     });
   });
 

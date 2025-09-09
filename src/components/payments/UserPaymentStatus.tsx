@@ -55,7 +55,7 @@ export const UserPaymentStatus: React.FC<UserPaymentStatusProps> = ({
     };
 
     fetchPaymentStatus();
-  }, [currentUserId, supabase]);
+  }, [currentUserId]);
 
   const getStatusIcon = () => {
     if (!paymentStatus) return <AlertCircle className="h-4 w-4" />;

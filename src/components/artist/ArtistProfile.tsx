@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { communityService, ArtistPortfolio, LocalEvent } from '@/services/communityService';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   User, 
   MapPin, 
@@ -68,9 +69,9 @@ export function ArtistProfile({
 
   useEffect(() => {
     loadArtistData();
-  }, [artistId]);
+  }, [artistId, loadArtistData]);
 
-  const loadArtistData = async () => {
+  const loadArtistData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Load portfolio
@@ -93,9 +94,9 @@ export function ArtistProfile({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [artistId, loadEvents, loadPortfolio]);
 
-  const loadPortfolio = async (): Promise<ArtistPortfolio[]> => {
+  const loadPortfolio = useCallback(async (): Promise<ArtistPortfolio[]> => {
     try {
       const { data, error } = await supabase
         .from('artist_portfolio')
@@ -111,9 +112,9 @@ export function ArtistProfile({
       console.error('Error loading portfolio:', error);
       return [];
     }
-  };
+  }, [artistId]);
 
-  const loadEvents = async (): Promise<LocalEvent[]> => {
+  const loadEvents = useCallback(async (): Promise<LocalEvent[]> => {
     try {
       const { data, error } = await supabase
         .from('local_events')
@@ -128,7 +129,7 @@ export function ArtistProfile({
       console.error('Error loading events:', error);
       return [];
     }
-  };
+  }, [artistId]);
 
   const handleFollow = async () => {
     try {

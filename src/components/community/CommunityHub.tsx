@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -70,11 +70,11 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
   useEffect(() => {
     initializeAnonymousSession();
     loadContent();
-  }, []);
+  }, [loadContent]);
 
   useEffect(() => {
     loadContent();
-  }, [activeTab, searchQuery, selectedLocation, selectedCategory]);
+  }, [activeTab, searchQuery, selectedLocation, selectedCategory, loadContent]);
 
   const initializeAnonymousSession = async () => {
     try {
@@ -84,7 +84,7 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
     }
   };
 
-  const loadContent = async () => {
+  const loadContent = useCallback(async () => {
     setIsLoading(true);
     try {
       switch (activeTab) {
@@ -108,12 +108,12 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeTab, loadEvents, loadPosts, toast]);
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     try {
       const data = await anonymousUserService.getAnonymousPosts({
-        postType: selectedCategory === 'all' ? undefined : selectedCategory as any,
+        postType: selectedCategory === 'all' ? undefined : (selectedCategory as 'discussion' | 'poll' | 'event' | 'announcement'),
         location: selectedLocation === 'all' ? undefined : {
           city: selectedLocation
         },
@@ -123,7 +123,7 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
     } catch (error) {
       console.error('Error loading posts:', error);
     }
-  };
+  }, [selectedCategory, selectedLocation]);
 
   const loadPolls = async () => {
     try {
@@ -137,7 +137,7 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
     }
   };
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
       const data = await communityService.getEvents({
         city: selectedLocation === 'all' ? undefined : selectedLocation,
@@ -149,7 +149,7 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
     } catch (error) {
       console.error('Error loading events:', error);
     }
-  };
+  }, [selectedLocation]);
 
   const handlePostCreated = (post: AnonymousPost) => {
     setPosts(prev => [post, ...prev]);
@@ -189,7 +189,7 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
     console.log('Report post:', post.id);
   };
 
-  const handleGovernmentTag = (tag: any) => {
+  const handleGovernmentTag = (tag: { authority?: { name: string } } | null) => {
     toast({
       title: 'Government Tagged',
       description: `Your issue has been tagged to ${tag.authority?.name}.`,
