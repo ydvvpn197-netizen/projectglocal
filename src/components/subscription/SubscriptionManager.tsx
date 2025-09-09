@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Check, Crown, Star, Zap } from 'lucide-react';
+import { Check, Crown, Star, Zap, AlertCircle, Loader2 } from 'lucide-react';
 import { subscriptionService, SubscriptionPlan, SubscriptionStatus } from '@/services/subscriptionService';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { SubscriptionErrorBoundary } from './SubscriptionErrorBoundary';
 
 interface SubscriptionManagerProps {
   userType: 'user' | 'artist';
@@ -117,16 +118,18 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading subscription plans...</p>
+        <div className="text-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading subscription plans...</p>
+          <p className="text-sm text-gray-500 mt-1">Please wait while we fetch the latest pricing</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <SubscriptionErrorBoundary>
+      <div className="space-y-6">
       {/* Current Subscription Status */}
       {subscriptionStatus && (
         <Card className="border-l-4 border-l-blue-500">
@@ -175,11 +178,14 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
         {plans.map((plan) => (
           <Card 
             key={plan.id} 
-            className={`relative ${
+            className={`relative cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
               plan.plan_type === 'yearly' 
-                ? 'border-2 border-yellow-400 shadow-lg' 
-                : 'border border-gray-200'
+                ? 'border-2 border-yellow-400 shadow-lg hover:border-yellow-500' 
+                : 'border border-gray-200 hover:border-blue-300'
+            } ${
+              processing === plan.id ? 'opacity-75 pointer-events-none' : ''
             }`}
+            onClick={() => !subscriptionStatus?.is_pro && handleSubscribe(plan.id)}
           >
             {plan.plan_type === 'yearly' && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -218,13 +224,19 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
               </div>
               
               <Button
-                className="w-full"
+                className="w-full transition-all duration-200 hover:shadow-md"
                 variant={plan.plan_type === 'yearly' ? 'default' : 'outline'}
-                onClick={() => handleSubscribe(plan.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSubscribe(plan.id);
+                }}
                 disabled={processing === plan.id || subscriptionStatus?.is_pro}
               >
                 {processing === plan.id ? (
-                  'Processing...'
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
                 ) : subscriptionStatus?.is_pro ? (
                   'Current Plan'
                 ) : (
@@ -278,6 +290,7 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </SubscriptionErrorBoundary>
   );
 }

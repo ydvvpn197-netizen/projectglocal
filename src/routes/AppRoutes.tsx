@@ -73,6 +73,8 @@ const PaymentCancel = React.lazy(() => import('@/pages/PaymentCancel'));
 // Subscription pages
 const SubscriptionPage = React.lazy(() => import('@/pages/SubscriptionPage'));
 const SubscriptionPlansPage = React.lazy(() => import('@/pages/SubscriptionPlansPage'));
+const SubscriptionSuccess = React.lazy(() => import('@/pages/SubscriptionSuccess'));
+const SubscriptionCancel = React.lazy(() => import('@/pages/SubscriptionCancel'));
 const SubscriptionTest = React.lazy(() => import('@/components/SubscriptionTest').then(module => ({ default: module.SubscriptionTest })));
 
 // Document type pages
@@ -139,6 +141,8 @@ export const AppRoutes: React.FC = () => {
       {/* Subscription routes */}
       <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
       <Route path="/subscription/plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
+      <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+      <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
       <Route path="/subscription/test" element={<ProtectedRoute><SubscriptionTest /></ProtectedRoute>} />
       
       {/* Document type routes */}

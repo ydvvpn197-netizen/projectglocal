@@ -131,7 +131,7 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
           {!subscriptionStatus.is_pro && showUpgradeButton && (
             <Button 
               onClick={handleUpgrade}
-              className="flex-1"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 hover:shadow-lg"
               size="sm"
             >
               <Crown className="h-4 w-4 mr-1" />
@@ -143,6 +143,7 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
             <Button 
               variant="outline" 
               size="sm"
+              className="hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
               onClick={() => {
                 // Navigate to subscription management
                 window.location.href = '/subscription/manage';
@@ -156,15 +157,25 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
 
         {/* Upgrade Benefits */}
         {!subscriptionStatus.is_pro && (
-          <div className="bg-blue-50 p-3 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-1">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-800 font-medium mb-2 flex items-center">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
               Upgrade to Pro and unlock:
             </p>
             <ul className="text-xs text-blue-700 space-y-1">
-              <li>• Comment on news articles</li>
-              <li>• Priority customer support</li>
+              <li className="flex items-center">
+                <Check className="h-3 w-3 mr-1 text-green-600" />
+                Comment on news articles
+              </li>
+              <li className="flex items-center">
+                <Check className="h-3 w-3 mr-1 text-green-600" />
+                Priority customer support
+              </li>
               {user?.user_metadata?.user_type === 'artist' && (
-                <li>• Featured listing in search results</li>
+                <li className="flex items-center">
+                  <Check className="h-3 w-3 mr-1 text-green-600" />
+                  Featured listing in search results
+                </li>
               )}
             </ul>
           </div>

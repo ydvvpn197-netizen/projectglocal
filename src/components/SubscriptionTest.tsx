@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useProPermissions } from '@/hooks/useProPermissions';
 import { subscriptionService, SubscriptionPlan } from '@/services/subscriptionService';
+import { SubscriptionFlowTest } from './subscription/SubscriptionFlowTest';
 import { toast } from 'sonner';
 
 export function SubscriptionTest() {
@@ -271,6 +272,11 @@ export function SubscriptionTest() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Comprehensive Flow Test */}
+      <div className="mt-6">
+        <SubscriptionFlowTest />
+      </div>
     </div>
   );
 }

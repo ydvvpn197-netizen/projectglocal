@@ -148,13 +148,27 @@ export class SubscriptionService {
         throw new Error('User already has an active subscription');
       }
 
+      // Generate Stripe price ID if not exists (for development/testing)
+      let priceId = plan.stripe_price_id;
+      if (!priceId) {
+        // Create a temporary price ID for development
+        priceId = `price_${plan.user_type}_${plan.plan_type}_${plan.price_in_cents}`;
+        console.warn('No Stripe price ID found for plan, using temporary ID:', priceId);
+      }
+
       // Create Stripe checkout session using Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
-          priceId: plan.stripe_price_id,
+          priceId: priceId,
           mode: 'subscription',
           userId: userId,
           planId: planId,
+          planData: {
+            name: plan.name,
+            price: plan.price_in_cents,
+            currency: plan.currency,
+            interval: plan.plan_type === 'monthly' ? 'month' : 'year',
+          },
           successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/subscription/cancel`,
         },
