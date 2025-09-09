@@ -3,13 +3,14 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Home, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSupabase } from '@/hooks/useSupabase';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { supabase, user } = useSupabase();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [sessionData, setSessionData] = useState<{
     sessionId: string;

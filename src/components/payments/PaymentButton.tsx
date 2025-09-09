@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, CreditCard, Crown } from 'lucide-react';
-import { useSupabase } from '@/hooks/useSupabase';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface PaymentButtonProps {
@@ -24,7 +25,7 @@ export const PaymentButton: React.FC<PaymentButtonProps> = ({
   disabled = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { supabase, user } = useSupabase();
+  const { user } = useAuth();
 
   const handlePayment = async () => {
     if (!user) {

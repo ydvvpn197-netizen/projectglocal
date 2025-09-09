@@ -3,7 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Clock, Crown, CreditCard, AlertCircle } from 'lucide-react';
-import { useSupabase } from '@/hooks/useSupabase';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { PaymentButton } from './PaymentButton';
 
 interface UserPaymentStatusProps {
@@ -17,7 +18,7 @@ export const UserPaymentStatus: React.FC<UserPaymentStatusProps> = ({
   showUpgradeButton = true,
   className = '',
 }) => {
-  const { supabase, user } = useSupabase();
+  const { user } = useAuth();
   const [paymentStatus, setPaymentStatus] = useState<{
     isAuthorized: boolean;
     subscriptionStatus: string;
