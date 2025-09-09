@@ -1,14 +1,15 @@
 // Enhanced News page component for TheGlocal project
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ResponsiveLayout } from '@/components/ResponsiveLayout';
-import { RealTimeNewsFeed } from '@/components/RealTimeNewsFeed';
-import { NewsComments } from '@/components/NewsComments';
-import { NewsPreferences } from '@/components/NewsPreferences';
-import { NewsProvider } from '@/contexts/NewsContext';
-import { useNews } from '@/hooks/useNews';
-import { useNewsData, type NewsArticle } from '@/hooks/useNewsData';
-import { Button } from '@/components/ui/button';
+import { ResponsiveLayout } from '../components/ResponsiveLayout';
+import { RealTimeNewsFeed } from '../components/RealTimeNewsFeed';
+import { NewsComments } from '../components/NewsComments';
+import { NewsPreferences } from '../components/NewsPreferences';
+import { NewsProvider } from '../contexts/NewsContext';
+import { useNews } from '../hooks/useNews';
+import { useNewsData, type NewsArticle } from '../hooks/useNewsData';
+import { Button } from '../components/ui/button';
+import { realTimeNewsService } from '../services/realTimeNewsService';
 import { Settings, MessageCircle } from 'lucide-react';
 
 const NewsContent: React.FC = () => {

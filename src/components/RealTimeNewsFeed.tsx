@@ -31,9 +31,10 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedImage } from './OptimizedImage';
-import { useRealTimeNews, NewsFilters } from '@/hooks/useRealTimeNews';
-import { NewsArticle } from '@/types/news';
-import { NewsSummary } from '@/services/newsSummarizationService';
+import { useRealTimeNews, NewsFilters } from '../hooks/useRealTimeNews';
+import { NewsArticle } from '../types/news';
+import { NewsSummary } from '../services/newsSummarizationService';
+import { realTimeNewsService } from '../services/realTimeNewsService';
 
 interface RealTimeNewsFeedProps {
   onArticleClick: (article: NewsArticle) => void;

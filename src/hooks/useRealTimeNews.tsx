@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { realTimeNewsService } from '@/services/realTimeNewsService';
-import { newsSummarizationService } from '@/services/newsSummarizationService';
-import { NewsArticle } from '@/types/news';
-import { NewsSummary } from '@/services/newsSummarizationService';
+import { realTimeNewsService } from '../services/realTimeNewsService';
+import { newsSummarizationService } from '../services/newsSummarizationService';
+import { NewsArticle } from '../types/news';
+import { NewsSummary } from '../services/newsSummarizationService';
 
 export interface RealTimeNewsState {
   articles: NewsArticle[];

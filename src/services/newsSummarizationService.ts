@@ -1,4 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
+import { aiSummarizationService } from './aiSummarizationService';
 
 export interface NewsSummary {
   id: string;
@@ -10,6 +11,26 @@ export interface NewsSummary {
   readingTime: number; // in minutes
   tags: string[];
   createdAt: string;
+}
+private async createIntelligentSummary(
+  article: { title: string; content: string; description?: string },
+  maxLength: number
+): Promise<string> {
+  try {
+    // Use the AI summarization service
+    const summary = await aiSummarizationService.generateSummary(article.content, article.title);
+    
+    // Ensure it doesn't exceed max length
+    if (summary.length > maxLength) {
+      return summary.substring(0, maxLength - 3) + '...';
+    }
+    
+    return summary;
+  } catch (error) {
+    console.error('Error generating AI summary:', error);
+    // Fallback to basic summarization
+    return this.createBasicSummary(article, maxLength);
+  }
 }
 
 export interface SummarizationOptions {

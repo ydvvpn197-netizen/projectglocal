@@ -1,472 +1,411 @@
-import { supabase } from '@/integrations/supabase/client';
-import { NewsArticle } from '@/types/news';
+import { supabase } from '../integrations/supabase/client';
+import { NewsArticle, NewsSource, NewsCategory } from '../types/news';
 
-export interface NewsSource {
-  id: string;
+interface GNewsResponse {
+  articles: Array<{
+    title: string;
+    description: string;
+    content: string;
+    url: string;
+    image: string;
+    publishedAt: string;
+    source: {
   name: string;
   url: string;
-  rssUrl?: string;
-  apiEndpoint?: string;
-  apiKey?: string;
-  location: {
-    city: string;
-    state: string;
-    country: string;
-    coordinates?: { lat: number; lng: number };
-  };
-  categories: string[];
-  isActive: boolean;
-  lastFetched?: string;
-  fetchInterval: number; // in minutes
+    };
+  }>;
+  totalArticles: number;
 }
 
-export interface NewsSummary {
-  id: string;
-  articleId: string;
-  summary: string;
-  keyPoints: string[];
-  sentiment: 'positive' | 'negative' | 'neutral';
-  confidence: number;
-  createdAt: string;
+interface NewsAPIResponse {
+  articles: Array<{
+    title: string;
+    description: string;
+    content: string;
+    url: string;
+    urlToImage: string;
+    publishedAt: string;
+    source: {
+      name: string;
+      url: string;
+    };
+  }>;
+  totalResults: number;
 }
 
-export class RealTimeNewsService {
-  private static instance: RealTimeNewsService;
-  private newsSources: NewsSource[] = [];
-  private fetchInterval: NodeJS.Timeout | null = null;
-  private subscribers: Map<string, (articles: NewsArticle[]) => void> = new Map();
+class RealTimeNewsService {
+  private gnewsApiKey: string;
+  private newsApiKey: string;
+  private refreshInterval: number = 5 * 60 * 1000; // 5 minutes
+  private isRefreshing: boolean = false;
 
-  private constructor() {
-    this.initializeNewsSources();
-  }
-
-  public static getInstance(): RealTimeNewsService {
-    if (!RealTimeNewsService.instance) {
-      RealTimeNewsService.instance = new RealTimeNewsService();
+  constructor() {
+    this.gnewsApiKey = import.meta.env.VITE_GNEWS_API_KEY;
+    this.newsApiKey = import.meta.env.VITE_NEWS_API_KEY;
+    
+    if (!this.gnewsApiKey && !this.newsApiKey) {
+      console.warn('No news API keys configured');
     }
-    return RealTimeNewsService.instance;
   }
 
-  private async initializeNewsSources() {
-    // Initialize with local news sources
-    this.newsSources = [
-      {
-        id: 'local-news-1',
-        name: 'Local Community News',
-        url: 'https://example-local-news.com',
-        rssUrl: 'https://example-local-news.com/rss',
-        location: {
-          city: 'Delhi',
-          state: 'Delhi',
-          country: 'India',
-          coordinates: { lat: 28.6139, lng: 77.2090 }
-        },
-        categories: ['community', 'local', 'events'],
-        isActive: true,
-        fetchInterval: 15
-      },
-      {
-        id: 'city-news-1',
-        name: 'City Development News',
-        url: 'https://example-city-news.com',
-        apiEndpoint: 'https://api.example-city-news.com/news',
-        location: {
-          city: 'Delhi',
-          state: 'Delhi',
-          country: 'India',
-          coordinates: { lat: 28.6139, lng: 77.2090 }
-        },
-        categories: ['infrastructure', 'development', 'government'],
-        isActive: true,
-        fetchInterval: 30
-      },
-      {
-        id: 'business-news-1',
-        name: 'Local Business News',
-        url: 'https://example-business-news.com',
-        rssUrl: 'https://example-business-news.com/rss',
-        location: {
-          city: 'Delhi',
-          state: 'Delhi',
-          country: 'India',
-          coordinates: { lat: 28.6139, lng: 77.2090 }
-        },
-        categories: ['business', 'economy', 'startups'],
-        isActive: true,
-        fetchInterval: 60
-      }
-    ];
-
-    // Load from database if available
-    await this.loadNewsSourcesFromDB();
-  }
-
-  private async loadNewsSourcesFromDB() {
+  /**
+   * Fetch real-time news from multiple sources
+   */
+  async fetchRealTimeNews(category?: string, limit: number = 20): Promise<NewsArticle[]> {
     try {
-      const { data, error } = await supabase
-        .from('news_sources')
-        .select('*')
-        .eq('is_active', true);
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        this.newsSources = data.map(source => ({
-          id: source.id,
-          name: source.name,
-          url: source.api_endpoint,
-          rssUrl: source.api_endpoint,
-          apiEndpoint: source.api_endpoint,
-          apiKey: source.api_key,
-          location: {
-            city: source.location_bias || 'Delhi',
-            state: 'Delhi',
-            country: 'India'
-          },
-          categories: source.categories || [],
-          isActive: source.is_active,
-          lastFetched: source.last_fetch_at,
-          fetchInterval: 30
-        }));
+      const articles: NewsArticle[] = [];
+      
+      // Fetch from GNews API
+      if (this.gnewsApiKey) {
+        const gnewsArticles = await this.fetchFromGNews(category, limit);
+        articles.push(...gnewsArticles);
       }
-    } catch (error) {
-      console.error('Error loading news sources from DB:', error);
-    }
-  }
-
-  public async startRealTimeFetching() {
-    if (this.fetchInterval) {
-      clearInterval(this.fetchInterval);
-    }
-
-    // Fetch immediately
-    await this.fetchAllNews();
-
-    // Set up interval for regular fetching
-    this.fetchInterval = setInterval(async () => {
-      await this.fetchAllNews();
-    }, 5 * 60 * 1000); // Fetch every 5 minutes
-
-    // Set up real-time subscriptions
-    this.setupRealTimeSubscriptions();
-  }
-
-  public stopRealTimeFetching() {
-    if (this.fetchInterval) {
-      clearInterval(this.fetchInterval);
-      this.fetchInterval = null;
-    }
-  }
-
-  private async fetchAllNews() {
-    const promises = this.newsSources
-      .filter(source => source.isActive)
-      .map(source => this.fetchNewsFromSource(source));
-
-    try {
-      const results = await Promise.allSettled(promises);
-      const allArticles: NewsArticle[] = [];
-
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-          allArticles.push(...result.value);
-        } else {
-          console.error(`Failed to fetch from source ${this.newsSources[index].name}:`, result.reason);
-        }
-      });
-
-      if (allArticles.length > 0) {
-        await this.processAndStoreArticles(allArticles);
-        this.notifySubscribers(allArticles);
+      
+      // Fetch from NewsAPI
+      if (this.newsApiKey) {
+        const newsApiArticles = await this.fetchFromNewsAPI(category, limit);
+        articles.push(...newsApiArticles);
       }
+      
+      // Remove duplicates based on URL
+      const uniqueArticles = this.removeDuplicateArticles(articles);
+      
+      // Save to database
+      await this.saveArticlesToDatabase(uniqueArticles);
+      
+      return uniqueArticles.slice(0, limit);
     } catch (error) {
-      console.error('Error fetching news:', error);
+      console.error('Error fetching real-time news:', error);
+      throw new Error('Failed to fetch real-time news');
     }
   }
 
-  private async fetchNewsFromSource(source: NewsSource): Promise<NewsArticle[]> {
+  /**
+   * Fetch news from GNews API
+   */
+  private async fetchFromGNews(category?: string, limit: number = 20): Promise<NewsArticle[]> {
     try {
-      // For demo purposes, generate mock articles
-      // In production, you would fetch from actual RSS feeds or APIs
-      const mockArticles: NewsArticle[] = [
-        {
-          id: `article-${Date.now()}-${Math.random()}`,
-          title: `Breaking: ${source.name} - New Development in ${source.location.city}`,
-          description: `Latest updates from ${source.location.city} regarding local developments and community news.`,
-          content: `Full article content about recent developments in ${source.location.city}...`,
-          url: `${source.url}/article-${Date.now()}`,
-          image_url: `https://images.unsplash.com/photo-${1500000000000 + Math.random() * 1000000000}?w=400&h=300&fit=crop`,
-          source: source.name,
-          category: source.categories[0] || 'general',
-          location: {
-            city: source.location.city,
-            state: source.location.state,
-            country: source.location.country
-          },
-          published_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          engagement: {
-            likes: Math.floor(Math.random() * 50),
-            comments: Math.floor(Math.random() * 20),
-            shares: Math.floor(Math.random() * 10),
-            views: Math.floor(Math.random() * 200)
-          }
-        }
-      ];
+      const categoryParam = category ? `&category=${category}` : '';
+      const url = `https://gnews.io/api/v4/top-headlines?token=${this.gnewsApiKey}&lang=en&country=us&max=${limit}${categoryParam}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`GNews API error: ${response.status}`);
+      }
+      
+      const data: GNewsResponse = await response.json();
+      
+      return data.articles.map(article => this.transformGNewsArticle(article));
+  } catch (error) {
+      console.error('Error fetching from GNews:', error);
+    return [];
+  }
+}
 
-      return mockArticles;
+  /**
+   * Fetch news from NewsAPI
+   */
+  private async fetchFromNewsAPI(category?: string, limit: number = 20): Promise<NewsArticle[]> {
+    try {
+      const categoryParam = category ? `&category=${category}` : '';
+      const url = `https://newsapi.org/v2/top-headlines?apiKey=${this.newsApiKey}&country=us&pageSize=${limit}${categoryParam}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`NewsAPI error: ${response.status}`);
+      }
+      
+      const data: NewsAPIResponse = await response.json();
+      
+      return data.articles.map(article => this.transformNewsAPIArticle(article));
     } catch (error) {
-      console.error(`Error fetching from ${source.name}:`, error);
+      console.error('Error fetching from NewsAPI:', error);
       return [];
     }
   }
 
-  private async processAndStoreArticles(articles: NewsArticle[]) {
-    try {
-      // Generate summaries for articles
-      const articlesWithSummaries = await Promise.all(
-        articles.map(async (article) => {
-          const summary = await this.generateSummary(article);
-          return {
-            ...article,
-            summary: summary.summary,
-            key_points: summary.keyPoints,
-            sentiment: summary.sentiment
-          };
-        })
-      );
-
-      // Store in database
-      const { error } = await supabase
-        .from('news_articles')
-        .upsert(
-          articlesWithSummaries.map(article => ({
-            id: article.id,
-            title: article.title,
-            description: article.description,
-            content: article.content,
-            url: article.url,
-            image_url: article.image_url,
-            source: article.source,
-            category: article.category,
-            location_name: article.location.city,
-            location_lat: article.location.coordinates?.lat,
-            location_lng: article.location.coordinates?.lng,
-            published_at: article.published_at,
-            summary: article.summary,
-            key_points: article.key_points,
-            sentiment: article.sentiment,
-            engagement_score: (article.engagement.likes + article.engagement.comments + article.engagement.shares) / 10
-          })),
-          { onConflict: 'id' }
-        );
-
-      if (error) throw error;
-
-      // Update source last fetch time
-      await this.updateSourceFetchTimes();
-
-    } catch (error) {
-      console.error('Error processing and storing articles:', error);
-    }
-  }
-
-  private async generateSummary(article: NewsArticle): Promise<NewsSummary> {
-    // In production, you would use an AI service like OpenAI, Claude, or a local model
-    // For now, we'll create a simple summary
-    const words = article.description.split(' ');
-    const summary = words.slice(0, 20).join(' ') + '...';
-    
-    const keyPoints = [
-      `Important development in ${article.location.city}`,
-      'Community impact and local relevance',
-      'Timeline and next steps'
-    ];
-
+  /**
+   * Transform GNews article to our format
+   */
+  private transformGNewsArticle(article: GNewsResponse['articles'][0]): NewsArticle {
     return {
-      id: `summary-${article.id}`,
-      articleId: article.id,
-      summary,
-      keyPoints,
-      sentiment: 'neutral' as const,
-      confidence: 0.8,
-      createdAt: new Date().toISOString()
+      id: this.generateArticleId(article.url),
+      title: article.title,
+      content: article.content || article.description,
+      summary: article.description,
+      url: article.url,
+      image_url: article.image,
+      published_at: new Date(article.publishedAt).toISOString(),
+      source_id: this.getOrCreateSourceId(article.source.name, article.source.url),
+      category_id: this.getCategoryId('general'),
+      author: article.source.name,
+      language: 'en',
+      country: 'us',
+      is_breaking: false,
+      is_featured: false,
+      view_count: 0,
+      like_count: 0,
+      share_count: 0,
+      comment_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
   }
 
-  private async updateSourceFetchTimes() {
-    const updatePromises = this.newsSources.map(source =>
-      supabase
-        .from('news_sources')
-        .update({ last_fetch_at: new Date().toISOString() })
-        .eq('id', source.id)
-    );
-
-    await Promise.allSettled(updatePromises);
+  /**
+   * Transform NewsAPI article to our format
+   */
+  private transformNewsAPIArticle(article: NewsAPIResponse['articles'][0]): NewsArticle {
+    return {
+      id: this.generateArticleId(article.url),
+      title: article.title,
+      content: article.content || article.description,
+      summary: article.description,
+      url: article.url,
+      image_url: article.urlToImage,
+      published_at: new Date(article.publishedAt).toISOString(),
+      source_id: this.getOrCreateSourceId(article.source.name, article.source.url),
+      category_id: this.getCategoryId('general'),
+      author: article.source.name,
+      language: 'en',
+      country: 'us',
+      is_breaking: false,
+      is_featured: false,
+      view_count: 0,
+      like_count: 0,
+      share_count: 0,
+      comment_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
   }
 
-  private setupRealTimeSubscriptions() {
-    // Subscribe to new articles
-    supabase
-      .channel('news_articles_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'news_articles'
-        },
-        (payload) => {
-          console.log('New article received:', payload);
-          this.notifySubscribers([payload.new as NewsArticle]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'news_articles'
-        },
-        (payload) => {
-          console.log('Article updated:', payload);
-          this.notifySubscribers([payload.new as NewsArticle]);
-        }
-      )
-      .subscribe();
-
-    // Subscribe to article interactions
-    supabase
-      .channel('news_interactions_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'news_article_interactions'
-        },
-        (payload) => {
-          console.log('Article interaction updated:', payload);
-          this.updateArticleEngagement(payload.new as { article_id: string; interaction_type: string; user_id: string });
-        }
-      )
-      .subscribe();
+  /**
+   * Generate unique article ID from URL
+   */
+  private generateArticleId(url: string): string {
+    return btoa(url).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
   }
 
-  private async updateArticleEngagement(interaction: { article_id: string; interaction_type: string; user_id: string }) {
+  /**
+   * Get or create source ID
+   */
+  private async getOrCreateSourceId(name: string, url: string): Promise<string> {
     try {
-      // Update engagement score
-      await supabase.rpc('update_article_engagement_score', {
-        article_uuid: interaction.article_id
-      });
+      // Check if source exists
+      const { data: existingSource } = await supabase
+        .from('news_sources')
+        .select('id')
+        .eq('name', name)
+        .single();
+
+      if (existingSource) {
+        return existingSource.id;
+      }
+
+      // Create new source
+      const { data: newSource, error } = await supabase
+        .from('news_sources')
+        .insert({
+          name,
+          url,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error creating news source:', error);
+        return 'default-source';
+      }
+
+      return newSource.id;
     } catch (error) {
-      console.error('Error updating article engagement:', error);
+      console.error('Error getting/creating source:', error);
+      return 'default-source';
     }
   }
 
-  public subscribeToNews(callback: (articles: NewsArticle[]) => void): string {
-    const subscriptionId = `news-${Date.now()}-${Math.random()}`;
-    this.subscribers.set(subscriptionId, callback);
-    return subscriptionId;
+  /**
+   * Get category ID
+   */
+  private async getCategoryId(categoryName: string): Promise<string> {
+    try {
+      const { data: category } = await supabase
+        .from('news_categories')
+        .select('id')
+        .eq('name', categoryName)
+        .single();
+
+      return category?.id || 'general';
+    } catch (error) {
+      console.error('Error getting category:', error);
+      return 'general';
+    }
   }
 
-  public unsubscribeFromNews(subscriptionId: string) {
-    this.subscribers.delete(subscriptionId);
-  }
-
-  private notifySubscribers(articles: NewsArticle[]) {
-    this.subscribers.forEach(callback => {
-      try {
-        callback(articles);
-      } catch (error) {
-        console.error('Error notifying subscriber:', error);
+  /**
+   * Remove duplicate articles based on URL
+   */
+  private removeDuplicateArticles(articles: NewsArticle[]): NewsArticle[] {
+    const seen = new Set<string>();
+    return articles.filter(article => {
+      if (seen.has(article.url)) {
+        return false;
       }
+      seen.add(article.url);
+      return true;
     });
   }
 
-  public async getLatestArticles(limit: number = 20): Promise<NewsArticle[]> {
+  /**
+   * Save articles to database
+   */
+  private async saveArticlesToDatabase(articles: NewsArticle[]): Promise<void> {
+    try {
+      for (const article of articles) {
+        // Check if article already exists
+        const { data: existingArticle } = await supabase
+          .from('news_articles')
+          .select('id')
+          .eq('url', article.url)
+          .single();
+
+        if (!existingArticle) {
+          // Insert new article
+      const { error } = await supabase
+        .from('news_articles')
+            .insert(article);
+
+          if (error) {
+            console.error('Error saving article:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error saving articles to database:', error);
+    }
+  }
+
+  /**
+   * Start real-time news updates
+   */
+  startRealTimeUpdates(callback: (articles: NewsArticle[]) => void): void {
+    if (this.isRefreshing) {
+      return;
+    }
+
+    this.isRefreshing = true;
+    
+    // Initial fetch
+    this.fetchRealTimeNews().then(callback).catch(console.error);
+    
+    // Set up interval for updates
+    const interval = setInterval(async () => {
+      try {
+        const articles = await this.fetchRealTimeNews();
+        callback(articles);
+      } catch (error) {
+        console.error('Error in real-time update:', error);
+      }
+    }, this.refreshInterval);
+
+    // Store interval ID for cleanup
+    (this as any).updateInterval = interval;
+  }
+
+  /**
+   * Stop real-time news updates
+   */
+  stopRealTimeUpdates(): void {
+    if ((this as any).updateInterval) {
+      clearInterval((this as any).updateInterval);
+      (this as any).updateInterval = null;
+    }
+    this.isRefreshing = false;
+  }
+
+  /**
+   * Get trending articles
+   */
+  async getTrendingArticles(limit: number = 10): Promise<NewsArticle[]> {
     try {
       const { data, error } = await supabase
         .from('news_articles')
-        .select('*')
+        .select(`
+          *,
+          news_sources(name, url),
+          news_categories(name)
+        `)
+        .order('view_count', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+      } catch (error) {
+      console.error('Error fetching trending articles:', error);
+      return [];
+      }
+  }
+
+  /**
+   * Get articles by category
+   */
+  async getArticlesByCategory(category: string, limit: number = 20): Promise<NewsArticle[]> {
+    try {
+      const { data, error } = await supabase
+        .from('news_articles')
+        .select(`
+          *,
+          news_sources(name, url),
+          news_categories(name)
+        `)
+        .eq('news_categories.name', category)
         .order('published_at', { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      return (data || []).map(article => ({
-        id: article.id,
-        title: article.title,
-        description: article.description,
-        content: article.content,
-        url: article.url,
-        image_url: article.image_url,
-        source: article.source,
-        category: article.category,
-        location: {
-          city: article.location_name,
-          state: 'Delhi',
-          country: 'India'
-        },
-        published_at: article.published_at,
-        created_at: article.created_at,
-        engagement: {
-          likes: Math.floor(Math.random() * 50),
-          comments: Math.floor(Math.random() * 20),
-          shares: Math.floor(Math.random() * 10),
-          views: Math.floor(Math.random() * 200)
-        }
-      }));
+      return data || [];
     } catch (error) {
-      console.error('Error fetching latest articles:', error);
+      console.error('Error fetching articles by category:', error);
       return [];
     }
   }
 
-  public async getArticlesByLocation(
-    city: string,
-    radiusKm: number = 50,
-    limit: number = 20
-  ): Promise<NewsArticle[]> {
+  /**
+   * Search articles
+   */
+  async searchArticles(query: string, limit: number = 20): Promise<NewsArticle[]> {
     try {
       const { data, error } = await supabase
-        .rpc('get_nearby_news_articles', {
-          user_lat: 28.6139, // Delhi coordinates
-          user_lng: 77.2090,
-          radius_km: radiusKm,
-          limit_count: limit
-        });
+        .from('news_articles')
+        .select(`
+          *,
+          news_sources(name, url),
+          news_categories(name)
+        `)
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%,summary.ilike.%${query}%`)
+        .order('published_at', { ascending: false })
+        .limit(limit);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      return (data || []).map(article => ({
-        id: article.id,
-        title: article.title,
-        description: article.description,
-        content: '',
-        url: article.url,
-        image_url: article.image_url,
-        source: 'Local News',
-        category: article.category,
-        location: {
-          city: article.location_name,
-          state: 'Delhi',
-          country: 'India'
-        },
-        published_at: article.published_at,
-        created_at: new Date().toISOString(),
-        engagement: {
-          likes: Math.floor(Math.random() * 50),
-          comments: Math.floor(Math.random() * 20),
-          shares: Math.floor(Math.random() * 10),
-          views: Math.floor(Math.random() * 200)
-        }
-      }));
+      return data || [];
     } catch (error) {
-      console.error('Error fetching articles by location:', error);
+      console.error('Error searching articles:', error);
       return [];
     }
   }
 }
 
-export const realTimeNewsService = RealTimeNewsService.getInstance();
+export const realTimeNewsService = new RealTimeNewsService();
+export default realTimeNewsService;
