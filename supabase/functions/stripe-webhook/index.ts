@@ -146,7 +146,7 @@ Deno.serve(async (req: Request) => {
 
         if (profile) {
           let isAuthorized = false;
-          let subscriptionStatus = status;
+          const subscriptionStatus = status;
 
           // Determine authorization based on subscription status
           if (status === 'active' || status === 'trialing') {

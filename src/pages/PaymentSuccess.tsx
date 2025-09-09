@@ -11,7 +11,10 @@ const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const { supabase, user } = useSupabase();
   const [isLoading, setIsLoading] = useState(true);
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionData, setSessionData] = useState<{
+    sessionId: string;
+    verified: boolean;
+  } | null>(null);
 
   const sessionId = searchParams.get('session_id');
 
