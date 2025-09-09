@@ -12,26 +12,6 @@ export interface NewsSummary {
   tags: string[];
   createdAt: string;
 }
-private async createIntelligentSummary(
-  article: { title: string; content: string; description?: string },
-  maxLength: number
-): Promise<string> {
-  try {
-    // Use the AI summarization service
-    const summary = await aiSummarizationService.generateSummary(article.content, article.title);
-    
-    // Ensure it doesn't exceed max length
-    if (summary.length > maxLength) {
-      return summary.substring(0, maxLength - 3) + '...';
-    }
-    
-    return summary;
-  } catch (error) {
-    console.error('Error generating AI summary:', error);
-    // Fallback to basic summarization
-    return this.createBasicSummary(article, maxLength);
-  }
-}
 
 export interface SummarizationOptions {
   maxLength?: number;
@@ -81,13 +61,7 @@ export class NewsSummarizationService {
     }
 
     try {
-      // For production, you would integrate with AI services like:
-      // - OpenAI GPT-4
-      // - Anthropic Claude
-      // - Google Gemini
-      // - Local models like Llama 2
-      
-      // For now, we'll create intelligent summaries using text processing
+      // Generate intelligent summary using AI
       const summary = await this.createIntelligentSummary(article, maxLength);
       const keyPoints = includeKeyPoints ? this.extractKeyPoints(article) : [];
       const sentiment = includeSentiment ? this.analyzeSentiment(article) : 'neutral';
@@ -120,12 +94,36 @@ export class NewsSummarizationService {
   }
 
   /**
-   * Create an intelligent summary using text processing techniques
+   * Create an intelligent summary using AI
    */
   private async createIntelligentSummary(
     article: { title: string; content: string; description?: string },
     maxLength: number
   ): Promise<string> {
+    try {
+      // Use the AI summarization service
+      const summary = await aiSummarizationService.generateSummary(article.content, article.title);
+      
+      // Ensure it doesn't exceed max length
+      if (summary.length > maxLength) {
+        return summary.substring(0, maxLength - 3) + '...';
+      }
+      
+      return summary;
+    } catch (error) {
+      console.error('Error generating AI summary:', error);
+      // Fallback to basic summarization
+      return this.createBasicSummary(article, maxLength);
+    }
+  }
+
+  /**
+   * Create a basic summary as fallback
+   */
+  private createBasicSummary(
+    article: { title: string; content: string; description?: string },
+    maxLength: number
+  ): string {
     // Use the description if available and within length
     if (article.description && article.description.length <= maxLength) {
       return article.description;

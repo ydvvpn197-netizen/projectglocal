@@ -1,5 +1,5 @@
 import { supabase } from '../integrations/supabase/client';
-import { NewsArticle, NewsSource, NewsCategory } from '../types/news';
+import { NewsArticle } from '../types/news';
 
 interface GNewsResponse {
   articles: Array<{
@@ -33,11 +33,12 @@ interface NewsAPIResponse {
   totalResults: number;
 }
 
-class RealTimeNewsService {
+export class RealTimeNewsService {
   private gnewsApiKey: string;
   private newsApiKey: string;
   private refreshInterval: number = 5 * 60 * 1000; // 5 minutes
   private isRefreshing: boolean = false;
+  private updateInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.gnewsApiKey = import.meta.env.VITE_GNEWS_API_KEY;
@@ -96,11 +97,11 @@ class RealTimeNewsService {
       const data: GNewsResponse = await response.json();
       
       return data.articles.map(article => this.transformGNewsArticle(article));
-  } catch (error) {
+    } catch (error) {
       console.error('Error fetching from GNews:', error);
-    return [];
+      return [];
+    }
   }
-}
 
   /**
    * Fetch news from NewsAPI
@@ -128,27 +129,26 @@ class RealTimeNewsService {
    * Transform GNews article to our format
    */
   private transformGNewsArticle(article: GNewsResponse['articles'][0]): NewsArticle {
-    return {
-      id: this.generateArticleId(article.url),
-      title: article.title,
+    const articleId = this.generateArticleId(article.url);
+          return {
+      id: articleId,
+      article_id: articleId,
+            title: article.title,
+            description: article.description,
       content: article.content || article.description,
-      summary: article.description,
-      url: article.url,
+            url: article.url,
       image_url: article.image,
+      source_name: article.source.name,
+      source_url: article.source.url,
       published_at: new Date(article.publishedAt).toISOString(),
-      source_id: this.getOrCreateSourceId(article.source.name, article.source.url),
-      category_id: this.getCategoryId('general'),
-      author: article.source.name,
+      city: 'Unknown',
+      country: 'US',
+      category: 'general',
       language: 'en',
-      country: 'us',
-      is_breaking: false,
-      is_featured: false,
-      view_count: 0,
-      like_count: 0,
-      share_count: 0,
-      comment_count: 0,
+      ai_summary: article.description,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
     };
   }
 
@@ -156,27 +156,26 @@ class RealTimeNewsService {
    * Transform NewsAPI article to our format
    */
   private transformNewsAPIArticle(article: NewsAPIResponse['articles'][0]): NewsArticle {
+    const articleId = this.generateArticleId(article.url);
     return {
-      id: this.generateArticleId(article.url),
+      id: articleId,
+      article_id: articleId,
       title: article.title,
+      description: article.description,
       content: article.content || article.description,
-      summary: article.description,
       url: article.url,
       image_url: article.urlToImage,
+      source_name: article.source.name,
+      source_url: article.source.url,
       published_at: new Date(article.publishedAt).toISOString(),
-      source_id: this.getOrCreateSourceId(article.source.name, article.source.url),
-      category_id: this.getCategoryId('general'),
-      author: article.source.name,
+      city: 'Unknown',
+      country: 'US',
+      category: 'general',
       language: 'en',
-      country: 'us',
-      is_breaking: false,
-      is_featured: false,
-      view_count: 0,
-      like_count: 0,
-      share_count: 0,
-      comment_count: 0,
+      ai_summary: article.description,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
     };
   }
 
@@ -185,64 +184,6 @@ class RealTimeNewsService {
    */
   private generateArticleId(url: string): string {
     return btoa(url).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
-  }
-
-  /**
-   * Get or create source ID
-   */
-  private async getOrCreateSourceId(name: string, url: string): Promise<string> {
-    try {
-      // Check if source exists
-      const { data: existingSource } = await supabase
-        .from('news_sources')
-        .select('id')
-        .eq('name', name)
-        .single();
-
-      if (existingSource) {
-        return existingSource.id;
-      }
-
-      // Create new source
-      const { data: newSource, error } = await supabase
-        .from('news_sources')
-        .insert({
-          name,
-          url,
-          is_active: true,
-          created_at: new Date().toISOString()
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        console.error('Error creating news source:', error);
-        return 'default-source';
-      }
-
-      return newSource.id;
-    } catch (error) {
-      console.error('Error getting/creating source:', error);
-      return 'default-source';
-    }
-  }
-
-  /**
-   * Get category ID
-   */
-  private async getCategoryId(categoryName: string): Promise<string> {
-    try {
-      const { data: category } = await supabase
-        .from('news_categories')
-        .select('id')
-        .eq('name', categoryName)
-        .single();
-
-      return category?.id || 'general';
-    } catch (error) {
-      console.error('Error getting category:', error);
-      return 'general';
-    }
   }
 
   /**
@@ -267,16 +208,34 @@ class RealTimeNewsService {
       for (const article of articles) {
         // Check if article already exists
         const { data: existingArticle } = await supabase
-          .from('news_articles')
-          .select('id')
-          .eq('url', article.url)
+          .from('news_cache')
+          .select('article_id')
+          .eq('article_id', article.article_id)
           .single();
 
         if (!existingArticle) {
           // Insert new article
-      const { error } = await supabase
-        .from('news_articles')
-            .insert(article);
+          const { error } = await supabase
+            .from('news_cache')
+            .insert({
+              article_id: article.article_id,
+              title: article.title,
+              description: article.description,
+              content: article.content,
+              url: article.url,
+              image_url: article.image_url,
+              source_name: article.source_name,
+              source_url: article.source_url,
+              published_at: article.published_at,
+              city: article.city,
+              country: article.country,
+              category: article.category,
+              language: article.language,
+              ai_summary: article.ai_summary,
+              created_at: article.created_at,
+              updated_at: article.updated_at,
+              expires_at: article.expires_at
+            });
 
           if (error) {
             console.error('Error saving article:', error);
@@ -312,16 +271,16 @@ class RealTimeNewsService {
     }, this.refreshInterval);
 
     // Store interval ID for cleanup
-    (this as any).updateInterval = interval;
+    this.updateInterval = interval;
   }
 
   /**
    * Stop real-time news updates
    */
   stopRealTimeUpdates(): void {
-    if ((this as any).updateInterval) {
-      clearInterval((this as any).updateInterval);
-      (this as any).updateInterval = null;
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
     }
     this.isRefreshing = false;
   }
@@ -332,24 +291,20 @@ class RealTimeNewsService {
   async getTrendingArticles(limit: number = 10): Promise<NewsArticle[]> {
     try {
       const { data, error } = await supabase
-        .from('news_articles')
-        .select(`
-          *,
-          news_sources(name, url),
-          news_categories(name)
-        `)
-        .order('view_count', { ascending: false })
+        .from('news_cache')
+        .select('*')
+        .order('created_at', { ascending: false })
         .limit(limit);
 
       if (error) {
         throw error;
       }
 
-      return data || [];
-      } catch (error) {
+      return (data || []).map(this.mapDatabaseToNewsArticle);
+    } catch (error) {
       console.error('Error fetching trending articles:', error);
       return [];
-      }
+    }
   }
 
   /**
@@ -358,13 +313,9 @@ class RealTimeNewsService {
   async getArticlesByCategory(category: string, limit: number = 20): Promise<NewsArticle[]> {
     try {
       const { data, error } = await supabase
-        .from('news_articles')
-        .select(`
-          *,
-          news_sources(name, url),
-          news_categories(name)
-        `)
-        .eq('news_categories.name', category)
+        .from('news_cache')
+        .select('*')
+        .eq('category', category)
         .order('published_at', { ascending: false })
         .limit(limit);
 
@@ -372,7 +323,7 @@ class RealTimeNewsService {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(this.mapDatabaseToNewsArticle);
     } catch (error) {
       console.error('Error fetching articles by category:', error);
       return [];
@@ -385,13 +336,9 @@ class RealTimeNewsService {
   async searchArticles(query: string, limit: number = 20): Promise<NewsArticle[]> {
     try {
       const { data, error } = await supabase
-        .from('news_articles')
-        .select(`
-          *,
-          news_sources(name, url),
-          news_categories(name)
-        `)
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%,summary.ilike.%${query}%`)
+        .from('news_cache')
+        .select('*')
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%,content.ilike.%${query}%`)
         .order('published_at', { ascending: false })
         .limit(limit);
 
@@ -399,11 +346,37 @@ class RealTimeNewsService {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(this.mapDatabaseToNewsArticle);
     } catch (error) {
       console.error('Error searching articles:', error);
       return [];
     }
+  }
+
+  /**
+   * Map database record to NewsArticle
+   */
+  private mapDatabaseToNewsArticle(record: any): NewsArticle {
+    return {
+      id: record.article_id,
+      article_id: record.article_id,
+      title: record.title,
+      description: record.description,
+      content: record.content,
+      url: record.url,
+      image_url: record.image_url,
+      source_name: record.source_name,
+      source_url: record.source_url,
+      published_at: record.published_at,
+      city: record.city,
+      country: record.country,
+      category: record.category,
+      language: record.language,
+      ai_summary: record.ai_summary,
+      created_at: record.created_at,
+      updated_at: record.updated_at,
+      expires_at: record.expires_at
+    };
   }
 }
 
