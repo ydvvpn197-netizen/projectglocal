@@ -356,26 +356,26 @@ export class RealTimeNewsService {
   /**
    * Map database record to NewsArticle
    */
-  private mapDatabaseToNewsArticle(record: any): NewsArticle {
+  private mapDatabaseToNewsArticle(record: Record<string, unknown>): NewsArticle {
     return {
-      id: record.article_id,
-      article_id: record.article_id,
-      title: record.title,
-      description: record.description,
-      content: record.content,
-      url: record.url,
-      image_url: record.image_url,
-      source_name: record.source_name,
-      source_url: record.source_url,
-      published_at: record.published_at,
-      city: record.city,
-      country: record.country,
-      category: record.category,
-      language: record.language,
-      ai_summary: record.ai_summary,
-      created_at: record.created_at,
-      updated_at: record.updated_at,
-      expires_at: record.expires_at
+      id: record.article_id as string,
+      article_id: record.article_id as string,
+      title: record.title as string,
+      description: record.description as string,
+      content: record.content as string,
+      url: record.url as string,
+      image_url: record.image_url as string,
+      source_name: record.source_name as string,
+      source_url: record.source_url as string,
+      published_at: record.published_at as string,
+      city: record.city as string,
+      country: record.country as string,
+      category: record.category as string,
+      language: record.language as string,
+      ai_summary: record.ai_summary as string,
+      created_at: record.created_at as string,
+      updated_at: record.updated_at as string,
+      expires_at: record.expires_at as string
     };
   }
 }
