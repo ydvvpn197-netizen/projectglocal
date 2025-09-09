@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -108,23 +108,25 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
   });
 
   useEffect(() => {
-    loadData();
-  }, [artistId]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      await Promise.all([
-        loadFollowers(),
-        loadPosts(),
-        loadServices()
-      ]);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          loadFollowers(),
+          loadPosts(),
+          loadServices()
+        ]);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (artistId) {
+      loadData();
     }
-  };
+  }, [artistId]);
 
   const loadFollowers = async () => {
     try {
@@ -189,7 +191,7 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
         likes_count: post.post_likes?.length || 0,
         comments_count: post.post_comments?.length || 0,
         shares_count: post.post_shares?.length || 0,
-        is_liked: post.post_likes?.some((like: any) => like.user_id === user?.id) || false,
+        is_liked: post.post_likes?.some((like: { user_id: string }) => like.user_id === user?.id) || false,
         is_bookmarked: false // TODO: Implement bookmarks
       })) || [];
 
@@ -216,7 +218,7 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
       const servicesData = data?.map(service => {
         const reviews = service.service_reviews || [];
         const avgRating = reviews.length > 0 
-          ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length
+          ? reviews.reduce((sum: number, review: { rating: number }) => sum + review.rating, 0) / reviews.length
           : 0;
 
         return {

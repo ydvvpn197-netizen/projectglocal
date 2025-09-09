@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -112,7 +112,7 @@ export const EnhancedChatSystem: React.FC<EnhancedChatSystemProps> = ({
 
   useEffect(() => {
     loadChatRooms();
-  }, []);
+  }, [loadChatRooms]);
 
   useEffect(() => {
     if (selectedRoom) {
@@ -129,7 +129,7 @@ export const EnhancedChatSystem: React.FC<EnhancedChatSystemProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadChatRooms = async () => {
+  const loadChatRooms = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -179,7 +179,7 @@ export const EnhancedChatSystem: React.FC<EnhancedChatSystemProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, toast]);
 
   const loadMessages = async (roomId: string) => {
     try {

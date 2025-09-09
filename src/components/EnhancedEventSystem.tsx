@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -129,9 +129,9 @@ export const EnhancedEventSystem: React.FC<EnhancedEventSystemProps> = ({
     if (eventId) {
       loadEvent();
     }
-  }, [eventId]);
+  }, [eventId, loadEvent]);
 
-  const loadEvent = async () => {
+  const loadEvent = useCallback(async () => {
     if (!eventId) return;
 
     try {
@@ -182,7 +182,7 @@ export const EnhancedEventSystem: React.FC<EnhancedEventSystemProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, toast]);
 
   const handleCreateEvent = async () => {
     if (!user) return;

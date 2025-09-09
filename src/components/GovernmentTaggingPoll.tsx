@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -100,9 +100,9 @@ export const GovernmentTaggingPoll: React.FC<GovernmentTaggingPollProps> = ({
       loadPoll();
     }
     loadAuthorities();
-  }, [pollId]);
+  }, [pollId, loadPoll]);
 
-  const loadPoll = async () => {
+  const loadPoll = useCallback(async () => {
     if (!pollId) return;
 
     try {
@@ -125,7 +125,7 @@ export const GovernmentTaggingPoll: React.FC<GovernmentTaggingPollProps> = ({
           id: data.id,
           title: data.title,
           description: data.description,
-          options: data.poll_options?.map((option: any) => ({
+          options: data.poll_options?.map((option: { id: string; text: string; votes: number }) => ({
             id: option.id,
             text: option.text,
             votes: option.votes || 0,
@@ -161,7 +161,7 @@ export const GovernmentTaggingPoll: React.FC<GovernmentTaggingPollProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [pollId, toast]);
 
   const loadAuthorities = async () => {
     try {
