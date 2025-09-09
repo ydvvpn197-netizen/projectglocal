@@ -10,7 +10,7 @@ export interface SubscriptionPlan {
   price_in_cents: number;
   currency: string;
   stripe_price_id?: string;
-  features: Record<string, any>;
+  features: Record<string, boolean | string | number>;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -283,7 +283,13 @@ export class SubscriptionService {
     cancelAtPeriodEnd?: boolean
   ): Promise<void> {
     try {
-      const updateData: any = {
+      const updateData: {
+        status: string;
+        updated_at: string;
+        current_period_start?: string;
+        current_period_end?: string;
+        cancel_at_period_end?: boolean;
+      } = {
         status,
         updated_at: new Date().toISOString(),
       };

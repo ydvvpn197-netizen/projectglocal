@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@14.21.0';
 
 const corsHeaders = {
@@ -102,7 +102,7 @@ Deno.serve(async (req: Request) => {
   }
 });
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: any) {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, supabase: SupabaseClient) {
   console.log('Processing checkout session completed:', session.id);
   
   if (session.mode === 'subscription' && session.subscription) {
@@ -130,7 +130,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session, 
   }
 }
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: SupabaseClient) {
   console.log('Processing subscription created:', subscription.id);
   
   const userId = subscription.metadata?.user_id;
@@ -169,7 +169,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription, supa
   );
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supabase: SupabaseClient) {
   console.log('Processing subscription updated:', subscription.id);
   
   const updateData = {
@@ -191,7 +191,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, supa
   }
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: any) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supabase: SupabaseClient) {
   console.log('Processing subscription deleted:', subscription.id);
   
   const { error } = await supabase
@@ -208,7 +208,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
   }
 }
 
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, supabase: any) {
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, supabase: SupabaseClient) {
   console.log('Processing invoice payment succeeded:', invoice.id);
   
   if (invoice.subscription) {
@@ -226,7 +226,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, supabase: 
   }
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabase: any) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabase: SupabaseClient) {
   console.log('Processing invoice payment failed:', invoice.id);
   
   if (invoice.subscription) {
@@ -245,7 +245,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, supabase: any
 }
 
 async function createSubscriptionRecord(
-  supabase: any,
+  supabase: SupabaseClient,
   userId: string,
   planId: string,
   stripeSubscriptionId: string,

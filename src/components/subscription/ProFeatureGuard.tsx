@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Crown, Lock } from 'lucide-react';
@@ -27,9 +27,9 @@ export function ProFeatureGuard({
     if (user?.id) {
       checkAccess();
     }
-  }, [user?.id, feature]);
+  }, [user?.id, feature, checkAccess]);
 
-  const checkAccess = async () => {
+  const checkAccess = useCallback(async () => {
     if (!user?.id) {
       setHasAccess(false);
       setLoading(false);
@@ -64,7 +64,7 @@ export function ProFeatureGuard({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, feature]);
 
   const handleUpgrade = () => {
     if (onUpgradeClick) {

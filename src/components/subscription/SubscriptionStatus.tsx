@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,9 +21,9 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
     if (user?.id) {
       loadSubscriptionStatus();
     }
-  }, [user?.id]);
+  }, [user?.id, loadSubscriptionStatus]);
 
-  const loadSubscriptionStatus = async () => {
+  const loadSubscriptionStatus = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -35,7 +35,7 @@ export function SubscriptionStatus({ onUpgradeClick, showUpgradeButton = true }:
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const handleUpgrade = () => {
     if (onUpgradeClick) {

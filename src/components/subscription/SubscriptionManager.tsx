@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,9 +21,9 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
 
   useEffect(() => {
     loadData();
-  }, [userType, user?.id]);
+  }, [userType, user?.id, loadData]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -41,7 +41,7 @@ export function SubscriptionManager({ userType }: SubscriptionManagerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, userType]);
 
   const handleSubscribe = async (planId: string) => {
     if (!user?.id) return;

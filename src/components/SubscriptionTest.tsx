@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,9 +37,9 @@ export function SubscriptionTest() {
     if (user?.id) {
       runTests();
     }
-  }, [user?.id, isPro]);
+  }, [user?.id, isPro, runTests]);
 
-  const runTests = async () => {
+  const runTests = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -63,7 +63,7 @@ export function SubscriptionTest() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, user?.user_metadata?.user_type, permissionsLoading]);
 
   const testCheckoutSession = async (planId: string) => {
     if (!user?.id) {

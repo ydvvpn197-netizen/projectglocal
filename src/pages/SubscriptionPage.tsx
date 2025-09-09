@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,9 +34,9 @@ export function SubscriptionPage() {
     if (user?.id) {
       loadSubscriptionHistory();
     }
-  }, [user?.id]);
+  }, [user?.id, loadSubscriptionHistory]);
 
-  const loadSubscriptionHistory = async () => {
+  const loadSubscriptionHistory = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -49,7 +49,7 @@ export function SubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const handleCancelSubscription = async () => {
     if (!user?.id) return;
