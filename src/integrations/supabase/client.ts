@@ -21,12 +21,25 @@ const validateSupabaseConfig = (): boolean => {
   const url = supabaseConfig.url;
   const anonKey = supabaseConfig.anonKey;
   
-  if (!url || url === 'your_supabase_project_url' || url.includes('your_supabase')) {
+  // Check for missing or placeholder values
+  const invalidUrl = !url || 
+    url === 'your_supabase_project_url' || 
+    url.includes('your_supabase') ||
+    url.includes('placeholder') ||
+    url === 'https://invalid.supabase.co';
+    
+  const invalidKey = !anonKey || 
+    anonKey === 'your_supabase_anon_key' || 
+    anonKey.includes('your_supabase') ||
+    anonKey.includes('placeholder') ||
+    anonKey === 'invalid-key';
+  
+  if (invalidUrl) {
     console.error('❌ VITE_SUPABASE_URL is not properly configured. Please check your .env file.');
     return false;
   }
   
-  if (!anonKey || anonKey === 'your_supabase_anon_key' || anonKey.includes('your_supabase')) {
+  if (invalidKey) {
     console.error('❌ VITE_SUPABASE_ANON_KEY is not properly configured. Please check your .env file.');
     return false;
   }

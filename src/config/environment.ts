@@ -25,20 +25,27 @@ const validateEnvironment = (): void => {
   const missingVars: string[] = [];
 
   for (const envVar of requiredEnvVars) {
-    if (!import.meta.env[envVar]) {
+    if (!import.meta.env[envVar] || import.meta.env[envVar].includes('placeholder')) {
       missingVars.push(envVar);
     }
   }
 
   if (missingVars.length > 0) {
-    console.warn(`⚠️ Missing required environment variables: ${missingVars.join(', ')}`);
-    // Don't throw error during build, just warn
-    if (import.meta.env.NODE_ENV === 'development') {
+    const errorMessage = `Missing required environment variables: ${missingVars.join(', ')}`;
+    console.error(`❌ ${errorMessage}`);
+    
+    // Always throw error for missing required variables in production
+    if (import.meta.env.NODE_ENV === 'production' || import.meta.env.CI) {
       throw new ValidationError(
-        `Missing required environment variables: ${missingVars.join(', ')}`,
+        errorMessage,
         'environment',
         'MISSING_ENV_VARS'
       );
+    }
+    
+    // Warn in development but don't throw
+    if (import.meta.env.NODE_ENV === 'development') {
+      console.warn(`⚠️ ${errorMessage}`);
     }
   }
 };
