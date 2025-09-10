@@ -126,9 +126,9 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
     if (artistId) {
       loadData();
     }
-  }, [artistId]);
+  }, [artistId, loadFollowers, loadPosts, loadServices]);
 
-  const loadFollowers = async () => {
+  const loadFollowers = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('artist_followers')
@@ -165,9 +165,9 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
     } catch (error) {
       console.error('Error loading followers:', error);
     }
-  };
+  }, [artistId]);
 
-  const loadPosts = async () => {
+  const loadPosts = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('artist_posts')
@@ -199,9 +199,9 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
     } catch (error) {
       console.error('Error loading posts:', error);
     }
-  };
+  }, [artistId, user?.id]);
 
-  const loadServices = async () => {
+  const loadServices = React.useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('artist_services')
@@ -241,7 +241,7 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
     } catch (error) {
       console.error('Error loading services:', error);
     }
-  };
+  }, [artistId]);
 
   const handleCreatePost = async () => {
     if (!user || !newPost.content.trim()) return;

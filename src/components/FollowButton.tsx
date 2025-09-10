@@ -45,3 +45,5 @@ export const FollowButton = ({
     </Button>
   );
 };
+
+export default FollowButton;

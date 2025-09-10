@@ -49,7 +49,7 @@ export const preloadRoute = (route: string) => {
       import('../pages/Events');
       break;
     case '/book-artist':
-      import('../pages/BookArtist');
+      import('../pages/BookArtistSimple');
       break;
     case '/profile':
       import('../pages/Profile');

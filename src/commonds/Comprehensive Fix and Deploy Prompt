@@ -1,4 +1,4 @@
-You are an expert React full-stack architect and senior DevOps engineer. Your task is to perform a **complete, end-to-end review, fix, and deployment optimization** of this project (theglocal.in). Follow these steps thoroughly:
+You are an expert React full-stack architect and senior DevOps engineer. Your task is to perform a **complete, end-to-end review, fix, and deployment optimization** of this project. Follow these steps thoroughly:
 
 1. **Codebase Audit**
    - Review React + Vite + TypeScript codebase.
@@ -42,4 +42,4 @@ You are an expert React full-stack architect and senior DevOps engineer. Your ta
    - Document Supabase schema (auth, profiles, posts, events, etc.).
    - Provide a summary of all fixes, improvements, and deployment steps completed.
 
-⚡ Goal: After this, `theglocal.in` should run error-free, be production-ready, and deploy seamlessly to GitHub Pages or Vercel with Supabase backend integrated.
+⚡ Goal: After this, this project should run error-free, be production-ready, and deploy seamlessly to GitHub Pages or Vercel with Supabase backend integrated.

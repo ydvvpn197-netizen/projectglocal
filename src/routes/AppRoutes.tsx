@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { lazyImport } from '@/lib/lazyImport';
+import { CreatePostWrapper } from '@/components/CreatePostWrapper';
 
 // Core pages (loaded immediately)
 const Index = React.lazy(() => import('@/pages/EnhancedIndex').then(module => ({ default: module.EnhancedIndex })));
@@ -40,7 +42,7 @@ const CreateEvent = React.lazy(() => import('@/pages/CreateEvent'));
 const EventDetails = React.lazy(() => import('@/pages/EventDetails'));
 
 // Artist pages (grouped together)
-const BookArtist = React.lazy(() => import('@/pages/BookArtist'));
+const BookArtist = React.lazy(() => import('@/pages/BookArtistSimple'));
 const ArtistDashboard = React.lazy(() => import('@/pages/ArtistDashboard'));
 const ArtistProfile = React.lazy(() => import('@/pages/ArtistProfile'));
 
@@ -57,7 +59,6 @@ const Chat = React.lazy(() => import('@/pages/Chat'));
 const Messages = React.lazy(() => import('@/pages/Messages'));
 
 // Content creation pages (grouped together)
-const CreatePost = React.lazy(() => import('@/pages/CreatePost'));
 
 // New Features pages
 const LegalAssistant = React.lazy(() => import('@/pages/LegalAssistant'));
@@ -124,7 +125,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
       <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-      <Route path="/create" element={<CreatePost />} />
+      <Route path="/create" element={<ProtectedRoute><CreatePostWrapper /></ProtectedRoute>} />
       
       {/* New Features routes */}
       <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
@@ -155,8 +156,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/about" element={<About />} />
       <Route path="/community" element={<Community />} />
       <Route path="/community/:groupId" element={<CommunityDetail />} />
-      <Route path="/community/create-discussion" element={<CreateDiscussion />} />
-      <Route path="/community/create-group" element={<CreateGroup />} />
+      <Route path="/community/create-discussion" element={<ProtectedRoute><CreateDiscussion /></ProtectedRoute>} />
+      <Route path="/community/create-group" element={<ProtectedRoute><CreateGroup /></ProtectedRoute>} />
       <Route path="/events" element={<Events />} />
       <Route path="/event/:eventId" element={<EventDetails />} />
       <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
@@ -167,7 +168,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/user/:userId" element={<UserProfile />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
       
