@@ -113,6 +113,63 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Function to complete super admin setup after user creation
+CREATE OR REPLACE FUNCTION public.complete_super_admin_setup(
+  p_user_id UUID,
+  p_full_name TEXT
+) RETURNS JSONB AS $$
+DECLARE
+  result JSONB;
+BEGIN
+  -- Check if any super admin already exists
+  IF EXISTS (SELECT 1 FROM public.roles WHERE role = 'super_admin') THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', 'Super admin already exists'
+    );
+  END IF;
+  
+  -- Update the user's profile with full name
+  UPDATE public.profiles
+  SET 
+    display_name = p_full_name,
+    updated_at = now()
+  WHERE user_id = p_user_id;
+  
+  -- Update the user's role to super_admin
+  UPDATE public.roles
+  SET 
+    role = 'super_admin',
+    updated_at = now()
+  WHERE user_id = p_user_id;
+  
+  -- Log the admin setup completion
+  PERFORM public.log_admin_action(
+    p_user_id,
+    'complete_super_admin_setup',
+    'user',
+    p_user_id,
+    jsonb_build_object(
+      'full_name', p_full_name,
+      'setup_type', 'initial_super_admin'
+    )
+  );
+  
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', 'Super admin setup completed successfully',
+    'user_id', p_user_id
+  );
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', SQLERRM
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Function to demote super admin (with protection)
 CREATE OR REPLACE FUNCTION public.demote_super_admin(
   p_user_id UUID,

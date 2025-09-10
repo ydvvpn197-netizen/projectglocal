@@ -119,6 +119,19 @@ CREATE POLICY "Users can insert own profile" ON public.profiles
 CREATE POLICY "Only super admins can delete profiles" ON public.profiles
   FOR DELETE USING (public.is_super_admin());
 
+-- Allow admin setup to update profiles during initial setup
+CREATE POLICY "Admin setup can update profiles" ON public.profiles
+  FOR UPDATE USING (
+    -- Allow if no super admin exists (for initial setup)
+    NOT EXISTS (SELECT 1 FROM public.roles WHERE role = 'super_admin')
+    OR
+    -- Allow if user is updating their own profile
+    auth.uid() = user_id
+    OR
+    -- Allow if user is admin
+    public.is_admin()
+  );
+
 -- ============================================================================
 -- ROLES TABLE POLICIES
 -- ============================================================================
@@ -131,9 +144,14 @@ CREATE POLICY "Users can view own role" ON public.roles
 CREATE POLICY "Admins can view all roles" ON public.roles
   FOR SELECT USING (public.is_admin());
 
--- Only super admins can update roles
+-- Only super admins can update roles, but allow initial setup
 CREATE POLICY "Only super admins can update roles" ON public.roles
-  FOR UPDATE USING (public.is_super_admin());
+  FOR UPDATE USING (
+    public.is_super_admin()
+    OR
+    -- Allow if no super admin exists (for initial setup)
+    NOT EXISTS (SELECT 1 FROM public.roles WHERE role = 'super_admin')
+  );
 
 -- Only super admins can delete roles
 CREATE POLICY "Only super admins can delete roles" ON public.roles
@@ -142,6 +160,19 @@ CREATE POLICY "Only super admins can delete roles" ON public.roles
 -- System can insert roles (for new user creation)
 CREATE POLICY "System can insert roles" ON public.roles
   FOR INSERT WITH CHECK (true);
+
+-- Allow admin setup process to check for existing super admins
+CREATE POLICY "Admin setup can check super admin existence" ON public.roles
+  FOR SELECT USING (
+    -- Allow if no super admin exists (for initial setup)
+    NOT EXISTS (SELECT 1 FROM public.roles WHERE role = 'super_admin')
+    OR 
+    -- Allow if user is authenticated and checking their own role
+    auth.uid() = user_id
+    OR
+    -- Allow if user is admin
+    public.is_admin()
+  );
 
 -- ============================================================================
 -- INTERESTS TABLE POLICIES
