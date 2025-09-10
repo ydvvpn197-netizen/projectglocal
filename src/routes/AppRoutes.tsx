@@ -87,6 +87,9 @@ const ServiceAgreement = React.lazy(() => import('@/pages/ServiceAgreement'));
 // Error pages
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 
+// Auth callback page
+const AuthCallback = React.lazy(() => import('@/pages/AuthCallback'));
+
 // Configuration status page
 const ConfigStatus = React.lazy(() => import('@/components/ConfigStatus'));
 
@@ -120,6 +123,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/" element={<Index />} />
       <Route path="/config-status" element={<ConfigStatus />} />
       <Route path="/signin" element={<SignIn />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
