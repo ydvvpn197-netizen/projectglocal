@@ -1,1 +1,4 @@
 [33m37fd32f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: Complete community platform implementation with anonymous users and Indian pricing
+[33m5f23b68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Google OAuth authentication 404 error
+[33m953e408[m feat: Complete project deployment setup with comprehensive features
+[33me4bfd0f[m CRITICAL FIX: Resolve Supabase connection issues in production

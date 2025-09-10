@@ -40,10 +40,6 @@ const AdminSetup: React.FC = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    checkAdminStatus();
-  }, [checkAdminStatus]);
-
   const checkAdminStatus = useCallback(async () => {
     try {
       const hasAdmins = await adminSetup.hasAdminUsers();
@@ -57,6 +53,10 @@ const AdminSetup: React.FC = () => {
       console.error('Error checking admin status:', error);
     }
   }, [navigate]);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [checkAdminStatus]);
 
   const handleInputChange = (field: keyof AdminSetupData, value: string) => {
     setSetupData(prev => ({ ...prev, [field]: value }));
@@ -82,26 +82,46 @@ const AdminSetup: React.FC = () => {
       // Validate required fields
       if (!setupData.email || !setupData.password || !setupData.firstName || !setupData.lastName) {
         setError('Please fill in all required fields');
+        setIsLoading(false);
         return;
       }
 
       if (setupData.password.length < 8) {
         setError('Password must be at least 8 characters long');
+        setIsLoading(false);
         return;
       }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(setupData.email)) {
+        setError('Please enter a valid email address');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Starting admin setup with data:', { 
+        email: setupData.email, 
+        firstName: setupData.firstName, 
+        lastName: setupData.lastName, 
+        role: setupData.role 
+      });
 
       const result = await adminSetup.completeSetup(setupData);
       
       if (result.success) {
+        console.log('Admin setup completed successfully');
         setSuccess(true);
         setTimeout(() => {
           navigate('/admin');
         }, 3000);
       } else {
+        console.error('Admin setup failed:', result.error);
         setError(result.error || 'Setup failed');
       }
     } catch (error) {
-      setError('An unexpected error occurred during setup');
+      console.error('Admin setup error:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred during setup');
     } finally {
       setIsLoading(false);
     }
@@ -221,7 +241,34 @@ const AdminSetup: React.FC = () => {
             {error && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  <div className="space-y-3">
+                    <div className="font-medium">Database error saving new user</div>
+                    <div className="text-sm">{error}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Please check your database connection and try again. If the problem persists, contact support.
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setError(null);
+                        handleCompleteSetup();
+                      }}
+                      disabled={isLoading}
+                      className="mt-2"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Retrying...
+                        </>
+                      ) : (
+                        'Retry Setup'
+                      )}
+                    </Button>
+                  </div>
+                </AlertDescription>
               </Alert>
             )}
 

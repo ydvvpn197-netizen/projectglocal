@@ -3,6 +3,16 @@
  */
 
 // =========================
+// Base Entity Interface
+// =========================
+
+interface BaseEntity {
+  id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// =========================
 // Admin User Types
 // =========================
 
@@ -768,14 +778,4 @@ export interface UseAdminAuthReturn {
   logout: () => Promise<void>;
   checkPermission: (permission: string) => boolean;
   hasRole: (role: string) => boolean;
-}
-
-// =========================
-// Base Entity Interface
-// =========================
-
-interface BaseEntity {
-  id: string;
-  created_at: string;
-  updated_at: string;
 }

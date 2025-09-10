@@ -84,15 +84,12 @@ export class AdminSetup {
           user_id: authData.user.id,
           username: `${setupData.firstName.toLowerCase()}_${setupData.lastName.toLowerCase()}`,
           display_name: `${setupData.firstName} ${setupData.lastName}`,
-          full_name: `${setupData.firstName} ${setupData.lastName}`,
-          email: setupData.email,
-          user_type: 'admin',
           is_verified: true
         });
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
-        // Continue anyway, profile can be created later
+        return { success: false, error: `Failed to create user profile: ${profileError.message}` };
       }
 
       // Get or create the admin role
@@ -115,7 +112,8 @@ export class AdminSetup {
         });
 
       if (adminError) {
-        return { success: false, error: adminError.message };
+        console.error('Error creating admin user:', adminError);
+        return { success: false, error: `Failed to create admin user: ${adminError.message}` };
       }
 
       return { success: true };
@@ -312,70 +310,70 @@ export class AdminSetup {
       const defaultSettings = [
         {
           setting_key: 'platform_name',
-          setting_value: '"Glocal"',
+          setting_value: 'Glocal',
           setting_type: 'string',
           description: 'Platform display name',
           is_public: true
         },
         {
           setting_key: 'platform_description',
-          setting_value: '"Connect with your local community"',
+          setting_value: 'Connect with your local community',
           setting_type: 'string',
           description: 'Platform description',
           is_public: true
         },
         {
           setting_key: 'maintenance_mode',
-          setting_value: 'false',
+          setting_value: false,
           setting_type: 'boolean',
           description: 'Enable maintenance mode',
           is_public: false
         },
         {
           setting_key: 'registration_enabled',
-          setting_value: 'true',
+          setting_value: true,
           setting_type: 'boolean',
           description: 'Allow new user registrations',
           is_public: false
         },
         {
           setting_key: 'email_verification_required',
-          setting_value: 'true',
+          setting_value: true,
           setting_type: 'boolean',
           description: 'Require email verification for new users',
           is_public: false
         },
         {
           setting_key: 'max_file_size_mb',
-          setting_value: '10',
+          setting_value: 10,
           setting_type: 'number',
           description: 'Maximum file upload size in MB',
           is_public: false
         },
         {
           setting_key: 'allowed_file_types',
-          setting_value: '["jpg", "jpeg", "png", "gif", "pdf"]',
+          setting_value: ['jpg', 'jpeg', 'png', 'gif', 'pdf'],
           setting_type: 'array',
           description: 'Allowed file types for uploads',
           is_public: false
         },
         {
           setting_key: 'content_moderation_enabled',
-          setting_value: 'true',
+          setting_value: true,
           setting_type: 'boolean',
           description: 'Enable automatic content moderation',
           is_public: false
         },
         {
           setting_key: 'location_services_enabled',
-          setting_value: 'true',
+          setting_value: true,
           setting_type: 'boolean',
           description: 'Enable location-based features',
           is_public: false
         },
         {
           setting_key: 'notification_settings',
-          setting_value: '{"email": true, "push": true, "sms": false}',
+          setting_value: { email: true, push: true, sms: false },
           setting_type: 'json',
           description: 'Default notification settings',
           is_public: false

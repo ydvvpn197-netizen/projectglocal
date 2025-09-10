@@ -6,7 +6,14 @@ import {
   AdminAction, 
   AdminPermissions,
   AdminApiResponse,
-  PaginatedResponse 
+  PaginatedResponse,
+  SystemSetting,
+  UserManagementFilters,
+  ContentReportFilters,
+  ContentReport,
+  UserProfile,
+  AdminAnalyticsFilters,
+  AdminAnalytics
 } from '@/types/admin';
 
 export class AdminService {
