@@ -48,6 +48,7 @@
     "deploy:netlify": "netlify deploy --prod --dir=dist",
     "setup:env": "node scripts/create-env.js",
     "setup:supabase": "node scripts/setup-supabase-secrets.js",
+    "setup:github-secrets": "node scripts/setup-github-secrets.js",
     "test:supabase": "node scripts/test-supabase-connection.js",
     "setup": "node scripts/setup-environment.js",
     "db:push": "supabase db push",

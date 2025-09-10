@@ -1,63 +1,205 @@
 #!/usr/bin/env node
 
 /**
- * GitHub Secrets Setup Helper
- * This script helps you set up the required GitHub secrets for deployment
+ * GitHub Secrets Setup Script
+ * 
+ * This script helps you set up the required GitHub secrets
+ * for successful deployment.
  */
 
 import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Colors for console output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+};
 
-console.log('🔐 GitHub Secrets Setup Helper\n');
+const log = {
+  info: (msg) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
+  success: (msg) => console.log(`${colors.green}✅${colors.reset} ${msg}`),
+  warning: (msg) => console.log(`${colors.yellow}⚠️${colors.reset} ${msg}`),
+  error: (msg) => console.log(`${colors.red}❌${colors.reset} ${msg}`),
+  header: (msg) => console.log(`\n${colors.bright}${colors.cyan}${msg}${colors.reset}\n`),
+};
 
 // Read environment variables from .env file
-const envPath = path.join(__dirname, '..', '.env');
-let supabaseUrl = '';
-let supabaseKey = '';
-
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const lines = envContent.split('\n');
-  
-  for (const line of lines) {
-    if (line.startsWith('VITE_SUPABASE_URL=')) {
-      supabaseUrl = line.split('=')[1];
+const readEnvFile = () => {
+  try {
+    if (!fs.existsSync('.env')) {
+      log.error('.env file not found!');
+      return {};
     }
-    if (line.startsWith('VITE_SUPABASE_ANON_KEY=')) {
-      supabaseKey = line.split('=')[1];
-    }
+    
+    const content = fs.readFileSync('.env', 'utf8');
+    const lines = content.split('\n');
+    const envVars = {};
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('#')) {
+        const [key, ...valueParts] = trimmedLine.split('=');
+        if (key && valueParts.length > 0) {
+          envVars[key.trim()] = valueParts.join('=').trim();
+        }
+      }
+    });
+    
+    return envVars;
+  } catch (error) {
+    log.error(`Failed to read .env file: ${error.message}`);
+    return {};
   }
-}
+};
 
-console.log('📋 Required GitHub Secrets:\n');
+// Main function
+const main = () => {
+  log.header('🔐 GitHub Secrets Setup Guide');
+  
+  log.info('Reading your local environment variables...');
+  const envVars = readEnvFile();
+  
+  if (Object.keys(envVars).length === 0) {
+    log.error('No environment variables found in .env file');
+    process.exit(1);
+  }
+  
+  log.success('Environment variables loaded successfully');
+  
+  // Required secrets
+  const requiredSecrets = [
+    {
+      name: 'VITE_SUPABASE_URL',
+      value: envVars.VITE_SUPABASE_URL,
+      description: 'Supabase project URL'
+    },
+    {
+      name: 'VITE_SUPABASE_ANON_KEY',
+      value: envVars.VITE_SUPABASE_ANON_KEY,
+      description: 'Supabase anonymous key'
+    }
+  ];
+  
+  // Optional secrets
+  const optionalSecrets = [
+    {
+      name: 'VITE_GOOGLE_MAPS_API_KEY',
+      value: envVars.VITE_GOOGLE_MAPS_API_KEY,
+      description: 'Google Maps API key for location services'
+    },
+    {
+      name: 'VITE_NEWS_API_KEY',
+      value: envVars.VITE_NEWS_API_KEY,
+      description: 'News API key for news feed'
+    },
+    {
+      name: 'VITE_OPENAI_API_KEY',
+      value: envVars.VITE_OPENAI_API_KEY,
+      description: 'OpenAI API key for AI features'
+    },
+    {
+      name: 'VITE_STRIPE_PUBLISHABLE_KEY',
+      value: envVars.VITE_STRIPE_PUBLISHABLE_KEY,
+      description: 'Stripe publishable key for payments'
+    }
+  ];
+  
+  log.header('📋 Required GitHub Secrets');
+  log.warning('You MUST add these secrets to your GitHub repository:');
+  log.info('');
+  
+  requiredSecrets.forEach((secret, index) => {
+    if (secret.value && !secret.value.includes('your_') && !secret.value.includes('placeholder')) {
+      log.success(`${index + 1}. ${secret.name}`);
+      log.info(`   Description: ${secret.description}`);
+      log.info(`   Value: ${secret.value.substring(0, 50)}...`);
+      log.info('');
+    } else {
+      log.error(`${index + 1}. ${secret.name} - MISSING OR INVALID`);
+      log.info(`   Description: ${secret.description}`);
+      log.info(`   Status: Not configured in .env file`);
+      log.info('');
+    }
+  });
+  
+  log.header('🔧 How to Add GitHub Secrets');
+  log.info('Follow these steps to add the secrets:');
+  log.info('');
+  log.info('1. Go to your GitHub repository:');
+  log.info('   https://github.com/ydvvpn197-netizen/projectglocal');
+  log.info('');
+  log.info('2. Click on "Settings" tab');
+  log.info('');
+  log.info('3. In the left sidebar, click "Secrets and variables" → "Actions"');
+  log.info('');
+  log.info('4. Click "New repository secret"');
+  log.info('');
+  log.info('5. For each secret above:');
+  log.info('   - Name: Enter the secret name (e.g., VITE_SUPABASE_URL)');
+  log.info('   - Secret: Enter the secret value');
+  log.info('   - Click "Add secret"');
+  log.info('');
+  
+  log.header('📋 Optional GitHub Secrets');
+  log.info('These secrets are optional but recommended for full functionality:');
+  log.info('');
+  
+  optionalSecrets.forEach((secret, index) => {
+    if (secret.value && !secret.value.includes('your_') && !secret.value.includes('placeholder')) {
+      log.success(`${index + 1}. ${secret.name}`);
+      log.info(`   Description: ${secret.description}`);
+      log.info(`   Value: ${secret.value.substring(0, 30)}...`);
+      log.info('');
+    } else {
+      log.info(`${index + 1}. ${secret.name} - Not configured`);
+      log.info(`   Description: ${secret.description}`);
+      log.info(`   Status: Optional - can be added later`);
+      log.info('');
+    }
+  });
+  
+  log.header('⚙️ Enable GitHub Pages');
+  log.info('After adding secrets, enable GitHub Pages:');
+  log.info('');
+  log.info('1. Go to "Settings" → "Pages"');
+  log.info('2. Under "Source", select "GitHub Actions"');
+  log.info('3. Save the settings');
+  log.info('');
+  
+  log.header('🚀 Deploy Your Project');
+  log.info('Once secrets are added and Pages is enabled:');
+  log.info('');
+  log.info('1. Go to "Actions" tab in your repository');
+  log.info('2. Click "Re-run all jobs" on the failed workflow');
+  log.info('3. Or push a new commit to trigger deployment');
+  log.info('');
+  
+  log.header('✅ Verification');
+  log.info('After deployment completes:');
+  log.info('');
+  log.info('Your site will be available at:');
+  log.info('https://ydvvpn197-netizen.github.io/projectglocal/');
+  log.info('');
+  
+  log.success('Setup complete! Follow the steps above to configure your repository.');
+};
 
-console.log('1. VITE_SUPABASE_URL');
-console.log(`   Value: ${supabaseUrl || 'NOT FOUND IN .env'}\n`);
-
-console.log('2. VITE_SUPABASE_ANON_KEY');
-console.log(`   Value: ${supabaseKey || 'NOT FOUND IN .env'}\n`);
-
-if (!supabaseUrl || !supabaseKey) {
-  console.log('❌ Error: Could not find Supabase credentials in .env file');
-  console.log('Please ensure your .env file contains:');
-  console.log('VITE_SUPABASE_URL=https://your-project.supabase.co');
-  console.log('VITE_SUPABASE_ANON_KEY=your-anon-key');
+// Handle errors
+process.on('uncaughtException', (error) => {
+  log.error(`Unexpected error: ${error.message}`);
   process.exit(1);
-}
+});
 
-console.log('📝 How to add these secrets to GitHub:\n');
-console.log('1. Go to: https://github.com/ydvvpn197-netizen/projectglocal/settings/secrets/actions');
-console.log('2. Click "New repository secret"');
-console.log('3. Add each secret with the exact name and value above\n');
+process.on('unhandledRejection', (error) => {
+  log.error(`Unexpected error: ${error.message}`);
+  process.exit(1);
+});
 
-console.log('🚀 After adding secrets:');
-console.log('1. Push any change to main branch to trigger deployment');
-console.log('2. Check GitHub Actions tab for deployment progress');
-console.log('3. Visit https://theglocal.in to test sign-in\n');
-
-console.log('✅ Current .env configuration looks good!');
-console.log('The issue is that GitHub Actions needs these values as repository secrets.');
+// Run the setup
+main();
