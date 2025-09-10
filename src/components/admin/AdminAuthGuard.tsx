@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLogin } from './AdminLogin';
 import { Loader2 } from 'lucide-react';
-import { adminSetup } from '@/utils/adminSetup';
+import { AdminSetup } from '@/utils/adminSetup';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -25,7 +25,7 @@ export const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const hasAdmins = await adminSetup.hasAdminUsers();
+        const hasAdmins = await AdminSetup.hasAdminUsers();
         setHasAdmins(hasAdmins);
       } catch (error) {
         console.error('Error checking admin status:', error);
@@ -53,9 +53,9 @@ export const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({
     return <Navigate to="/admin/setup" replace />;
   }
 
-  // If not authenticated as admin, show login
+  // If not authenticated as admin, redirect to admin login
   if (!adminUser) {
-    return <AdminLogin />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   // Check required permission

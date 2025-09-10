@@ -109,10 +109,9 @@ export function AppSidebar() {
       return [...baseItems, ...adminItems];
     }
     
-    // If user is logged in but not an admin, show admin login option
-    if (user) {
-      return [...baseItems, ...adminLoginItem];
-    }
+    // Admin login is now completely separate from regular user sessions
+    // Regular users should not see admin login option in sidebar
+    // Admin login is accessible via direct URL: /admin/login
     
     return baseItems;
   };

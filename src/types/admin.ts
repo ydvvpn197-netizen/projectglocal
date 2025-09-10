@@ -778,4 +778,7 @@ export interface UseAdminAuthReturn {
   logout: () => Promise<void>;
   checkPermission: (permission: string) => boolean;
   hasRole: (role: string) => boolean;
+  isSuperAdmin: () => boolean;
+  checkAdminStatus: () => Promise<void>;
+  isAuthenticated: boolean;
 }

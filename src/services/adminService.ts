@@ -18,7 +18,7 @@ import {
 
 export class AdminService {
   /**
-   * Check if current user is an admin
+   * Check if current user is an admin (legacy method for backward compatibility)
    */
   async isAdmin(): Promise<boolean> {
     try {
@@ -38,6 +38,165 @@ export class AdminService {
       console.error('Error checking admin status:', error);
       return false;
     }
+  }
+
+  /**
+   * Check if admin exists by email
+   */
+  async checkAdminExists(email: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('email', email)
+        .eq('is_active', true)
+        .single();
+
+      if (error) return false;
+      return !!data;
+    } catch (error) {
+      console.error('Error checking admin exists:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create admin session (separate from regular user auth)
+   */
+  async createAdminSession(email: string, password: string): Promise<string | null> {
+    try {
+      // Verify admin credentials
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, password_hash, email')
+        .eq('email', email)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) {
+        throw new Error('Invalid admin credentials');
+      }
+
+      // For now, we'll use a simple password check
+      // In production, you should use proper password hashing
+      // This is a simplified version for demonstration
+      const isValidPassword = await this.verifyPassword(password, data.password_hash);
+      if (!isValidPassword) {
+        throw new Error('Invalid admin credentials');
+      }
+
+      // Generate a session token
+      const sessionToken = this.generateSessionToken();
+      
+      // Store session in database
+      const { error: sessionError } = await supabase
+        .from('admin_sessions')
+        .insert({
+          admin_id: data.id,
+          session_token: sessionToken,
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+          created_at: new Date().toISOString()
+        });
+
+      if (sessionError) {
+        console.error('Error creating admin session:', sessionError);
+        return null;
+      }
+
+      return sessionToken;
+    } catch (error) {
+      console.error('Error creating admin session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Verify admin session
+   */
+  async verifyAdminSession(sessionToken: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('admin_sessions')
+        .select('id, expires_at')
+        .eq('session_token', sessionToken)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) return false;
+
+      // Check if session is expired
+      const expiresAt = new Date(data.expires_at);
+      if (expiresAt < new Date()) {
+        // Mark session as expired
+        await supabase
+          .from('admin_sessions')
+          .update({ is_active: false })
+          .eq('id', data.id);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error verifying admin session:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get admin by session token
+   */
+  async getAdminBySession(sessionToken: string): Promise<AdminUser | null> {
+    try {
+      const { data, error } = await supabase
+        .from('admin_sessions')
+        .select(`
+          admin_users!inner(
+            *,
+            role:admin_roles(*),
+            profile:profiles(username, full_name, email, avatar_url)
+          )
+        `)
+        .eq('session_token', sessionToken)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) return null;
+
+      return data.admin_users;
+    } catch (error) {
+      console.error('Error getting admin by session:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Invalidate admin session
+   */
+  async invalidateAdminSession(sessionToken: string): Promise<void> {
+    try {
+      await supabase
+        .from('admin_sessions')
+        .update({ is_active: false })
+        .eq('session_token', sessionToken);
+    } catch (error) {
+      console.error('Error invalidating admin session:', error);
+    }
+  }
+
+  /**
+   * Generate session token
+   */
+  private generateSessionToken(): string {
+    return 'admin_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  /**
+   * Verify password (simplified - in production use proper hashing)
+   */
+  private async verifyPassword(password: string, hash: string): Promise<boolean> {
+    // This is a simplified version. In production, use proper password hashing
+    // For now, we'll assume the password is stored as plain text (NOT RECOMMENDED)
+    return password === hash;
   }
 
   /**

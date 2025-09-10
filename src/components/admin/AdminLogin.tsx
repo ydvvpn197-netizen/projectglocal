@@ -19,15 +19,15 @@ export const AdminLogin: React.FC = () => {
   const [isLocked, setIsLocked] = useState(false);
   const [lockoutTime, setLockoutTime] = useState<Date | null>(null);
 
-  const { login, adminUser } = useAdminAuth();
+  const { login, adminUser, isAuthenticated } = useAdminAuth();
   const navigate = useNavigate();
 
   // Check if user is already logged in
   useEffect(() => {
-    if (adminUser) {
+    if (isAuthenticated && adminUser) {
       navigate('/admin');
     }
-  }, [adminUser, navigate]);
+  }, [isAuthenticated, adminUser, navigate]);
 
   // Check for lockout status
   useEffect(() => {

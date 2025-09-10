@@ -19,7 +19,7 @@ import {
   Users,
   BarChart3
 } from 'lucide-react';
-import { adminSetup, AdminSetupData } from '@/utils/adminSetup';
+import { AdminSetup as AdminSetupUtil } from '@/utils/adminSetup';
 import { useNavigate } from 'react-router-dom';
 
 const AdminSetup: React.FC = () => {
@@ -30,7 +30,7 @@ const AdminSetup: React.FC = () => {
   const [hasAdmins, setHasAdmins] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  const [setupData, setSetupData] = useState<AdminSetupData>({
+  const [setupData, setSetupData] = useState({
     email: '',
     password: '',
     firstName: '',
@@ -42,12 +42,12 @@ const AdminSetup: React.FC = () => {
 
   const checkAdminStatus = useCallback(async () => {
     try {
-      const hasAdmins = await adminSetup.hasAdminUsers();
+      const hasAdmins = await AdminSetupUtil.hasAdminUsers();
       setHasAdmins(hasAdmins);
       
       if (hasAdmins) {
         // Redirect to admin login if admins already exist
-        navigate('/admin');
+        navigate('/admin/login');
       }
     } catch (error) {
       console.error('Error checking admin status:', error);
@@ -58,7 +58,7 @@ const AdminSetup: React.FC = () => {
     checkAdminStatus();
   }, [checkAdminStatus]);
 
-  const handleInputChange = (field: keyof AdminSetupData, value: string) => {
+  const handleInputChange = (field: string, value: string) => {
     setSetupData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -107,17 +107,21 @@ const AdminSetup: React.FC = () => {
         role: setupData.role 
       });
 
-      const result = await adminSetup.completeSetup(setupData);
+      const success = await AdminSetupUtil.createInitialAdmin(
+        setupData.email,
+        setupData.password,
+        `${setupData.firstName} ${setupData.lastName}`
+      );
       
-      if (result.success) {
+      if (success) {
         console.log('Admin setup completed successfully');
         setSuccess(true);
         setTimeout(() => {
-          navigate('/admin');
+          navigate('/admin/login');
         }, 3000);
       } else {
-        console.error('Admin setup failed:', result.error);
-        setError(result.error || 'Setup failed');
+        console.error('Admin setup failed');
+        setError('Failed to create admin user');
       }
     } catch (error) {
       console.error('Admin setup error:', error);
