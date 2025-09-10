@@ -9,72 +9,66 @@ export class AdminSetup {
    */
   static async createInitialAdmin(email: string, password: string, fullName: string): Promise<boolean> {
     try {
-      // Check if admin already exists
-      const { data: existingAdmin } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('email', email)
-        .single();
+      console.log('Starting admin creation process...');
 
-      if (existingAdmin) {
-        console.log('Admin user already exists');
+      // Check if any super admin already exists
+      const { data: existingSuperAdmin } = await supabase
+        .from('roles')
+        .select('id')
+        .eq('role', 'super_admin')
+        .limit(1);
+
+      if (existingSuperAdmin && existingSuperAdmin.length > 0) {
+        console.log('Super admin already exists');
         return false;
       }
 
-      // Create admin role if it doesn't exist
-      const { data: adminRole } = await supabase
-        .from('admin_roles')
-        .select('id')
-        .eq('name', 'admin')
-        .single();
-
-      let roleId = adminRole?.id;
-
-      if (!roleId) {
-        const { data: newRole, error: roleError } = await supabase
-          .from('admin_roles')
-          .insert({
-            name: 'admin',
-            description: 'Administrator role with full access',
-            permissions: {
-              user_management: true,
-              user_moderation: true,
-              content_moderation: true,
-              system_settings: true,
-              analytics: true,
-              admin_management: true
-            }
-          })
-          .select('id')
-          .single();
-
-        if (roleError) {
-          console.error('Error creating admin role:', roleError);
-          return false;
+      // Step 1: Create user in Supabase Auth
+      console.log('Creating user in Supabase Auth...');
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: 'super_admin'
+          }
         }
+      });
 
-        roleId = newRole.id;
-      }
-
-      // Create admin user
-      const { data: newAdmin, error: adminError } = await supabase
-        .from('admin_users')
-        .insert({
-          email: email,
-          password_hash: password, // In production, this should be hashed
-          role_id: roleId,
-          is_active: true,
-          created_at: new Date().toISOString()
-        })
-        .select('id')
-        .single();
-
-      if (adminError) {
-        console.error('Error creating admin user:', adminError);
+      if (authError) {
+        console.error('Error creating user in auth:', authError);
         return false;
       }
 
-      console.log('Admin user created successfully:', newAdmin.id);
+      if (!authData.user) {
+        console.error('No user returned from auth signup');
+        return false;
+      }
+
+      console.log('User created in auth:', authData.user.id);
+
+      // Step 2: Complete the admin setup using the database function
+      console.log('Completing admin setup...');
+      const { data: setupResult, error: setupError } = await supabase.rpc(
+        'complete_super_admin_setup',
+        {
+          p_user_id: authData.user.id,
+          p_full_name: fullName
+        }
+      );
+
+      if (setupError) {
+        console.error('Error completing admin setup:', setupError);
+        return false;
+      }
+
+      if (!setupResult?.success) {
+        console.error('Admin setup failed:', setupResult?.error);
+        return false;
+      }
+
+      console.log('Admin user created successfully:', authData.user.id);
       return true;
     } catch (error) {
       console.error('Error in createInitialAdmin:', error);
@@ -87,10 +81,11 @@ export class AdminSetup {
    */
   static async hasAdminUsers(): Promise<boolean> {
     try {
+      // Check if any super admin exists in the roles table
       const { data, error } = await supabase
-        .from('admin_users')
+        .from('roles')
         .select('id')
-        .eq('is_active', true)
+        .eq('role', 'super_admin')
         .limit(1);
 
       if (error) {
@@ -110,14 +105,26 @@ export class AdminSetup {
    */
   static async getAdminByEmail(email: string) {
     try {
+      // First get the user from auth.users
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (authError || !authUser.user) {
+        console.error('Error getting user by email:', authError);
+        return null;
+      }
+
+      // Get the user's role and admin info
       const { data, error } = await supabase
-        .from('admin_users')
+        .from('roles')
         .select(`
           *,
-          role:admin_roles(*)
+          profile:profiles(*),
+          admin_user:admin_users(
+            *,
+            admin_role:admin_roles(*)
+          )
         `)
-        .eq('email', email)
-        .eq('is_active', true)
+        .eq('user_id', authUser.user.id)
         .single();
 
       if (error) {

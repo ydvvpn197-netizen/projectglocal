@@ -247,7 +247,7 @@ const AdminSetup: React.FC = () => {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   <div className="space-y-3">
-                    <div className="font-medium">Database error saving new user</div>
+                    <div className="font-medium">Failed to create admin user</div>
                     <div className="text-sm">{error}</div>
                     <div className="text-xs text-muted-foreground">
                       Please check your database connection and try again. If the problem persists, contact support.

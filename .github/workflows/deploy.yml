@@ -33,6 +33,23 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Validate environment variables
+      run: |
+        echo "🔍 Checking GitHub Secrets..."
+        if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+          echo "❌ VITE_SUPABASE_URL secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_URL to your repository secrets"
+          exit 1
+        fi
+        if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+          echo "❌ VITE_SUPABASE_ANON_KEY secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_ANON_KEY to your repository secrets"
+          exit 1
+        fi
+        echo "✅ Environment variables validated successfully"
+        echo "📋 Supabase URL: ${{ secrets.VITE_SUPABASE_URL }}"
+        echo "🔑 Anon Key: ${VITE_SUPABASE_ANON_KEY:0:20}..."
+    
     - name: Run type check
       run: npm run type-check
     
@@ -47,8 +64,8 @@ jobs:
     - name: Build project
       run: npm run build
       env:
-        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-key' }}
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         CI: true
     
     - name: Upload build artifacts
@@ -75,11 +92,28 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Validate environment variables
+      run: |
+        echo "🔍 Checking GitHub Secrets for deployment..."
+        if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+          echo "❌ VITE_SUPABASE_URL secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_URL to your repository secrets"
+          exit 1
+        fi
+        if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+          echo "❌ VITE_SUPABASE_ANON_KEY secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_ANON_KEY to your repository secrets"
+          exit 1
+        fi
+        echo "✅ Environment variables validated successfully for deployment"
+        echo "📋 Supabase URL: ${{ secrets.VITE_SUPABASE_URL }}"
+        echo "🔑 Anon Key: ${VITE_SUPABASE_ANON_KEY:0:20}..."
+    
     - name: Build project
       run: npm run build
       env:
-        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-key' }}
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         CI: true
     
     - name: Setup Pages
