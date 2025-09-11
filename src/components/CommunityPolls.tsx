@@ -157,10 +157,10 @@ const CommunityPolls: React.FC<CommunityPollsProps> = ({ className }) => {
       if (error) throw error;
 
       const processedPolls = data?.map(poll => {
-        const totalVotes = poll.poll_options?.reduce((sum: number, option: any) => sum + option.vote_count, 0) || 0;
-        const userVote = poll.poll_votes?.find((vote: any) => vote.user_id === user?.id);
+        const totalVotes = poll.poll_options?.reduce((sum: number, option: { vote_count: number }) => sum + option.vote_count, 0) || 0;
+        const userVote = poll.poll_votes?.find((vote: { user_id: string }) => vote.user_id === user?.id);
         
-        const options = poll.poll_options?.map((option: any) => ({
+        const options = poll.poll_options?.map((option: { vote_count: number; [key: string]: unknown }) => ({
           ...option,
           percentage: totalVotes > 0 ? Math.round((option.vote_count / totalVotes) * 100) : 0
         })) || [];
@@ -535,7 +535,7 @@ const CommunityPolls: React.FC<CommunityPollsProps> = ({ className }) => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'trending' | 'completed' | 'my-polls')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="active" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
@@ -807,7 +807,7 @@ const CommunityPolls: React.FC<CommunityPollsProps> = ({ className }) => {
                 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Visibility</label>
-                  <Select value={newPoll.visibility} onValueChange={(value) => setNewPoll(prev => ({ ...prev, visibility: value as any }))}>
+                  <Select value={newPoll.visibility} onValueChange={(value) => setNewPoll(prev => ({ ...prev, visibility: value as 'public' | 'private' | 'community' }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

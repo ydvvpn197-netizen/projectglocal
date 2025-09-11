@@ -183,7 +183,7 @@ export const useLazyLoad = <T>(
 
   useEffect(() => {
     load();
-  }, [load]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load]);
 
   return { data, loading, error, reload: load };
 };

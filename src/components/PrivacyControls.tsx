@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,9 +119,9 @@ const PrivacyControls: React.FC<PrivacyControlsProps> = ({ className }) => {
 
   useEffect(() => {
     loadPrivacySettings();
-  }, [user]);
+  }, [user, loadPrivacySettings]);
 
-  const loadPrivacySettings = async () => {
+  const loadPrivacySettings = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -148,7 +148,7 @@ const PrivacyControls: React.FC<PrivacyControlsProps> = ({ className }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const savePrivacySettings = async () => {
     if (!user) return;

@@ -246,14 +246,14 @@ const CommunityEvents: React.FC<CommunityEventsProps> = ({ className }) => {
 
       const processedEvents = data?.map(event => {
         const isAttending = event.event_attendees?.some(
-          (attendee: any) => attendee.user_id === user?.id && attendee.status === 'attending'
+          (attendee: { user_id: string; status: string }) => attendee.user_id === user?.id && attendee.status === 'attending'
         );
         const isBookmarked = event.event_attendees?.some(
-          (attendee: any) => attendee.user_id === user?.id && attendee.status === 'bookmarked'
+          (attendee: { user_id: string; status: string }) => attendee.user_id === user?.id && attendee.status === 'bookmarked'
         );
         
         const attendeesCount = event.event_attendees?.filter(
-          (attendee: any) => attendee.status === 'attending'
+          (attendee: { status: string }) => attendee.status === 'attending'
         ).length || 0;
 
         return {
@@ -638,7 +638,7 @@ const CommunityEvents: React.FC<CommunityEventsProps> = ({ className }) => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'upcoming' | 'today' | 'this-week' | 'my-events')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="upcoming" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
@@ -991,7 +991,7 @@ const CommunityEvents: React.FC<CommunityEventsProps> = ({ className }) => {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium">Visibility</label>
-                <Select value={newEvent.visibility} onValueChange={(value) => setNewEvent(prev => ({ ...prev, visibility: value as any }))}>
+                <Select value={newEvent.visibility} onValueChange={(value) => setNewEvent(prev => ({ ...prev, visibility: value as 'public' | 'private' | 'community' }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

@@ -145,19 +145,19 @@ const PublicSquareNews: React.FC<PublicSquareNewsProps> = ({ className }) => {
       const processedArticles = data?.map(article => ({
         ...article,
         is_liked: article.news_article_interactions?.some(
-          (interaction: any) => interaction.user_id === user?.id && interaction.interaction_type === 'like'
+          (interaction: { user_id: string; interaction_type: string }) => interaction.user_id === user?.id && interaction.interaction_type === 'like'
         ),
         is_bookmarked: article.news_article_interactions?.some(
-          (interaction: any) => interaction.user_id === user?.id && interaction.interaction_type === 'bookmark'
+          (interaction: { user_id: string; interaction_type: string }) => interaction.user_id === user?.id && interaction.interaction_type === 'bookmark'
         ),
         likes_count: article.news_article_interactions?.filter(
-          (interaction: any) => interaction.interaction_type === 'like'
+          (interaction: { interaction_type: string }) => interaction.interaction_type === 'like'
         ).length || 0,
         comments_count: article.news_article_interactions?.filter(
-          (interaction: any) => interaction.interaction_type === 'comment'
+          (interaction: { interaction_type: string }) => interaction.interaction_type === 'comment'
         ).length || 0,
         shares_count: article.news_article_interactions?.filter(
-          (interaction: any) => interaction.interaction_type === 'share'
+          (interaction: { interaction_type: string }) => interaction.interaction_type === 'share'
         ).length || 0,
       })) || [];
 

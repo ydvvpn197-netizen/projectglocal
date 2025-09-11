@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,9 +31,9 @@ export function PublicSquareSubscription() {
 
   useEffect(() => {
     loadPlans();
-  }, []);
+  }, [loadPlans]);
 
-  const loadPlans = async () => {
+  const loadPlans = useCallback(async () => {
     try {
       setLoading(true);
       const availablePlans = await subscriptionService.getSubscriptionPlans(userType);
@@ -44,7 +44,7 @@ export function PublicSquareSubscription() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userType]);
 
   const handleSubscribe = async (planId: string) => {
     if (!user?.id) {

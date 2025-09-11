@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ProgressiveImageProps {
@@ -34,7 +34,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Generate optimized image URL based on quality and connection
-  const getOptimizedSrc = (originalSrc: string, quality: string): string => {
+  const getOptimizedSrc = useCallback((originalSrc: string, quality: string): string => {
     if (!originalSrc) return '';
     
     // For low bandwidth, use lower quality
@@ -56,7 +56,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     }
     
     return originalSrc;
-  };
+  }, [width]);
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -103,13 +103,13 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     };
 
     img.src = optimizedSrc;
-  }, [isInView, src, quality, width, onLoad, onError]);
+  }, [isInView, src, quality, getOptimizedSrc, onLoad, onError]);
 
   // Network-aware quality adjustment
   useEffect(() => {
     const updateQuality = () => {
       if ('connection' in navigator) {
-        const connection = (navigator as any).connection;
+        const connection = (navigator as Navigator & { connection?: { effectiveType: string } }).connection;
         if (connection) {
           const effectiveType = connection.effectiveType;
           if (effectiveType === 'slow-2g' || effectiveType === '2g') {
@@ -133,7 +133,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
       connection?.addEventListener('change', updateQuality);
       return () => connection?.removeEventListener('change', updateQuality);
     }
-  }, [src, quality, isInView]);
+  }, [src, quality, isInView, getOptimizedSrc]);
 
   if (hasError) {
     return (
