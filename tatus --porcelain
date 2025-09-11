@@ -2,3 +2,8 @@
 [33m5f23b68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Google OAuth authentication 404 error
 [33m953e408[m feat: Complete project deployment setup with comprehensive features
 [33me4bfd0f[m CRITICAL FIX: Resolve Supabase connection issues in production
+[33m2a01b4f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix linting errors: improve TypeScript types and resolve lexical declaration issues
+[33mc76564d[m  Deploy: Add new Edge Functions for Legal Assistant and Life Wish features
+[33mc7a1db8[m Fix TypeScript linting errors: Replace all 'any' types with proper TypeScript interfaces
+[33m0339534[m trigger: Deploy to GitHub Pages - TheGlocal platform ready for production
+[33mbed68a6[m feat: Complete TheGlocal platform implementation with all core features

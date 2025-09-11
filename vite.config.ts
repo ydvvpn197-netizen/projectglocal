@@ -57,8 +57,15 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       },
       output: {
-        // Simplified chunk naming for better compatibility
-        manualChunks: undefined,
+        // Optimized chunk splitting for better caching
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          query: ['@tanstack/react-query'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip'],
+          supabase: ['@supabase/supabase-js'],
+          utils: ['date-fns', 'clsx', 'class-variance-authority', 'tailwind-merge'],
+        },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
@@ -78,7 +85,7 @@ export default defineConfig(({ mode }) => ({
         exports: 'named',
       },
     },
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 1000, // Reduced for better performance monitoring
     minify: 'esbuild',
     esbuild: {
       drop: mode === 'production' ? ['console', 'debugger'] : [],
@@ -91,6 +98,9 @@ export default defineConfig(({ mode }) => ({
       legalComments: 'none',
     },
     sourcemap: mode === 'development',
+    // Performance optimizations
+    reportCompressedSize: true,
+    copyPublicDir: true,
   },
   optimizeDeps: {
     include: [

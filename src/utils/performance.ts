@@ -1,218 +1,172 @@
-// Performance optimization utilities
-import { useMemo, useCallback, memo } from 'react';
-
 /**
- * Custom hook for memoizing expensive calculations
+ * Performance optimization utilities
  */
-export const useExpensiveCalculation = <T>(
-  calculation: () => T,
-  dependencies: React.DependencyList
-): T => {
-  return useMemo(calculation, dependencies);
+
+// Lazy loading utility
+export const lazyLoad = <T extends React.ComponentType<any>>(
+  importFunc: () => Promise<{ default: T }>
+): React.LazyExoticComponent<T> => {
+  return React.lazy(importFunc);
 };
 
-/**
- * Custom hook for memoizing callbacks
- */
-export const useStableCallback = <T extends (...args: any[]) => any>(
-  callback: T,
-  dependencies: React.DependencyList
-): T => {
-  return useCallback(callback, dependencies);
-};
-
-/**
- * Higher-order component for memoizing components with custom comparison
- */
-export const withMemo = <P extends object>(
-  Component: React.ComponentType<P>,
-  areEqual?: (prevProps: P, nextProps: P) => boolean
-) => {
-  return memo(Component, areEqual);
-};
-
-/**
- * Debounce utility for performance optimization
- */
-export const debounce = <T extends (...args: any[]) => any>(
+// Debounce utility for search and input handling
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
-): ((...args: Parameters<T>) => void) => {
+): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
-  
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
-};
+}
 
-/**
- * Throttle utility for performance optimization
- */
-export const throttle = <T extends (...args: any[]) => any>(
+// Throttle utility for scroll and resize events
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
-): ((...args: Parameters<T>) => void) => {
+): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
-};
-
-/**
- * Virtual scrolling utility for large lists
- */
-export interface VirtualScrollOptions {
-  itemHeight: number;
-  containerHeight: number;
-  overscan?: number;
 }
 
-export const useVirtualScroll = <T>(
-  items: T[],
-  options: VirtualScrollOptions
-) => {
-  const { itemHeight, containerHeight, overscan = 5 } = options;
-  
-  return useMemo(() => {
-    const visibleCount = Math.ceil(containerHeight / itemHeight);
-    const startIndex = Math.max(0, 0 - overscan);
-    const endIndex = Math.min(items.length - 1, visibleCount + overscan);
-    
-    return {
-      visibleItems: items.slice(startIndex, endIndex + 1),
-      startIndex,
-      endIndex,
-      totalHeight: items.length * itemHeight,
-      offsetY: startIndex * itemHeight
-    };
-  }, [items, itemHeight, containerHeight, overscan]);
+// Image optimization utility
+export const optimizeImage = (src: string, width?: number, quality: number = 80): string => {
+  // For now, return the original src
+  // In production, you might want to use a service like Cloudinary or ImageKit
+  return src;
 };
 
-/**
- * Intersection Observer hook for lazy loading
- */
-export const useIntersectionObserver = (
-  elementRef: React.RefObject<Element>,
-  options: IntersectionObserverInit = {}
-) => {
-  const [isIntersecting, setIsIntersecting] = React.useState(false);
-  
-  React.useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-    
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-      },
-      options
+// Memory usage monitoring
+export const getMemoryUsage = (): number => {
+  if ('memory' in performance) {
+    return (performance as any).memory.usedJSHeapSize / 1024 / 1024; // MB
+  }
+  return 0;
+};
+
+// Performance monitoring
+export const measurePerformance = (name: string, fn: () => void): void => {
+  const start = performance.now();
+  fn();
+  const end = performance.now();
+  console.log(`${name} took ${end - start} milliseconds`);
+};
+
+// Intersection Observer for lazy loading
+export const createIntersectionObserver = (
+  callback: IntersectionObserverCallback,
+  options?: IntersectionObserverInit
+): IntersectionObserver => {
+  return new IntersectionObserver(callback, {
+    rootMargin: '50px',
+    threshold: 0.1,
+    ...options,
+  });
+};
+
+// Preload critical resources
+export const preloadResource = (href: string, as: string): void => {
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.href = href;
+  link.as = as;
+  document.head.appendChild(link);
+};
+
+// Prefetch resources for better performance
+export const prefetchResource = (href: string): void => {
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.href = href;
+  document.head.appendChild(link);
+};
+
+// Service Worker registration for caching
+export const registerServiceWorker = async (): Promise<void> => {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('Service Worker registered:', registration);
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
+  }
+};
+
+// Cache management
+export const clearCache = async (): Promise<void> => {
+  if ('caches' in window) {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames.map(cacheName => caches.delete(cacheName))
     );
+  }
+};
+
+// Bundle size monitoring
+export const logBundleSize = (): void => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Bundle size monitoring enabled');
+    // Add bundle size monitoring logic here
+  }
+};
+
+// Performance budget monitoring
+export const checkPerformanceBudget = (): void => {
+  const memoryUsage = getMemoryUsage();
+  const maxMemory = 50; // MB
+  
+  if (memoryUsage > maxMemory) {
+    console.warn(`Memory usage (${memoryUsage.toFixed(2)}MB) exceeds budget (${maxMemory}MB)`);
+  }
+};
+
+// Critical resource hints
+export const addResourceHints = (): void => {
+  // Preconnect to external domains
+  const domains = [
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com',
+    'https://api.supabase.co',
+  ];
+  
+  domains.forEach(domain => {
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = domain;
+    document.head.appendChild(link);
+  });
+};
+
+// Performance metrics collection
+export const collectPerformanceMetrics = (): void => {
+  if ('performance' in window) {
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     
-    observer.observe(element);
-    
-    return () => {
-      observer.unobserve(element);
+    const metrics = {
+      domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+      loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
+      firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
+      firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0,
     };
-  }, [elementRef, options]);
-  
-  return isIntersecting;
-};
-
-/**
- * Performance monitoring utilities
- */
-export const performanceMonitor = {
-  start: (label: string) => {
-    if (typeof performance !== 'undefined') {
-      performance.mark(`${label}-start`);
-    }
-  },
-  
-  end: (label: string) => {
-    if (typeof performance !== 'undefined') {
-      performance.mark(`${label}-end`);
-      performance.measure(label, `${label}-start`, `${label}-end`);
-    }
-  },
-  
-  measure: (label: string, fn: () => void) => {
-    performanceMonitor.start(label);
-    fn();
-    performanceMonitor.end(label);
+    
+    console.log('Performance Metrics:', metrics);
   }
 };
 
-/**
- * Memory usage monitoring
- */
-export const memoryMonitor = {
-  getUsage: () => {
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      return {
-        used: memory.usedJSHeapSize,
-        total: memory.totalJSHeapSize,
-        limit: memory.jsHeapSizeLimit
-      };
-    }
-    return null;
-  },
+// Initialize performance optimizations
+export const initializePerformanceOptimizations = (): void => {
+  addResourceHints();
+  registerServiceWorker();
+  collectPerformanceMetrics();
   
-  logUsage: (label?: string) => {
-    const usage = memoryMonitor.getUsage();
-    if (usage) {
-      console.log(`${label || 'Memory usage'}:`, {
-        used: `${Math.round(usage.used / 1024 / 1024)}MB`,
-        total: `${Math.round(usage.total / 1024 / 1024)}MB`,
-        limit: `${Math.round(usage.limit / 1024 / 1024)}MB`
-      });
-    }
-  }
-};
-
-/**
- * Bundle size optimization utilities
- */
-export const bundleOptimization = {
-  // Lazy load components with error boundaries
-  lazyLoad: <T extends React.ComponentType<any>>(
-    importFn: () => Promise<{ default: T }>,
-    fallback?: React.ComponentType
-  ) => {
-    return React.lazy(importFn);
-  },
-  
-  // Preload critical resources
-  preload: (href: string, as: string) => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = href;
-    link.as = as;
-    document.head.appendChild(link);
-  },
-  
-  // Prefetch resources for better performance
-  prefetch: (href: string) => {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = href;
-    document.head.appendChild(link);
-  }
-};
-
-/**
- * React DevTools profiler integration
- */
-export const profiler = {
-  onRender: (id: string, phase: 'mount' | 'update', actualDuration: number) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Profiler [${id}]: ${phase} took ${actualDuration}ms`);
-    }
-  }
+  // Monitor performance budget
+  setInterval(checkPerformanceBudget, 30000); // Check every 30 seconds
 };

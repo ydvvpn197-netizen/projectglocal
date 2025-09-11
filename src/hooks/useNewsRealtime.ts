@@ -38,7 +38,12 @@ export function useNewsRealtime({
   const [data, setData] = useState<Map<string, RealtimeCounts>>(new Map());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [subscriptions, setSubscriptions] = useState<Map<string, RealtimeChannel>>(new Map());
+  const [subscriptions, setSubscriptions] = useState<Map<string, {
+    likes: RealtimeChannel;
+    shares: RealtimeChannel;
+    comments: RealtimeChannel;
+    pollVotes: RealtimeChannel;
+  }>>(new Map());
 
   // Fetch initial counts
   const fetchCounts = useCallback(async (ids: string[]) => {

@@ -9,15 +9,6 @@ export function useUserPlan() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      loadUserPlanInfo();
-    } else {
-      setPlanInfo(null);
-      setIsLoading(false);
-    }
-  }, [user, loadUserPlanInfo]);
-
   const loadUserPlanInfo = useCallback(async () => {
     if (!user) return;
 
@@ -33,6 +24,15 @@ export function useUserPlan() {
       setIsLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadUserPlanInfo();
+    } else {
+      setPlanInfo(null);
+      setIsLoading(false);
+    }
+  }, [user, loadUserPlanInfo]);
 
   const refreshPlanInfo = () => {
     loadUserPlanInfo();
