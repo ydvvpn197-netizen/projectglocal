@@ -36,6 +36,7 @@ import { useEvents, Event } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { EventDiscussion } from "@/components/EventDiscussion";
 
 const EventDetails = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -517,6 +518,13 @@ const EventDetails = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Event Discussion Section */}
+        {selectedEvent && (
+          <div className="mt-8">
+            <EventDiscussion eventId={selectedEvent.id} />
+          </div>
+        )}
       </div>
     </ResponsiveLayout>
   );

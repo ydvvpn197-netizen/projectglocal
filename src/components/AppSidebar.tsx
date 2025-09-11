@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart, Shield } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart, Shield, BarChart3, Building2, Store } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
@@ -34,6 +34,9 @@ const mainItems = [
   { title: "Discover", url: "/discover", icon: Search },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
+  { title: "Local Communities", url: "/communities", icon: Building2 },
+  { title: "Local Businesses", url: "/businesses", icon: Store },
+  { title: "Polls", url: "/polls", icon: BarChart3 },
   { title: "Book Artists", url: "/book-artist", icon: Palette },
 ];
 

@@ -12,7 +12,8 @@ import { useUserSettings } from "@/hooks/useUserSettings";
 import { LocationSettings } from "@/components/LocationSettings";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { NotificationSettings } from "@/components/NotificationSettings";
-import { PrivacySettings } from "@/components/PrivacySettings";
+import { PrivacySettingsPanel } from "@/components/PrivacySettingsPanel";
+import { AnonymousMode } from "@/components/AnonymousMode";
 import { SecuritySettings } from "@/components/SecuritySettings";
 import { 
   Settings as SettingsIcon, 
@@ -186,10 +187,11 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="account" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="location">Location</TabsTrigger>
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
+            <TabsTrigger value="anonymous">Anonymous</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
@@ -261,7 +263,11 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="privacy" className="space-y-6">
-            <PrivacySettings />
+            <PrivacySettingsPanel />
+          </TabsContent>
+
+          <TabsContent value="anonymous" className="space-y-6">
+            <AnonymousMode />
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">
