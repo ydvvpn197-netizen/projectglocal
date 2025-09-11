@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -43,9 +43,9 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
     if (user) {
       loadPrivacySettings();
     }
-  }, [user]);
+  }, [user, loadPrivacySettings]);
 
-  const loadPrivacySettings = async () => {
+  const loadPrivacySettings = useCallback(async () => {
     if (!user) return;
     
     setLoading(true);
@@ -62,7 +62,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const handleSettingChange = (key: keyof PrivacySettings, value: boolean | string) => {
     if (!settings) return;

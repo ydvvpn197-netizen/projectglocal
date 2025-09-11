@@ -23,10 +23,23 @@ interface LifeWishRequest {
   };
 }
 
+interface LifeWish {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  encrypted_content?: string;
+  visibility: 'private' | 'public' | 'family';
+  is_encrypted: boolean;
+  created_at: string;
+  updated_at?: string;
+  metadata?: Record<string, unknown>;
+}
+
 interface LifeWishResponse {
   success: boolean;
-  wish?: any;
-  wishes?: any[];
+  wish?: LifeWish;
+  wishes?: LifeWish[];
   error?: string;
 }
 
@@ -85,7 +98,7 @@ Deno.serve(async (req) => {
     let result: LifeWishResponse = { success: false };
 
     switch (action) {
-      case 'create':
+      case 'create': {
         if (!wishData) {
           return new Response(
             JSON.stringify({ error: 'Wish data is required for create action' }),
@@ -123,8 +136,9 @@ Deno.serve(async (req) => {
           }
         };
         break;
+      }
 
-      case 'update':
+      case 'update': {
         if (!wishId || !wishData) {
           return new Response(
             JSON.stringify({ error: 'Wish ID and data are required for update action' }),
@@ -135,7 +149,14 @@ Deno.serve(async (req) => {
           );
         }
 
-        const updateData: any = {
+        const updateData: {
+          title: string;
+          visibility: 'private' | 'public' | 'family';
+          is_encrypted: boolean;
+          updated_at: string;
+          content?: string;
+          encrypted_content?: string | null;
+        } = {
           title: wishData.title,
           visibility: wishData.visibility,
           is_encrypted: wishData.is_encrypted || false,
@@ -168,8 +189,9 @@ Deno.serve(async (req) => {
           }
         };
         break;
+      }
 
-      case 'delete':
+      case 'delete': {
         if (!wishId) {
           return new Response(
             JSON.stringify({ error: 'Wish ID is required for delete action' }),
@@ -190,8 +212,9 @@ Deno.serve(async (req) => {
 
         result = { success: true };
         break;
+      }
 
-      case 'get':
+      case 'get': {
         if (wishId) {
           // Get specific wish
           const { data: wish, error: getError } = await supabase
@@ -241,8 +264,9 @@ Deno.serve(async (req) => {
           };
         }
         break;
+      }
 
-      case 'share':
+      case 'share': {
         if (!wishId || !shareData) {
           return new Response(
             JSON.stringify({ error: 'Wish ID and share data are required for share action' }),
@@ -274,6 +298,7 @@ Deno.serve(async (req) => {
           wish: { share }
         };
         break;
+      }
 
       default:
         return new Response(

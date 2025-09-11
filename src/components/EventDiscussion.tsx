@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,9 +43,9 @@ export const EventDiscussion: React.FC<EventDiscussionProps> = ({ eventId, class
 
   useEffect(() => {
     fetchDiscussions();
-  }, [eventId]);
+  }, [eventId, fetchDiscussions]);
 
-  const fetchDiscussions = async () => {
+  const fetchDiscussions = useCallback(async () => {
     try {
       setLoading(true);
       const { discussions: fetchedDiscussions, error } = await EventDiscussionService.fetchEventDiscussions(eventId);
@@ -70,7 +70,7 @@ export const EventDiscussion: React.FC<EventDiscussionProps> = ({ eventId, class
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, toast]);
 
   const handleSubmitDiscussion = async () => {
     if (!user) {

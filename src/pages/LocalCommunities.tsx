@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,9 +68,9 @@ const LocalCommunities = () => {
   useEffect(() => {
     loadCommunities();
     loadTrendingCommunities();
-  }, []);
+  }, [loadCommunities, loadTrendingCommunities]);
 
-  const loadCommunities = async () => {
+  const loadCommunities = useCallback(async () => {
     try {
       setLoading(true);
       let result;
@@ -108,9 +108,9 @@ const LocalCommunities = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, selectedCity, currentLocation, toast]);
 
-  const loadTrendingCommunities = async () => {
+  const loadTrendingCommunities = useCallback(async () => {
     try {
       const result = await LocalCommunityService.getTrendingCommunities(10);
       if (!result.error) {
@@ -119,7 +119,7 @@ const LocalCommunities = () => {
     } catch (error) {
       console.error('Error loading trending communities:', error);
     }
-  };
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {

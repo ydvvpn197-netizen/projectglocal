@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,9 +59,9 @@ export const AnonymousMode: React.FC<AnonymousModeProps> = ({
     if (isAnonymous && !anonymousUser) {
       initializeAnonymousUser();
     }
-  }, [isAnonymous]);
+  }, [isAnonymous, anonymousUser, initializeAnonymousUser]);
 
-  const initializeAnonymousUser = async () => {
+  const initializeAnonymousUser = useCallback(async () => {
     if (!user) return;
     
     setLoading(true);
@@ -83,7 +83,7 @@ export const AnonymousMode: React.FC<AnonymousModeProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, onToggle, toast]);
 
   const toggleAnonymousMode = async () => {
     if (!user) {

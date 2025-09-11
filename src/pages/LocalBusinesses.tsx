@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,9 +87,9 @@ const LocalBusinesses = () => {
   useEffect(() => {
     loadBusinesses();
     loadCategories();
-  }, [activeTab, selectedCategory, selectedCity]);
+  }, [activeTab, selectedCategory, selectedCity, loadBusinesses, loadCategories]);
 
-  const loadBusinesses = async () => {
+  const loadBusinesses = useCallback(async () => {
     try {
       setLoading(true);
       let result;
@@ -129,9 +129,9 @@ const LocalBusinesses = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, selectedCity, selectedCategory, currentLocation, toast]);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       const result = await LocalBusinessService.getBusinessCategories();
       if (!result.error) {
@@ -140,7 +140,7 @@ const LocalBusinesses = () => {
     } catch (error) {
       console.error('Error loading categories:', error);
     }
-  };
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {

@@ -31,7 +31,7 @@ interface LocalNewsProps {
   className?: string;
 }
 
-export const LocalNews: React.FC<LocalNewsProps> = ({ className }) => {
+export const LocalNews: React.FC<LocalNewsProps> = React.memo(({ className }) => {
   const [activeTab, setActiveTab] = useState<NewsTab>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
@@ -398,4 +398,4 @@ export const LocalNews: React.FC<LocalNewsProps> = ({ className }) => {
       </AnimatePresence>
     </div>
   );
-};
+});

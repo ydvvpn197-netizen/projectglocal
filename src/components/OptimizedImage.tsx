@@ -20,7 +20,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   onError?: () => void;
 }
 
-export const OptimizedImage: React.FC<OptimizedImageProps> = ({
+export const OptimizedImage: React.FC<OptimizedImageProps> = React.memo(({
   src,
   alt,
   width = 400,
@@ -139,7 +139,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       )}
     </div>
   );
-};
+});
 
 // Responsive image component
 interface ResponsiveImageProps extends Omit<OptimizedImageProps, 'width' | 'height'> {
@@ -148,7 +148,7 @@ interface ResponsiveImageProps extends Omit<OptimizedImageProps, 'width' | 'heig
   breakpoints?: { minWidth: number; size: string }[];
 }
 
-export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
+export const ResponsiveImage: React.FC<ResponsiveImageProps> = React.memo(({
   src,
   alt,
   sizes,
@@ -185,4 +185,4 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
       {...props}
     />
   );
-};
+});

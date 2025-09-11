@@ -27,7 +27,7 @@ interface NewsPollProps {
   onClose: () => void;
 }
 
-export const NewsPoll: React.FC<NewsPollProps> = ({ articleId, onClose }) => {
+export const NewsPoll: React.FC<NewsPollProps> = React.memo(({ articleId, onClose }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
@@ -315,4 +315,4 @@ export const NewsPoll: React.FC<NewsPollProps> = ({ articleId, onClose }) => {
       </DialogContent>
     </Dialog>
   );
-};
+});
