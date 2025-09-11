@@ -30,6 +30,13 @@ export interface Poll {
   has_voted?: boolean;
 }
 
+export interface PollWithProfile extends Poll {
+  profiles?: {
+    display_name?: string;
+    avatar_url?: string;
+  };
+}
+
 export interface CreatePollData {
   title: string;
   description?: string;
@@ -90,7 +97,7 @@ export class PollService {
 
       if (error) throw error;
 
-      const polls: Poll[] = (data || []).map((poll: any) => ({
+      const polls: Poll[] = (data || []).map((poll: PollWithProfile) => ({
         id: poll.id,
         user_id: poll.user_id,
         title: poll.title,
@@ -113,9 +120,9 @@ export class PollService {
       }));
 
       return { polls, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching polls:', error);
-      return { polls: [], error: error.message };
+      return { polls: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -139,9 +146,9 @@ export class PollService {
       if (error) throw error;
 
       return { success: true, pollId: data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating poll:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -162,9 +169,9 @@ export class PollService {
       }
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error voting on poll:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -181,9 +188,9 @@ export class PollService {
       if (error) throw error;
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting poll:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -202,7 +209,7 @@ export class PollService {
       if (error) throw error;
 
       return { authorities: data || [], error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching government authorities:', error);
       return { authorities: [], error: error.message };
     }
@@ -254,9 +261,9 @@ export class PollService {
       if (optionsError) throw optionsError;
 
       return { success: true, pollId: poll.id };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating government poll:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -313,9 +320,9 @@ export class PollService {
       if (totalError) throw totalError;
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error voting on government poll:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -359,7 +366,7 @@ export class PollService {
 
       if (error) throw error;
 
-      const polls: GovernmentPoll[] = (data || []).map((poll: any) => ({
+      const polls: GovernmentPoll[] = (data || []).map((poll: PollWithProfile) => ({
         id: poll.id,
         user_id: poll.user_id,
         title: poll.title,
@@ -373,7 +380,7 @@ export class PollService {
         total_votes: poll.total_votes || 0,
         created_at: poll.created_at,
         updated_at: poll.updated_at,
-        options: (poll.poll_options || []).map((option: any) => ({
+        options: (poll.poll_options || []).map((option: PollOption) => ({
           id: option.id,
           text: option.text,
           votes: option.votes || 0,
@@ -382,9 +389,9 @@ export class PollService {
       }));
 
       return { polls, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching government polls:', error);
-      return { polls: [], error: error.message };
+      return { polls: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -417,16 +424,16 @@ export class PollService {
       }
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sharing poll:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
   /**
    * Get poll statistics
    */
-  static async getPollStats(pollId: string): Promise<{ stats: any; error: string | null }> {
+  static async getPollStats(pollId: string): Promise<{ stats: { total_votes: number; options: PollOption[]; vote_distribution: Record<number, number> } | null; error: string | null }> {
     try {
       const { data, error } = await supabase
         .from('polls')
@@ -442,7 +449,7 @@ export class PollService {
       const stats = {
         total_votes: data.total_votes,
         options: data.options,
-        vote_distribution: data.poll_votes?.reduce((acc: any, vote: any) => {
+        vote_distribution: data.poll_votes?.reduce((acc: Record<number, number>, vote: { option_index: number }) => {
           acc[vote.option_index] = (acc[vote.option_index] || 0) + 1;
           return acc;
         }, {}) || {},
@@ -452,7 +459,7 @@ export class PollService {
       };
 
       return { stats, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting poll stats:', error);
       return { stats: null, error: error.message };
     }

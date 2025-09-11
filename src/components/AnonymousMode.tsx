@@ -374,7 +374,7 @@ export const AnonymousMode: React.FC<AnonymousModeProps> = ({
                 <Label htmlFor="post-type">Post Type</Label>
                 <Select
                   value={newPost.post_type}
-                  onValueChange={(value: any) => setNewPost(prev => ({ ...prev, post_type: value }))}
+                  onValueChange={(value: string) => setNewPost(prev => ({ ...prev, post_type: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

@@ -30,6 +30,20 @@ export interface CommunityMember {
   member_avatar?: string;
 }
 
+export interface LocalCommunityWithProfile extends LocalCommunity {
+  profiles?: {
+    display_name?: string;
+    avatar_url?: string;
+  };
+}
+
+export interface CommunityMemberWithProfile extends CommunityMember {
+  profiles?: {
+    display_name?: string;
+    avatar_url?: string;
+  };
+}
+
 export interface CommunityPost {
   id: string;
   community_id: string;
@@ -67,9 +81,9 @@ export class LocalCommunityService {
       if (error) throw error;
 
       return { communities: data || [], error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting nearby communities:', error);
-      return { communities: [], error: error.message };
+      return { communities: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -102,7 +116,7 @@ export class LocalCommunityService {
 
       if (error) throw error;
 
-      const communities: LocalCommunity[] = (data || []).map((community: any) => ({
+      const communities: LocalCommunity[] = (data || []).map((community: LocalCommunityWithProfile) => ({
         id: community.id,
         name: community.name,
         description: community.description,
@@ -122,9 +136,9 @@ export class LocalCommunityService {
       }));
 
       return { communities, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting communities by city:', error);
-      return { communities: [], error: error.message };
+      return { communities: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -167,9 +181,9 @@ export class LocalCommunityService {
         });
 
       return { success: true, communityId: data.id };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating community:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -212,9 +226,9 @@ export class LocalCommunityService {
       });
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error joining community:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -242,9 +256,9 @@ export class LocalCommunityService {
       });
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error leaving community:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -268,7 +282,7 @@ export class LocalCommunityService {
 
       if (error) throw error;
 
-      const members: CommunityMember[] = (data || []).map((member: any) => ({
+      const members: CommunityMember[] = (data || []).map((member: CommunityMemberWithProfile) => ({
         id: member.id,
         community_id: member.community_id,
         user_id: member.user_id,
@@ -279,9 +293,9 @@ export class LocalCommunityService {
       }));
 
       return { members, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting community members:', error);
-      return { members: [], error: error.message };
+      return { members: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -306,7 +320,7 @@ export class LocalCommunityService {
 
       if (error) throw error;
 
-      const posts: CommunityPost[] = (data || []).map((post: any) => ({
+      const posts: CommunityPost[] = (data || []).map((post: CommunityPost) => ({
         id: post.id,
         community_id: post.community_id,
         user_id: post.user_id,
@@ -323,9 +337,9 @@ export class LocalCommunityService {
       }));
 
       return { posts, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting community posts:', error);
-      return { posts: [], error: error.message };
+      return { posts: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -356,9 +370,9 @@ export class LocalCommunityService {
       if (error) throw error;
 
       return { success: true, postId: data.id };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating community post:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -379,7 +393,7 @@ export class LocalCommunityService {
 
       if (error) throw error;
 
-      const communities: LocalCommunity[] = (data || []).map((community: any) => ({
+      const communities: LocalCommunity[] = (data || []).map((community: LocalCommunityWithProfile) => ({
         id: community.id,
         name: community.name,
         description: community.description,
@@ -398,9 +412,9 @@ export class LocalCommunityService {
       }));
 
       return { communities, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting trending communities:', error);
-      return { communities: [], error: error.message };
+      return { communities: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -425,7 +439,7 @@ export class LocalCommunityService {
 
       if (error) throw error;
 
-      const communities: LocalCommunity[] = (data || []).map((community: any) => ({
+      const communities: LocalCommunity[] = (data || []).map((community: LocalCommunityWithProfile) => ({
         id: community.id,
         name: community.name,
         description: community.description,
@@ -444,9 +458,9 @@ export class LocalCommunityService {
       }));
 
       return { communities, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error searching communities:', error);
-      return { communities: [], error: error.message };
+      return { communities: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 }

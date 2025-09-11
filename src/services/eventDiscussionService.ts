@@ -42,7 +42,7 @@ export class EventDiscussionService {
 
       if (error) throw error;
 
-      const discussions: EventDiscussion[] = (data || []).map((discussion: any) => ({
+      const discussions: EventDiscussion[] = (data || []).map((discussion: EventDiscussion) => ({
         id: discussion.id,
         event_id: discussion.event_id,
         user_id: discussion.user_id,
@@ -70,7 +70,7 @@ export class EventDiscussionService {
           .order('created_at', { ascending: true });
 
         if (!repliesError && replies) {
-          discussion.replies = replies.map((reply: any) => ({
+          discussion.replies = replies.map((reply: EventDiscussion) => ({
             id: reply.id,
             event_id: reply.event_id,
             user_id: reply.user_id,
@@ -88,9 +88,9 @@ export class EventDiscussionService {
       }
 
       return { discussions, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching event discussions:', error);
-      return { discussions: [], error: error.message };
+      return { discussions: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -113,9 +113,9 @@ export class EventDiscussionService {
       if (error) throw error;
 
       return { success: true, discussionId: data.id };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating discussion:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -175,9 +175,9 @@ export class EventDiscussionService {
       }
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error toggling discussion like:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -194,9 +194,9 @@ export class EventDiscussionService {
       if (error) throw error;
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting discussion:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -213,16 +213,16 @@ export class EventDiscussionService {
       if (error) throw error;
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating discussion:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
   /**
    * Get discussion statistics for an event
    */
-  static async getEventDiscussionStats(eventId: string): Promise<{ stats: any; error: string | null }> {
+  static async getEventDiscussionStats(eventId: string): Promise<{ stats: { total_discussions: number; total_likes: number; recent_discussions: number } | null; error: string | null }> {
     try {
       const { data, error } = await supabase
         .from('event_discussions')
@@ -242,9 +242,9 @@ export class EventDiscussionService {
       };
 
       return { stats, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting discussion stats:', error);
-      return { stats: null, error: error.message };
+      return { stats: null, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 }

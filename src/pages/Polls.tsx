@@ -12,6 +12,7 @@ import { GovernmentTaggingPoll } from '@/components/GovernmentTaggingPoll';
 import { usePolls } from '@/hooks/usePolls';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
+import { CommunityPoll, PollOption } from '@/types/community';
 import { 
   Plus, 
   Search, 
@@ -129,7 +130,7 @@ const Polls = () => {
     return 'Less than 1h left';
   };
 
-  const PollCard = ({ poll, isGovernmentPoll = false }: { poll: any; isGovernmentPoll?: boolean }) => (
+  const PollCard = ({ poll, isGovernmentPoll = false }: { poll: CommunityPoll; isGovernmentPoll?: boolean }) => (
     <Card className="hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -189,7 +190,7 @@ const Polls = () => {
 
         {/* Poll Options */}
         <div className="space-y-3">
-          {poll.options.map((option: any, index: number) => (
+          {poll.options.map((option: PollOption, index: number) => (
             <div key={option.id || index} className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{option.text}</span>

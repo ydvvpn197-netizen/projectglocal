@@ -39,6 +39,13 @@ export interface LocalBusiness {
   updated_at: string;
 }
 
+export interface LocalBusinessWithProfile extends LocalBusiness {
+  profiles?: {
+    display_name?: string;
+    avatar_url?: string;
+  };
+}
+
 export interface BusinessReview {
   id: string;
   business_id: string;
@@ -139,7 +146,7 @@ export class LocalBusinessService {
 
       if (error) throw error;
 
-      const businesses: LocalBusiness[] = (data || []).map((business: any) => ({
+      const businesses: LocalBusiness[] = (data || []).map((business: LocalBusinessWithProfile) => ({
         ...business,
         owner_name: business.profiles?.display_name,
         owner_avatar: business.profiles?.avatar_url
@@ -258,7 +265,7 @@ export class LocalBusinessService {
 
       if (error) throw error;
 
-      const reviews: BusinessReview[] = (data || []).map((review: any) => ({
+      const reviews: BusinessReview[] = (data || []).map((review: BusinessReview) => ({
         ...review,
         user_name: review.profiles?.display_name,
         user_avatar: review.profiles?.avatar_url
@@ -411,7 +418,7 @@ export class LocalBusinessService {
 
       if (error) throw error;
 
-      const businesses: LocalBusiness[] = (data || []).map((business: any) => ({
+      const businesses: LocalBusiness[] = (data || []).map((business: LocalBusinessWithProfile) => ({
         ...business,
         owner_name: business.profiles?.display_name,
         owner_avatar: business.profiles?.avatar_url

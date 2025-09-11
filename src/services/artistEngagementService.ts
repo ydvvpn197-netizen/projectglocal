@@ -29,6 +29,45 @@ export interface ArtistStats {
   recent_followers: ArtistFollower[];
 }
 
+export interface ProfileData {
+  display_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  location_city?: string;
+}
+
+export interface ArtistFollowerWithProfile {
+  id: string;
+  artist_id: string;
+  follower_id: string;
+  created_at: string;
+  profiles?: ProfileData;
+}
+
+export interface FollowedArtist {
+  id: string;
+  display_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  location_city?: string;
+  followed_at: string;
+}
+
+export interface FollowWithProfile {
+  artist_id: string;
+  created_at: string;
+  profiles?: ProfileData;
+}
+
+export interface TrendingArtist {
+  id: string;
+  display_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  location_city?: string;
+  follower_count: number;
+}
+
 export class ArtistEngagementService {
   /**
    * Follow an artist
@@ -66,9 +105,9 @@ export class ArtistEngagementService {
       await this.recordEngagement(artistId, 'follow');
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error following artist:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -94,9 +133,9 @@ export class ArtistEngagementService {
       await this.recordEngagement(artistId, 'unfollow');
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error unfollowing artist:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -138,7 +177,7 @@ export class ArtistEngagementService {
 
       if (error) throw error;
 
-      const followers: ArtistFollower[] = (data || []).map((follower: any) => ({
+      const followers: ArtistFollower[] = (data || []).map((follower: ArtistFollowerWithProfile) => ({
         id: follower.id,
         artist_id: follower.artist_id,
         follower_id: follower.follower_id,
@@ -148,16 +187,16 @@ export class ArtistEngagementService {
       }));
 
       return { followers, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting artist followers:', error);
-      return { followers: [], error: error.message };
+      return { followers: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
   /**
    * Get artists followed by user
    */
-  static async getFollowedArtists(userId: string, limit: number = 20, offset: number = 0): Promise<{ artists: any[]; error: string | null }> {
+  static async getFollowedArtists(userId: string, limit: number = 20, offset: number = 0): Promise<{ artists: FollowedArtist[]; error: string | null }> {
     try {
       const { data, error } = await supabase
         .from('artist_followers')
@@ -171,7 +210,7 @@ export class ArtistEngagementService {
 
       if (error) throw error;
 
-      const artists = (data || []).map((follow: any) => ({
+      const artists = (data || []).map((follow: FollowWithProfile) => ({
         id: follow.artist_id,
         display_name: follow.profiles?.display_name,
         avatar_url: follow.profiles?.avatar_url,
@@ -181,9 +220,9 @@ export class ArtistEngagementService {
       }));
 
       return { artists, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting followed artists:', error);
-      return { artists: [], error: error.message };
+      return { artists: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -242,7 +281,7 @@ export class ArtistEngagementService {
         total_events: eventsCount || 0,
         total_bookings: bookingsCount || 0,
         engagement_rate: 0, // Calculate based on interactions
-        recent_followers: (recentFollowers || []).map((follower: any) => ({
+        recent_followers: (recentFollowers || []).map((follower: ArtistFollowerWithProfile) => ({
           id: follower.id,
           artist_id: follower.artist_id,
           follower_id: follower.follower_id,
@@ -253,9 +292,18 @@ export class ArtistEngagementService {
       };
 
       return { stats, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting artist stats:', error);
-      return { stats: null as any, error: error.message };
+      const emptyStats: ArtistStats = {
+        total_followers: 0,
+        total_posts: 0,
+        total_services: 0,
+        total_events: 0,
+        total_bookings: 0,
+        engagement_rate: 0,
+        recent_followers: []
+      };
+      return { stats: emptyStats, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -296,16 +344,16 @@ export class ArtistEngagementService {
       if (error) throw error;
 
       return { engagements: data || [], error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting artist engagements:', error);
-      return { engagements: [], error: error.message };
+      return { engagements: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
   /**
    * Get trending artists
    */
-  static async getTrendingArtists(limit: number = 10): Promise<{ artists: any[]; error: string | null }> {
+  static async getTrendingArtists(limit: number = 10): Promise<{ artists: TrendingArtist[]; error: string | null }> {
     try {
       const { data, error } = await supabase
         .from('artist_followers')
@@ -319,7 +367,7 @@ export class ArtistEngagementService {
       if (error) throw error;
 
       // Group by artist and count followers
-      const artistCounts = (data || []).reduce((acc: any, follow: any) => {
+      const artistCounts = (data || []).reduce((acc: Record<string, TrendingArtist>, follow: FollowWithProfile) => {
         const artistId = follow.artist_id;
         if (!acc[artistId]) {
           acc[artistId] = {
@@ -335,19 +383,19 @@ export class ArtistEngagementService {
         return acc;
       }, {});
 
-      const artists = Object.values(artistCounts).sort((a: any, b: any) => b.follower_count - a.follower_count);
+      const artists = Object.values(artistCounts).sort((a: TrendingArtist, b: TrendingArtist) => b.follower_count - a.follower_count);
 
       return { artists, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting trending artists:', error);
-      return { artists: [], error: error.message };
+      return { artists: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
   /**
    * Search artists
    */
-  static async searchArtists(query: string, limit: number = 20): Promise<{ artists: any[]; error: string | null }> {
+  static async searchArtists(query: string, limit: number = 20): Promise<{ artists: ProfileData[]; error: string | null }> {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -359,9 +407,9 @@ export class ArtistEngagementService {
       if (error) throw error;
 
       return { artists: data || [], error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error searching artists:', error);
-      return { artists: [], error: error.message };
+      return { artists: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 }
