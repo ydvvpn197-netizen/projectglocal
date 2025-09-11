@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, Bell, MessageSquare, Newspaper, Scale, Heart, Shield, BarChart3, Building2, Store } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, MessageSquare, Newspaper, Scale, Heart, Shield, Building2, Store, Globe, Vote, Crown } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
@@ -10,33 +10,25 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarRail,
-  SidebarSeparator,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebarExports";
 
 const mainItems = [
   { title: "Feed", url: "/feed", icon: Home },
+  { title: "Public Square", url: "/public-square", icon: Globe },
   { title: "News Feed", url: "/news", icon: Newspaper },
   { title: "Discover", url: "/discover", icon: Search },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Community", url: "/community", icon: Users },
   { title: "Local Communities", url: "/communities", icon: Building2 },
   { title: "Local Businesses", url: "/businesses", icon: Store },
-  { title: "Polls", url: "/polls", icon: BarChart3 },
+  { title: "Polls", url: "/polls", icon: Vote },
   { title: "Book Artists", url: "/book-artist", icon: Palette },
 ];
 
@@ -51,6 +43,7 @@ const artistItems = [
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
+  { title: "Subscription", url: "/public-square-subscription", icon: Crown },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
 ];
@@ -59,6 +52,7 @@ const regularUserItems = [
   { title: "My Dashboard", url: "/dashboard", icon: User },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
+  { title: "Subscription", url: "/public-square-subscription", icon: Crown },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
 ];
@@ -67,9 +61,6 @@ const adminItems = [
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
 ];
 
-const adminLoginItem = [
-  { title: "Admin Login", url: "/admin/login", icon: Shield },
-];
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -81,8 +72,6 @@ export function AppSidebar() {
   const [isArtist, setIsArtist] = useState(false);
 
   const isActive = (path: string) => currentPath === path;
-  const isMainGroupExpanded = mainItems.some((item) => isActive(item.url));
-  const isNewFeaturesGroupExpanded = newFeaturesItems.some((item) => isActive(item.url));
   
   // Check if user is an artist
   useEffect(() => {
@@ -120,7 +109,6 @@ export function AppSidebar() {
   };
 
   const userItems = getUserItems();
-  const isUserGroupExpanded = userItems.some((item) => isActive(item.url));
   
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "hover:bg-sidebar-accent/50";

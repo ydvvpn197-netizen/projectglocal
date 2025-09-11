@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce, throttle } from '../utils/performance';
 
 // Debounced callback hook
-export const useDebounce = <T extends (...args: any[]) => any>(
+export const useDebounce = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
@@ -25,7 +25,7 @@ export const useDebounce = <T extends (...args: any[]) => any>(
 };
 
 // Throttled callback hook
-export const useThrottle = <T extends (...args: any[]) => any>(
+export const useThrottle = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
@@ -142,7 +142,7 @@ export const useMemoryMonitor = () => {
   useEffect(() => {
     const updateMemoryUsage = () => {
       if ('memory' in performance) {
-        const memory = (performance as any).memory;
+        const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
         setMemoryUsage(memory.usedJSHeapSize / 1024 / 1024); // MB
       }
     };
@@ -159,7 +159,7 @@ export const useMemoryMonitor = () => {
 // Lazy loading hook
 export const useLazyLoad = <T>(
   importFunc: () => Promise<T>,
-  deps: any[] = []
+  deps: unknown[] = []
 ) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -183,7 +183,7 @@ export const useLazyLoad = <T>(
 
   useEffect(() => {
     load();
-  }, deps);
+  }, [load]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, loading, error, reload: load };
 };

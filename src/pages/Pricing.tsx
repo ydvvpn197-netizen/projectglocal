@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, CreditCard, Star } from 'lucide-react';
+import { Check, Crown, CreditCard, Star, ArrowRight } from 'lucide-react';
 import { PaymentButton } from '@/components/payments/PaymentButton';
 import { UserPaymentStatus } from '@/components/payments/UserPaymentStatus';
+import { Button } from '@/components/ui/button';
 
 const Pricing: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to the new Public Square subscription page
+    navigate('/public-square-subscription', { replace: true });
+  }, [navigate]);
   const features = [
     'Unlimited event creation',
     'Premium artist profiles',

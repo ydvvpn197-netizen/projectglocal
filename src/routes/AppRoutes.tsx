@@ -68,6 +68,8 @@ const News = React.lazy(() => import('@/pages/News'));
 const Polls = React.lazy(() => import('@/pages/Polls'));
 const LocalCommunities = React.lazy(() => import('@/pages/LocalCommunities'));
 const LocalBusinesses = React.lazy(() => import('@/pages/LocalBusinesses'));
+const PublicSquare = React.lazy(() => import('@/pages/PublicSquare'));
+const PublicSquareSubscription = React.lazy(() => import('@/pages/PublicSquareSubscription'));
 
 // Payment pages
 const Pricing = React.lazy(() => import('@/pages/Pricing'));
@@ -140,9 +142,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/voice-demo" element={<VoiceControlDemo />} />
       <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
       <Route path="/news/:articleId" element={<ProtectedRoute><News /></ProtectedRoute>} />
-            <Route path="/polls" element={<ProtectedRoute><Polls /></ProtectedRoute>} />
-            <Route path="/communities" element={<ProtectedRoute><LocalCommunities /></ProtectedRoute>} />
-            <Route path="/businesses" element={<ProtectedRoute><LocalBusinesses /></ProtectedRoute>} />
+      <Route path="/polls" element={<ProtectedRoute><Polls /></ProtectedRoute>} />
+      <Route path="/communities" element={<ProtectedRoute><LocalCommunities /></ProtectedRoute>} />
+      <Route path="/businesses" element={<ProtectedRoute><LocalBusinesses /></ProtectedRoute>} />
+      <Route path="/public-square" element={<ProtectedRoute><PublicSquare /></ProtectedRoute>} />
+      <Route path="/public-square-subscription" element={<ProtectedRoute><PublicSquareSubscription /></ProtectedRoute>} />
       
       {/* Payment routes */}
       <Route path="/pricing" element={<Pricing />} />

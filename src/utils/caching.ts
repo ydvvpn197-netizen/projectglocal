@@ -102,10 +102,10 @@ class Cache<T> {
 }
 
 // Cache instances
-export const apiCache = new Cache<any>(CACHE_CONFIG.api.maxSize, CACHE_CONFIG.api.ttl);
+export const apiCache = new Cache<unknown>(CACHE_CONFIG.api.maxSize, CACHE_CONFIG.api.ttl);
 export const imageCache = new Cache<string>(CACHE_CONFIG.images.maxSize, CACHE_CONFIG.images.ttl);
-export const userCache = new Cache<any>(CACHE_CONFIG.user.maxSize, CACHE_CONFIG.user.ttl);
-export const staticCache = new Cache<any>(CACHE_CONFIG.static.maxSize, CACHE_CONFIG.static.ttl);
+export const userCache = new Cache<unknown>(CACHE_CONFIG.user.maxSize, CACHE_CONFIG.user.ttl);
+export const staticCache = new Cache<unknown>(CACHE_CONFIG.static.maxSize, CACHE_CONFIG.static.ttl);
 
 // Cache key generators
 export const generateCacheKey = (...parts: (string | number)[]): string => {

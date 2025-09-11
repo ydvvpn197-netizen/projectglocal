@@ -11,6 +11,10 @@
   "lang": "en",
   "dir": "ltr",
   "categories": ["social", "news", "community", "lifestyle"],
+  "display_override": ["window-controls-overlay", "standalone"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "icons": [
     {
       "src": "/logo.png",

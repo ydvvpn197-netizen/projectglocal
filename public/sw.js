@@ -2,9 +2,11 @@
  * Service Worker for caching and offline functionality
  */
 
-const CACHE_NAME = 'theglocal-v1';
-const STATIC_CACHE_NAME = 'theglocal-static-v1';
-const DYNAMIC_CACHE_NAME = 'theglocal-dynamic-v1';
+const CACHE_NAME = 'theglocal-v2';
+const STATIC_CACHE_NAME = 'theglocal-static-v2';
+const DYNAMIC_CACHE_NAME = 'theglocal-dynamic-v2';
+const NEWS_CACHE_NAME = 'theglocal-news-v2';
+const EVENTS_CACHE_NAME = 'theglocal-events-v2';
 
 // Static assets to cache
 const STATIC_ASSETS = [
@@ -16,7 +18,18 @@ const STATIC_ASSETS = [
   '/placeholder.svg',
   '/robots.txt',
   '/_redirects',
+  // Add critical CSS and JS files
+  '/css/main.css',
+  '/js/main.js',
 ];
+
+// Offline fallback pages
+const OFFLINE_PAGES = {
+  '/news': '/offline-news.html',
+  '/events': '/offline-events.html',
+  '/services': '/offline-services.html',
+  '/profile': '/offline-profile.html',
+};
 
 // API endpoints to cache
 const API_CACHE_PATTERNS = [
@@ -182,10 +195,20 @@ async function handlePageRequest(request) {
 
     return networkResponse;
   } catch (error) {
-    // Fallback to cache or index.html for SPA routing
+    // Fallback to cache or offline pages
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
+    }
+
+    // Check for specific offline page
+    const url = new URL(request.url);
+    const offlinePage = OFFLINE_PAGES[url.pathname];
+    if (offlinePage) {
+      const offlineResponse = await caches.match(offlinePage);
+      if (offlineResponse) {
+        return offlineResponse;
+      }
     }
 
     // For SPA, serve index.html for all page requests

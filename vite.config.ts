@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       },
       output: {
-        // Optimized chunk splitting for better caching
+        // Optimized chunk splitting for better caching and CDN delivery
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
@@ -65,6 +65,9 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip'],
           supabase: ['@supabase/supabase-js'],
           utils: ['date-fns', 'clsx', 'class-variance-authority', 'tailwind-merge'],
+          ai: ['src/services/aiIntegrationService', 'src/services/indianLawDatabaseService', 'src/services/contentModerationService'],
+          mobile: ['src/services/offlineStorageService', 'src/services/networkAwareService', 'src/services/voiceToTextService'],
+          performance: ['src/services/cdnService', 'src/services/redisLikeCacheService', 'src/services/databaseOptimizationService'],
         },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
@@ -75,8 +78,11 @@ export default defineConfig(({ mode }) => ({
           if (/\.(css)$/.test(assetInfo.name)) {
             return `css/[name]-[hash].${ext}`;
           }
-          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(assetInfo.name)) {
+          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico|webp|avif)$/i.test(assetInfo.name)) {
             return `images/[name]-[hash].${ext}`;
+          }
+          if (/\.(woff2?|ttf|otf|eot)$/i.test(assetInfo.name)) {
+            return `fonts/[name]-[hash].${ext}`;
           }
           return `assets/[name]-[hash].${ext}`;
         },
@@ -101,6 +107,8 @@ export default defineConfig(({ mode }) => ({
     // Performance optimizations
     reportCompressedSize: true,
     copyPublicDir: true,
+    // CDN optimization
+    assetsInlineLimit: 4096, // Inline assets smaller than 4KB
   },
   optimizeDeps: {
     include: [

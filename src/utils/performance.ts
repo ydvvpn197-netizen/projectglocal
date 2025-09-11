@@ -3,14 +3,14 @@
  */
 
 // Lazy loading utility
-export const lazyLoad = <T extends React.ComponentType<any>>(
+export const lazyLoad = <T extends React.ComponentType<unknown>>(
   importFunc: () => Promise<{ default: T }>
 ): React.LazyExoticComponent<T> => {
   return React.lazy(importFunc);
 };
 
 // Debounce utility for search and input handling
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -22,7 +22,7 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 // Throttle utility for scroll and resize events
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -46,7 +46,7 @@ export const optimizeImage = (src: string, width?: number, quality: number = 80)
 // Memory usage monitoring
 export const getMemoryUsage = (): number => {
   if ('memory' in performance) {
-    return (performance as any).memory.usedJSHeapSize / 1024 / 1024; // MB
+    return (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0 / 1024 / 1024; // MB
   }
   return 0;
 };
