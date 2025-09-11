@@ -19,6 +19,7 @@ const ChatFlowTest = React.lazy(() => import('@/components/ChatFlowTest'));
 const ChatDebugTest = React.lazy(() => import('@/components/ChatDebugTest'));
 const SimpleChatTest = React.lazy(() => import('@/components/SimpleChatTest'));
 const ChatTest = React.lazy(() => import('@/components/ChatTest'));
+const TestButtons = React.lazy(() => import('@/pages/TestButtons'));
 
 // Monetization test page
 const MonetizationTest = React.lazy(() => import('@/pages/MonetizationTest'));
@@ -50,6 +51,7 @@ const ArtistProfile = React.lazy(() => import('@/pages/ArtistProfile'));
 const Profile = React.lazy(() => import('@/pages/Profile'));
 const Settings = React.lazy(() => import('@/pages/Settings'));
 const UserProfile = React.lazy(() => import('@/pages/UserProfile'));
+const EnhancedProfile = React.lazy(() => import('@/pages/EnhancedProfile'));
 const NotificationSettings = React.lazy(() => import('@/pages/NotificationSettings'));
 const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage'));
 const UserDashboard = React.lazy(() => import('@/pages/UserDashboard'));
@@ -57,6 +59,8 @@ const UserDashboard = React.lazy(() => import('@/pages/UserDashboard'));
 // Chat pages (grouped together)
 const Chat = React.lazy(() => import('@/pages/Chat'));
 const Messages = React.lazy(() => import('@/pages/Messages'));
+const EnhancedChat = React.lazy(() => import('@/pages/EnhancedChat'));
+const EnhancedMessages = React.lazy(() => import('@/pages/EnhancedMessages'));
 
 // Content creation pages (grouped together)
 
@@ -182,6 +186,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/user/:userId" element={<UserProfile />} />
+      <Route path="/profile/:userId" element={<EnhancedProfile />} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
@@ -200,6 +205,8 @@ export const AppRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
       <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+      <Route path="/enhanced-chat/:conversationId" element={<ProtectedRoute><EnhancedChat /></ProtectedRoute>} />
+      <Route path="/enhanced-messages" element={<ProtectedRoute><EnhancedMessages /></ProtectedRoute>} />
       
       {/* Test chat route */}
       <Route path="/test-chat-route/:conversationId" element={<ChatTest />} />
@@ -287,6 +294,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/debug-chat" element={<ProtectedRoute><ChatDebugTest /></ProtectedRoute>} />
       <Route path="/simple-chat-test" element={<ProtectedRoute><SimpleChatTest /></ProtectedRoute>} />
       <Route path="/monetization-test" element={<ProtectedRoute><MonetizationTest /></ProtectedRoute>} />
+      <Route path="/test-buttons" element={<ProtectedRoute><TestButtons /></ProtectedRoute>} />
       
       {/* Debug route to catch all unmatched routes */}
       <Route path="/chat/*" element={
