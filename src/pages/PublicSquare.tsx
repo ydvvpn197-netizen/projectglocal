@@ -359,7 +359,7 @@ const PublicSquare: React.FC = () => {
   return (
     <ResponsiveLayout showNewsFeed={false}>
       <div className="space-y-6">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'news' | 'events' | 'polls' | 'protests' | 'providers')}>
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />

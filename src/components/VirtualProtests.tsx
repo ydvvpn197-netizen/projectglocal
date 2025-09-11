@@ -260,13 +260,13 @@ const VirtualProtests: React.FC<VirtualProtestsProps> = ({ className }) => {
 
       const processedProtests = data?.map(protest => {
         const isParticipant = protest.virtual_protest_participants?.some(
-          (participant: any) => participant.user_id === user?.id
+          (participant: { user_id: string }) => participant.user_id === user?.id
         );
         const isSigned = protest.virtual_protest_signatures?.some(
-          (signature: any) => signature.user_id === user?.id
+          (signature: { user_id: string }) => signature.user_id === user?.id
         );
         const userParticipationType = protest.virtual_protest_participants?.find(
-          (participant: any) => participant.user_id === user?.id
+          (participant: { user_id: string; participation_type: string }) => participant.user_id === user?.id
         )?.participation_type;
 
         return {
@@ -675,7 +675,7 @@ const VirtualProtests: React.FC<VirtualProtestsProps> = ({ className }) => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'active' | 'trending' | 'completed' | 'my-protests')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="active" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />

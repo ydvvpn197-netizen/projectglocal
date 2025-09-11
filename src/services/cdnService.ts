@@ -301,7 +301,7 @@ export class CDNService {
     return {
       originalUrl,
       optimizedUrl,
-      format: (transform.format as any) || 'webp',
+      format: (transform.format as 'webp' | 'jpeg' | 'png' | 'avif') || 'webp',
       width: transform.width || this.config.maxWidth,
       height: transform.height || this.config.maxHeight,
       size: 0, // Would be calculated from actual response

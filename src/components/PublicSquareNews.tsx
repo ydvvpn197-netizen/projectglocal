@@ -218,7 +218,7 @@ const PublicSquareNews: React.FC<PublicSquareNewsProps> = ({ className }) => {
         ...discussion,
         user_name: discussion.profiles?.full_name || 'Anonymous',
         user_avatar: discussion.profiles?.avatar_url,
-        replies: discussion.community_discussion_replies?.map((reply: any) => ({
+        replies: discussion.community_discussion_replies?.map((reply: { [key: string]: unknown; profiles?: { full_name?: string; avatar_url?: string } }) => ({
           ...reply,
           user_name: reply.profiles?.full_name || 'Anonymous',
           user_avatar: reply.profiles?.avatar_url,
@@ -522,7 +522,7 @@ const PublicSquareNews: React.FC<PublicSquareNewsProps> = ({ className }) => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'trending' | 'latest' | 'local' | 'discussions')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="trending" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />

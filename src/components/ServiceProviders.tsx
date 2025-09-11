@@ -429,7 +429,7 @@ const ServiceProviders: React.FC<ServiceProvidersProps> = ({ className }) => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'verified' | 'local' | 'my-services')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="all" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
