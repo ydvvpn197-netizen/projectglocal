@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,9 @@ const EnhancedMessages: React.FC = () => {
     if (currentUser) {
       loadConversations();
     }
-  }, [currentUser]);
+  }, [currentUser, loadConversations]);
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     if (!currentUser) return;
 
     setIsLoading(true);
@@ -64,7 +64,7 @@ const EnhancedMessages: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser, toast]);
 
   const handleAcceptRequest = async (conversationId: string) => {
     try {

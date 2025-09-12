@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,7 @@ const EnhancedChat: React.FC = () => {
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     if (conversationId && currentUser) {
@@ -58,13 +58,13 @@ const EnhancedChat: React.FC = () => {
         channelRef.current.unsubscribe();
       }
     };
-  }, [conversationId, currentUser]);
+  }, [conversationId, currentUser, loadConversation, setupRealtimeSubscription]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const loadConversation = async () => {
+  const loadConversation = useCallback(async () => {
     if (!conversationId || !currentUser) return;
 
     setIsLoading(true);
@@ -91,9 +91,9 @@ const EnhancedChat: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [conversationId, currentUser, toast]);
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = useCallback(() => {
     if (!conversationId) return;
 
     const channel = supabase
@@ -132,7 +132,7 @@ const EnhancedChat: React.FC = () => {
       .subscribe();
 
     channelRef.current = channel;
-  };
+  }, [conversationId, currentUser]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

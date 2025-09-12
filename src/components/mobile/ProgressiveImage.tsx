@@ -129,7 +129,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     updateQuality();
     
     if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
+      const connection = (navigator as Navigator & { connection?: { effectiveType: string } }).connection;
       connection?.addEventListener('change', updateQuality);
       return () => connection?.removeEventListener('change', updateQuality);
     }

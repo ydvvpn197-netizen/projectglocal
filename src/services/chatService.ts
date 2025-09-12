@@ -17,7 +17,7 @@ export interface ChatMessage {
   sender_id: string;
   message: string;
   message_type: 'text' | 'image' | 'file' | 'system';
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   is_read: boolean;
   created_at: string;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Button } from '@/components/ui/button';
@@ -66,9 +66,9 @@ const EnhancedProfile: React.FC = () => {
     if (userId) {
       loadProfile();
     }
-  }, [userId]);
+  }, [userId, loadProfile]);
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!userId) return;
     
     setIsLoading(true);
@@ -92,7 +92,7 @@ const EnhancedProfile: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, currentUser, toast]);
 
   const handleFollow = async () => {
     if (!currentUser || !userId) return;

@@ -56,7 +56,7 @@ export class DatabaseOptimizationService {
   private static instance: DatabaseOptimizationService;
   private config: OptimizationConfig;
   private queryStats: QueryStats[] = [];
-  private queryCache = new Map<string, any>();
+  private queryCache = new Map<string, { data: unknown[]; timestamp: number }>();
   private slowQueries = new Set<string>();
 
   static getInstance(): DatabaseOptimizationService {
@@ -86,7 +86,7 @@ export class DatabaseOptimizationService {
   /**
    * Optimize a database query
    */
-  async optimizeQuery(query: string, params?: any[]): Promise<QueryOptimization> {
+  async optimizeQuery(query: string, params?: unknown[]): Promise<QueryOptimization> {
     try {
       const analysis = await this.analyzeQuery(query, params);
       const optimization = await this.generateOptimization(query, analysis);
@@ -103,7 +103,7 @@ export class DatabaseOptimizationService {
    */
   async executeOptimizedQuery<T>(
     query: string,
-    params?: any[],
+    params?: unknown[],
     options: { cache?: boolean; ttl?: number } = {}
   ): Promise<T[]> {
     const startTime = Date.now();
@@ -259,7 +259,16 @@ export class DatabaseOptimizationService {
 
   // Private helper methods
 
-  private async analyzeQuery(query: string, params?: any[]): Promise<any> {
+  private async analyzeQuery(query: string, params?: unknown[]): Promise<{
+    tables: string[];
+    columns: string[];
+    joins: Array<{ table?: string; column?: string }>;
+    whereClause: { columns: string[] } | null;
+    orderBy: { columns: string[] } | null;
+    groupBy: { columns: string[] } | null;
+    hasLimit: boolean;
+    estimatedRows: number;
+  }> {
     // Mock query analysis - in real implementation, this would use database EXPLAIN
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -275,7 +284,16 @@ export class DatabaseOptimizationService {
     };
   }
 
-  private async generateOptimization(query: string, analysis: any): Promise<QueryOptimization> {
+  private async generateOptimization(query: string, analysis: {
+    tables: string[];
+    columns: string[];
+    joins: Array<{ table?: string; column?: string }>;
+    whereClause: { columns: string[] } | null;
+    orderBy: { columns: string[] } | null;
+    groupBy: { columns: string[] } | null;
+    hasLimit: boolean;
+    estimatedRows: number;
+  }): Promise<QueryOptimization> {
     const suggestions: string[] = [];
     const indexes: IndexSuggestion[] = [];
 
@@ -294,7 +312,7 @@ export class DatabaseOptimizationService {
     // Add JOIN optimization
     if (analysis.joins.length > 0) {
       suggestions.push('Ensure JOIN columns are indexed');
-      analysis.joins.forEach((join: any) => {
+      analysis.joins.forEach((join: { table?: string; column?: string }) => {
         indexes.push({
           table: join.table,
           columns: [join.column],
@@ -331,7 +349,16 @@ export class DatabaseOptimizationService {
     };
   }
 
-  private optimizeQueryString(query: string, analysis: any): string {
+  private optimizeQueryString(query: string, analysis: {
+    tables: string[];
+    columns: string[];
+    joins: Array<{ table?: string; column?: string }>;
+    whereClause: { columns: string[] } | null;
+    orderBy: { columns: string[] } | null;
+    groupBy: { columns: string[] } | null;
+    hasLimit: boolean;
+    estimatedRows: number;
+  }): string {
     let optimized = query;
 
     // Add LIMIT if missing and query could return many rows
@@ -347,7 +374,16 @@ export class DatabaseOptimizationService {
     return optimized;
   }
 
-  private calculateImprovement(analysis: any): number {
+  private calculateImprovement(analysis: {
+    tables: string[];
+    columns: string[];
+    joins: Array<{ table?: string; column?: string }>;
+    whereClause: { columns: string[] } | null;
+    orderBy: { columns: string[] } | null;
+    groupBy: { columns: string[] } | null;
+    hasLimit: boolean;
+    estimatedRows: number;
+  }): number {
     let improvement = 0;
 
     if (analysis.whereClause) improvement += 30;
@@ -358,7 +394,16 @@ export class DatabaseOptimizationService {
     return Math.min(improvement, 80); // Cap at 80% improvement
   }
 
-  private generateIndexSuggestions(analysis: any): IndexSuggestion[] {
+  private generateIndexSuggestions(analysis: {
+    tables: string[];
+    columns: string[];
+    joins: Array<{ table?: string; column?: string }>;
+    whereClause: { columns: string[] } | null;
+    orderBy: { columns: string[] } | null;
+    groupBy: { columns: string[] } | null;
+    hasLimit: boolean;
+    estimatedRows: number;
+  }): IndexSuggestion[] {
     const suggestions: IndexSuggestion[] = [];
 
     // WHERE clause indexes
@@ -373,7 +418,7 @@ export class DatabaseOptimizationService {
     }
 
     // JOIN indexes
-    analysis.joins.forEach((join: any) => {
+    analysis.joins.forEach((join: { table?: string; column?: string }) => {
       suggestions.push({
         table: join.table,
         columns: [join.column],
@@ -427,12 +472,12 @@ export class DatabaseOptimizationService {
     }
   }
 
-  private generateCacheKey(query: string, params?: any[]): string {
+  private generateCacheKey(query: string, params?: unknown[]): string {
     const paramStr = params ? JSON.stringify(params) : '';
     return `${query}:${paramStr}`;
   }
 
-  private async executeQuery(query: string, params?: any[]): Promise<any[]> {
+  private async executeQuery(query: string, params?: unknown[]): Promise<unknown[]> {
     // Mock query execution - in real implementation, this would execute against database
     await new Promise(resolve => setTimeout(resolve, Math.random() * 500));
     return [];
@@ -478,7 +523,7 @@ export class DatabaseOptimizationService {
     return columns.split(',').map(col => col.trim());
   }
 
-  private extractJoins(query: string): any[] {
+  private extractJoins(query: string): Array<{ table?: string; column?: string }> {
     const matches = query.match(/join\s+(\w+)\s+on\s+(\w+\.\w+)\s*=\s*(\w+\.\w+)/gi);
     if (!matches) return [];
     
@@ -491,7 +536,7 @@ export class DatabaseOptimizationService {
     });
   }
 
-  private extractWhereClause(query: string): any {
+  private extractWhereClause(query: string): { columns: string[] } | null {
     const match = query.match(/where\s+(.+?)(?:\s+group\s+by|\s+order\s+by|\s+limit|$)/gi);
     if (!match) return null;
     
@@ -500,7 +545,7 @@ export class DatabaseOptimizationService {
     };
   }
 
-  private extractOrderBy(query: string): any {
+  private extractOrderBy(query: string): { columns: string[] } | null {
     const match = query.match(/order\s+by\s+(.+?)(?:\s+limit|$)/gi);
     if (!match) return null;
     
@@ -509,7 +554,7 @@ export class DatabaseOptimizationService {
     };
   }
 
-  private extractGroupBy(query: string): any {
+  private extractGroupBy(query: string): { columns: string[] } | null {
     const match = query.match(/group\s+by\s+(.+?)(?:\s+order\s+by|\s+limit|$)/gi);
     if (!match) return null;
     
