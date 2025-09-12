@@ -49,6 +49,7 @@ import { UserPointsDisplay } from "@/components/UserPointsDisplay";
 import { MessagesTabContent } from "@/components/MessagesTabContent";
 import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
 import { SubscriptionManager } from "@/components/subscription/SubscriptionManager";
+import { useProPermissions } from "@/hooks/useProPermissions";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -69,6 +70,8 @@ const Profile = () => {
     uploadAvatar,
     refreshAll
   } = useUserProfile();
+
+  const { isPro, loading: proLoading } = useProPermissions();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
