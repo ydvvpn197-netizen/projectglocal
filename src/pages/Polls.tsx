@@ -78,7 +78,8 @@ const Polls = () => {
     { value: 'Kolkata', label: 'Kolkata' }
   ];
 
-  const filteredPolls = polls.filter(poll => {
+  const filteredPolls = (polls || []).filter(poll => {
+    if (!poll || !poll.title) return false;
     const matchesSearch = poll.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (poll.description && poll.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || poll.category === selectedCategory;
@@ -86,9 +87,10 @@ const Polls = () => {
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
-  const filteredGovernmentPolls = governmentPolls.filter(poll => {
+  const filteredGovernmentPolls = (governmentPolls || []).filter(poll => {
+    if (!poll || !poll.title) return false;
     const matchesSearch = poll.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         poll.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         (poll.description && poll.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || poll.category === selectedCategory;
     const matchesLocation = selectedLocation === 'all' || poll.location === selectedLocation;
     return matchesSearch && matchesCategory && matchesLocation;
@@ -182,7 +184,7 @@ const Polls = () => {
           <div className="flex items-center gap-2">
             <Avatar className="h-6 w-6">
               <AvatarImage src={poll.author_avatar} />
-              <AvatarFallback>{poll.author_name[0]}</AvatarFallback>
+              <AvatarFallback>{poll.author_name?.[0] || 'U'}</AvatarFallback>
             </Avatar>
             <span className="text-sm font-medium">{poll.author_name}</span>
           </div>
@@ -420,15 +422,15 @@ const Polls = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{polls.length}</div>
+                <div className="text-2xl font-bold text-primary">{polls?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Community Polls</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{governmentPolls.length}</div>
+                <div className="text-2xl font-bold text-primary">{governmentPolls?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Government Polls</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{authorities.length}</div>
+                <div className="text-2xl font-bold text-primary">{authorities?.length || 0}</div>
                 <div className="text-sm text-muted-foreground">Government Authorities</div>
               </div>
             </div>

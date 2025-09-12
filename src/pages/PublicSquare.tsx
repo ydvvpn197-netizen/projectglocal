@@ -32,7 +32,8 @@ import {
   Plus,
   Settings,
   Filter,
-  Search
+  Search,
+  Calendar
 } from 'lucide-react';
 import PublicSquareNews from '../components/PublicSquareNews';
 import CommunityPolls from '../components/CommunityPolls';
