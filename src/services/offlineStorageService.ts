@@ -32,7 +32,7 @@ export interface OfflineUserAction {
   type: 'like' | 'comment' | 'share' | 'bookmark' | 'attend';
   targetId: string;
   targetType: 'news' | 'event' | 'post';
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
   synced: boolean;
 }
@@ -246,7 +246,7 @@ export class OfflineStorageService {
   }
 
   // Settings operations
-  async saveSetting(key: string, value: any): Promise<void> {
+  async saveSetting(key: string, value: unknown): Promise<void> {
     await this.initialize();
     if (!this.db) throw new Error('Database not initialized');
 
@@ -255,7 +255,7 @@ export class OfflineStorageService {
     await store.put({ key, value });
   }
 
-  async getSetting(key: string): Promise<any> {
+  async getSetting(key: string): Promise<unknown> {
     await this.initialize();
     if (!this.db) throw new Error('Database not initialized');
 

@@ -27,7 +27,7 @@ export interface VoiceSettings {
 
 export class VoiceToTextService {
   private static instance: VoiceToTextService;
-  private recognition: any = null;
+  private recognition: SpeechRecognition | null = null;
   private isListening = false;
   private commands: Map<string, VoiceCommand> = new Map();
   private settings: VoiceSettings = {
@@ -55,7 +55,7 @@ export class VoiceToTextService {
 
   private initializeSpeechRecognition(): void {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
       
       if (SpeechRecognition) {
         this.recognition = new SpeechRecognition();
@@ -79,7 +79,7 @@ export class VoiceToTextService {
       this.onStartCallback?.();
     };
 
-    this.recognition.onresult = (event: any) => {
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
       const result = event.results[event.resultIndex];
       const transcript = result[0].transcript;
       const confidence = result[0].confidence;
@@ -89,7 +89,7 @@ export class VoiceToTextService {
         transcript: transcript.trim(),
         confidence,
         isFinal,
-        alternatives: isFinal ? Array.from(event.results[event.resultIndex]).map((r: any) => r.transcript) : undefined,
+        alternatives: isFinal ? Array.from(event.results[event.resultIndex]).map((r: SpeechRecognitionAlternative) => r.transcript) : undefined,
       };
 
       this.onResultCallback?.(speechResult);
@@ -100,7 +100,7 @@ export class VoiceToTextService {
       }
     };
 
-    this.recognition.onerror = (event: any) => {
+    this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       this.isListening = false;
       this.onErrorCallback?.(event.error);
     };
@@ -280,7 +280,7 @@ export class VoiceToTextService {
    */
   isSupported(): boolean {
     return !!(typeof window !== 'undefined' && 
-      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition));
+      ((window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition));
   }
 
   /**

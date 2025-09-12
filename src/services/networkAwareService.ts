@@ -23,7 +23,7 @@ export class NetworkAwareService {
   private static instance: NetworkAwareService;
   private networkInfo: NetworkInfo | null = null;
   private strategy: LoadingStrategy;
-  private connection: any = null;
+  private connection: NetworkInformation | null = null;
 
   static getInstance(): NetworkAwareService {
     if (!NetworkAwareService.instance) {
@@ -39,7 +39,7 @@ export class NetworkAwareService {
 
   private initializeNetworkMonitoring(): void {
     if ('connection' in navigator) {
-      this.connection = (navigator as any).connection;
+      this.connection = (navigator as Navigator & { connection?: NetworkInformation }).connection || null;
       this.updateNetworkInfo();
       
       this.connection.addEventListener('change', () => {
@@ -197,7 +197,7 @@ export class NetworkAwareService {
   }
 
   // Data compression for API responses
-  async compressData(data: any): Promise<string> {
+  async compressData(data: unknown): Promise<string> {
     if (!this.strategy.enableCompression) {
       return JSON.stringify(data);
     }

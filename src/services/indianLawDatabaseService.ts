@@ -80,7 +80,7 @@ export interface LegalSearchResult {
 
 export class IndianLawDatabaseService {
   private static instance: IndianLawDatabaseService;
-  private cache = new Map<string, any>();
+  private cache = new Map<string, { data: LegalSearchResult | IndianLawAct | IndianLawAct[] | CaseLawReference[]; timestamp: number }>();
   private readonly CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
   // Indian law categories

@@ -12,7 +12,7 @@ export interface CacheConfig {
   compressionThreshold: number;
 }
 
-export interface CacheEntry<T = any> {
+export interface CacheEntry<T = unknown> {
   key: string;
   value: T;
   ttl: number;
@@ -359,26 +359,26 @@ export class RedisLikeCacheService {
     return Date.now() - entry.createdAt > entry.ttl;
   }
 
-  private calculateSize(value: any): number {
+  private calculateSize(value: unknown): number {
     return JSON.stringify(value).length * 2; // Rough estimate in bytes
   }
 
-  private async compress(value: any): Promise<string> {
+  private async compress(value: unknown): Promise<string> {
     // Simple compression using JSON stringify (in real app, use actual compression)
     return JSON.stringify(value);
   }
 
-  private async decompress(value: string): Promise<any> {
+  private async decompress(value: string): Promise<unknown> {
     // Simple decompression (in real app, use actual decompression)
     return JSON.parse(value);
   }
 
-  private async encrypt(value: any): Promise<string> {
+  private async encrypt(value: unknown): Promise<string> {
     // Simple base64 encoding (in real app, use proper encryption)
     return btoa(JSON.stringify(value));
   }
 
-  private async decrypt(value: string): Promise<any> {
+  private async decrypt(value: string): Promise<unknown> {
     // Simple base64 decoding (in real app, use proper decryption)
     return JSON.parse(atob(value));
   }

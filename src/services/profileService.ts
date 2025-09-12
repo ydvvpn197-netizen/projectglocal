@@ -35,7 +35,7 @@ export interface SubscriptionStatus {
     id: string;
     name: string;
     plan_type: string;
-    features: any;
+    features: Record<string, unknown>;
   };
   subscription?: {
     id: string;
