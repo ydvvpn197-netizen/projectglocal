@@ -619,7 +619,7 @@ interface Recommendation {
     rating?: number;
     location?: string;
     organizer?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   created_at: string;
 }
@@ -676,9 +676,9 @@ export function CommunityRecommendationSystem({
       loadRecommendationEngines();
       loadUserPreferences();
     }
-  }, [user, userId]);
+  }, [user, userId, loadRecommendations, loadRecommendationEngines, loadUserPreferences]);
 
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     setIsLoading(true);
     try {
       // Mock recommendation data - in a real app, this would come from ML models
@@ -786,9 +786,9 @@ export function CommunityRecommendationSystem({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
-  const loadRecommendationEngines = async () => {
+  const loadRecommendationEngines = useCallback(async () => {
     try {
       // Mock recommendation engines
       const mockEngines: RecommendationEngine[] = [
@@ -830,9 +830,9 @@ export function CommunityRecommendationSystem({
     } catch (error) {
       console.error('Error loading recommendation engines:', error);
     }
-  };
+  }, []);
 
-  const loadUserPreferences = async () => {
+  const loadUserPreferences = useCallback(async () => {
     try {
       // Mock user preferences
       const mockPreferences: UserPreferences = {
@@ -858,7 +858,7 @@ export function CommunityRecommendationSystem({
     } catch (error) {
       console.error('Error loading user preferences:', error);
     }
-  };
+  }, []);
 
   const handleFeedback = async (recommendationId: string, feedbackType: 'like' | 'dislike') => {
     if (!user) {

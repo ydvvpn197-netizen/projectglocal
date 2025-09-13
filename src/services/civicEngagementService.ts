@@ -94,7 +94,7 @@ export class CivicEngagementService {
     poll_type: 'official' | 'community' | 'protest' | 'survey';
     requires_verification?: boolean;
     target_audience?: 'all' | 'registered_voters' | 'residents' | 'stakeholders';
-    geographic_scope?: any;
+    geographic_scope?: Record<string, unknown>;
     civic_impact_level?: 'informational' | 'advisory' | 'binding' | 'referendum';
     expires_at?: string;
   }): Promise<CivicEngagementServiceResult<string>> {
@@ -187,8 +187,8 @@ export class CivicEngagementService {
     end_date?: string;
     participation_goal?: number;
     location_type?: 'virtual' | 'hybrid' | 'local';
-    location_details?: any;
-    requirements?: any;
+    location_details?: Record<string, unknown>;
+    requirements?: Record<string, unknown>;
   }): Promise<CivicEngagementServiceResult<string>> {
     try {
       const { data, error } = await supabase
@@ -362,7 +362,7 @@ export class CivicEngagementService {
       coordinates?: { lat: number; lng: number };
     };
     target_authority_id: string;
-    evidence?: any;
+    evidence?: Record<string, unknown>;
   }): Promise<CivicEngagementServiceResult<string>> {
     try {
       const { data, error } = await supabase
@@ -642,9 +642,9 @@ export class CivicEngagementService {
     organizer_anonymous_id?: string;
     campaign_type: 'awareness' | 'advocacy' | 'mobilization' | 'education';
     target_authority_id?: string;
-    goals: any;
-    timeline: any;
-    resources?: any;
+    goals: Record<string, unknown>;
+    timeline: Record<string, unknown>;
+    resources?: Record<string, unknown>;
   }): Promise<CivicEngagementServiceResult<string>> {
     try {
       const { data, error } = await supabase

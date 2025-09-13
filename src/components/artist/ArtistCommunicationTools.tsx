@@ -226,7 +226,7 @@ interface Message {
   created_at: string;
   sender_name?: string;
   sender_avatar?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface Conversation {
@@ -250,7 +250,7 @@ interface Notification {
   content: string;
   is_read: boolean;
   created_at: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface CommunicationSettings {
@@ -288,7 +288,7 @@ export function ArtistCommunicationTools({ artistId, isOwnProfile = false }: Art
     if (user) {
       loadCommunicationData();
     }
-  }, [user, artistId]);
+  }, [user, artistId, loadCommunicationData]);
 
   const loadCommunicationData = useCallback(async () => {
     setIsLoading(true);
@@ -303,9 +303,9 @@ export function ArtistCommunicationTools({ artistId, isOwnProfile = false }: Art
     } finally {
       setIsLoading(false);
     }
-  }, [artistId]);
+  }, [loadConversations, loadNotifications, loadSettings]);
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     const { data, error } = await supabase
       .from('conversations')
       .select(`
@@ -331,7 +331,7 @@ export function ArtistCommunicationTools({ artistId, isOwnProfile = false }: Art
     }));
 
     setConversations(formattedConversations);
-  };
+  }, [artistId]);
 
   const loadMessages = async (conversationId: string) => {
     const { data, error } = await supabase
@@ -361,7 +361,7 @@ export function ArtistCommunicationTools({ artistId, isOwnProfile = false }: Art
     setMessages(formattedMessages);
   };
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -371,9 +371,9 @@ export function ArtistCommunicationTools({ artistId, isOwnProfile = false }: Art
 
     if (error) throw error;
     setNotifications(data || []);
-  };
+  }, [artistId]);
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     const { data, error } = await supabase
       .from('communication_settings')
       .select('*')
@@ -399,7 +399,7 @@ export function ArtistCommunicationTools({ artistId, isOwnProfile = false }: Art
         days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
       }
     });
-  };
+  }, [artistId]);
 
   const sendMessage = async (conversationId: string, content: string) => {
     if (!content.trim()) return;

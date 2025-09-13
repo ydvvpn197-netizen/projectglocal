@@ -612,7 +612,7 @@ const CommunityModerationTools: React.FC<CommunityModerationToolsProps> = ({ cla
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'reports' | 'content' | 'users' | 'settings')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <Flag className="h-4 w-4" />

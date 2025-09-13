@@ -235,13 +235,13 @@ export function EnhancedServiceBrowser({
   useEffect(() => {
     loadServices();
     loadFavorites();
-  }, []);
+  }, [loadServices, loadFavorites]);
 
   useEffect(() => {
     applyFilters();
-  }, [services, searchQuery, filters]);
+  }, [services, searchQuery, filters, applyFilters]);
 
-  const loadServices = async () => {
+  const loadServices = useCallback(async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -312,9 +312,9 @@ export function EnhancedServiceBrowser({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit]);
 
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -330,9 +330,9 @@ export function EnhancedServiceBrowser({
     } catch (error) {
       console.error('Error loading favorites:', error);
     }
-  };
+  }, [user]);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...services];
 
     // Search filter
@@ -425,7 +425,7 @@ export function EnhancedServiceBrowser({
     });
 
     setFilteredServices(filtered);
-  };
+  }, [services, searchQuery, filters]);
 
   const toggleFavorite = async (serviceId: string) => {
     if (!user) {

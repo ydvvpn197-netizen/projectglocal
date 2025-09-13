@@ -843,7 +843,7 @@ const LocalBusinessIntegration: React.FC<LocalBusinessIntegrationProps> = ({ cla
   };
 
   const getFilteredData = () => {
-    let data: any[] = [];
+    let data: Array<{ id: string; name: string; type: string; [key: string]: unknown }> = [];
     
     switch (activeTab) {
       case 'businesses':
@@ -1050,7 +1050,7 @@ const LocalBusinessIntegration: React.FC<LocalBusinessIntegrationProps> = ({ cla
       )}
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'businesses' | 'events' | 'services' | 'analytics')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="businesses" className="flex items-center gap-2">
             <Building className="h-4 w-4" />

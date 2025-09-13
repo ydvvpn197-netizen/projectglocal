@@ -701,7 +701,7 @@ export function EnhancedBookingSystem({
 }: EnhancedBookingSystemProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [service, setService] = useState<any>(null);
+  const [service, setService] = useState<{ id: string; name: string; price: number; duration: number; [key: string]: unknown } | null>(null);
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>();
@@ -718,9 +718,9 @@ export function EnhancedBookingSystem({
   useEffect(() => {
     loadServiceData();
     loadAvailability();
-  }, [serviceId, providerId]);
+  }, [serviceId, providerId, loadServiceData, loadAvailability]);
 
-  const loadServiceData = async () => {
+  const loadServiceData = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('services')
@@ -747,9 +747,9 @@ export function EnhancedBookingSystem({
         variant: 'destructive'
       });
     }
-  };
+  }, [serviceId, toast]);
 
-  const loadAvailability = async () => {
+  const loadAvailability = useCallback(async () => {
     try {
       // Mock availability data - in a real app, this would come from the provider's calendar
       const mockAvailability: Availability[] = [];
@@ -788,7 +788,7 @@ export function EnhancedBookingSystem({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const getAvailableTimeSlots = (date: Date) => {
     const dateString = date.toISOString().split('T')[0];

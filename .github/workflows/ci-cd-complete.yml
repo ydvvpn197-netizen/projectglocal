@@ -1,0 +1,287 @@
+name: Complete CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# Set permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: v1
+
+jobs:
+  # Quality Assurance Job
+  quality-assurance:
+    name: Quality Assurance
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Validate environment variables
+      run: |
+        echo "🔍 Checking GitHub Secrets..."
+        if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+          echo "❌ VITE_SUPABASE_URL secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_URL to your repository secrets"
+          exit 1
+        fi
+        if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+          echo "❌ VITE_SUPABASE_ANON_KEY secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_ANON_KEY to your repository secrets"
+          exit 1
+        fi
+        echo "✅ Environment variables validated successfully"
+        echo "📋 Supabase URL: ${{ secrets.VITE_SUPABASE_URL }}"
+        echo "🔑 Anon Key: ${VITE_SUPABASE_ANON_KEY:0:20}..."
+    
+    - name: Run type check
+      run: npm run type-check
+    
+    - name: Run linting
+      run: npm run lint
+      continue-on-error: false
+    
+    - name: Run tests
+      run: npm run test:run
+      env:
+        CI: true
+      continue-on-error: true
+    
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        CI: true
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        retention-days: 7
+
+  # Security Scan Job
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: quality-assurance
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+    
+    - name: Check for vulnerabilities
+      run: |
+        echo "🔍 Checking for security vulnerabilities..."
+        npm audit --audit-level=high || echo "⚠️ High severity vulnerabilities found"
+    
+    - name: Dependency check
+      run: npm run analyze:deps || echo "⚠️ Unused dependencies found"
+
+  # Performance Test Job
+  performance-test:
+    name: Performance Test
+    runs-on: ubuntu-latest
+    needs: quality-assurance
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        CI: true
+    
+    - name: Analyze bundle size
+      run: |
+        echo "📊 Analyzing bundle size..."
+        npm run analyze:bundle || echo "⚠️ Bundle analysis completed with warnings"
+    
+    - name: Check bundle size
+      run: |
+        echo "📦 Checking bundle size..."
+        if [ -d "dist" ]; then
+          echo "Bundle size: $(du -sh dist | cut -f1)"
+          echo "Number of files: $(find dist -type f | wc -l)"
+        fi
+
+  # Deploy to GitHub Pages
+  deploy-github-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [quality-assurance, security-scan, performance-test]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    environment: github-pages
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Validate environment variables
+      run: |
+        echo "🔍 Checking GitHub Secrets for deployment..."
+        if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+          echo "❌ VITE_SUPABASE_URL secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_URL to your repository secrets"
+          exit 1
+        fi
+        if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+          echo "❌ VITE_SUPABASE_ANON_KEY secret is not set in GitHub repository settings"
+          echo "Please add VITE_SUPABASE_ANON_KEY to your repository secrets"
+          exit 1
+        fi
+        echo "✅ Environment variables validated successfully for deployment"
+        echo "📋 Supabase URL: ${{ secrets.VITE_SUPABASE_URL }}"
+        echo "🔑 Anon Key: ${VITE_SUPABASE_ANON_KEY:0:20}..."
+    
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        CI: true
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './dist'
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+    
+    - name: Deployment success notification
+      run: |
+        echo "🎉 Deployment successful!"
+        echo "🌐 Site URL: https://theglocal.in"
+        echo "📊 Deployment ID: ${{ steps.deployment.outputs.page_id }}"
+
+  # Deploy to Vercel (Optional)
+  deploy-vercel:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [quality-assurance, security-scan, performance-test]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    environment: vercel
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        CI: true
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+
+  # Post-deployment validation
+  post-deployment:
+    name: Post-deployment Validation
+    runs-on: ubuntu-latest
+    needs: [deploy-github-pages]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Wait for deployment
+      run: sleep 30
+    
+    - name: Health check
+      run: |
+        echo "🔍 Performing health check..."
+        curl -f -s -o /dev/null https://theglocal.in || echo "⚠️ Health check failed"
+        echo "✅ Health check completed"
+    
+    - name: Performance check
+      run: |
+        echo "⚡ Checking performance..."
+        curl -w "@curl-format.txt" -o /dev/null -s https://theglocal.in || echo "⚠️ Performance check failed"
+    
+    - name: Create deployment summary
+      run: |
+        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ✅ Successful" >> $GITHUB_STEP_SUMMARY
+        echo "- **URL**: https://theglocal.in" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

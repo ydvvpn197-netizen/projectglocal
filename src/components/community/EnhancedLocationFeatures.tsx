@@ -600,7 +600,7 @@ interface LocationData {
   is_verified: boolean;
   is_featured: boolean;
   created_at: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface Geofence {
@@ -649,9 +649,9 @@ export function EnhancedLocationFeatures({
       loadNearbyLocations();
       loadGeofences();
     }
-  }, [userLocation, searchRadius, filterType]);
+  }, [userLocation, searchRadius, filterType, loadNearbyLocations, loadGeofences]);
 
-  const loadNearbyLocations = async () => {
+  const loadNearbyLocations = useCallback(async () => {
     if (!userLocation) return;
 
     setIsLoading(true);
@@ -774,9 +774,9 @@ export function EnhancedLocationFeatures({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userLocation, searchRadius, filterType, searchQuery, toast]);
 
-  const loadGeofences = async () => {
+  const loadGeofences = useCallback(async () => {
     try {
       // Mock geofence data
       const mockGeofences: Geofence[] = [
@@ -806,7 +806,7 @@ export function EnhancedLocationFeatures({
     } catch (error) {
       console.error('Error loading geofences:', error);
     }
-  };
+  }, [userLocation]);
 
   const checkGeofenceEntry = (location: LocationData) => {
     // Check if location is within any active geofence

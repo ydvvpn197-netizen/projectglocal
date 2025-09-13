@@ -445,7 +445,7 @@ const EnhancedCommunityDiscovery: React.FC<EnhancedCommunityDiscoveryProps> = ({
   const [filterDistance, setFilterDistance] = useState([10]);
   const [sortBy, setSortBy] = useState('activity');
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<{ id: string; name: string; type: string; [key: string]: unknown } | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   // Load community data
@@ -767,7 +767,7 @@ const EnhancedCommunityDiscovery: React.FC<EnhancedCommunityDiscoveryProps> = ({
   };
 
   const getFilteredData = () => {
-    let data: any[] = [];
+    let data: Array<{ id: string; name: string; type: string; [key: string]: unknown }> = [];
     
     switch (activeTab) {
       case 'groups':
@@ -971,7 +971,7 @@ const EnhancedCommunityDiscovery: React.FC<EnhancedCommunityDiscoveryProps> = ({
       )}
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'groups' | 'events' | 'businesses' | 'services')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="groups" className="flex items-center gap-2">
             <Users className="h-4 w-4" />

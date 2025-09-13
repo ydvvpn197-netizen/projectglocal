@@ -748,9 +748,9 @@ export function ServiceReviewSystem({
   useEffect(() => {
     loadReviews();
     loadReviewStats();
-  }, [serviceId]);
+  }, [serviceId, loadReviews, loadReviewStats]);
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('service_reviews')
@@ -817,9 +817,9 @@ export function ServiceReviewSystem({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [serviceId]);
 
-  const loadReviewStats = async () => {
+  const loadReviewStats = useCallback(async () => {
     try {
       // Mock stats - in a real app, this would be calculated from the database
       const mockStats: ReviewStats = {
@@ -848,7 +848,7 @@ export function ServiceReviewSystem({
     } catch (error) {
       console.error('Error loading review stats:', error);
     }
-  };
+  }, [reviews]);
 
   const submitReview = async () => {
     if (!user) {

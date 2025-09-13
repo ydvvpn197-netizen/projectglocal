@@ -89,7 +89,7 @@ export function ArtistPerformanceTracking({ artistId, isOwnProfile = false }: Pe
 
   useEffect(() => {
     loadPerformanceData();
-  }, [artistId]);
+  }, [artistId, loadPerformanceData]);
 
   const loadPerformanceData = useCallback(async () => {
     setIsLoading(true);
@@ -101,9 +101,9 @@ export function ArtistPerformanceTracking({ artistId, isOwnProfile = false }: Pe
     } finally {
       setIsLoading(false);
     }
-  }, [artistId]);
+  }, [artistId, fetchPerformanceData]);
 
-  const fetchPerformanceData = async (artistId: string): Promise<PerformanceMetrics> => {
+  const fetchPerformanceData = useCallback(async (artistId: string): Promise<PerformanceMetrics> => {
     // Fetch current metrics
     const currentMetrics = await fetchCurrentMetrics(artistId);
     
@@ -150,7 +150,7 @@ export function ArtistPerformanceTracking({ artistId, isOwnProfile = false }: Pe
       achievements,
       insights
     };
-  };
+  }, []);
 
   const fetchCurrentMetrics = async (artistId: string) => {
     // Fetch current month revenue
@@ -283,7 +283,7 @@ export function ArtistPerformanceTracking({ artistId, isOwnProfile = false }: Pe
     ];
   };
 
-  const generateInsights = (metrics: any, goals: any[]) => {
+  const generateInsights = (metrics: Record<string, number>, goals: Array<{ id: string; title: string; target: number; current: number }>) => {
     const insights = [];
 
     // Revenue insight

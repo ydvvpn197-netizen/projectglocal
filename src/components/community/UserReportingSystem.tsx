@@ -692,9 +692,9 @@ export function UserReportingSystem({
 
   useEffect(() => {
     loadReports();
-  }, []);
+  }, [loadReports]);
 
-  const loadReports = async () => {
+  const loadReports = useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
@@ -754,7 +754,7 @@ export function UserReportingSystem({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const submitReport = async () => {
     if (!user) {

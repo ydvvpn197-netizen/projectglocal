@@ -74,7 +74,7 @@ export function ArtistAnalytics({ artistId, isOwnProfile = false }: ArtistAnalyt
 
   useEffect(() => {
     loadAnalyticsData();
-  }, [artistId, timeRange]);
+  }, [artistId, timeRange, loadAnalyticsData]);
 
   const loadAnalyticsData = useCallback(async () => {
     setIsLoading(true);
@@ -86,9 +86,9 @@ export function ArtistAnalytics({ artistId, isOwnProfile = false }: ArtistAnalyt
     } finally {
       setIsLoading(false);
     }
-  }, [artistId, timeRange]);
+  }, [artistId, timeRange, fetchAnalyticsData]);
 
-  const fetchAnalyticsData = async (artistId: string, range: string): Promise<AnalyticsData> => {
+  const fetchAnalyticsData = useCallback(async (artistId: string, range: string): Promise<AnalyticsData> => {
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -134,7 +134,7 @@ export function ArtistAnalytics({ artistId, isOwnProfile = false }: ArtistAnalyt
       timeAnalysis,
       performanceMetrics
     };
-  };
+  }, []);
 
   const fetchFollowerGrowth = async (artistId: string, startDate: Date) => {
     const { data, error } = await supabase
@@ -192,7 +192,7 @@ export function ArtistAnalytics({ artistId, isOwnProfile = false }: ArtistAnalyt
     if (error) throw error;
 
     // Group by date
-    const dailyEngagement = data.reduce((acc: Record<string, any>, post) => {
+    const dailyEngagement = data.reduce((acc: Record<string, { likes: number; comments: number; shares: number; views: number }>, post) => {
       const date = new Date(post.created_at).toISOString().split('T')[0];
       if (!acc[date]) {
         acc[date] = { likes: 0, comments: 0, shares: 0, views: 0 };
@@ -226,7 +226,7 @@ export function ArtistAnalytics({ artistId, isOwnProfile = false }: ArtistAnalyt
     if (error) throw error;
 
     // Group by date
-    const dailyRevenue = data.reduce((acc: Record<string, any>, booking) => {
+    const dailyRevenue = data.reduce((acc: Record<string, { revenue: number; bookings: number; totalAmount: number }>, booking) => {
       const date = new Date(booking.created_at).toISOString().split('T')[0];
       if (!acc[date]) {
         acc[date] = { revenue: 0, bookings: 0, totalAmount: 0 };
@@ -335,12 +335,12 @@ export function ArtistAnalytics({ artistId, isOwnProfile = false }: ArtistAnalyt
   };
 
   const calculatePerformanceMetrics = (
-    followerGrowth: any[],
-    engagementMetrics: any[],
-    revenueData: any[],
-    topContent: any[],
-    locationData: any[],
-    timeAnalysis: any[]
+    followerGrowth: Array<{ date: string; followers: number }>,
+    engagementMetrics: Array<{ date: string; engagement: number }>,
+    revenueData: Array<{ date: string; revenue: number }>,
+    topContent: Array<{ id: string; title: string; engagement: number }>,
+    locationData: Array<{ location: string; count: number }>,
+    timeAnalysis: Array<{ hour: number; engagement: number }>
   ) => {
     const totalRevenue = revenueData.reduce((sum, day) => sum + day.revenue, 0);
     const totalBookings = revenueData.reduce((sum, day) => sum + day.bookings, 0);

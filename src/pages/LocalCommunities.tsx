@@ -68,7 +68,7 @@ const LocalCommunities = () => {
   useEffect(() => {
     loadCommunities();
     loadTrendingCommunities();
-  }, [activeTab, selectedCity, currentLocation]);
+  }, [activeTab, selectedCity, currentLocation, loadCommunities, loadTrendingCommunities]);
 
   const loadCommunities = useCallback(async () => {
     try {

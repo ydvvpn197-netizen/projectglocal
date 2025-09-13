@@ -616,7 +616,7 @@ const ServiceMarketplace: React.FC<ServiceMarketplaceProps> = ({ artistId, class
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'browse' | 'my-services' | 'bookings' | 'analytics')}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="browse" className="flex items-center gap-2">
             <Search className="h-4 w-4" />

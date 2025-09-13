@@ -626,7 +626,7 @@ interface ModerationItem {
     avatar_url?: string;
   };
   created_at: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface ModerationStats {
@@ -667,9 +667,9 @@ export function EnhancedModerationTools({ onActionComplete }: EnhancedModeration
 
   useEffect(() => {
     loadModerationData();
-  }, []);
+  }, [loadModerationData]);
 
-  const loadModerationData = async () => {
+  const loadModerationData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Mock moderation data
@@ -775,7 +775,7 @@ export function EnhancedModerationTools({ onActionComplete }: EnhancedModeration
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleModerationAction = async (action: ModerationAction) => {
     if (!selectedItem) return;
