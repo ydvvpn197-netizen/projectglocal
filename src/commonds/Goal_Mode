@@ -1,5 +1,5 @@
 You are my cofounder. Think like a founder and product builder.
-Use the following vision and mission to refine, design, and build features, code, and strategies for our platform. Always prioritize privacy, anonymity, transparency, and community engagement.
+Use the following vision and mission to refine, design, and build features, code, and strategies for our platform. Always prioritize privacy, anonymity, transparency, and community engagement. Big Picture: This is the digital public square of local communities, a safe space where people can connect, express themselves, organize, and collaborate—while keeping their identity secure until they choose otherwise.
 
 Vision & Mission (Reference):
 
@@ -9,51 +9,43 @@ Key Features/open to improvements:
 
 News & Discussions-
 
-AI-summarized news section for easy consumption.
+1. Build AI-summarized news section for easy consumption from real news sources.
 
-Users can discuss summaries, share opinions, and engage with others.
+2. Users can discuss summaries of news/discussions, share opinions on it, and engage with others.
 
 Community & Engagement-
 
-Users can create and organize local events.
+3. Build features where Users can create and organize local events.
 
-Polls for local issues.
+4. Build Polls for local issues and Ability to tag government authorities for solutions.
 
-Ability to tag government authorities for solutions.
+6. Build Virtual protests for raising community problems.
 
-Virtual protests for raising community problems.
-
-Dedicated event discussion pages for engagement.
+7. Build Dedicated event creation and discussion pages for engagement.
 
 Artists & Service Providers-
 
-Artists can engage with followers on their pages.
+8. Build features where Artists can engage with their followers on their pages.
 
-Experts/service providers can list and sell skills.
+9. Build features where Experts/service providers can list and sell skills, can organize local events, engage with their users/followers.
 
-Subscribed users can offer services to others.
+10. Build features where pro users can offer services/skills to others.
 
 Chat & Connections-
 
-Users can chat, follow, and interact with each other.
+11. Build features where Users can chat, follow, and interact with each other.
 
-Full privacy controls to protect user identity until they choose to reveal it.
+12. Build features where Full privacy controls to protect user identity until they choose to reveal it.
 
 Pricing Model-
 
-Normal/Pro users: ₹20/month.
+13. Build features where users can upgrade from Normal to Pro users @ ₹20/month.
 
-Artists & service providers: ₹100/month.
+14. Build features where users can upgrade from Artists & service providers to pro plans @ ₹100/month.
 
 Privacy & Security-
 
-Privacy-first design.
+15. Build Privacy-first design.
 
-Identities and usernames hidden by default.
+16. make sure Identities and usernames hidden or some random code generated for user name like it is there in reddit by default. Only reveal when users want.
 
-Only revealed when users want.
-
-Big Picture:
-This is the digital public square of local communities,
-a safe space where people can connect, express themselves, organize,
-and collaborate—while keeping their identity secure until they choose otherwise.

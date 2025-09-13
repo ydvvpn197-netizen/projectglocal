@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, MessageSquare, Newspaper, Scale, Heart, Shield, Building2, Store, Globe, Vote, Crown } from "lucide-react";
+import { Home, Users, Calendar, User, Search, Plus, Settings, MapPin, Zap, Palette, MessageSquare, Newspaper, Scale, Heart, Shield, Building2, Store, Globe, Vote, Crown, Megaphone } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { NotificationButton } from "@/components/NotificationButton";
@@ -29,6 +29,7 @@ const mainItems = [
   { title: "Local Communities", url: "/communities", icon: Building2 },
   { title: "Local Businesses", url: "/businesses", icon: Store },
   { title: "Polls", url: "/polls", icon: Vote },
+  { title: "Civic Engagement", url: "/civic-engagement", icon: Megaphone },
   { title: "Book Artists", url: "/book-artist", icon: Palette },
 ];
 

@@ -75,6 +75,10 @@ const LocalBusinesses = React.lazy(() => import('@/pages/LocalBusinesses'));
 const PublicSquare = React.lazy(() => import('@/pages/PublicSquare'));
 const PublicSquareSubscription = React.lazy(() => import('@/pages/PublicSquareSubscription'));
 
+// Civic Engagement
+const CivicEngagementDashboard = React.lazy(() => import('@/components/CivicEngagementDashboard').then(module => ({ default: module.CivicEngagementDashboard })));
+const CivicEngagementTest = React.lazy(() => import('@/pages/CivicEngagementTest').then(module => ({ default: module.CivicEngagementTest })));
+
 // Payment pages
 const Pricing = React.lazy(() => import('@/pages/Pricing'));
 const PaymentSuccess = React.lazy(() => import('@/pages/PaymentSuccess'));
@@ -151,6 +155,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/businesses" element={<ProtectedRoute><LocalBusinesses /></ProtectedRoute>} />
       <Route path="/public-square" element={<ProtectedRoute><PublicSquare /></ProtectedRoute>} />
       <Route path="/public-square-subscription" element={<ProtectedRoute><PublicSquareSubscription /></ProtectedRoute>} />
+      <Route path="/civic-engagement" element={<ProtectedRoute><CivicEngagementDashboard /></ProtectedRoute>} />
+      <Route path="/civic-engagement-test" element={<CivicEngagementTest />} />
       
       {/* Payment routes */}
       <Route path="/pricing" element={<Pricing />} />

@@ -41,6 +41,7 @@ import {
   TrendingUp,
   Globe,
   Sparkles,
+  Megaphone,
   Zap,
   Newspaper,
   Crown,
@@ -147,6 +148,12 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       label: 'Artists',
       href: '/book-artist',
       icon: <Star className="h-4 w-4" />,
+      mobile: true,
+    },
+    {
+      label: 'Civic Engagement',
+      href: '/civic-engagement',
+      icon: <Megaphone className="h-4 w-4" />,
       mobile: true,
     },
     {
