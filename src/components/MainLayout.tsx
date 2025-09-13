@@ -60,18 +60,18 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
           />
           
           {/* Enhanced Header */}
-          <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-sm">
+          <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-sm border-b-2 border-primary/10">
             <div className="flex items-center justify-between h-full px-4 lg:px-6">
               <div className="flex items-center gap-4 lg:gap-6">
                 <SidebarTrigger />
-                <Link to="/" className="flex items-center gap-2 font-bold text-lg lg:text-xl text-gradient">
+                <Link to="/" className="flex items-center gap-2 font-bold text-lg lg:text-xl text-gradient hover:scale-105 transition-transform duration-200">
                   <img 
                     src="/logo.png" 
                     alt="Glocal Logo" 
                     className="h-6 w-6 lg:h-7 lg:w-7 object-contain"
                   />
-                  <span className="hidden sm:inline">Glocal</span>
-                  <span className="sm:hidden">G</span>
+                  <span className="hidden sm:inline bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Glocal</span>
+                  <span className="sm:hidden bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">G</span>
                 </Link>
               </div>
               
@@ -81,7 +81,7 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search events, communities, discussions..."
-                    className="pl-10 bg-muted/50 border-0 focus:bg-background transition-all duration-200"
+                    className="pl-10 bg-muted/50 border-0 focus:bg-background transition-all duration-200 rounded-lg shadow-sm focus:shadow-md"
                   />
                 </div>
               </div>
@@ -100,7 +100,7 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
                     {/* Create Button */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="sm" className="btn-community">
+                        <Button size="sm" variant="gradient" className="shadow-sm hover:shadow-md">
                           <Plus className="h-4 w-4 mr-2" />
                           <span className="hidden sm:inline">Create</span>
                         </Button>
@@ -190,7 +190,7 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
                     <Button variant="ghost" onClick={handleSignIn} size="sm" className="hidden sm:flex">
                       Sign In
                     </Button>
-                    <Button onClick={handleSignIn} size="sm" className="btn-community">
+                    <Button onClick={handleSignIn} size="sm" variant="gradient" className="shadow-sm hover:shadow-md">
                       <span className="hidden sm:inline">Get Started</span>
                       <span className="sm:hidden">Sign In</span>
                     </Button>

@@ -68,7 +68,7 @@ export function ModernHeader({
                 alt="Glocal Logo" 
                 className="w-10 h-10 object-contain"
               />
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                 Glocal
               </span>
             </Link>
@@ -79,8 +79,8 @@ export function ModernHeader({
                 to="/discover" 
                 className={`text-sm font-medium transition-colors ${
                   isActive('/discover') 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-primary' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Discover
@@ -89,8 +89,8 @@ export function ModernHeader({
                 to="/community" 
                 className={`text-sm font-medium transition-colors ${
                   isActive('/community') 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-primary' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Community
@@ -99,8 +99,8 @@ export function ModernHeader({
                 to="/events" 
                 className={`text-sm font-medium transition-colors ${
                   isActive('/events') 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-primary' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Events
@@ -109,8 +109,8 @@ export function ModernHeader({
                 to="/book-artist" 
                 className={`text-sm font-medium transition-colors ${
                   isActive('/book-artist') 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-primary' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Book Artists
@@ -142,7 +142,7 @@ export function ModernHeader({
                 {showCreateButton && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      <Button size="sm" variant="gradient" className="shadow-sm hover:shadow-md">
                         <Plus className="h-4 w-4 mr-2" />
                         Create
                       </Button>
@@ -171,7 +171,7 @@ export function ModernHeader({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center">
                         <span className="text-white font-medium text-sm">
                           {user.email?.charAt(0).toUpperCase()}
                         </span>
@@ -213,7 +213,7 @@ export function ModernHeader({
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/signin">Sign In</Link>
                 </Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
+                <Button size="sm" variant="gradient" className="shadow-sm hover:shadow-md" asChild>
                   <Link to="/signin">Sign Up</Link>
                 </Button>
               </>
