@@ -119,41 +119,62 @@ export const useEvents = () => {
       return false;
     }
 
+    console.log('Creating event with data:', eventData);
+    console.log('User ID:', user.id);
+
     try {
-      const { error } = await supabase.from('events').insert({
+      // Validate required fields
+      if (!eventData.title.trim()) {
+        throw new Error('Event title is required');
+      }
+      if (!eventData.event_date) {
+        throw new Error('Event date is required');
+      }
+      if (!eventData.event_time) {
+        throw new Error('Event time is required');
+      }
+      if (!eventData.location_name.trim()) {
+        throw new Error('Event location is required');
+      }
+
+      const insertData = {
         user_id: user.id,
-        title: eventData.title,
-        description: eventData.description,
+        title: eventData.title.trim(),
+        description: eventData.description?.trim() || null,
         event_date: eventData.event_date,
         event_time: eventData.event_time,
-        location_name: eventData.location_name,
-        location_city: currentLocation?.city,
-        location_state: currentLocation?.state,
-        location_country: currentLocation?.country,
-        latitude: currentLocation?.latitude,
-        longitude: currentLocation?.longitude,
-        category: eventData.category,
-        max_attendees: eventData.max_attendees,
+        location_name: eventData.location_name.trim(),
+        location_city: currentLocation?.city || null,
+        location_state: currentLocation?.state || null,
+        location_country: currentLocation?.country || null,
+        latitude: currentLocation?.latitude || null,
+        longitude: currentLocation?.longitude || null,
+        category: eventData.category || null,
+        max_attendees: eventData.max_attendees || null,
         price: eventData.price || 0,
-        image_url: eventData.image_url,
-        tags: eventData.tags,
-      });
+        image_url: eventData.image_url || null,
+        tags: eventData.tags || null,
+      };
 
-      if (error) throw error;
+      console.log('Inserting event data:', insertData);
 
-      // Get the created event ID to award points
-      const { data: createdEvent } = await supabase
-        .from('events')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('title', eventData.title)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      const { data: insertedData, error } = await supabase.from('events').insert(insertData).select();
 
-      if (createdEvent) {
-        // Award points for organizing event
-        await PointsService.handleEventOrganization(createdEvent.id, user.id);
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
+
+      console.log('Event inserted successfully:', insertedData);
+
+      // Award points for organizing event
+      if (insertedData && insertedData.length > 0) {
+        try {
+          await PointsService.handleEventOrganization(insertedData[0].id, user.id);
+        } catch (pointsError) {
+          console.warn('Failed to award points for event creation:', pointsError);
+          // Don't fail the entire operation if points fail
+        }
       }
 
       toast({
@@ -165,9 +186,18 @@ export const useEvents = () => {
       return true;
     } catch (error) {
       console.error('Error creating event:', error);
+      
+      let errorMessage = "Failed to create event";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to create event",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
