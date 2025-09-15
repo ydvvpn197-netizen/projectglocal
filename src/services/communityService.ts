@@ -159,6 +159,40 @@ export interface EventAttendee {
   updated_at: string;
 }
 
+export interface CreateGroupRequest {
+  name: string;
+  description: string;
+  category: string;
+  is_public?: boolean;
+  allow_anonymous_posts?: boolean;
+  require_approval?: boolean;
+  latitude?: number;
+  longitude?: number;
+  location_city?: string;
+  location_state?: string;
+  location_country?: string;
+}
+
+export interface CommunityGroup {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  created_by: string;
+  is_public: boolean;
+  allow_anonymous_posts: boolean;
+  require_approval: boolean;
+  member_count: number;
+  post_count: number;
+  latitude?: number;
+  longitude?: number;
+  location_city?: string;
+  location_state?: string;
+  location_country?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export class CommunityService {
   private static instance: CommunityService;
 
@@ -167,6 +201,68 @@ export class CommunityService {
       CommunityService.instance = new CommunityService();
     }
     return CommunityService.instance;
+  }
+
+  // Community Groups
+  async createGroup(groupData: CreateGroupRequest): Promise<CommunityGroup | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User must be authenticated to create groups');
+      }
+
+      const { data, error } = await supabase
+        .from('community_groups')
+        .insert({
+          name: groupData.name,
+          description: groupData.description,
+          category: groupData.category,
+          created_by: user.id,
+          is_public: groupData.is_public ?? true,
+          allow_anonymous_posts: groupData.allow_anonymous_posts ?? false,
+          require_approval: groupData.require_approval ?? false,
+          latitude: groupData.latitude,
+          longitude: groupData.longitude,
+          location_city: groupData.location_city,
+          location_state: groupData.location_state,
+          location_country: groupData.location_country,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Add creator as admin member
+      await supabase
+        .from('group_members')
+        .insert({
+          group_id: data.id,
+          user_id: user.id,
+          role: 'admin'
+        });
+
+      return data;
+    } catch (error) {
+      console.error('Error creating group:', error);
+      throw error;
+    }
+  }
+
+  async getTrendingGroups(limit: number = 10): Promise<CommunityGroup[]> {
+    try {
+      const { data, error } = await supabase
+        .from('community_groups')
+        .select('*')
+        .eq('is_public', true)
+        .order('member_count', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching trending groups:', error);
+      return [];
+    }
   }
 
   // Event Discussions

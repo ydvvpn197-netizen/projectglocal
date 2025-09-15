@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Shield, Eye, EyeOff, Lock, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useNavigate } from 'react-router-dom';
 
 export const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');

@@ -127,9 +127,9 @@ export const useEvents = () => {
         event_date: eventData.event_date,
         event_time: eventData.event_time,
         location_name: eventData.location_name,
-        location_city: undefined, // Will be populated from user's profile
-        location_state: undefined, // Will be populated from user's profile
-        location_country: undefined, // Will be populated from user's profile
+        location_city: currentLocation?.city,
+        location_state: currentLocation?.state,
+        location_country: currentLocation?.country,
         latitude: currentLocation?.latitude,
         longitude: currentLocation?.longitude,
         category: eventData.category,
