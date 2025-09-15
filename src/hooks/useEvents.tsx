@@ -121,8 +121,47 @@ export const useEvents = () => {
 
     console.log('Creating event with data:', eventData);
     console.log('User ID:', user.id);
+    console.log('User object:', user);
+
+    // Check if user is authenticated with Supabase
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      toast({
+        title: "Authentication Error",
+        description: "Please sign in again",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!session) {
+      console.error('No active session found');
+      toast({
+        title: "Authentication Error",
+        description: "Please sign in again",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    console.log('Active session:', session.user.id);
 
     try {
+      // Test if we can access the events table
+      console.log('Testing database access...');
+      const { data: testData, error: testError } = await supabase
+        .from('events')
+        .select('id')
+        .limit(1);
+      
+      if (testError) {
+        console.error('Database access test failed:', testError);
+        throw new Error(`Database access denied: ${testError.message}`);
+      }
+      
+      console.log('Database access test successful');
+      
       // Validate required fields
       if (!eventData.title.trim()) {
         throw new Error('Event title is required');
@@ -137,8 +176,9 @@ export const useEvents = () => {
         throw new Error('Event location is required');
       }
 
+      // Create a simplified insert data object
       const insertData = {
-        user_id: user.id,
+        user_id: session.user.id, // Use session user ID instead of user.id
         title: eventData.title.trim(),
         description: eventData.description?.trim() || null,
         event_date: eventData.event_date,
@@ -157,20 +197,38 @@ export const useEvents = () => {
       };
 
       console.log('Inserting event data:', insertData);
+      console.log('Using session user ID:', session.user.id);
 
-      const { data: insertedData, error } = await supabase.from('events').insert(insertData).select();
+      // Try a simpler insert without .select() first
+      const { error: insertError } = await supabase.from('events').insert(insertData);
 
-      if (error) {
-        console.error('Supabase insert error:', error);
-        throw error;
+      if (insertError) {
+        console.error('Supabase insert error:', insertError);
+        throw insertError;
       }
 
-      console.log('Event inserted successfully:', insertedData);
+      console.log('Event inserted successfully');
+      
+      // Now get the inserted data
+      const { data: insertedData, error: selectError } = await supabase
+        .from('events')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('title', eventData.title.trim())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (selectError) {
+        console.warn('Could not retrieve inserted event:', selectError);
+      } else {
+        console.log('Retrieved inserted event:', insertedData);
+      }
 
       // Award points for organizing event
-      if (insertedData && insertedData.length > 0) {
+      if (insertedData && insertedData.id) {
         try {
-          await PointsService.handleEventOrganization(insertedData[0].id, user.id);
+          await PointsService.handleEventOrganization(insertedData.id, session.user.id);
         } catch (pointsError) {
           console.warn('Failed to award points for event creation:', pointsError);
           // Don't fail the entire operation if points fail
