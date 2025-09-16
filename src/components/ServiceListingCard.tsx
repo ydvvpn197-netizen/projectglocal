@@ -60,7 +60,7 @@ interface ServiceListing {
   subcategory?: string;
   duration: string;
   location_type: 'remote' | 'on-site' | 'both';
-  availability_schedule: Record<string, any>;
+  availability_schedule: Record<string, unknown>;
   is_active: boolean;
   max_bookings_per_day: number;
   requires_approval: boolean;

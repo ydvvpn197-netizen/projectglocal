@@ -79,7 +79,7 @@ export const PrivacyFirstIdentitySystem: React.FC<PrivacyFirstIdentitySystemProp
     } finally {
       setLoading(false);
     }
-  }, [showStats]);
+  }, [showStats, onSettingsChange, toast]);
 
   const updatePrivacySetting = async (key: keyof PrivacyControlsConfig, value: unknown) => {
     if (!privacyControls) return;

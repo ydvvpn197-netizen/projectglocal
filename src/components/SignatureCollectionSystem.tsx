@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -128,9 +128,9 @@ export const SignatureCollectionSystem: React.FC = () => {
 
   useEffect(() => {
     loadSignatureData();
-  }, []);
+  }, [loadSignatureData]);
 
-  const loadSignatureData = async () => {
+  const loadSignatureData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -151,7 +151,7 @@ export const SignatureCollectionSystem: React.FC = () => {
         creator_name: petition.profiles?.display_name || 'Anonymous',
         current_signatures: petition.petition_signatures?.length || 0,
         progress_percentage: Math.round(((petition.petition_signatures?.length || 0) / petition.goal_signatures) * 100),
-        user_signed: petition.petition_signatures?.some((s: any) => s.user_id === petition.created_by) || false
+        user_signed: petition.petition_signatures?.some((s: { user_id: string }) => s.user_id === petition.created_by) || false
       })) || [];
 
       setPetitions(formattedPetitions);
@@ -184,7 +184,7 @@ export const SignatureCollectionSystem: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleCreatePetition = async () => {
     try {
@@ -479,7 +479,7 @@ export const SignatureCollectionSystem: React.FC = () => {
                 <Label>Visibility</Label>
                 <Select
                   value={newPetition.visibility}
-                  onValueChange={(value: any) => setNewPetition(prev => ({ ...prev, visibility: value }))}
+                  onValueChange={(value: 'public' | 'private' | 'anonymous') => setNewPetition(prev => ({ ...prev, visibility: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

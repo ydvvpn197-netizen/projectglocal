@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -136,9 +136,9 @@ export const ProtestCreationTools: React.FC = () => {
 
   useEffect(() => {
     loadProtestData();
-  }, []);
+  }, [loadProtestData]);
 
-  const loadProtestData = async () => {
+  const loadProtestData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -188,7 +188,7 @@ export const ProtestCreationTools: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleCreateProtest = async () => {
     try {
@@ -503,7 +503,7 @@ export const ProtestCreationTools: React.FC = () => {
                 <Label>Visibility</Label>
                 <Select
                   value={newProtest.visibility}
-                  onValueChange={(value: any) => setNewProtest(prev => ({ ...prev, visibility: value }))}
+                  onValueChange={(value: 'public' | 'private' | 'anonymous') => setNewProtest(prev => ({ ...prev, visibility: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -581,7 +581,7 @@ export const ProtestCreationTools: React.FC = () => {
                 <Label>Campaign Type *</Label>
                 <Select
                   value={newDigitalCampaign.type}
-                  onValueChange={(value: any) => setNewDigitalCampaign(prev => ({ ...prev, type: value }))}
+                  onValueChange={(value: string) => setNewDigitalCampaign(prev => ({ ...prev, type: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

@@ -50,7 +50,7 @@ interface ServiceData {
   subcategory?: string;
   duration: string;
   location_type: 'remote' | 'on-site' | 'both';
-  availability_schedule: Record<string, any>;
+  availability_schedule: Record<string, unknown>;
   max_bookings_per_day: number;
   requires_approval: boolean;
   cancellation_policy: string;
@@ -155,7 +155,7 @@ export const ServiceCreationForm: React.FC<ServiceCreationFormProps> = ({
     ...initialData
   });
 
-  const handleInputChange = (field: keyof ServiceData, value: any) => {
+  const handleInputChange = (field: keyof ServiceData, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
