@@ -38,6 +38,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { EventDiscussion } from "@/components/EventDiscussion";
+import { EventOrganizerChat } from "@/components/EventOrganizerChat";
+import { EventBookingService } from "@/services/eventBookingService";
 
 const EventDetails = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -49,16 +51,33 @@ const EventDetails = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [isOrganizerChatOpen, setIsOrganizerChatOpen] = useState(false);
   const [tickets, setTickets] = useState(1);
   const [message, setMessage] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [userBooking, setUserBooking] = useState<any>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   useEffect(() => {
     if (eventId && events.length > 0) {
       const event = events.find(e => e.id === eventId);
       setSelectedEvent(event);
+      
+      // Check if user has already booked this event
+      if (event && user) {
+        checkUserBooking(event.id);
+      }
     }
-  }, [eventId, events]);
+  }, [eventId, events, user]);
+
+  const checkUserBooking = async (eventId: string) => {
+    try {
+      const { hasBooked, booking } = await EventBookingService.hasUserBookedEvent(eventId);
+      setUserBooking(hasBooked ? booking : null);
+    } catch (error) {
+      console.error('Error checking user booking:', error);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -93,7 +112,7 @@ const EventDetails = () => {
       });
       return;
     }
-    setIsChatModalOpen(true);
+    setIsOrganizerChatOpen(true);
   };
 
   const handleSendMessage = () => {
@@ -111,6 +130,49 @@ const EventDetails = () => {
   const handleViewOrganizerProfile = () => {
     if (selectedEvent) {
       navigate(`/profile/${selectedEvent.user_id}`);
+    }
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedEvent || !user) return;
+
+    try {
+      setBookingLoading(true);
+      const totalAmount = selectedEvent.price === 0 ? 0 : selectedEvent.price * tickets;
+      
+      const { booking, error } = await EventBookingService.createBooking({
+        event_id: selectedEvent.id,
+        tickets_count: tickets,
+        total_amount: totalAmount
+      });
+
+      if (error) {
+        toast({
+          title: "Booking Failed",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (booking) {
+        toast({
+          title: "Booking Successful",
+          description: `You've booked ${tickets} ticket(s) for ${selectedEvent.title}`,
+        });
+        setUserBooking(booking);
+        setIsBookingModalOpen(false);
+        setTickets(1);
+      }
+    } catch (error) {
+      console.error('Error confirming booking:', error);
+      toast({
+        title: "Booking Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setBookingLoading(false);
     }
   };
 
@@ -337,13 +399,29 @@ const EventDetails = () => {
                     {selectedEvent.user_attending ? "Attending" : "Attend Event"}
                   </Button>
                   
-                  <Button 
-                    className="w-full btn-event"
-                    onClick={handleBookEvent}
-                  >
-                    <Ticket className="w-4 h-4 mr-2" />
-                    Book Tickets
-                  </Button>
+                  {userBooking ? (
+                    <div className="w-full">
+                      <Button 
+                        className="w-full"
+                        variant="outline"
+                        disabled
+                      >
+                        <Ticket className="w-4 h-4 mr-2" />
+                        Already Booked ({userBooking.tickets_count} ticket{userBooking.tickets_count > 1 ? 's' : ''})
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-2 text-center">
+                        Booking ID: {userBooking.id.slice(0, 8)}...
+                      </p>
+                    </div>
+                  ) : (
+                    <Button 
+                      className="w-full btn-event"
+                      onClick={handleBookEvent}
+                    >
+                      <Ticket className="w-4 h-4 mr-2" />
+                      Book Tickets
+                    </Button>
+                  )}
                   
                   <Button 
                     variant="outline" 
@@ -486,16 +564,11 @@ const EventDetails = () => {
               <div className="flex gap-3">
                 <Button 
                   className="flex-1 btn-event"
-                  onClick={() => {
-                    toast({
-                      title: "Booking Successful",
-                      description: `You've booked ${tickets} ticket(s) for ${selectedEvent.title}`,
-                    });
-                    setIsBookingModalOpen(false);
-                  }}
+                  onClick={handleConfirmBooking}
+                  disabled={bookingLoading}
                 >
                   <Ticket className="w-4 h-4 mr-2" />
-                  {selectedEvent.price === 0 ? "Reserve Spot" : "Book Tickets"}
+                  {bookingLoading ? "Processing..." : (selectedEvent.price === 0 ? "Reserve Spot" : "Book Tickets")}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -555,6 +628,18 @@ const EventDetails = () => {
           <div className="mt-8">
             <EventDiscussion eventId={selectedEvent.id} />
           </div>
+        )}
+
+        {/* Event Organizer Chat */}
+        {selectedEvent && (
+          <EventOrganizerChat
+            eventId={selectedEvent.id}
+            organizerId={selectedEvent.user_id}
+            organizerName={selectedEvent.organizer_name}
+            organizerAvatar={selectedEvent.organizer_avatar}
+            isOpen={isOrganizerChatOpen}
+            onClose={() => setIsOrganizerChatOpen(false)}
+          />
         )}
       </div>
     </ResponsiveLayout>
