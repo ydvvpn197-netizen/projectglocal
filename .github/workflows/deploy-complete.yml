@@ -62,11 +62,10 @@ jobs:
           CI: true
 
       - name: Test Supabase connection
-        if: ${{ secrets.VITE_SUPABASE_URL != '' }}
         run: npm run test:supabase
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_key' }}
 
   build-and-deploy:
     runs-on: ubuntu-latest
