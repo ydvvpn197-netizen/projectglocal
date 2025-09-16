@@ -68,7 +68,7 @@ export const SimplifiedSettings: React.FC<SimplifiedSettingsProps> = ({
     locationAccuracy: 'city',
   });
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (key: string, value: unknown) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 

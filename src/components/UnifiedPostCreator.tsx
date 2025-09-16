@@ -87,7 +87,7 @@ const postTypes: PostType[] = [
 interface UnifiedPostCreatorProps {
   trigger?: React.ReactNode;
   defaultType?: string;
-  onPostCreated?: (post: any) => void;
+  onPostCreated?: (post: unknown) => void;
   className?: string;
 }
 
@@ -139,7 +139,7 @@ export const UnifiedPostCreator: React.FC<UnifiedPostCreatorProps> = ({
 
   const currentPostType = postTypes.find(type => type.id === selectedType);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

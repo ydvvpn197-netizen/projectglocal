@@ -15,7 +15,7 @@ interface LayoutProviderProps {
   children: ReactNode;
 }
 
-export const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
+const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -67,10 +67,12 @@ export const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
   );
 };
 
-export const useLayout = (): LayoutContextType => {
+const useLayout = (): LayoutContextType => {
   const context = useContext(LayoutContext);
   if (context === undefined) {
     throw new Error('useLayout must be used within a LayoutProvider');
   }
   return context;
 };
+
+export { LayoutProvider, useLayout };

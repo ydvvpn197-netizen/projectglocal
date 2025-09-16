@@ -21,13 +21,13 @@ interface ABTestResult {
   userId: string;
   timestamp: string;
   event: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface ABTestingContextType {
   activeTests: ABTest[];
   getUserVariant: (testId: string) => 'control' | 'treatment' | null;
-  trackEvent: (testId: string, event: string, metadata?: Record<string, any>) => void;
+  trackEvent: (testId: string, event: string, metadata?: Record<string, unknown>) => void;
   isUserInTest: (testId: string) => boolean;
 }
 
@@ -114,7 +114,7 @@ export const ABTestingProvider: React.FC<{ children: ReactNode }> = ({ children 
     return userVariants[testId] || null;
   };
 
-  const trackEvent = (testId: string, event: string, metadata?: Record<string, any>) => {
+  const trackEvent = (testId: string, event: string, metadata?: Record<string, unknown>) => {
     if (!user) return;
 
     const variant = getUserVariant(testId);
@@ -167,7 +167,7 @@ export const useABTest = (testId: string) => {
   const variant = getUserVariant(testId);
   const isInTest = isUserInTest(testId);
   
-  const track = (event: string, metadata?: Record<string, any>) => {
+  const track = (event: string, metadata?: Record<string, unknown>) => {
     trackEvent(testId, event, metadata);
   };
 

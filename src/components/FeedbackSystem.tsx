@@ -52,7 +52,7 @@ interface Feedback {
   userId?: string;
   timestamp: string;
   status: 'new' | 'reviewed' | 'resolved';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface FeedbackSystemProps {
@@ -113,7 +113,7 @@ export const FeedbackSystem: React.FC<FeedbackSystemProps> = ({
     try {
       const feedback: Feedback = {
         id: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type: feedbackType as any,
+        type: feedbackType as 'rating' | 'suggestion' | 'bug' | 'general',
         rating: feedbackType === 'rating' ? rating : undefined,
         category: selectedCategory,
         message: message.trim(),

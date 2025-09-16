@@ -33,7 +33,7 @@ import { sanitizeText, sanitizeTags } from '@/lib/sanitize';
 
 interface SimplifiedPostCreatorProps {
   trigger?: React.ReactNode;
-  onPostCreated?: (post: any) => void;
+  onPostCreated?: (post: unknown) => void;
   className?: string;
 }
 
@@ -70,7 +70,7 @@ export const SimplifiedPostCreator: React.FC<SimplifiedPostCreatorProps> = ({
 
   const [newTag, setNewTag] = useState('');
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -330,7 +330,7 @@ export const SimplifiedPostCreator: React.FC<SimplifiedPostCreatorProps> = ({
                 <button
                   key={type.id}
                   type="button"
-                  onClick={() => setPostType(type.id as any)}
+                  onClick={() => setPostType(type.id as 'post' | 'event' | 'discussion')}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     postType === type.id
                       ? 'border-primary bg-primary/10'
