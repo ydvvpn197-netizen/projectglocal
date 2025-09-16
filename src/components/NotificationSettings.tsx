@@ -65,6 +65,12 @@ export const NotificationSettings = ({ onClose, compact = false }: NotificationS
           description: "Notification settings updated successfully",
         });
         if (onClose) onClose();
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to update notification settings",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({

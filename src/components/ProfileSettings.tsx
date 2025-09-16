@@ -79,6 +79,12 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
           description: "Profile updated successfully",
         });
         if (onClose) onClose();
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to update profile",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({

@@ -156,6 +156,21 @@ class UserSettingsService {
       if (updates.location_country !== undefined) profileUpdates.location_country = updates.location_country;
       if (updates.real_time_location_enabled !== undefined) profileUpdates.real_time_location_enabled = updates.real_time_location_enabled;
 
+      // Extract notification-related fields
+      if (updates.email_notifications !== undefined) notificationUpdates.email_notifications = updates.email_notifications;
+      if (updates.push_notifications !== undefined) notificationUpdates.push_notifications = updates.push_notifications;
+      if (updates.booking_notifications !== undefined) notificationUpdates.booking_notifications = updates.booking_notifications;
+      if (updates.message_notifications !== undefined) notificationUpdates.message_notifications = updates.message_notifications;
+      if (updates.follower_notifications !== undefined) notificationUpdates.follower_notifications = updates.follower_notifications;
+      if (updates.event_notifications !== undefined) notificationUpdates.event_notifications = updates.event_notifications;
+      if (updates.discussion_notifications !== undefined) notificationUpdates.discussion_notifications = updates.discussion_notifications;
+      if (updates.payment_notifications !== undefined) notificationUpdates.payment_notifications = updates.payment_notifications;
+      if (updates.system_notifications !== undefined) notificationUpdates.system_notifications = updates.system_notifications;
+      if (updates.marketing_notifications !== undefined) notificationUpdates.marketing_notifications = updates.marketing_notifications;
+      if (updates.quiet_hours_enabled !== undefined) notificationUpdates.quiet_hours_enabled = updates.quiet_hours_enabled;
+      if (updates.quiet_hours_start !== undefined) notificationUpdates.quiet_hours_start = updates.quiet_hours_start;
+      if (updates.quiet_hours_end !== undefined) notificationUpdates.quiet_hours_end = updates.quiet_hours_end;
+
       // Update profile if there are profile changes
       if (Object.keys(profileUpdates).length > 0) {
         profileUpdates.updated_at = new Date().toISOString();
