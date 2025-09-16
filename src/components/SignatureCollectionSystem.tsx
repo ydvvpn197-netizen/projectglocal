@@ -184,7 +184,7 @@ export const SignatureCollectionSystem: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const handleCreatePetition = async () => {
     try {

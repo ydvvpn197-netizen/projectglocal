@@ -5,11 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 export const CivicEngagementTest: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-6">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto p-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
@@ -66,6 +68,6 @@ export const CivicEngagementTest: React.FC = () => {
         {/* Main Dashboard */}
         <CivicEngagementDashboard />
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };

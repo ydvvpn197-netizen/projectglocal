@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
-import { UniformHeader } from "@/components/UniformHeader";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { ArrowLeft, Mail } from "lucide-react";
 
 const ForgotPassword = () => {
@@ -32,11 +32,10 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <UniformHeader showAuthButtons={false} showLocationButton={false} />
-
-      <div className="flex items-center justify-center p-4 pt-12">
-        <div className="w-full max-w-md">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="flex items-center justify-center p-4 pt-12">
+          <div className="w-full max-w-md">
           <Card>
             <CardHeader className="space-y-1">
               <div className="flex items-center gap-2">
@@ -113,9 +112,10 @@ const ForgotPassword = () => {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { UniformHeader } from "@/components/UniformHeader";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 
 const ResetPassword = () => {
@@ -59,11 +59,10 @@ const ResetPassword = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <UniformHeader showAuthButtons={false} showLocationButton={false} />
-
-        <div className="flex items-center justify-center p-4 pt-12">
-          <div className="w-full max-w-md">
+      <ResponsiveLayout showNewsFeed={false}>
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+          <div className="flex items-center justify-center p-4 pt-12">
+            <div className="w-full max-w-md">
             <Card>
               <CardHeader className="space-y-1 text-center">
                 <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -83,18 +82,18 @@ const ResetPassword = () => {
                 </Button>
               </CardContent>
             </Card>
+            </div>
           </div>
         </div>
-      </div>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <UniformHeader showAuthButtons={false} showLocationButton={false} />
-
-      <div className="flex items-center justify-center p-4 pt-12">
-        <div className="w-full max-w-md">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="flex items-center justify-center p-4 pt-12">
+          <div className="w-full max-w-md">
           <Card>
             <CardHeader className="space-y-1">
               <div className="flex items-center gap-2">
@@ -172,9 +171,10 @@ const ResetPassword = () => {
               </form>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

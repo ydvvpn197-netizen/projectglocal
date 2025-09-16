@@ -8,6 +8,7 @@ import { FeaturedEventButton } from '@/components/monetization/FeaturedEventButt
 import { useUserPlan } from '@/hooks/useUserPlan';
 import { useAuth } from '@/hooks/useAuth';
 import { DollarSign, Shield, Crown, Star, Check } from 'lucide-react';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 export default function MonetizationTest() {
   const { user } = useAuth();
@@ -15,15 +16,18 @@ export default function MonetizationTest() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
+      <ResponsiveLayout showNewsFeed={false}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading...</div>
+        </div>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="text-center space-y-4">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">Monetization Features Test</h1>
         <p className="text-muted-foreground text-lg">
           Test the subscription, verification, premium plans, and Stripe integration
@@ -247,6 +251,6 @@ export default function MonetizationTest() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ResponsiveLayout>
   );
 }

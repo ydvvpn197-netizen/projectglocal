@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { MapPin, Navigation, Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 
 const LocationSetup = () => {
   const [radius, setRadius] = useState([15]);
@@ -27,10 +28,10 @@ const LocationSetup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-8">
-        
-        {/* Header */}
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl space-y-8">
+          {/* Header */}
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
             <MapPin className="h-8 w-8 text-primary" />
@@ -162,8 +163,9 @@ const LocationSetup = () => {
             <p className="text-xs text-muted-foreground">Connect with neighbors</p>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

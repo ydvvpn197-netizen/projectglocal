@@ -6,6 +6,7 @@ import { Check, Crown, CreditCard, Star, ArrowRight } from 'lucide-react';
 import { PaymentButton } from '@/components/payments/PaymentButton';
 import { UserPaymentStatus } from '@/components/payments/UserPaymentStatus';
 import { Button } from '@/components/ui/button';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const Pricing: React.FC = () => {
   const navigate = useNavigate();
@@ -40,9 +41,10 @@ const Pricing: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choose Your Plan
@@ -199,8 +201,9 @@ const Pricing: React.FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

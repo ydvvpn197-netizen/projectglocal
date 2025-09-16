@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -60,23 +61,26 @@ const PaymentSuccess: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="text-gray-600">Verifying your payment...</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ResponsiveLayout showNewsFeed={false}>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="text-gray-600">Verifying your payment...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
             <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
@@ -137,8 +141,9 @@ const PaymentSuccess: React.FC = () => {
             </p>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </ResponsiveLayout>
   );
 };
 

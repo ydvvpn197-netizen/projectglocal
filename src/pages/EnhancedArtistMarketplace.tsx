@@ -67,7 +67,7 @@ interface ServiceListing {
   subcategory?: string;
   duration: string;
   location_type: 'remote' | 'on-site' | 'both';
-  availability_schedule: Record<string, any>;
+  availability_schedule: Record<string, unknown>;
   is_active: boolean;
   max_bookings_per_day: number;
   requires_approval: boolean;
@@ -117,9 +117,9 @@ const EnhancedArtistMarketplace = () => {
   // Load services
   useEffect(() => {
     loadServices();
-  }, [selectedCategory, sortBy]);
+  }, [loadServices]);
 
-  const loadServices = async () => {
+  const loadServices = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -281,9 +281,9 @@ const EnhancedArtistMarketplace = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, sortBy, toast]);
 
-  const handleServiceCreate = async (serviceData: any) => {
+  const handleServiceCreate = async (serviceData: ServiceListing) => {
     try {
       // Here you would typically save to the database
       console.log('Creating service:', serviceData);
@@ -305,7 +305,7 @@ const EnhancedArtistMarketplace = () => {
     }
   };
 
-  const handleServiceBook = async (bookingData: any) => {
+  const handleServiceBook = async (bookingData: unknown) => {
     try {
       // Here you would typically save the booking to the database
       console.log('Booking service:', bookingData);

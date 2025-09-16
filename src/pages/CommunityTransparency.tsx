@@ -16,11 +16,13 @@ import {
 } from 'lucide-react';
 import CommunityTransparencyDashboard from '@/components/CommunityTransparencyDashboard';
 import CommunityFeedbackForm from '@/components/CommunityFeedbackForm';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const CommunityTransparency: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -198,7 +200,7 @@ const CommunityTransparency: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

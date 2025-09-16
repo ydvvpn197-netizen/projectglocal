@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 /**
  * AuthCallback component handles OAuth callback from providers like Google
@@ -95,8 +96,9 @@ const AuthCallback: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
         <CardContent className="p-8 text-center">
           <div className="flex flex-col items-center space-y-4">
             {getStatusIcon()}
@@ -110,13 +112,13 @@ const AuthCallback: React.FC = () => {
             </p>
             {status === 'loading' && (
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                <div className="bg-blue-500 h-2 rounded-full animate-pulse w-3/5"></div>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

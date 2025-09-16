@@ -56,7 +56,7 @@ class AnonymousUsernameService {
         }
         break;
         
-      case 'maximum':
+      case 'maximum': {
         // Completely random
         const chars = 'abcdefghijklmnopqrstuvwxyz' + 
                      (includeNumbers ? '0123456789' : '') + 
@@ -65,6 +65,7 @@ class AnonymousUsernameService {
           username += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         break;
+      }
     }
     
     // Ensure username meets length requirements

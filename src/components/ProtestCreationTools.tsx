@@ -188,7 +188,7 @@ export const ProtestCreationTools: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const handleCreateProtest = async () => {
     try {

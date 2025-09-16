@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
-import { UniformHeader } from "@/components/UniformHeader";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -103,11 +103,10 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <UniformHeader showAuthButtons={false} showLocationButton={false} />
-
-      <div className="flex items-center justify-center p-4 pt-12">
-        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="flex items-center justify-center p-4 pt-12">
+          <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
           {/* Left Side - Welcome */}
           <div className="space-y-6">
             <div className="space-y-2">
@@ -431,9 +430,10 @@ const SignIn = () => {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

@@ -4,6 +4,7 @@ import { Mic, MicOff, Volume2, Command, ArrowRight, CheckCircle, XCircle } from 
 import { useVoiceControl } from '../hooks/useVoiceControl';
 import { useVoiceCommands } from '../hooks/useVoiceCommands';
 import { useToast } from '../hooks/use-toast';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const VoiceControlDemo: React.FC = () => {
   const [showExamples, setShowExamples] = useState(false);
@@ -92,8 +93,9 @@ const VoiceControlDemo: React.FC = () => {
 
   if (!isSupported) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+      <ResponsiveLayout showNewsFeed={false}>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <MicOff className="w-10 h-10 text-red-500" />
           </div>
@@ -113,13 +115,14 @@ const VoiceControlDemo: React.FC = () => {
             </ul>
           </div>
         </div>
-      </div>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-6xl mx-auto">
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -338,7 +341,7 @@ const VoiceControlDemo: React.FC = () => {
           </div>
         </motion.div>
       </div>
-    </div>
+    </ResponsiveLayout>
   );
 };
 

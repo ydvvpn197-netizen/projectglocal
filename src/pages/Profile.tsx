@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
@@ -244,7 +244,7 @@ const Profile = () => {
   };
 
   // Subscription functions
-  const loadSubscriptionHistory = async () => {
+  const loadSubscriptionHistory = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -257,7 +257,7 @@ const Profile = () => {
     } finally {
       setSubscriptionLoading(false);
     }
-  };
+  }, [user?.id, toast]);
 
   const handleCancelSubscription = async () => {
     if (!user?.id) return;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -30,9 +30,9 @@ export const useAnonymousUsername = () => {
     if (user) {
       loadAnonymousUser();
     }
-  }, [user]);
+  }, [user, loadAnonymousUser]);
 
-  const loadAnonymousUser = async () => {
+  const loadAnonymousUser = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -55,7 +55,7 @@ export const useAnonymousUsername = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   const generateUsername = (params: CreateAnonymousUserParams): string => {
     const { privacyLevel, includeNumbers, includeSpecialChars, length } = params;
@@ -102,7 +102,7 @@ export const useAnonymousUsername = () => {
                   (includeSpecialChars ? specialChars[Math.floor(Math.random() * specialChars.length)] : '');
         break;
         
-      case 'maximum':
+      case 'maximum': {
         // Completely random
         const chars = 'abcdefghijklmnopqrstuvwxyz' + 
                      (includeNumbers ? '0123456789' : '') + 
@@ -111,6 +111,7 @@ export const useAnonymousUsername = () => {
           username += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         break;
+      }
     }
     
     // Ensure username meets length requirements
