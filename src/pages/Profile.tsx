@@ -177,6 +177,24 @@ const Profile = () => {
     navigate('/create');
   };
 
+  const getProfileCompletion = () => {
+    if (!profile) return 0;
+    
+    let completed = 0;
+    const total = 8;
+    
+    if (profile.display_name) completed++;
+    if (profile.bio) completed++;
+    if (profile.avatar_url) completed++;
+    if (profile.location_city) completed++;
+    if (profile.location_state) completed++;
+    if (profile.website_url) completed++;
+    if (profile.phone_number) completed++;
+    if (profile.first_name || profile.last_name) completed++;
+    
+    return Math.round((completed / total) * 100);
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -339,16 +357,99 @@ const Profile = () => {
     );
   }
 
-  if (!profile) {
+  // Show loading state while fetching profile
+  if (loading) {
     return (
       <ResponsiveLayout>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            Unable to load profile data. Please try refreshing the page.
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-4">Loading Profile...</h2>
+          <p className="text-muted-foreground">
+            Please wait while we load your profile data.
           </p>
-          <Button onClick={() => window.location.reload()}>
-            Refresh Page
+        </div>
+      </ResponsiveLayout>
+    );
+  }
+
+  // If no profile found, create one automatically or show setup
+  if (!profile && user) {
+    return (
+      <ResponsiveLayout>
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <User className="h-16 w-16 mx-auto mb-6 text-muted-foreground" />
+            <h2 className="text-2xl font-bold mb-4">Welcome to TheGlocal!</h2>
+            <p className="text-muted-foreground mb-6">
+              Let's set up your profile to get started. We'll create a profile for you automatically.
+            </p>
+            <div className="space-y-4">
+              <Button 
+                onClick={async () => {
+                  try {
+                    // Create a basic profile for the user
+                    const result = await updateProfile({
+                      display_name: user.email?.split('@')[0] || 'User',
+                      bio: 'Welcome to TheGlocal!',
+                      location_city: '',
+                      location_state: '',
+                      location_country: '',
+                      first_name: user.email?.split('@')[0] || '',
+                      last_name: ''
+                    });
+                    if (result.success) {
+                      refreshAll();
+                    }
+                  } catch (error) {
+                    console.error('Error creating profile:', error);
+                    toast({
+                      title: "Error",
+                      description: "Failed to create profile. Please try again.",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                disabled={updating}
+                className="w-full"
+              >
+                {updating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Creating Profile...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create My Profile
+                  </>
+                )}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/onboarding')}
+                className="w-full"
+              >
+                Complete Setup Later
+              </Button>
+            </div>
+          </div>
+        </div>
+      </ResponsiveLayout>
+    );
+  }
+
+  // If no user at all, redirect to sign in
+  if (!user) {
+    return (
+      <ResponsiveLayout>
+        <div className="text-center py-12">
+          <User className="h-16 w-16 mx-auto mb-6 text-muted-foreground" />
+          <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
+          <p className="text-muted-foreground mb-6">
+            Please sign in to view your profile.
+          </p>
+          <Button onClick={() => navigate('/signin')}>
+            Sign In
           </Button>
         </div>
       </ResponsiveLayout>
@@ -359,6 +460,25 @@ const Profile = () => {
   const location = profile ? ([profile.location_city, profile.location_state, profile.location_country]
     .filter(Boolean)
     .join(', ') || 'Location not set') : 'Location not set';
+
+  // Load subscription history
+  useEffect(() => {
+    const loadSubscriptionHistory = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setSubscriptionLoading(true);
+        const history = await subscriptionService.getUserSubscriptionHistory(user.id);
+        setSubscriptionHistory(history);
+      } catch (error) {
+        console.error('Error loading subscription history:', error);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    loadSubscriptionHistory();
+  }, [user?.id]);
 
   return (
     <ResponsiveLayout>
@@ -514,30 +634,55 @@ const Profile = () => {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{stats.eventsCreated}</div>
-                <div className="text-sm text-muted-foreground">Events Created</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{stats.postsCreated}</div>
-                <div className="text-sm text-muted-foreground">Posts Created</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{stats.communitiesJoined}</div>
-                <div className="text-sm text-muted-foreground">Communities</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <UserPointsDisplay compact={true} showDetails={false} />
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            {/* Primary Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600">{stats.eventsCreated}</div>
+                  <div className="text-sm text-muted-foreground">Events Created</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-md transition-shadow border-l-4 border-l-green-500">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600">{stats.postsCreated}</div>
+                  <div className="text-sm text-muted-foreground">Posts Created</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-md transition-shadow border-l-4 border-l-purple-500">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-600">{stats.followers}</div>
+                  <div className="text-sm text-muted-foreground">Followers</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-md transition-shadow border-l-4 border-l-orange-500">
+                <CardContent className="p-4 text-center">
+                  <UserPointsDisplay points={stats.points} compact={true} showDetails={false} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Secondary Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xl font-bold text-indigo-600">{stats.following}</div>
+                  <div className="text-sm text-muted-foreground">Following</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xl font-bold text-teal-600">{stats.eventsAttended}</div>
+                  <div className="text-sm text-muted-foreground">Events Attended</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xl font-bold text-pink-600">{stats.communitiesJoined}</div>
+                  <div className="text-sm text-muted-foreground">Communities</div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
 
@@ -578,24 +723,40 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {posts.slice(0, 3).map((post) => (
-                      <div key={post.id} className="flex gap-3 p-3 rounded-lg border">
+                    {posts.slice(0, 5).map((post) => (
+                      <div key={post.id} className="flex gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                           <BookOpen className="w-5 h-5 text-primary" />
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm">{post.title}</h4>
-                          <p className="text-xs text-muted-foreground">{post.createdAt}</p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{post.title}</h4>
+                          <p className="text-xs text-muted-foreground mb-1">{post.date}</p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Heart className="w-3 h-3" />
+                              {post.likes}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageCircle className="w-3 h-3" />
+                              {post.comments}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
                     {posts.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>No recent activity</p>
-                        <Button size="sm" className="mt-2" onClick={handleCreatePost}>
-                          Create Your First Post
-                        </Button>
+                        <p className="mb-2">No recent activity</p>
+                        <p className="text-xs mb-4">Start engaging with your community!</p>
+                        <div className="flex gap-2 justify-center">
+                          <Button size="sm" onClick={() => navigate('/create')}>
+                            Create Post
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate('/events')}>
+                            Browse Events
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -615,28 +776,41 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-3">
-                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" onClick={handleCreatePost}>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2 hover:bg-primary/5" onClick={() => navigate('/create')}>
                       <Plus className="w-5 h-5" />
                       <span className="text-sm">Create Post</span>
                     </Button>
-                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" asChild>
-                      <a href="/events">
-                        <Calendar className="w-5 h-5" />
-                        <span className="text-sm">Browse Events</span>
-                      </a>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2 hover:bg-primary/5" onClick={() => navigate('/events')}>
+                      <Calendar className="w-5 h-5" />
+                      <span className="text-sm">Browse Events</span>
                     </Button>
-                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" asChild>
-                      <a href="/community">
-                        <Users className="w-5 h-5" />
-                        <span className="text-sm">Join Community</span>
-                      </a>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2 hover:bg-primary/5" onClick={() => navigate('/communities')}>
+                      <Users className="w-5 h-5" />
+                      <span className="text-sm">Join Community</span>
                     </Button>
-                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" asChild>
-                      <a href="/settings">
-                        <Settings className="w-5 h-5" />
-                        <span className="text-sm">Settings</span>
-                      </a>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2 hover:bg-primary/5" onClick={() => navigate('/settings')}>
+                      <Settings className="w-5 h-5" />
+                      <span className="text-sm">Settings</span>
                     </Button>
+                  </div>
+                  
+                  {/* Profile Completion Indicator */}
+                  <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Profile Completion</span>
+                      <span className="text-sm text-muted-foreground">{getProfileCompletion()}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${getProfileCompletion()}%` }}
+                      ></div>
+                    </div>
+                    {getProfileCompletion() < 100 && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Complete your profile to unlock more features
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
