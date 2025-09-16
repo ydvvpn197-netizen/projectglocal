@@ -113,7 +113,7 @@ class UserProfileService {
     }
   }
 
-  async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: any }> {
+  async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: UserProfile }> {
     try {
       // First validate the data
       const { data: validationResult, error: validationError } = await supabase.rpc('validate_profile_data', {
@@ -510,7 +510,7 @@ class UserProfileService {
     return date.toLocaleDateString();
   }
 
-  async getProfileUpdateHistory(userId: string, limit: number = 10, offset: number = 0): Promise<any> {
+  async getProfileUpdateHistory(userId: string, limit: number = 10, offset: number = 0): Promise<{ success: boolean; error?: string; data?: unknown }> {
     try {
       const { data, error } = await supabase.rpc('get_profile_update_history', {
         p_user_id: userId,
@@ -530,7 +530,7 @@ class UserProfileService {
     }
   }
 
-  async getProfileStatistics(userId: string): Promise<any> {
+  async getProfileStatistics(userId: string): Promise<{ success: boolean; error?: string; data?: unknown }> {
     try {
       const { data, error } = await supabase.rpc('get_profile_statistics', {
         p_user_id: userId
@@ -548,7 +548,7 @@ class UserProfileService {
     }
   }
 
-  async validateProfileData(updateData: ProfileUpdateData): Promise<any> {
+  async validateProfileData(updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: unknown }> {
     try {
       const { data, error } = await supabase.rpc('validate_profile_data', {
         p_display_name: updateData.display_name || null,

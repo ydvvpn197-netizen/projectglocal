@@ -316,7 +316,7 @@ const Profile = () => {
     if (user?.id) {
       loadSubscriptionHistory();
     }
-  }, [user?.id]);
+  }, [user?.id, loadSubscriptionHistory]);
 
   // Handle URL tab parameter
   useEffect(() => {
