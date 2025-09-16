@@ -10,6 +10,7 @@ import { LazyLoader, PageLoader } from "./components/LazyLoader";
 import { AppRoutes } from "./routes/AppRoutes";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { VoiceControl } from "./components/VoiceControl";
+import { ABTestingProvider } from "./hooks/useABTesting";
 import { appConfig } from '@/config/environment';
 import { isSupabaseConfigured } from '@/integrations/supabase/client';
 
@@ -69,14 +70,16 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <LazyLoader fallback={<PageLoader />}>
-                  <AppRoutes />
-                </LazyLoader>
-                <VoiceControl position="bottom-right" />
-              </BrowserRouter>
+              <ABTestingProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <LazyLoader fallback={<PageLoader />}>
+                    <AppRoutes />
+                  </LazyLoader>
+                  <VoiceControl position="bottom-right" />
+                </BrowserRouter>
+              </ABTestingProvider>
             </AuthProvider>
           </TooltipProvider>
         </QueryClientProvider>

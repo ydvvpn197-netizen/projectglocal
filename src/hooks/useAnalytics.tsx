@@ -1,247 +1,347 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
+import { useABTesting } from './useABTesting';
 
-export interface UserStats {
-  totalPosts: number;
-  totalEvents: number;
-  totalBookings: number;
-  totalFollowers: number;
-  totalFollowing: number;
-  totalLikes: number;
-  totalComments: number;
-  engagementRate: number;
+interface AnalyticsEvent {
+  event: string;
+  properties: Record<string, any>;
+  timestamp: string;
+  userId?: string;
+  sessionId: string;
+  page: string;
+  userAgent: string;
+  referrer?: string;
 }
 
-export interface PlatformStats {
-  totalUsers: number;
-  totalArtists: number;
-  totalEvents: number;
-  totalPosts: number;
-  totalBookings: number;
-  totalGroups: number;
-  totalDiscussions: number;
-  activeUsers: number;
-  newUsersThisWeek: number;
-  newUsersThisMonth: number;
+interface UserEngagementMetrics {
+  sessionDuration: number;
+  pageViews: number;
+  interactions: number;
+  taskCompletions: number;
+  bounceRate: number;
+  conversionRate: number;
 }
 
-export interface EventStats {
-  eventId: string;
-  title: string;
-  totalAttendees: number;
-  totalRevenue: number;
-  averageRating: number;
-  totalReviews: number;
-  engagementRate: number;
+interface TaskCompletion {
+  taskId: string;
+  taskName: string;
+  completed: boolean;
+  duration: number;
+  steps: number;
+  timestamp: string;
+}
+
+class AnalyticsService {
+  private sessionId: string;
+  private startTime: number;
+  private events: AnalyticsEvent[] = [];
+  private taskCompletions: TaskCompletion[] = [];
+  private pageViews: number = 0;
+  private interactions: number = 0;
+
+  constructor() {
+    this.sessionId = this.generateSessionId();
+    this.startTime = Date.now();
+  }
+
+  private generateSessionId(): string {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  track(event: string, properties: Record<string, any> = {}) {
+    const analyticsEvent: AnalyticsEvent = {
+      event,
+      properties: {
+        ...properties,
+        sessionId: this.sessionId,
+        timestamp: new Date().toISOString(),
+        page: window.location.pathname,
+        userAgent: navigator.userAgent,
+        referrer: document.referrer || undefined
+      },
+      timestamp: new Date().toISOString(),
+      sessionId: this.sessionId,
+      page: window.location.pathname,
+      userAgent: navigator.userAgent,
+      referrer: document.referrer || undefined
+    };
+
+    this.events.push(analyticsEvent);
+    
+    // Track interactions
+    if (this.isInteractionEvent(event)) {
+      this.interactions++;
+    }
+
+    // Send to analytics service
+    this.sendToAnalytics(analyticsEvent);
+  }
+
+  private isInteractionEvent(event: string): boolean {
+    const interactionEvents = [
+      'click', 'submit', 'navigate', 'search', 'create_post', 
+      'join_community', 'book_event', 'like', 'comment', 'share'
+    ];
+    return interactionEvents.includes(event);
+  }
+
+  trackPageView(page: string, properties: Record<string, any> = {}) {
+    this.pageViews++;
+    this.track('page_view', {
+      page,
+      ...properties
+    });
+  }
+
+  trackTaskCompletion(taskId: string, taskName: string, steps: number, duration: number) {
+    const completion: TaskCompletion = {
+      taskId,
+      taskName,
+      completed: true,
+      duration,
+      steps,
+      timestamp: new Date().toISOString()
+    };
+
+    this.taskCompletions.push(completion);
+    
+    this.track('task_completed', {
+      taskId,
+      taskName,
+      duration,
+      steps
+    });
+  }
+
+  trackTaskAbandonment(taskId: string, taskName: string, steps: number, duration: number) {
+    const completion: TaskCompletion = {
+      taskId,
+      taskName,
+      completed: false,
+      duration,
+      steps,
+      timestamp: new Date().toISOString()
+    };
+
+    this.taskCompletions.push(completion);
+    
+    this.track('task_abandoned', {
+      taskId,
+      taskName,
+      duration,
+      steps
+    });
+  }
+
+  getEngagementMetrics(): UserEngagementMetrics {
+    const sessionDuration = Date.now() - this.startTime;
+    const completedTasks = this.taskCompletions.filter(t => t.completed).length;
+    const totalTasks = this.taskCompletions.length;
+    
+    return {
+      sessionDuration,
+      pageViews: this.pageViews,
+      interactions: this.interactions,
+      taskCompletions: completedTasks,
+      bounceRate: this.pageViews <= 1 ? 1 : 0, // Simple bounce rate calculation
+      conversionRate: totalTasks > 0 ? completedTasks / totalTasks : 0
+    };
+  }
+
+  private sendToAnalytics(event: AnalyticsEvent) {
+    // In production, send to your analytics service
+    console.log('Analytics Event:', event);
+    
+    // Example integrations:
+    // - Google Analytics 4
+    // - Mixpanel
+    // - Amplitude
+    // - Custom analytics endpoint
+    
+    // Example for Google Analytics 4:
+    // gtag('event', event.event, event.properties);
+    
+    // Example for Mixpanel:
+    // mixpanel.track(event.event, event.properties);
+  }
+
+  // Performance tracking
+  trackPerformance(metric: string, value: number, properties: Record<string, any> = {}) {
+    this.track('performance_metric', {
+      metric,
+      value,
+      ...properties
+    });
+  }
+
+  // Error tracking
+  trackError(error: Error, context: Record<string, any> = {}) {
+    this.track('error', {
+      error: error.message,
+      stack: error.stack,
+      ...context
+    });
+  }
+
+  // User behavior tracking
+  trackUserBehavior(action: string, element: string, properties: Record<string, any> = {}) {
+    this.track('user_behavior', {
+      action,
+      element,
+      ...properties
+    });
+  }
 }
 
 export const useAnalytics = () => {
-  const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { trackEvent } = useABTesting();
+  const [analytics] = useState(() => new AnalyticsService());
 
-  const fetchUserStats = async (userId?: string) => {
-    if (!userId) return;
+  const track = useCallback((event: string, properties: Record<string, any> = {}) => {
+    analytics.track(event, {
+      ...properties,
+      userId: user?.id,
+      userType: user?.user_metadata?.user_type
+    });
+  }, [analytics, user]);
 
-    try {
-      // Fetch user statistics
-      const [
-        { count: postsCount },
-        { count: eventsCount },
-        { count: bookingsCount },
-        { count: followersCount },
-        { count: followingCount },
-        { count: likesCount },
-        { count: commentsCount }
-      ] = await Promise.all([
-        supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('events').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('artist_bookings').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', userId),
-        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId),
-        supabase.from('likes').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('comments').select('*', { count: 'exact', head: true }).eq('user_id', userId)
-      ]);
+  const trackPageView = useCallback((page: string, properties: Record<string, any> = {}) => {
+    analytics.trackPageView(page, {
+      ...properties,
+      userId: user?.id,
+      userType: user?.user_metadata?.user_type
+    });
+  }, [analytics, user]);
 
-      // Calculate engagement rate (likes + comments) / posts
-      const totalEngagement = (likesCount || 0) + (commentsCount || 0);
-      const engagementRate = postsCount ? (totalEngagement / postsCount) * 100 : 0;
+  const trackTaskCompletion = useCallback((
+    taskId: string, 
+    taskName: string, 
+    steps: number, 
+    duration: number
+  ) => {
+    analytics.trackTaskCompletion(taskId, taskName, steps, duration);
+    
+    // Also track in AB testing if user is in a test
+    trackEvent('task_completion', 'completed', { taskId, taskName, duration });
+  }, [analytics, trackEvent]);
 
-      setUserStats({
-        totalPosts: postsCount || 0,
-        totalEvents: eventsCount || 0,
-        totalBookings: bookingsCount || 0,
-        totalFollowers: followersCount || 0,
-        totalFollowing: followingCount || 0,
-        totalLikes: likesCount || 0,
-        totalComments: commentsCount || 0,
-        engagementRate: Math.round(engagementRate * 100) / 100
-      });
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-    }
-  };
+  const trackTaskAbandonment = useCallback((
+    taskId: string, 
+    taskName: string, 
+    steps: number, 
+    duration: number
+  ) => {
+    analytics.trackTaskAbandonment(taskId, taskName, steps, duration);
+    
+    // Also track in AB testing if user is in a test
+    trackEvent('task_abandonment', 'abandoned', { taskId, taskName, duration });
+  }, [analytics, trackEvent]);
 
-  const fetchPlatformStats = async () => {
-    try {
-      const [
-        { count: totalUsers },
-        { count: totalArtists },
-        { count: totalEvents },
-        { count: totalPosts },
-        { count: totalBookings },
-        { count: totalGroups },
-        { count: totalDiscussions }
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('artists').select('*', { count: 'exact', head: true }),
-        supabase.from('events').select('*', { count: 'exact', head: true }),
-        supabase.from('posts').select('*', { count: 'exact', head: true }),
-        supabase.from('artist_bookings').select('*', { count: 'exact', head: true }),
-        supabase.from('community_groups').select('*', { count: 'exact', head: true }),
-        supabase.from('discussions').select('*', { count: 'exact', head: true })
-      ]);
+  const trackPerformance = useCallback((metric: string, value: number, properties: Record<string, any> = {}) => {
+    analytics.trackPerformance(metric, value, {
+      ...properties,
+      userId: user?.id
+    });
+  }, [analytics, user]);
 
-      // Calculate active users (users with activity in last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const { count: activeUsers } = await supabase
-        .from('posts')
-        .select('user_id', { count: 'exact', head: true })
-        .gte('created_at', thirtyDaysAgo.toISOString());
+  const trackError = useCallback((error: Error, context: Record<string, any> = {}) => {
+    analytics.trackError(error, {
+      ...context,
+      userId: user?.id,
+      page: window.location.pathname
+    });
+  }, [analytics, user]);
 
-      // Calculate new users this week
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
-      const { count: newUsersThisWeek } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', oneWeekAgo.toISOString());
+  const trackUserBehavior = useCallback((action: string, element: string, properties: Record<string, any> = {}) => {
+    analytics.trackUserBehavior(action, element, {
+      ...properties,
+      userId: user?.id
+    });
+  }, [analytics, user]);
 
-      // Calculate new users this month
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      
-      const { count: newUsersThisMonth } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', oneMonthAgo.toISOString());
+  const getEngagementMetrics = useCallback(() => {
+    return analytics.getEngagementMetrics();
+  }, [analytics]);
 
-      setPlatformStats({
-        totalUsers: totalUsers || 0,
-        totalArtists: totalArtists || 0,
-        totalEvents: totalEvents || 0,
-        totalPosts: totalPosts || 0,
-        totalBookings: totalBookings || 0,
-        totalGroups: totalGroups || 0,
-        totalDiscussions: totalDiscussions || 0,
-        activeUsers: activeUsers || 0,
-        newUsersThisWeek: newUsersThisWeek || 0,
-        newUsersThisMonth: newUsersThisMonth || 0
-      });
-    } catch (error) {
-      console.error('Error fetching platform stats:', error);
-    }
-  };
-
-  const fetchEventStats = async (eventId: string): Promise<EventStats | null> => {
-    try {
-      const [
-        { data: event },
-        { count: attendeesCount }
-      ] = await Promise.all([
-        supabase.from('events').select('title').eq('id', eventId).single(),
-        supabase.from('event_attendees').select('*', { count: 'exact', head: true }).eq('event_id', eventId)
-      ]);
-
-      if (!event) return null;
-
-      const totalRevenue = 0; // Would need to calculate from payments
-      const averageRating = 0; // No reviews table yet
-
-      return {
-        eventId,
-        title: event.title,
-        totalAttendees: attendeesCount || 0,
-        totalRevenue,
-        averageRating,
-        totalReviews: 0,
-        engagementRate: 0 // Would need to calculate from likes, comments, etc.
-      };
-    } catch (error) {
-      console.error('Error fetching event stats:', error);
-      return null;
-    }
-  };
-
-  const getTrendingContent = async () => {
-    try {
-      // Get trending posts (most likes in last 7 days)
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      const { data: trendingPosts } = await supabase
-        .from('posts')
-        .select(`
-          id,
-          title,
-          content,
-          likes_count,
-          comments_count,
-          created_at,
-          profiles!inner (
-            display_name,
-            avatar_url
-          )
-        `)
-        .gte('created_at', oneWeekAgo.toISOString())
-        .order('likes_count', { ascending: false })
-        .limit(5);
-
-      // Get trending events (most attendees)
-      const { data: trendingEvents } = await supabase
-        .from('events')
-        .select(`
-          id,
-          title,
-          description,
-          max_attendees,
-          event_date,
-          image_url
-        `)
-        .gte('event_date', new Date().toISOString().split('T')[0])
-        .order('max_attendees', { ascending: false })
-        .limit(5);
-
-      return {
-        trendingPosts: trendingPosts || [],
-        trendingEvents: trendingEvents || []
-      };
-    } catch (error) {
-      console.error('Error fetching trending content:', error);
-      return { trendingPosts: [], trendingEvents: [] };
-    }
-  };
-
+  // Track page views on route changes
   useEffect(() => {
-    if (user) {
-      fetchUserStats(user.id);
-    }
-    fetchPlatformStats();
-    setLoading(false);
-  }, [user]);
+    const handleRouteChange = () => {
+      trackPageView(window.location.pathname);
+    };
 
-  return {
-    userStats,
-    platformStats,
-    loading,
-    fetchUserStats,
-    fetchPlatformStats,
-    fetchEventStats,
-    getTrendingContent
+    // Track initial page view
+    handleRouteChange();
+
+    // Listen for route changes (if using React Router)
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, [trackPageView]);
+
+      return {
+    track,
+    trackPageView,
+    trackTaskCompletion,
+    trackTaskAbandonment,
+    trackPerformance,
+    trackError,
+    trackUserBehavior,
+    getEngagementMetrics
   };
 };
+
+// Specific hooks for common tracking patterns
+export const useTaskTracking = (taskId: string, taskName: string) => {
+  const { trackTaskCompletion, trackTaskAbandonment } = useAnalytics();
+  const [startTime] = useState(Date.now());
+  const [steps, setSteps] = useState(0);
+
+  const completeTask = useCallback(() => {
+    const duration = Date.now() - startTime;
+    trackTaskCompletion(taskId, taskName, steps, duration);
+  }, [taskId, taskName, steps, startTime, trackTaskCompletion]);
+
+  const abandonTask = useCallback(() => {
+    const duration = Date.now() - startTime;
+    trackTaskAbandonment(taskId, taskName, steps, duration);
+  }, [taskId, taskName, steps, startTime, trackTaskAbandonment]);
+
+  const incrementStep = useCallback(() => {
+    setSteps(prev => prev + 1);
+  }, []);
+
+      return {
+    completeTask,
+    abandonTask,
+    incrementStep,
+    steps
+  };
+};
+
+export const usePerformanceTracking = () => {
+  const { trackPerformance } = useAnalytics();
+
+  const trackPageLoad = useCallback((page: string) => {
+    const loadTime = performance.now();
+    trackPerformance('page_load_time', loadTime, { page });
+  }, [trackPerformance]);
+
+  const trackComponentRender = useCallback((component: string, renderTime: number) => {
+    trackPerformance('component_render_time', renderTime, { component });
+  }, [trackPerformance]);
+
+  const trackAPIResponse = useCallback((endpoint: string, responseTime: number) => {
+    trackPerformance('api_response_time', responseTime, { endpoint });
+  }, [trackPerformance]);
+
+  return {
+    trackPageLoad,
+    trackComponentRender,
+    trackAPIResponse
+  };
+};
+
+export default useAnalytics;

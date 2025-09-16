@@ -118,6 +118,7 @@ const AuthCallback: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </ResponsiveLayout>
   );
 };

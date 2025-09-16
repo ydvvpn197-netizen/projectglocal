@@ -115,6 +115,7 @@ const VoiceControlDemo: React.FC = () => {
             </ul>
           </div>
         </div>
+        </div>
       </ResponsiveLayout>
     );
   }
@@ -340,6 +341,7 @@ const VoiceControlDemo: React.FC = () => {
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
     </ResponsiveLayout>
   );

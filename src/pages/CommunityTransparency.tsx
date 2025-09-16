@@ -199,6 +199,7 @@ const CommunityTransparency: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </ResponsiveLayout>
   );

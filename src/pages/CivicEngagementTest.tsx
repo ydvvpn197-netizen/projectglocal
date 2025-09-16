@@ -67,6 +67,7 @@ export const CivicEngagementTest: React.FC = () => {
 
         {/* Main Dashboard */}
         <CivicEngagementDashboard />
+        </div>
       </div>
     </ResponsiveLayout>
   );

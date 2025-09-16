@@ -251,6 +251,7 @@ export default function MonetizationTest() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </ResponsiveLayout>
   );
 }

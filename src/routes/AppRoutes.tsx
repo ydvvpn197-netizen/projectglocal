@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { lazyImport } from '@/lib/lazyImport';
-import { CreatePostWrapper } from '@/components/CreatePostWrapper';
+import { UnifiedPostCreator } from '@/components/UnifiedPostCreator';
 
 // Core pages (loaded immediately)
 const Index = React.lazy(() => import('@/pages/EnhancedIndex').then(module => ({ default: module.EnhancedIndex })));
@@ -152,7 +152,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
       <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-      <Route path="/create" element={<ProtectedRoute><CreatePostWrapper /></ProtectedRoute>} />
+      <Route path="/create" element={<ProtectedRoute><UnifiedPostCreator /></ProtectedRoute>} />
       
       {/* New Features routes */}
       <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
