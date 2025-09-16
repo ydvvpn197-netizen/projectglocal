@@ -67,7 +67,37 @@ export class SubscriptionService {
         .order('plan_type', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform the data to create separate monthly and yearly plans
+      const transformedPlans: SubscriptionPlan[] = [];
+      
+      if (data) {
+        for (const plan of data) {
+          // Add monthly plan if price_monthly > 0
+          if (plan.price_monthly > 0) {
+            transformedPlans.push({
+              ...plan,
+              plan_type: 'monthly',
+              price_in_cents: plan.price_monthly,
+              stripe_price_id: plan.stripe_price_id_monthly,
+              currency: 'inr'
+            });
+          }
+          
+          // Add yearly plan if price_yearly > 0
+          if (plan.price_yearly > 0) {
+            transformedPlans.push({
+              ...plan,
+              plan_type: 'yearly',
+              price_in_cents: plan.price_yearly,
+              stripe_price_id: plan.stripe_price_id_yearly,
+              currency: 'inr'
+            });
+          }
+        }
+      }
+      
+      return transformedPlans;
     } catch (error) {
       console.error('Error fetching subscription plans:', error);
       return [];
