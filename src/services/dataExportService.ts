@@ -82,8 +82,8 @@ export interface UserDataExport {
   preferences: {
     notification_settings: Record<string, boolean>;
     privacy_settings: Record<string, boolean>;
-    location_settings: Record<string, any>;
-    theme_preferences: Record<string, any>;
+    location_settings: Record<string, unknown>;
+    theme_preferences: Record<string, unknown>;
   };
   consent_records: Array<{
     id: string;
@@ -252,7 +252,7 @@ export class DataExportService {
    */
   private async collectUserData(userId: string, type: DataExportRequest['type']): Promise<UserDataExport> {
     const userData: UserDataExport = {
-      profile: {} as any,
+      profile: {} as UserDataExport['profile'],
       activity: {
         posts: [],
         comments: [],
@@ -409,14 +409,16 @@ export class DataExportService {
       case 'json':
         return new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
       
-      case 'csv':
+      case 'csv': {
         const csvData = this.convertToCSV(userData);
         return new Blob([csvData], { type: 'text/csv' });
+      }
       
-      case 'pdf':
+      case 'pdf': {
         // In a real implementation, you would use a PDF generation library
         const pdfData = this.generatePDFReport(userData);
         return new Blob([pdfData], { type: 'application/pdf' });
+      }
       
       default:
         throw new Error(`Unsupported format: ${format}`);

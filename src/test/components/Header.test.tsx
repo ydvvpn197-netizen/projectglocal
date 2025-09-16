@@ -62,7 +62,7 @@ describe('Header Component', () => {
       </QueryClientProvider>
     );
 
-    expect(screen.getByText('Glocal')).toBeInTheDocument();
+    expect(screen.getByText('TheGlocal')).toBeInTheDocument();
   });
 
   it('should render navigation links when user is authenticated', () => {

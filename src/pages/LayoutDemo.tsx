@@ -66,7 +66,7 @@ const LayoutDemo = () => {
                   <Button
                     key={option.value}
                     variant={activeLayout === option.value ? "default" : "outline"}
-                    onClick={() => setActiveLayout(option.value as any)}
+                    onClick={() => setActiveLayout(option.value as 'main' | 'sidebar' | 'mobile')}
                     className="h-auto p-4 flex flex-col items-start"
                   >
                     <div className="font-semibold">{option.label}</div>

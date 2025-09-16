@@ -519,7 +519,7 @@ export class CommunityAnalyticsService {
   ): Promise<string> {
     try {
       const insights = await this.getCommunityInsights({
-        time_period: timePeriod as any,
+        time_period: timePeriod as '7d' | '30d' | '90d' | '1y',
         enabled_insights: ['sentiment', 'trends', 'predictions', 'metrics', 'recommendations']
       });
 
