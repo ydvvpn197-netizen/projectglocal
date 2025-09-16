@@ -59,12 +59,12 @@ export const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
         <main 
           className={cn(
             "flex-1 flex flex-col overflow-hidden transition-all duration-300",
-            showSidebar && !isMobile && sidebarOpen && "ml-64",
-            showSidebar && !isMobile && !sidebarOpen && "ml-16",
+            showSidebar && !isMobile && sidebarOpen && "ml-60",
+            showSidebar && !isMobile && !sidebarOpen && "ml-14",
             className
           )}
         >
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto px-1 py-1">
             {children}
           </div>
           

@@ -124,7 +124,7 @@ export function AppSidebar() {
       <SidebarContent>
         {/* App Title */}
         {!collapsed && (
-          <div className="p-4 border-b border-sidebar-border">
+          <div className="p-1 border-b border-sidebar-border">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-sidebar-foreground flex items-center gap-2">
                 <img 
@@ -140,7 +140,7 @@ export function AppSidebar() {
         )}
 
         {/* Create Button */}
-        <div className="p-2">
+        <div className="p-1">
           <SidebarMenuButton asChild>
             <NavLink to="/create" className="bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4" />

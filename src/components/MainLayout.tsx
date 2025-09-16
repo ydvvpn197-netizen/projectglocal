@@ -30,9 +30,9 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
         {/* Main Content Area */}
         <SidebarInset className="flex-1">
           <main className="flex-1 overflow-auto bg-muted/20">
-            <div className="w-full px-2 py-4 lg:py-6">
+            <div className="w-full px-1 py-1 lg:py-2">
               {showNewsFeed ? (
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-1">
                   {/* Main Content Area */}
                   <div className="lg:col-span-3">
                     {children}
