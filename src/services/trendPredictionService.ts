@@ -11,7 +11,7 @@ export interface TrendPrediction {
   actual_value?: number;
   accuracy_score?: number;
   model_version?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface TrendAnalysis {
@@ -21,10 +21,10 @@ export interface TrendAnalysis {
   trend_score: number;
   trend_direction: 'rising' | 'falling' | 'stable';
   confidence_level: number;
-  geographic_scope: Record<string, any>;
+  geographic_scope: Record<string, unknown>;
   time_period_start: Date;
   time_period_end: Date;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface CommunityAnalytics {
@@ -32,10 +32,22 @@ export interface CommunityAnalytics {
   metric_value: number;
   metric_type: 'count' | 'rate' | 'percentage' | 'score' | 'trend';
   time_period: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
-  geographic_scope: Record<string, any>;
-  demographic_scope: Record<string, any>;
+  geographic_scope: Record<string, unknown>;
+  demographic_scope: Record<string, unknown>;
   calculated_at: Date;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
+}
+
+export interface HistoricalDataPoint {
+  metric_value: number;
+  calculated_at: string;
+  [key: string]: unknown;
+}
+
+export interface TrendDataPoint {
+  metric_value: number;
+  calculated_at: string;
+  [key: string]: unknown;
 }
 
 export class TrendPredictionService {
@@ -169,9 +181,9 @@ export class TrendPredictionService {
    * Calculate trend predictions
    */
   private calculateTrendPredictions(
-    historicalData: any[],
-    predictionType: string,
-    horizon: string
+    historicalData: HistoricalDataPoint[],
+    predictionType: 'engagement' | 'growth' | 'sentiment' | 'trend' | 'event',
+    horizon: 'short' | 'medium' | 'long'
   ): TrendPrediction[] {
     const predictions: TrendPrediction[] = [];
     
@@ -191,11 +203,11 @@ export class TrendPredictionService {
     
     predictions.push({
       id: `trend_${predictionType}_${Date.now()}`,
-      prediction_type: predictionType as any,
+      prediction_type: predictionType,
       prediction_target: `${predictionType}_trend`,
       predicted_value: predictedValue,
       confidence_score: confidenceScore,
-      prediction_horizon: horizon as any,
+      prediction_horizon: horizon,
       prediction_date: new Date(Date.now() + horizonDays * 24 * 60 * 60 * 1000),
       model_version: 'trend_v1.0',
       metadata: {
@@ -212,9 +224,9 @@ export class TrendPredictionService {
    * Calculate seasonal predictions
    */
   private calculateSeasonalPredictions(
-    historicalData: any[],
-    predictionType: string,
-    horizon: string
+    historicalData: HistoricalDataPoint[],
+    predictionType: 'engagement' | 'growth' | 'sentiment' | 'trend' | 'event',
+    horizon: 'short' | 'medium' | 'long'
   ): TrendPrediction[] {
     const predictions: TrendPrediction[] = [];
     
@@ -232,11 +244,11 @@ export class TrendPredictionService {
     
     predictions.push({
       id: `seasonal_${predictionType}_${Date.now()}`,
-      prediction_type: predictionType as any,
+      prediction_type: predictionType,
       prediction_target: `${predictionType}_seasonal`,
       predicted_value: predictedValue,
       confidence_score: confidenceScore,
-      prediction_horizon: horizon as any,
+      prediction_horizon: horizon,
       prediction_date: new Date(Date.now() + horizonDays * 24 * 60 * 60 * 1000),
       model_version: 'seasonal_v1.0',
       metadata: {
@@ -252,9 +264,9 @@ export class TrendPredictionService {
    * Calculate growth predictions
    */
   private calculateGrowthPredictions(
-    historicalData: any[],
-    predictionType: string,
-    horizon: string
+    historicalData: HistoricalDataPoint[],
+    predictionType: 'engagement' | 'growth' | 'sentiment' | 'trend' | 'event',
+    horizon: 'short' | 'medium' | 'long'
   ): TrendPrediction[] {
     const predictions: TrendPrediction[] = [];
     
@@ -273,11 +285,11 @@ export class TrendPredictionService {
     
     predictions.push({
       id: `growth_${predictionType}_${Date.now()}`,
-      prediction_type: predictionType as any,
+      prediction_type: predictionType,
       prediction_target: `${predictionType}_growth`,
       predicted_value: predictedValue,
       confidence_score: confidenceScore,
-      prediction_horizon: horizon as any,
+      prediction_horizon: horizon,
       prediction_date: new Date(Date.now() + horizonDays * 24 * 60 * 60 * 1000),
       model_version: 'growth_v1.0',
       metadata: {
@@ -299,7 +311,7 @@ export class TrendPredictionService {
     endDate: Date
   ): Promise<TrendAnalysis | null> {
     try {
-      let trendData: any[] = [];
+      let trendData: TrendDataPoint[] = [];
       
       switch (trendType) {
         case 'sentiment':
@@ -330,7 +342,7 @@ export class TrendPredictionService {
       const confidenceLevel = this.calculateTrendConfidence(trendData, trendScore);
 
       return {
-        trend_type: trendType as any,
+        trend_type: trendType as 'topic' | 'sentiment' | 'engagement' | 'location' | 'demographic',
         trend_name: `${trendType}_trend`,
         trend_description: `Analysis of ${trendType} trends in the community`,
         trend_score: trendScore,
@@ -353,7 +365,7 @@ export class TrendPredictionService {
   /**
    * Get historical data for predictions
    */
-  private async getHistoricalData(predictionType: string): Promise<any[]> {
+  private async getHistoricalData(predictionType: string): Promise<HistoricalDataPoint[]> {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 3); // 3 months of historical data
@@ -434,7 +446,7 @@ export class TrendPredictionService {
   /**
    * Calculate trend slope from historical data
    */
-  private calculateTrendSlope(data: any[]): number {
+  private calculateTrendSlope(data: HistoricalDataPoint[]): number {
     if (data.length < 2) return 0;
     
     const n = data.length;
@@ -452,7 +464,7 @@ export class TrendPredictionService {
   /**
    * Calculate trend confidence
    */
-  private calculateTrendConfidence(data: any[], slope: number): number {
+  private calculateTrendConfidence(data: HistoricalDataPoint[], slope: number): number {
     if (data.length < 2) return 0;
     
     const n = data.length;
@@ -476,7 +488,7 @@ export class TrendPredictionService {
   /**
    * Calculate weekly pattern
    */
-  private calculateWeeklyPattern(data: any[]): number[] {
+  private calculateWeeklyPattern(data: HistoricalDataPoint[]): number[] {
     const weeklyPattern = new Array(7).fill(0);
     const dayCounts = new Array(7).fill(0);
     
@@ -504,7 +516,7 @@ export class TrendPredictionService {
   /**
    * Calculate growth rate
    */
-  private calculateGrowthRate(data: any[]): number {
+  private calculateGrowthRate(data: HistoricalDataPoint[]): number {
     if (data.length < 2) return 0;
     
     const firstValue = data[data.length - 1].metric_value;
@@ -517,7 +529,7 @@ export class TrendPredictionService {
   /**
    * Calculate growth confidence
    */
-  private calculateGrowthConfidence(data: any[], growthRate: number): number {
+  private calculateGrowthConfidence(data: HistoricalDataPoint[], growthRate: number): number {
     if (data.length < 3) return 0;
     
     const values = data.map(item => item.metric_value);
@@ -537,7 +549,7 @@ export class TrendPredictionService {
   /**
    * Calculate trend score
    */
-  private calculateTrendScore(data: any[]): number {
+  private calculateTrendScore(data: TrendDataPoint[]): number {
     if (data.length < 2) return 0;
     
     const slope = this.calculateTrendSlope(data);
@@ -577,7 +589,7 @@ export class TrendPredictionService {
   }
 
   // Data retrieval methods for different trend types
-  private async getSentimentTrendData(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getSentimentTrendData(startDate: Date, endDate: Date): Promise<TrendDataPoint[]> {
     const { data } = await supabase
       .from('community_sentiment')
       .select('*')
@@ -587,22 +599,22 @@ export class TrendPredictionService {
     return data || [];
   }
 
-  private async getEngagementTrendData(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getEngagementTrendData(startDate: Date, endDate: Date): Promise<TrendDataPoint[]> {
     // This would typically aggregate engagement metrics from posts, comments, likes, etc.
     return [];
   }
 
-  private async getTopicTrendData(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getTopicTrendData(startDate: Date, endDate: Date): Promise<TrendDataPoint[]> {
     // This would analyze trending topics from posts and discussions
     return [];
   }
 
-  private async getLocationTrendData(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getLocationTrendData(startDate: Date, endDate: Date): Promise<TrendDataPoint[]> {
     // This would analyze geographic trends
     return [];
   }
 
-  private async getDemographicTrendData(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getDemographicTrendData(startDate: Date, endDate: Date): Promise<TrendDataPoint[]> {
     // This would analyze demographic trends
     return [];
   }
