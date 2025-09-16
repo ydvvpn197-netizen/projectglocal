@@ -299,7 +299,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-muted/20">
-        <div className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="w-full px-2 py-4 sm:py-6">
           {children}
         </div>
       </main>

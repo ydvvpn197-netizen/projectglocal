@@ -228,7 +228,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
 
         {/* Page content */}
-        <main className="py-6">
+        <main className="py-6 px-2">
           {children}
         </main>
       </div>
