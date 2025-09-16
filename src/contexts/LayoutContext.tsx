@@ -9,7 +9,7 @@ interface LayoutContextType {
   isDesktop: boolean;
 }
 
-const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
+export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 interface LayoutProviderProps {
   children: ReactNode;
