@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,7 +51,7 @@ export const EventOrganizerChat: React.FC<EventOrganizerChatProps> = ({
     if (isOpen && eventId && organizerId) {
       initializeChat();
     }
-  }, [isOpen, eventId, organizerId]);
+  }, [isOpen, eventId, organizerId, initializeChat]);
 
   useEffect(() => {
     scrollToBottom();
@@ -61,7 +61,7 @@ export const EventOrganizerChat: React.FC<EventOrganizerChatProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const initializeChat = async () => {
+  const initializeChat = useCallback(async () => {
     try {
       setLoading(true);
       const { chat: chatData, error } = await EventOrganizerChatService.getOrCreateChat(eventId, organizerId);
@@ -90,9 +90,9 @@ export const EventOrganizerChat: React.FC<EventOrganizerChatProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, organizerId, toast, loadMessages]);
 
-  const loadMessages = async (chatId: string) => {
+  const loadMessages = useCallback(async (chatId: string) => {
     try {
       const { messages: messagesData, error } = await EventOrganizerChatService.getChatMessages(chatId);
       
@@ -109,7 +109,7 @@ export const EventOrganizerChat: React.FC<EventOrganizerChatProps> = ({
     } catch (error) {
       console.error('Error loading messages:', error);
     }
-  };
+  }, [toast]);
 
   const markMessagesAsRead = async (chatId: string) => {
     try {

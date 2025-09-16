@@ -6,8 +6,8 @@ export interface MLModel {
   model_type: 'sentiment' | 'trend' | 'prediction' | 'classification' | 'clustering';
   model_version: string;
   model_data?: ArrayBuffer;
-  model_metadata: Record<string, any>;
-  performance_metrics: Record<string, any>;
+  model_metadata: Record<string, unknown>;
+  performance_metrics: Record<string, unknown>;
   training_data_hash?: string;
   is_active: boolean;
   created_at: Date;
@@ -15,18 +15,18 @@ export interface MLModel {
 }
 
 export interface ModelTrainingData {
-  input_data: any[];
-  target_data: any[];
+  input_data: unknown[];
+  target_data: unknown[];
   features: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface ModelPrediction {
   model_id: string;
-  input: any;
-  prediction: any;
+  input: unknown;
+  prediction: unknown;
   confidence: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export class MLModelService {

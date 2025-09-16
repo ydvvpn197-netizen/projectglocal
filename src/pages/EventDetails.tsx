@@ -55,7 +55,15 @@ const EventDetails = () => {
   const [tickets, setTickets] = useState(1);
   const [message, setMessage] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [userBooking, setUserBooking] = useState<any>(null);
+  const [userBooking, setUserBooking] = useState<{
+    id: string;
+    event_id: string;
+    user_id: string;
+    tickets_count: number;
+    total_amount: number;
+    status: string;
+    created_at: string;
+  } | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
 
   const checkUserBooking = async (eventId: string) => {

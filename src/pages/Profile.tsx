@@ -132,6 +132,25 @@ const Profile = () => {
     }
   }, [profile]);
 
+  // Load subscription history
+  useEffect(() => {
+    const loadSubscriptionHistory = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setSubscriptionLoading(true);
+        const history = await subscriptionService.getUserSubscriptionHistory(user.id);
+        setSubscriptionHistory(history);
+      } catch (error) {
+        console.error('Error loading subscription history:', error);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    loadSubscriptionHistory();
+  }, [user?.id]);
+
   const handleSaveProfile = async () => {
     // Convert form data to proper types
     const updateData = {
@@ -461,24 +480,6 @@ const Profile = () => {
     .filter(Boolean)
     .join(', ') || 'Location not set') : 'Location not set';
 
-  // Load subscription history
-  useEffect(() => {
-    const loadSubscriptionHistory = async () => {
-      if (!user?.id) return;
-      
-      try {
-        setSubscriptionLoading(true);
-        const history = await subscriptionService.getUserSubscriptionHistory(user.id);
-        setSubscriptionHistory(history);
-      } catch (error) {
-        console.error('Error loading subscription history:', error);
-      } finally {
-        setSubscriptionLoading(false);
-      }
-    };
-
-    loadSubscriptionHistory();
-  }, [user?.id]);
 
   return (
     <ResponsiveLayout>
