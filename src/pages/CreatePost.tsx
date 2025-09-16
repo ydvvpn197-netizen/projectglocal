@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useState } from "react";
-import { X, Plus, MapPin, Calendar, DollarSign, Users, Clock, Tag } from "lucide-react";
+import { X, Plus, MapPin, Calendar, DollarSign, Users, Clock, Tag, ArrowLeft, Edit3 } from "lucide-react";
 import { usePosts } from "@/hooks/usePosts";
 import { useEvents } from "@/hooks/useEvents";
 import { useNavigate } from "react-router-dom";
@@ -87,10 +87,25 @@ const CreatePost = () => {
 
   return (
     <ResponsiveLayout>
-      <div className="container max-w-3xl mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Create New Post</h1>
-          <p className="text-muted-foreground">Share with your local community</p>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          
+          <div className="flex items-center gap-3 mb-2">
+            <Edit3 className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Create New Post</h1>
+          </div>
+          <p className="text-gray-600">
+            Share with your local community
+          </p>
         </div>
 
         <Tabs defaultValue="post" className="space-y-6">
