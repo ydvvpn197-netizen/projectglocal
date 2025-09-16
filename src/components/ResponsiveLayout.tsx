@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MainLayout } from './MainLayout';
+import { UnifiedLayout } from './layout/UnifiedLayout';
 import { MobileLayout } from './MobileLayout';
 
 interface ResponsiveLayoutProps {
@@ -30,7 +30,7 @@ function ResponsiveLayout({ children, showNewsFeed = true }: ResponsiveLayoutPro
   return isMobile ? (
     <MobileLayout>{children}</MobileLayout>
   ) : (
-    <MainLayout showNewsFeed={showNewsFeed}>{children}</MainLayout>
+    <UnifiedLayout>{children}</UnifiedLayout>
   );
 }
 

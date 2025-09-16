@@ -69,7 +69,7 @@ export function ModernHeader({
                 className="w-10 h-10 object-contain"
               />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                Glocal
+                TheGlocal
               </span>
             </Link>
 

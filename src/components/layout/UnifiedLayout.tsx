@@ -5,19 +5,29 @@ import { Sidebar } from './Sidebar';
 import { useLayout } from '@/hooks/useLayout';
 import { cn } from '@/lib/utils';
 
-interface MainLayoutProps {
+interface UnifiedLayoutProps {
   children: ReactNode;
   showSidebar?: boolean;
   showHeader?: boolean;
   showFooter?: boolean;
+  headerVariant?: 'default' | 'minimal' | 'glass';
+  showSearch?: boolean;
+  showCreateButton?: boolean;
+  showNotifications?: boolean;
+  showUserMenu?: boolean;
   className?: string;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({
+export const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
   children,
   showSidebar = true,
   showHeader = true,
   showFooter = true,
+  headerVariant = 'default',
+  showSearch = true,
+  showCreateButton = true,
+  showNotifications = true,
+  showUserMenu = true,
   className
 }) => {
   const { sidebarOpen, isMobile } = useLayout();
@@ -25,7 +35,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      {showHeader && <UnifiedHeader />}
+      {showHeader && (
+        <UnifiedHeader 
+          variant={headerVariant}
+          showSearch={showSearch}
+          showCreateButton={showCreateButton}
+          showNotifications={showNotifications}
+          showUserMenu={showUserMenu}
+        />
+      )}
       
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">

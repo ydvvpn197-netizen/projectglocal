@@ -95,7 +95,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <div className="flex items-center gap-2">
             <img 
               src="/logo.png" 
-              alt="Glocal Logo" 
+              alt="TheGlocal Logo" 
               className="h-6 w-6 object-contain"
             />
             <div className="hidden sm:block">

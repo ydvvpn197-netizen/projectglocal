@@ -117,10 +117,10 @@ export function MobileLayout({ children }: MobileLayoutProps) {
           <Link to="/" className="flex items-center gap-2 font-bold text-lg text-gradient">
             <img 
               src="/logo.png" 
-              alt="Glocal Logo" 
+              alt="TheGlocal Logo" 
               className="h-5 w-5 object-contain"
             />
-                              <span className="hidden xs:inline">Glocal</span>
+                              <span className="hidden xs:inline">TheGlocal</span>
                           <span className="xs:hidden">G</span>
           </Link>
           

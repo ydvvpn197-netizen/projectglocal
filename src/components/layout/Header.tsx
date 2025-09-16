@@ -46,7 +46,14 @@ export const Header: React.FC = () => {
 
       {/* Center Section - Logo/Brand */}
       <div className="flex-1 flex justify-center">
-        <h1 className="text-xl font-bold text-primary">TheGlocal</h1>
+        <div className="flex items-center gap-2">
+          <img 
+            src="/logo.png" 
+            alt="TheGlocal Logo" 
+            className="h-6 w-6 object-contain"
+          />
+          <h1 className="text-xl font-bold text-primary">TheGlocal</h1>
+        </div>
       </div>
 
       {/* Right Section */}

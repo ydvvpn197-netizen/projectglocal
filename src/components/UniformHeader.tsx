@@ -113,7 +113,7 @@ export function UniformHeader({
                 alt="Glocal Logo" 
                 className="w-8 h-8 object-contain"
               />
-                                <span className="text-xl font-bold hidden sm:inline">Glocal</span>
+                                <span className="text-xl font-bold hidden sm:inline">TheGlocal</span>
             </Link>
           </div>
 

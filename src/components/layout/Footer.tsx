@@ -14,7 +14,14 @@ export const Footer: React.FC<FooterProps> = ({ className }) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">TheGlocal</h3>
+            <div className="flex items-center gap-2">
+              <img 
+                src="/logo.png" 
+                alt="TheGlocal Logo" 
+                className="h-6 w-6 object-contain"
+              />
+              <h3 className="text-lg font-semibold">TheGlocal</h3>
+            </div>
             <p className="text-sm text-muted-foreground">
               Connecting local communities through technology, privacy, and engagement.
             </p>

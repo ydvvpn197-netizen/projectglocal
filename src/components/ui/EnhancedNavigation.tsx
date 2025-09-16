@@ -296,7 +296,7 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
                 className="h-8 w-8 object-contain"
               />
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                Glocal
+                TheGlocal
               </span>
             </motion.div>
           </Link>
