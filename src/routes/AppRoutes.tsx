@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { lazyImport } from '@/lib/lazyImport';
 import { CreatePostWrapper } from '@/components/CreatePostWrapper';
@@ -164,8 +164,8 @@ export const AppRoutes: React.FC = () => {
       <Route path="/payment/success" element={<PaymentSuccess />} />
       <Route path="/payment/cancel" element={<PaymentCancel />} />
       
-      {/* Subscription routes */}
-      <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+      {/* Subscription routes - redirect to profile subscription tab */}
+      <Route path="/subscription" element={<ProtectedRoute><Navigate to="/profile?tab=subscription" replace /></ProtectedRoute>} />
       <Route path="/subscription/plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
       <Route path="/subscription/success" element={<SubscriptionSuccess />} />
       <Route path="/subscription/cancel" element={<SubscriptionCancel />} />

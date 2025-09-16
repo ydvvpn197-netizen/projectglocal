@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,9 +59,12 @@ import { MessagesTabContent } from "@/components/MessagesTabContent";
 import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
 import { SubscriptionManager } from "@/components/subscription/SubscriptionManager";
 import { useProPermissions } from "@/hooks/useProPermissions";
+import { subscriptionService, UserSubscription } from "@/services/subscriptionService";
+import { toast } from "sonner";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,13 +85,29 @@ const Profile = () => {
 
   const { isPro, loading: proLoading } = useProPermissions();
 
+  // Subscription state
+  const [subscriptionHistory, setSubscriptionHistory] = useState<UserSubscription[]>([]);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState("overview");
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     display_name: '',
     bio: '',
     location_city: '',
     location_state: '',
-    location_country: ''
+    location_country: '',
+    website_url: '',
+    phone_number: '',
+    first_name: '',
+    last_name: '',
+    artist_skills: [] as string[],
+    hourly_rate_min: '',
+    hourly_rate_max: '',
+    portfolio_urls: [] as string[],
+    real_time_location_enabled: false
   });
 
   // Update edit form when profile data changes
@@ -99,13 +118,29 @@ const Profile = () => {
         bio: profile.bio || '',
         location_city: profile.location_city || '',
         location_state: profile.location_state || '',
-        location_country: profile.location_country || ''
+        location_country: profile.location_country || '',
+        website_url: profile.website_url || '',
+        phone_number: profile.phone_number || '',
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        artist_skills: profile.artist_skills || [],
+        hourly_rate_min: profile.hourly_rate_min?.toString() || '',
+        hourly_rate_max: profile.hourly_rate_max?.toString() || '',
+        portfolio_urls: profile.portfolio_urls || [],
+        real_time_location_enabled: profile.real_time_location_enabled || false
       });
     }
   }, [profile]);
 
   const handleSaveProfile = async () => {
-    const result = await updateProfile(editForm);
+    // Convert form data to proper types
+    const updateData = {
+      ...editForm,
+      hourly_rate_min: editForm.hourly_rate_min ? parseInt(editForm.hourly_rate_min) : undefined,
+      hourly_rate_max: editForm.hourly_rate_max ? parseInt(editForm.hourly_rate_max) : undefined,
+    };
+
+    const result = await updateProfile(updateData);
     if (result.success) {
       setIsEditModalOpen(false);
     }
@@ -207,6 +242,89 @@ const Profile = () => {
       return 'Unknown';
     }
   };
+
+  // Subscription functions
+  const loadSubscriptionHistory = async () => {
+    if (!user?.id) return;
+
+    try {
+      setSubscriptionLoading(true);
+      const history = await subscriptionService.getUserSubscriptionHistory(user.id);
+      setSubscriptionHistory(history);
+    } catch (error) {
+      console.error('Error loading subscription history:', error);
+      toast.error('Failed to load subscription history');
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!user?.id) return;
+
+    try {
+      const result = await subscriptionService.cancelSubscription(user.id);
+      if (result.success) {
+        toast.success('Subscription canceled successfully');
+        // Refresh the page to update status
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Failed to cancel subscription');
+      }
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      toast.error('Failed to cancel subscription');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const getSubscriptionStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'canceled':
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      case 'past_due':
+        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  const getSubscriptionStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'canceled':
+        return 'bg-red-100 text-red-800';
+      case 'past_due':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Load subscription history when component mounts
+  useEffect(() => {
+    if (user?.id) {
+      loadSubscriptionHistory();
+    }
+  }, [user?.id]);
+
+  // Handle URL tab parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -424,7 +542,7 @@ const Profile = () => {
         )}
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
@@ -717,10 +835,167 @@ const Profile = () => {
               <h2 className="text-xl font-semibold">Subscription Management</h2>
             </div>
             
-            <div className="grid gap-6 md:grid-cols-2">
-              <SubscriptionStatus showUpgradeButton={true} />
-              <SubscriptionManager userType={user?.user_metadata?.user_type || 'user'} />
-            </div>
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="plans">Plans</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
+
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Current Status */}
+                  <SubscriptionStatus showUpgradeButton={false} />
+                  
+                  {/* Pro Features */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Star className="h-5 w-5 text-yellow-500" />
+                        Pro Features
+                      </CardTitle>
+                      <CardDescription>
+                        Features available with Pro subscription
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${isPro ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className="text-sm">Comment on news articles</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${isPro ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className="text-sm">Priority customer support</span>
+                        </div>
+                        {user?.user_metadata?.user_type === 'artist' && (
+                          <div className="flex items-center gap-3">
+                            <div className={`w-2 h-2 rounded-full ${isPro ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <span className="text-sm">Featured listing in search results</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {!isPro && (
+                        <div className="pt-4 border-t">
+                          <Button 
+                            onClick={() => navigate('/subscription/plans')}
+                            className="w-full"
+                          >
+                            <Crown className="h-4 w-4 mr-2" />
+                            Upgrade to Pro
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Current Subscription Details */}
+                {isPro && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5" />
+                        Current Subscription
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Pro Subscription Active</p>
+                          <p className="text-sm text-gray-600">
+                            Enjoying all Pro features
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelSubscription}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Manage Subscription
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* Plans Tab */}
+              <TabsContent value="plans">
+                <SubscriptionManager userType={user?.user_metadata?.user_type || 'user'} />
+              </TabsContent>
+
+              {/* History Tab */}
+              <TabsContent value="history">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Subscription History
+                    </CardTitle>
+                    <CardDescription>
+                      Your subscription history and billing information
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {subscriptionLoading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="mt-2 text-gray-600">Loading subscription history...</p>
+                      </div>
+                    ) : subscriptionHistory.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">No subscription history found</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {subscriptionHistory.map((subscription) => (
+                          <div
+                            key={subscription.id}
+                            className="flex items-center justify-between p-4 border rounded-lg"
+                          >
+                            <div className="flex items-center gap-4">
+                              {getSubscriptionStatusIcon(subscription.status)}
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium">
+                                    {subscription.plan?.name || 'Unknown Plan'}
+                                  </span>
+                                  <Badge className={getSubscriptionStatusColor(subscription.status)}>
+                                    {subscription.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  {subscription.plan?.description}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Created: {formatDate(subscription.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="text-right">
+                              <p className="font-medium">
+                                {subscription.plan?.price_in_cents 
+                                  ? `₹${(subscription.plan.price_in_cents / 100).toFixed(0)}`
+                                  : 'N/A'
+                                }
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {subscription.plan?.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* Badges Tab */}

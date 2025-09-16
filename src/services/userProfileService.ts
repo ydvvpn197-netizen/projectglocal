@@ -31,6 +31,11 @@ export interface ProfileUpdateData {
   location_state?: string;
   location_country?: string;
   avatar_url?: string;
+  cover_url?: string;
+  website_url?: string;
+  phone_number?: string;
+  first_name?: string;
+  last_name?: string;
   artist_skills?: string[];
   hourly_rate_min?: number;
   hourly_rate_max?: number;
@@ -108,22 +113,69 @@ class UserProfileService {
     }
   }
 
-  async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string }> {
+  async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: any }> {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          ...updateData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
+      // First validate the data
+      const { data: validationResult, error: validationError } = await supabase.rpc('validate_profile_data', {
+        p_display_name: updateData.display_name || null,
+        p_bio: updateData.bio || null,
+        p_location_city: updateData.location_city || null,
+        p_location_state: updateData.location_state || null,
+        p_location_country: updateData.location_country || null,
+        p_website_url: updateData.website_url || null,
+        p_phone_number: updateData.phone_number || null,
+        p_first_name: updateData.first_name || null,
+        p_last_name: updateData.last_name || null,
+        p_artist_skills: updateData.artist_skills || null,
+        p_hourly_rate_min: updateData.hourly_rate_min || null,
+        p_hourly_rate_max: updateData.hourly_rate_max || null,
+        p_portfolio_urls: updateData.portfolio_urls || null
+      });
+
+      if (validationError) {
+        console.error('Validation error:', validationError);
+        return { success: false, error: 'Validation failed' };
+      }
+
+      if (validationResult && !validationResult.valid) {
+        return { 
+          success: false, 
+          error: validationResult.errors?.join(', ') || 'Validation failed',
+          data: validationResult
+        };
+      }
+
+      // Use the enhanced database function
+      const { data, error } = await supabase.rpc('update_user_profile', {
+        p_user_id: userId,
+        p_display_name: updateData.display_name || null,
+        p_bio: updateData.bio || null,
+        p_location_city: updateData.location_city || null,
+        p_location_state: updateData.location_state || null,
+        p_location_country: updateData.location_country || null,
+        p_avatar_url: updateData.avatar_url || null,
+        p_cover_url: updateData.cover_url || null,
+        p_website_url: updateData.website_url || null,
+        p_phone_number: updateData.phone_number || null,
+        p_first_name: updateData.first_name || null,
+        p_last_name: updateData.last_name || null,
+        p_real_time_location_enabled: updateData.real_time_location_enabled || null,
+        p_artist_skills: updateData.artist_skills || null,
+        p_hourly_rate_min: updateData.hourly_rate_min || null,
+        p_hourly_rate_max: updateData.hourly_rate_max || null,
+        p_portfolio_urls: updateData.portfolio_urls || null
+      });
 
       if (error) {
         console.error('Error updating user profile:', error);
         return { success: false, error: error.message };
       }
 
-      return { success: true };
+      if (data && !data.success) {
+        return { success: false, error: data.error || 'Update failed' };
+      }
+
+      return { success: true, data: data };
     } catch (error: unknown) {
       console.error('Error in updateUserProfile:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
@@ -456,6 +508,74 @@ class UserProfileService {
     if (diffInWeeks < 4) return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
     
     return date.toLocaleDateString();
+  }
+
+  async getProfileUpdateHistory(userId: string, limit: number = 10, offset: number = 0): Promise<any> {
+    try {
+      const { data, error } = await supabase.rpc('get_profile_update_history', {
+        p_user_id: userId,
+        p_limit: limit,
+        p_offset: offset
+      });
+
+      if (error) {
+        console.error('Error fetching profile update history:', error);
+        return { success: false, error: error.message };
+      }
+
+      return data;
+    } catch (error: unknown) {
+      console.error('Error in getProfileUpdateHistory:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async getProfileStatistics(userId: string): Promise<any> {
+    try {
+      const { data, error } = await supabase.rpc('get_profile_statistics', {
+        p_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error fetching profile statistics:', error);
+        return { success: false, error: error.message };
+      }
+
+      return data;
+    } catch (error: unknown) {
+      console.error('Error in getProfileStatistics:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async validateProfileData(updateData: ProfileUpdateData): Promise<any> {
+    try {
+      const { data, error } = await supabase.rpc('validate_profile_data', {
+        p_display_name: updateData.display_name || null,
+        p_bio: updateData.bio || null,
+        p_location_city: updateData.location_city || null,
+        p_location_state: updateData.location_state || null,
+        p_location_country: updateData.location_country || null,
+        p_website_url: updateData.website_url || null,
+        p_phone_number: updateData.phone_number || null,
+        p_first_name: updateData.first_name || null,
+        p_last_name: updateData.last_name || null,
+        p_artist_skills: updateData.artist_skills || null,
+        p_hourly_rate_min: updateData.hourly_rate_min || null,
+        p_hourly_rate_max: updateData.hourly_rate_max || null,
+        p_portfolio_urls: updateData.portfolio_urls || null
+      });
+
+      if (error) {
+        console.error('Error validating profile data:', error);
+        return { success: false, error: error.message };
+      }
+
+      return data;
+    } catch (error: unknown) {
+      console.error('Error in validateProfileData:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
   }
 
   private formatDate(dateString: string): string {
