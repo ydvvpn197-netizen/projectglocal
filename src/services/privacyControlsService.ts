@@ -50,7 +50,7 @@ export interface IdentityRevealRequest {
   resource_type: 'profile' | 'post' | 'comment' | 'event' | 'service' | 'message';
   resource_id: string;
   reveal: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 export class PrivacyControlsService {
@@ -119,8 +119,8 @@ export class PrivacyControlsService {
       }
 
       // Update profile fields
-      const profileUpdates: any = {};
-      const privacyUpdates: any = {};
+      const profileUpdates: Record<string, unknown> = {};
+      const privacyUpdates: Record<string, unknown> = {};
 
       if (updates.is_anonymous !== undefined) profileUpdates.is_anonymous = updates.is_anonymous;
       if (updates.display_name !== undefined) profileUpdates.display_name = updates.display_name;
@@ -267,7 +267,7 @@ export class PrivacyControlsService {
       );
 
       // Update the specific resource based on type
-      const updateData: any = { is_anonymous: !request.reveal };
+      const updateData: Record<string, unknown> = { is_anonymous: !request.reveal };
       
       if (request.reveal) {
         // When revealing, we might want to set the user_id or remove anonymous_user_id
@@ -405,8 +405,19 @@ export class PrivacyControlsService {
    */
   static async exportPrivacyData(): Promise<{
     privacy_controls: PrivacyControlsConfig | null;
-    anonymous_stats: any;
-    audit_logs: any;
+    anonymous_stats: {
+      total_anonymous_posts: number;
+      total_anonymous_comments: number;
+      total_anonymous_votes: number;
+      identity_reveals: number;
+      identity_hides: number;
+    };
+    audit_logs: Array<{
+      id: string;
+      action: string;
+      timestamp: string;
+      metadata: Record<string, unknown>;
+    }>;
     export_timestamp: string;
   }> {
     try {

@@ -255,7 +255,12 @@ export class SentimentAnalysisService {
   /**
    * Calculate sentiment trends from historical data
    */
-  private calculateSentimentTrends(data: any[]) {
+  private calculateSentimentTrends(data: Array<{
+    sentiment_score: number;
+    sentiment_label: string;
+    confidence_score: number;
+    created_at: string;
+  }>) {
     if (data.length === 0) {
       return {
         average_sentiment: 0,
@@ -289,7 +294,12 @@ export class SentimentAnalysisService {
   /**
    * Calculate sentiment summary
    */
-  private calculateSentimentSummary(data: any[]) {
+  private calculateSentimentSummary(data: Array<{
+    sentiment_score: number;
+    sentiment_label: string;
+    confidence_score: number;
+    created_at: string;
+  }>) {
     if (data.length === 0) {
       return {
         total_analyses: 0,
@@ -328,7 +338,10 @@ export class SentimentAnalysisService {
   /**
    * Calculate sentiment evolution over time
    */
-  private calculateSentimentEvolution(data: any[]) {
+  private calculateSentimentEvolution(data: Array<{
+    sentiment_score: number;
+    created_at: string;
+  }>) {
     // Group by day and calculate daily averages
     const dailySentiment = data.reduce((acc, item) => {
       const date = new Date(item.created_at).toISOString().split('T')[0];
