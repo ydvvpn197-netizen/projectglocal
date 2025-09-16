@@ -35,28 +35,46 @@ const checkEnvFile = () => {
   return fs.existsSync('.env');
 };
 
-// Read environment variables from .env file
+// Read environment variables from .env file or process.env
 const readEnvFile = () => {
-  try {
-    const content = fs.readFileSync('.env', 'utf8');
-    const lines = content.split('\n');
-    const envVars = {};
-    
-    lines.forEach(line => {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const [key, ...valueParts] = trimmedLine.split('=');
-        if (key && valueParts.length > 0) {
-          envVars[key.trim()] = valueParts.join('=').trim();
-        }
-      }
-    });
-    
-    return envVars;
-  } catch (error) {
-    log.error(`Failed to read .env file: ${error.message}`);
-    return {};
+  // First try to read from process.env (GitHub Actions)
+  const envVars = {};
+  
+  // Get Supabase variables from environment
+  if (process.env.VITE_SUPABASE_URL) {
+    envVars.VITE_SUPABASE_URL = process.env.VITE_SUPABASE_URL;
   }
+  if (process.env.VITE_SUPABASE_ANON_KEY) {
+    envVars.VITE_SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
+  }
+  
+  // If we have the required variables from environment, use them
+  if (envVars.VITE_SUPABASE_URL && envVars.VITE_SUPABASE_ANON_KEY) {
+    return envVars;
+  }
+  
+  // Otherwise, try to read from .env file
+  if (checkEnvFile()) {
+    try {
+      const content = fs.readFileSync('.env', 'utf8');
+      const lines = content.split('\n');
+      
+      lines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (trimmedLine && !trimmedLine.startsWith('#')) {
+          const [key, ...valueParts] = trimmedLine.split('=');
+          if (key && valueParts.length > 0) {
+            envVars[key.trim()] = valueParts.join('=').trim();
+          }
+        }
+      });
+    } catch (error) {
+      log.error(`Failed to read .env file: ${error.message}`);
+      return {};
+    }
+  }
+  
+  return envVars;
 };
 
 // Validate Supabase URL
@@ -65,7 +83,7 @@ const validateSupabaseUrl = (url) => {
     return { valid: false, message: 'URL is empty' };
   }
   
-  if (url.includes('your_supabase') || url.includes('placeholder')) {
+  if (url.includes('your_supabase') || url.includes('placeholder') || url === 'https://placeholder.supabase.co') {
     return { valid: false, message: 'URL contains placeholder text' };
   }
   
@@ -83,7 +101,7 @@ const validateSupabaseKey = (key) => {
     return { valid: false, message: 'Key is empty' };
   }
   
-  if (key.includes('your_supabase') || key.includes('placeholder')) {
+  if (key.includes('your_supabase') || key.includes('placeholder') || key === 'placeholder_key') {
     return { valid: false, message: 'Key contains placeholder text' };
   }
   
@@ -140,20 +158,19 @@ const testSupabaseConnection = async (url, key) => {
 const main = async () => {
   log.header('🧪 Supabase Connection Test');
   
-  // Check if .env file exists
-  if (!checkEnvFile()) {
-    log.error('.env file not found!');
-    log.info('Please run: npm run setup:env');
-    process.exit(1);
-  }
-  
   // Read environment variables
   log.info('Reading environment variables...');
   const envVars = readEnvFile();
   
   if (Object.keys(envVars).length === 0) {
-    log.error('No environment variables found in .env file');
-    process.exit(1);
+    if (!checkEnvFile()) {
+      log.error('.env file not found and no environment variables set!');
+      log.info('Please run: npm run setup:env or set environment variables');
+      process.exit(1);
+    } else {
+      log.error('No environment variables found in .env file');
+      process.exit(1);
+    }
   }
   
   // Get Supabase variables
