@@ -59,7 +59,7 @@ export const AnonymousMode: React.FC<AnonymousModeProps> = ({
     if (isAnonymous && !anonymousUser) {
       initializeAnonymousUser();
     }
-  }, [isAnonymous, anonymousUser, initializeAnonymousUser]);
+  }, [isAnonymous, anonymousUser]);
 
   const initializeAnonymousUser = useCallback(async () => {
     if (!user) return;

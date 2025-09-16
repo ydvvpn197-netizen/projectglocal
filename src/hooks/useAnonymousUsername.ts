@@ -30,7 +30,7 @@ export const useAnonymousUsername = () => {
     if (user) {
       loadAnonymousUser();
     }
-  }, [user, loadAnonymousUser]);
+  }, [user]);
 
   const loadAnonymousUser = useCallback(async () => {
     if (!user) return;

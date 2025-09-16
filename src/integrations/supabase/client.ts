@@ -50,45 +50,52 @@ const validateSupabaseConfig = (): boolean => {
 // Create Supabase client with validation and enhanced error handling
 let supabase: ReturnType<typeof createClient<Database>>;
 
-if (validateSupabaseConfig()) {
-  try {
-    supabase = createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {
-      auth: {
-        storage: localStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 10,
+// Initialize Supabase client immediately to avoid initialization errors
+const initializeSupabaseClient = (): ReturnType<typeof createClient<Database>> => {
+  if (validateSupabaseConfig()) {
+    try {
+      const client = createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {
+        auth: {
+          storage: localStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: 'pkce',
         },
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'projectglocal-web',
+        realtime: {
+          params: {
+            eventsPerSecond: 10,
+          },
         },
-      },
-      db: {
-        schema: 'public',
-      },
-    });
-    
-    console.log('✅ Supabase client initialized successfully');
-    
-  } catch (error) {
-    console.error('❌ Failed to initialize Supabase client:', error);
+        global: {
+          headers: {
+            'X-Client-Info': 'projectglocal-web',
+          },
+        },
+        db: {
+          schema: 'public',
+        },
+      });
+      
+      console.log('✅ Supabase client initialized successfully');
+      return client;
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize Supabase client:', error);
+      connectionStatus = 'failed';
+      // Create a mock client that will fail gracefully
+      return createClient<Database>('https://invalid.supabase.co', 'invalid-key');
+    }
+  } else {
+    console.error('❌ Supabase configuration is invalid');
     connectionStatus = 'failed';
     // Create a mock client that will fail gracefully
-    supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
+    return createClient<Database>('https://invalid.supabase.co', 'invalid-key');
   }
-} else {
-  console.error('❌ Supabase configuration is invalid');
-  connectionStatus = 'failed';
-  // Create a mock client that will fail gracefully
-  supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');
-}
+};
+
+// Initialize the client immediately
+supabase = initializeSupabaseClient();
 
 // A second client export (alias) commonly used around the app
 export const resilientSupabase = supabase;
