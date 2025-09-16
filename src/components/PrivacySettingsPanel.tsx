@@ -221,7 +221,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
             </div>
             <Select
               value={settings.profileVisibility}
-              onValueChange={(value: any) => updateSetting('profileVisibility', value)}
+              onValueChange={(value: string) => updateSetting('profileVisibility', value)}
             >
               <SelectTrigger className="w-32">
                 <SelectValue />
@@ -241,7 +241,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
             </div>
             <Select
               value={settings.locationSharing}
-              onValueChange={(value: any) => updateSetting('locationSharing', value)}
+              onValueChange={(value: string) => updateSetting('locationSharing', value)}
             >
               <SelectTrigger className="w-32">
                 <SelectValue />
@@ -342,7 +342,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
             <Label className="text-base font-medium">Profile Visibility</Label>
             <Select
               value={settings.profileVisibility}
-              onValueChange={(value: any) => updateSetting('profileVisibility', value)}
+              onValueChange={(value: string) => updateSetting('profileVisibility', value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -483,7 +483,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
             <Label className="text-base font-medium">Location Sharing</Label>
             <Select
               value={settings.locationSharing}
-              onValueChange={(value: any) => updateSetting('locationSharing', value)}
+              onValueChange={(value: string) => updateSetting('locationSharing', value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -536,7 +536,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
             <Label className="text-base font-medium">Activity Visibility</Label>
             <Select
               value={settings.activityVisibility}
-              onValueChange={(value: any) => updateSetting('activityVisibility', value)}
+              onValueChange={(value: string) => updateSetting('activityVisibility', value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -613,7 +613,7 @@ export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
             <Label className="text-base font-medium">Allow Messages From</Label>
             <Select
               value={settings.allowMessagesFrom}
-              onValueChange={(value: any) => updateSetting('allowMessagesFrom', value)}
+              onValueChange={(value: string) => updateSetting('allowMessagesFrom', value)}
             >
               <SelectTrigger>
                 <SelectValue />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,14 +48,14 @@ export const PrivacyFirstIdentitySystem: React.FC<PrivacyFirstIdentitySystemProp
   const [privacyControls, setPrivacyControls] = useState<PrivacyControlsConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<unknown>(null);
 
   // Load privacy controls on mount
   useEffect(() => {
     loadPrivacyControls();
-  }, []);
+  }, [loadPrivacyControls]);
 
-  const loadPrivacyControls = async () => {
+  const loadPrivacyControls = useCallback(async () => {
     try {
       setLoading(true);
       const [controls, anonymousStats] = await Promise.all([
@@ -79,9 +79,9 @@ export const PrivacyFirstIdentitySystem: React.FC<PrivacyFirstIdentitySystemProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [showStats]);
 
-  const updatePrivacySetting = async (key: keyof PrivacyControlsConfig, value: any) => {
+  const updatePrivacySetting = async (key: keyof PrivacyControlsConfig, value: unknown) => {
     if (!privacyControls) return;
 
     try {

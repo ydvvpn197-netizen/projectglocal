@@ -101,7 +101,7 @@ export const MediaIntegrationSystem: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const getMediaIcon = (type: string) => {
     switch (type) {

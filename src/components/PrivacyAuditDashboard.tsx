@@ -70,7 +70,7 @@ export const PrivacyAuditDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const handleExportData = async () => {
     try {

@@ -272,7 +272,7 @@ export const PrivacyDashboard = ({ onClose, compact = false }: PrivacyDashboardP
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Export Type</Label>
-              <Select value={exportType} onValueChange={(value: any) => setExportType(value)}>
+              <Select value={exportType} onValueChange={(value: string) => setExportType(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -286,7 +286,7 @@ export const PrivacyDashboard = ({ onClose, compact = false }: PrivacyDashboardP
             </div>
             <div className="space-y-2">
               <Label>Format</Label>
-              <Select value={exportFormat} onValueChange={(value: any) => setExportFormat(value)}>
+              <Select value={exportFormat} onValueChange={(value: string) => setExportFormat(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
