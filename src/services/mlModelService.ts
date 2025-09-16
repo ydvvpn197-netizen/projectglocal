@@ -47,8 +47,8 @@ export class MLModelService {
     modelType: MLModel['model_type'],
     modelVersion: string,
     modelData: ArrayBuffer,
-    metadata: Record<string, any> = {},
-    performanceMetrics: Record<string, any> = {},
+    metadata: Record<string, unknown> = {},
+    performanceMetrics: Record<string, unknown> = {},
     trainingDataHash?: string
   ): Promise<string> {
     try {
@@ -189,7 +189,7 @@ export class MLModelService {
    */
   async updateModelMetrics(
     modelId: string,
-    metrics: Record<string, any>
+    metrics: Record<string, unknown>
   ): Promise<void> {
     try {
       const { error } = await supabase
@@ -305,7 +305,7 @@ export class MLModelService {
    */
   async makePrediction(
     modelType: MLModel['model_type'],
-    input: any
+    input: unknown
   ): Promise<ModelPrediction> {
     try {
       const model = await this.getActiveModel(modelType);
@@ -318,20 +318,22 @@ export class MLModelService {
       const modelData = this.base64ToArrayBuffer(model.model_data as string);
       
       // Make prediction based on model type
-      let prediction: any;
+      let prediction: unknown;
       let confidence: number;
 
       switch (modelType) {
-        case 'sentiment':
+        case 'sentiment': {
           const sentimentResult = this.predictSentiment(input, modelData);
           prediction = sentimentResult.prediction;
           confidence = sentimentResult.confidence;
           break;
-        case 'trend':
+        }
+        case 'trend': {
           const trendResult = this.predictTrend(input, modelData);
           prediction = trendResult.prediction;
           confidence = trendResult.confidence;
           break;
+        }
         default:
           throw new Error(`Unsupported model type: ${modelType}`);
       }
@@ -357,7 +359,7 @@ export class MLModelService {
    */
   async batchPredict(
     modelType: MLModel['model_type'],
-    inputs: any[]
+    inputs: unknown[]
   ): Promise<ModelPrediction[]> {
     try {
       const predictions: ModelPrediction[] = [];
@@ -377,7 +379,7 @@ export class MLModelService {
   /**
    * Get model performance statistics
    */
-  async getModelPerformance(modelId: string): Promise<Record<string, any>> {
+  async getModelPerformance(modelId: string): Promise<Record<string, unknown>> {
     try {
       const { data, error } = await supabase
         .from('ml_models')
@@ -507,7 +509,7 @@ export class MLModelService {
   /**
    * Predict sentiment using model
    */
-  private predictSentiment(input: any, modelData: ArrayBuffer): { prediction: any; confidence: number } {
+  private predictSentiment(input: unknown, modelData: ArrayBuffer): { prediction: unknown; confidence: number } {
     const modelString = this.arrayBufferToString(modelData);
     const model = JSON.parse(modelString);
     
@@ -547,7 +549,7 @@ export class MLModelService {
   /**
    * Predict trend using model
    */
-  private predictTrend(input: any, modelData: ArrayBuffer): { prediction: any; confidence: number } {
+  private predictTrend(input: unknown, modelData: ArrayBuffer): { prediction: unknown; confidence: number } {
     const modelString = this.arrayBufferToString(modelData);
     const model = JSON.parse(modelString);
     

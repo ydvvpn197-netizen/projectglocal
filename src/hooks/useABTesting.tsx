@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './useAuth';
+import { mockABTests, hashString } from './abTestingUtils';
 
 interface ABTest {
   id: string;
@@ -33,46 +34,6 @@ interface ABTestingContextType {
 
 const ABTestingContext = createContext<ABTestingContextType | undefined>(undefined);
 
-// Mock AB tests - replace with real data from your analytics service
-const mockABTests: ABTest[] = [
-  {
-    id: 'unified-navigation',
-    name: 'Unified Navigation',
-    description: 'Test the new unified navigation system vs old sidebar',
-    variants: {
-      control: 'sidebar',
-      treatment: 'unified'
-    },
-    trafficAllocation: 0.5, // 50% of users
-    isActive: true,
-    startDate: new Date().toISOString(),
-  },
-  {
-    id: 'post-creation-flow',
-    name: 'Post Creation Flow',
-    description: 'Test unified post creator vs separate creation pages',
-    variants: {
-      control: 'separate',
-      treatment: 'unified'
-    },
-    trafficAllocation: 0.3, // 30% of users
-    isActive: true,
-    startDate: new Date().toISOString(),
-  },
-  {
-    id: 'onboarding-simplification',
-    name: 'Onboarding Simplification',
-    description: 'Test simplified 2-step onboarding vs original 4-step',
-    variants: {
-      control: 'original',
-      treatment: 'simplified'
-    },
-    trafficAllocation: 0.4, // 40% of users
-    isActive: true,
-    startDate: new Date().toISOString(),
-  }
-];
-
 export const ABTestingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [activeTests, setActiveTests] = useState<ABTest[]>([]);
@@ -100,15 +61,6 @@ export const ABTestingProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   }, [user, activeTests]);
 
-  const hashString = (str: string): number => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash);
-  };
 
   const getUserVariant = (testId: string): 'control' | 'treatment' | null => {
     return userVariants[testId] || null;
@@ -152,30 +104,4 @@ export const ABTestingProvider: React.FC<{ children: ReactNode }> = ({ children 
   );
 };
 
-export const useABTesting = (): ABTestingContextType => {
-  const context = useContext(ABTestingContext);
-  if (context === undefined) {
-    throw new Error('useABTesting must be used within an ABTestingProvider');
-  }
-  return context;
-};
 
-// Hook for specific test variants
-export const useABTest = (testId: string) => {
-  const { getUserVariant, trackEvent, isUserInTest } = useABTesting();
-  
-  const variant = getUserVariant(testId);
-  const isInTest = isUserInTest(testId);
-  
-  const track = (event: string, metadata?: Record<string, unknown>) => {
-    trackEvent(testId, event, metadata);
-  };
-
-  return {
-    variant,
-    isInTest,
-    track,
-    isControl: variant === 'control',
-    isTreatment: variant === 'treatment'
-  };
-};

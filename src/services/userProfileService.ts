@@ -103,6 +103,30 @@ class UserProfileService {
 
       if (error) {
         console.error('Error fetching user profile:', error);
+        
+        // If profile doesn't exist, create a basic one
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating basic profile for user:', userId);
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: userId,
+              display_name: null,
+              bio: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            return null;
+          }
+
+          return newProfile;
+        }
+        
         return null;
       }
 
@@ -115,64 +139,44 @@ class UserProfileService {
 
   async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: UserProfile }> {
     try {
-      // First validate the data
-      const { data: validationResult, error: validationError } = await supabase.rpc('validate_profile_data', {
-        p_display_name: updateData.display_name || null,
-        p_bio: updateData.bio || null,
-        p_location_city: updateData.location_city || null,
-        p_location_state: updateData.location_state || null,
-        p_location_country: updateData.location_country || null,
-        p_website_url: updateData.website_url || null,
-        p_phone_number: updateData.phone_number || null,
-        p_first_name: updateData.first_name || null,
-        p_last_name: updateData.last_name || null,
-        p_artist_skills: updateData.artist_skills || null,
-        p_hourly_rate_min: updateData.hourly_rate_min || null,
-        p_hourly_rate_max: updateData.hourly_rate_max || null,
-        p_portfolio_urls: updateData.portfolio_urls || null
-      });
-
-      if (validationError) {
-        console.error('Validation error:', validationError);
-        return { success: false, error: 'Validation failed' };
+      // Simple validation
+      if (updateData.display_name && updateData.display_name.length > 100) {
+        return { success: false, error: 'Display name must be 100 characters or less' };
+      }
+      
+      if (updateData.bio && updateData.bio.length > 1000) {
+        return { success: false, error: 'Bio must be 1000 characters or less' };
       }
 
-      if (validationResult && !validationResult.valid) {
-        return { 
-          success: false, 
-          error: validationResult.errors?.join(', ') || 'Validation failed',
-          data: validationResult
-        };
-      }
-
-      // Use the enhanced database function
-      const { data, error } = await supabase.rpc('update_user_profile', {
-        p_user_id: userId,
-        p_display_name: updateData.display_name || null,
-        p_bio: updateData.bio || null,
-        p_location_city: updateData.location_city || null,
-        p_location_state: updateData.location_state || null,
-        p_location_country: updateData.location_country || null,
-        p_avatar_url: updateData.avatar_url || null,
-        p_cover_url: updateData.cover_url || null,
-        p_website_url: updateData.website_url || null,
-        p_phone_number: updateData.phone_number || null,
-        p_first_name: updateData.first_name || null,
-        p_last_name: updateData.last_name || null,
-        p_real_time_location_enabled: updateData.real_time_location_enabled || null,
-        p_artist_skills: updateData.artist_skills || null,
-        p_hourly_rate_min: updateData.hourly_rate_min || null,
-        p_hourly_rate_max: updateData.hourly_rate_max || null,
-        p_portfolio_urls: updateData.portfolio_urls || null
-      });
+      // Use direct table update to avoid RPC function issues
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: updateData.display_name,
+          bio: updateData.bio,
+          location_city: updateData.location_city,
+          location_state: updateData.location_state,
+          location_country: updateData.location_country,
+          avatar_url: updateData.avatar_url,
+          cover_url: updateData.cover_url,
+          website_url: updateData.website_url,
+          phone_number: updateData.phone_number,
+          first_name: updateData.first_name,
+          last_name: updateData.last_name,
+          real_time_location_enabled: updateData.real_time_location_enabled,
+          artist_skills: updateData.artist_skills,
+          hourly_rate_min: updateData.hourly_rate_min,
+          hourly_rate_max: updateData.hourly_rate_max,
+          portfolio_urls: updateData.portfolio_urls,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error updating user profile:', error);
         return { success: false, error: error.message };
-      }
-
-      if (data && !data.success) {
-        return { success: false, error: data.error || 'Update failed' };
       }
 
       return { success: true, data: data };

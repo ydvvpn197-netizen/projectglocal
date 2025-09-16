@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
-import { useABTesting } from './useABTesting';
+import { useABTesting } from './useABTestingHook';
 
 interface AnalyticsEvent {
   event: string;

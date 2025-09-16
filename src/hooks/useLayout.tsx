@@ -1,3 +1,3 @@
-import { useLayout as useLayoutContext } from '@/contexts/LayoutContext';
+import { useLayout as useLayoutContext } from './useLayout';
 
 export const useLayout = useLayoutContext;
