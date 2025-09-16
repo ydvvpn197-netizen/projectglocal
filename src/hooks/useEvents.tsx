@@ -194,6 +194,8 @@ export const useEvents = () => {
         price: eventData.price || 0,
         image_url: eventData.image_url || null,
         tags: eventData.tags || null,
+        government_authority_id: eventData.government_authority_id || null,
+        target_authority: eventData.target_authority || null,
       };
 
       console.log('Inserting event data:', insertData);

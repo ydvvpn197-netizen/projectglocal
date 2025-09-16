@@ -48,6 +48,9 @@ import {
   Mountain,
   Shield,
   HeartHandshake,
+  Eye,
+  EyeOff,
+  Lock,
   Lightbulb,
   Rocket,
   Target,
@@ -431,7 +434,7 @@ export const EnhancedIndex: React.FC = () => {
 
             <motion.div
               variants={itemVariants}
-              className="flex justify-center items-center mb-12"
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
             >
               <AdvancedButton
                 onClick={handleGetStarted}
@@ -442,6 +445,18 @@ export const EnhancedIndex: React.FC = () => {
               >
                 {user ? 'Go to Feed' : 'Get Started'}
               </AdvancedButton>
+              
+              {!user && (
+                <AdvancedButton
+                  onClick={() => navigate('/privacy-first-onboarding')}
+                  size="lg"
+                  variant="outline"
+                  leftIcon={<Shield className="h-5 w-5" />}
+                  rightIcon={<EyeOff className="h-5 w-5" />}
+                >
+                  Anonymous Mode
+                </AdvancedButton>
+              )}
             </motion.div>
 
             {/* Hero Features */}

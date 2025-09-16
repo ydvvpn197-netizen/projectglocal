@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { CalendarIcon, Clock, MapPin, Users, DollarSign, Tag } from "lucide-react";
 import { useEvents } from "@/hooks/useEvents";
+import { GovernmentAuthorityTagging } from "@/components/GovernmentAuthorityTagging";
 import { useAuth } from "@/hooks/useAuth";
 
 const CreateEvent = () => {
@@ -29,6 +30,7 @@ const CreateEvent = () => {
     image_url: "",
     tags: "",
   });
+  const [selectedAuthorities, setSelectedAuthorities] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +52,8 @@ const CreateEvent = () => {
       price: formData.price ? parseFloat(formData.price) : 0,
       image_url: formData.image_url || undefined,
       tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : undefined,
+      government_authority_id: selectedAuthorities.length > 0 ? selectedAuthorities[0] : undefined,
+      target_authority: selectedAuthorities.length > 0 ? selectedAuthorities : undefined,
     };
     
     const success = await createEvent(eventData);
@@ -242,6 +246,14 @@ const CreateEvent = () => {
                   placeholder="photography, outdoor, beginner (comma separated)"
                 />
               </div>
+
+              {/* Government Authority Tagging */}
+              <GovernmentAuthorityTagging
+                selectedAuthorities={selectedAuthorities}
+                onAuthoritiesChange={setSelectedAuthorities}
+                compact={true}
+                showContactInfo={false}
+              />
 
               {/* Actions */}
               <div className="flex gap-4">

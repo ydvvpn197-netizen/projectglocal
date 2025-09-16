@@ -28,6 +28,7 @@ const MonetizationTest = React.lazy(() => import('@/pages/MonetizationTest'));
 // Auth/Onboarding pages (grouped together)
 const LocationSetup = React.lazy(() => import('@/pages/LocationSetup'));
 const Onboarding = React.lazy(() => import('@/pages/Onboarding'));
+const PrivacyFirstOnboarding = React.lazy(() => import('@/pages/PrivacyFirstOnboarding'));
 const ArtistOnboarding = React.lazy(() => import('@/pages/ArtistOnboarding'));
 const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
@@ -51,6 +52,7 @@ const ArtistProfile = React.lazy(() => import('@/pages/ArtistProfile'));
 // User pages (grouped together)
 const Profile = React.lazy(() => import('@/pages/Profile'));
 const Settings = React.lazy(() => import('@/pages/Settings'));
+const Privacy = React.lazy(() => import('@/pages/Privacy'));
 const UserProfile = React.lazy(() => import('@/pages/UserProfile'));
 const EnhancedProfile = React.lazy(() => import('@/pages/EnhancedProfile'));
 const NotificationSettings = React.lazy(() => import('@/pages/NotificationSettings'));
@@ -79,6 +81,12 @@ const PublicSquareSubscription = React.lazy(() => import('@/pages/PublicSquareSu
 // Civic Engagement
 const CivicEngagementDashboard = React.lazy(() => import('@/components/CivicEngagementDashboard').then(module => ({ default: module.CivicEngagementDashboard })));
 const CivicEngagementTest = React.lazy(() => import('@/pages/CivicEngagementTest').then(module => ({ default: module.CivicEngagementTest })));
+
+// Community Insights
+const CommunityInsights = React.lazy(() => import('@/pages/CommunityInsights'));
+
+// Community Moderation
+const CommunityTransparency = React.lazy(() => import('@/pages/CommunityTransparency'));
 
 // Payment pages
 const Pricing = React.lazy(() => import('@/pages/Pricing'));
@@ -140,6 +148,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy-first-onboarding" element={<PrivacyFirstOnboarding />} />
       <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
       <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
@@ -158,6 +167,10 @@ export const AppRoutes: React.FC = () => {
       <Route path="/public-square-subscription" element={<ProtectedRoute><PublicSquareSubscription /></ProtectedRoute>} />
       <Route path="/civic-engagement" element={<ProtectedRoute><CivicEngagementDashboard /></ProtectedRoute>} />
       <Route path="/civic-engagement-test" element={<CivicEngagementTest />} />
+      <Route path="/community-insights" element={<ProtectedRoute><CommunityInsights /></ProtectedRoute>} />
+      
+      {/* Community Moderation routes */}
+      <Route path="/community-transparency" element={<CommunityTransparency />} />
       
       {/* Payment routes */}
       <Route path="/pricing" element={<Pricing />} />
@@ -192,6 +205,7 @@ export const AppRoutes: React.FC = () => {
       {/* User routes */}
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
       <Route path="/user/:userId" element={<UserProfile />} />
       <Route path="/profile/:userId" element={<EnhancedProfile />} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />

@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useToast } from "@/hooks/use-toast";
+import { PrivacyDashboard } from "./PrivacyDashboard";
 import { 
   Shield, 
   Eye, 
@@ -20,7 +21,10 @@ import {
   Lock,
   Globe,
   UserCheck,
-  UserX
+  UserX,
+  Settings,
+  Database,
+  Download
 } from "lucide-react";
 
 interface PrivacySettingsProps {
@@ -39,6 +43,7 @@ export const PrivacySettings = ({ onClose, compact = false }: PrivacySettingsPro
 
   const [localSettings, setLocalSettings] = useState(settings);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showPrivacyDashboard, setShowPrivacyDashboard] = useState(false);
 
   // Update local settings when settings change
   useEffect(() => {
@@ -78,6 +83,15 @@ export const PrivacySettings = ({ onClose, compact = false }: PrivacySettingsPro
     setLocalSettings(settings);
     if (onClose) onClose();
   };
+
+  if (showPrivacyDashboard) {
+    return (
+      <PrivacyDashboard 
+        onClose={() => setShowPrivacyDashboard(false)}
+        compact={compact}
+      />
+    );
+  }
 
   return (
     <Card className={compact ? "" : "w-full"}>
@@ -286,6 +300,42 @@ export const PrivacySettings = ({ onClose, compact = false }: PrivacySettingsPro
               checked={localSettings.recommendable !== false}
               onCheckedChange={(checked) => handleInputChange('recommendable', checked)}
             />
+          </div>
+        </div>
+
+        {/* Enhanced Privacy Controls */}
+        <Separator />
+        
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Enhanced Privacy Controls
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setShowPrivacyDashboard(true)}>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Settings className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Privacy Dashboard</h4>
+                  <p className="text-sm text-muted-foreground">Manage data export, consent, and retention</p>
+                </div>
+              </div>
+            </Card>
+            
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setShowPrivacyDashboard(true)}>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Download className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium">Data Export</h4>
+                  <p className="text-sm text-muted-foreground">Download your personal data</p>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
 

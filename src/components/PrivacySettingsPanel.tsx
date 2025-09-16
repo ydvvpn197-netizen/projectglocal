@@ -1,551 +1,791 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { useAnonymousUsername } from '@/hooks/useAnonymousUsername';
+import { PrivacyFirstIdentitySystem } from './PrivacyFirstIdentitySystem';
 import { 
   Shield, 
   Eye, 
   EyeOff, 
-  MessageCircle, 
-  Search, 
-  BarChart3, 
-  UserX, 
+  User, 
+  Settings, 
+  AlertTriangle, 
+  Lock,
+  Globe,
   MapPin,
-  Save,
-  RefreshCw,
-  Info
+  MessageSquare,
+  Bell,
+  Search,
+  BarChart3,
+  Mail,
+  Smartphone,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { PrivacyService, PrivacySettings } from '@/services/privacyService';
+import { PRIVACY_LEVELS, LOCATION_SHARING_LEVELS } from '@/types/anonymous';
 
 interface PrivacySettingsPanelProps {
-  onClose?: () => void;
+  userId?: string;
+  onSettingsChange?: (settings: PrivacySettings) => void;
   compact?: boolean;
 }
 
-export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({ 
-  onClose, 
-  compact = false 
+interface PrivacySettings {
+  profileVisibility: 'public' | 'friends' | 'private';
+  showEmail: boolean;
+  showPhone: boolean;
+  showLocation: boolean;
+  showWebsite: boolean;
+  showBio: boolean;
+  showAvatar: boolean;
+  activityVisibility: 'public' | 'friends' | 'private';
+  showPosts: boolean;
+  showEvents: boolean;
+  showServices: boolean;
+  showFollowers: boolean;
+  showFollowing: boolean;
+  allowMessagesFrom: 'all' | 'followers' | 'none';
+  allowFollowRequests: boolean;
+  allowEventInvites: boolean;
+  allowServiceRequests: boolean;
+  searchable: boolean;
+  showInSuggestions: boolean;
+  showInLeaderboard: boolean;
+  analyticsEnabled: boolean;
+  personalizationEnabled: boolean;
+  marketingEmails: boolean;
+  anonymousMode: boolean;
+  anonymousPosts: boolean;
+  anonymousComments: boolean;
+  anonymousVotes: boolean;
+  locationSharing: 'none' | 'city' | 'precise';
+  preciseLocation: boolean;
+  locationHistory: boolean;
+}
+
+const defaultSettings: PrivacySettings = {
+  profileVisibility: 'public',
+  showEmail: false,
+  showPhone: false,
+  showLocation: true,
+  showWebsite: true,
+  showBio: true,
+  showAvatar: true,
+  activityVisibility: 'public',
+  showPosts: true,
+  showEvents: true,
+  showServices: true,
+  showFollowers: true,
+  showFollowing: true,
+  allowMessagesFrom: 'all',
+  allowFollowRequests: true,
+  allowEventInvites: true,
+  allowServiceRequests: true,
+  searchable: true,
+  showInSuggestions: true,
+  showInLeaderboard: true,
+  analyticsEnabled: true,
+  personalizationEnabled: true,
+  marketingEmails: false,
+  anonymousMode: false,
+  anonymousPosts: false,
+  anonymousComments: false,
+  anonymousVotes: false,
+  locationSharing: 'city',
+  preciseLocation: false,
+  locationHistory: false,
+};
+
+export const PrivacySettingsPanel: React.FC<PrivacySettingsPanelProps> = ({
+  userId,
+  onSettingsChange,
+  compact = false
 }) => {
-  const { user } = useAuth();
   const { toast } = useToast();
-  const [settings, setSettings] = useState<PrivacySettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { anonymousUser } = useAnonymousUsername();
+  const [settings, setSettings] = useState<PrivacySettings>(defaultSettings);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Load settings on mount
   useEffect(() => {
-    if (user) {
-      loadPrivacySettings();
-    }
-  }, [user, loadPrivacySettings]);
+    loadSettings();
+  }, [userId]);
 
-  const loadPrivacySettings = useCallback(async () => {
-    if (!user) return;
-    
-    setLoading(true);
+  const loadSettings = async () => {
     try {
-      const privacySettings = await PrivacyService.getPrivacySettings(user.id);
-      setSettings(privacySettings);
+      // In a real app, this would load from the database
+      const savedSettings = localStorage.getItem('privacy_settings');
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
     } catch (error) {
       console.error('Error loading privacy settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load privacy settings",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
     }
-  }, [user, toast]);
-
-  const handleSettingChange = (key: keyof PrivacySettings, value: boolean | string) => {
-    if (!settings) return;
-    
-    setSettings(prev => ({
-      ...prev!,
-      [key]: value
-    }));
-    setHasChanges(true);
   };
 
-  const handleSave = async () => {
-    if (!user || !settings) return;
-    
-    setSaving(true);
+  const saveSettings = async () => {
+    setIsLoading(true);
     try {
-      const success = await PrivacyService.updatePrivacySettings(user.id, settings);
-      if (success) {
-        toast({
-          title: "Success",
-          description: "Privacy settings updated successfully"
-        });
-        setHasChanges(false);
-        onClose?.();
-      } else {
-        throw new Error('Failed to update settings');
+      // In a real app, this would save to the database
+      localStorage.setItem('privacy_settings', JSON.stringify(settings));
+      
+      toast({
+        title: "Settings saved",
+        description: "Your privacy settings have been updated.",
+      });
+
+      setHasChanges(false);
+      if (onSettingsChange) {
+        onSettingsChange(settings);
       }
     } catch (error) {
       console.error('Error saving privacy settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save privacy settings",
-        variant: "destructive"
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setIsLoading(false);
     }
   };
 
-  const handleReset = () => {
-    if (user) {
-      const defaultSettings = PrivacyService.getDefaultPrivacySettings(user.id);
-      setSettings(defaultSettings);
-      setHasChanges(true);
-    }
+  const updateSetting = <K extends keyof PrivacySettings>(
+    key: K,
+    value: PrivacySettings[K]
+  ) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
   };
 
-  if (loading) {
+  const resetToDefaults = () => {
+    setSettings(defaultSettings);
+    setHasChanges(true);
+  };
+
+  const getPrivacyLevel = () => {
+    if (settings.anonymousMode) return 'Maximum';
+    if (!settings.searchable && !settings.showInSuggestions) return 'High';
+    if (settings.profileVisibility === 'private') return 'High';
+    if (settings.profileVisibility === 'friends') return 'Medium';
+    return 'Low';
+  };
+
+  const getPrivacyScore = () => {
+    let score = 0;
+    if (settings.anonymousMode) score += 40;
+    if (settings.profileVisibility === 'private') score += 20;
+    if (!settings.showEmail) score += 10;
+    if (!settings.showPhone) score += 10;
+    if (!settings.showLocation) score += 10;
+    if (settings.locationSharing === 'none') score += 10;
+    return Math.min(score, 100);
+  };
+
+  const privacyScore = getPrivacyScore();
+  const privacyLevel = getPrivacyLevel();
+
+  if (compact) {
     return (
-      <Card className={compact ? "w-full" : "w-full max-w-4xl mx-auto"}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-            Loading privacy settings...
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center">
+            <Shield className="h-5 w-5 mr-2" />
+            Privacy Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">Anonymous Mode</Label>
+              <p className="text-xs text-muted-foreground">Use anonymous usernames</p>
+            </div>
+            <Switch
+              checked={settings.anonymousMode}
+              onCheckedChange={(checked) => updateSetting('anonymousMode', checked)}
+            />
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
-  if (!settings) {
-    return (
-      <Card className={compact ? "w-full" : "w-full max-w-4xl mx-auto"}>
-        <CardContent className="p-6">
-          <div className="text-center">
-            <p className="text-muted-foreground">Failed to load privacy settings</p>
-            <Button onClick={loadPrivacySettings} className="mt-4">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">Profile Visibility</Label>
+              <p className="text-xs text-muted-foreground">Who can see your profile</p>
+            </div>
+            <Select
+              value={settings.profileVisibility}
+              onValueChange={(value: any) => updateSetting('profileVisibility', value)}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="friends">Friends</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
-  const SettingRow: React.FC<{
-    title: string;
-    description: string;
-    value: boolean;
-    onChange: (value: boolean) => void;
-    icon?: React.ReactNode;
-  }> = ({ title, description, value, onChange, icon }) => (
-    <div className="flex items-center justify-between py-3">
-      <div className="flex items-start space-x-3 flex-1">
-        {icon && <div className="mt-1">{icon}</div>}
-        <div className="space-y-1">
-          <Label className="text-sm font-medium">{title}</Label>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <Switch checked={value} onCheckedChange={onChange} />
-    </div>
-  );
-
-  const SelectRow: React.FC<{
-    title: string;
-    description: string;
-    value: string;
-    onChange: (value: string) => void;
-    options: { value: string; label: string }[];
-    icon?: React.ReactNode;
-  }> = ({ title, description, value, onChange, options, icon }) => (
-    <div className="flex items-center justify-between py-3">
-      <div className="flex items-start space-x-3 flex-1">
-        {icon && <div className="mt-1">{icon}</div>}
-        <div className="space-y-1">
-          <Label className="text-sm font-medium">{title}</Label>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-32">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map(option => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-
-  return (
-    <Card className={compact ? "w-full" : "w-full max-w-4xl mx-auto"}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Privacy Settings
-            </CardTitle>
-            <CardDescription>
-              Control your privacy and data sharing preferences
-            </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">Location Sharing</Label>
+              <p className="text-xs text-muted-foreground">How much location to share</p>
+            </div>
+            <Select
+              value={settings.locationSharing}
+              onValueChange={(value: any) => updateSetting('locationSharing', value)}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="city">City</SelectItem>
+                <SelectItem value="precise">Precise</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="flex items-center gap-2">
-            {hasChanges && (
-              <Badge variant="outline" className="text-orange-600">
-                Unsaved Changes
+
+          <div className="pt-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Privacy Score</span>
+              <Badge variant={privacyScore >= 80 ? "default" : privacyScore >= 60 ? "secondary" : "destructive"}>
+                {privacyScore}/100
               </Badge>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              disabled={saving}
-            >
-              Reset to Defaults
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || saving}
-              size="sm"
-            >
-              {saving ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              Save Changes
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {/* Profile Visibility */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Profile Visibility</h3>
-          </div>
-          
-          <SelectRow
-            title="Profile Visibility"
-            description="Who can see your profile information"
-            value={settings.profile_visibility}
-            onChange={(value) => handleSettingChange('profile_visibility', value)}
-            options={[
-              { value: 'public', label: 'Public' },
-              { value: 'friends', label: 'Friends Only' },
-              { value: 'private', label: 'Private' }
-            ]}
-            icon={<Eye className="h-4 w-4" />}
-          />
-
-          <div className="space-y-2 pl-7">
-            <SettingRow
-              title="Show Email Address"
-              description="Display your email on your profile"
-              value={settings.show_email}
-              onChange={(value) => handleSettingChange('show_email', value)}
-            />
-            <SettingRow
-              title="Show Phone Number"
-              description="Display your phone number on your profile"
-              value={settings.show_phone}
-              onChange={(value) => handleSettingChange('show_phone', value)}
-            />
-            <SettingRow
-              title="Show Location"
-              description="Display your location information"
-              value={settings.show_location}
-              onChange={(value) => handleSettingChange('show_location', value)}
-            />
-            <SettingRow
-              title="Show Website"
-              description="Display your website URL"
-              value={settings.show_website}
-              onChange={(value) => handleSettingChange('show_website', value)}
-            />
-            <SettingRow
-              title="Show Bio"
-              description="Display your bio and description"
-              value={settings.show_bio}
-              onChange={(value) => handleSettingChange('show_bio', value)}
-            />
-            <SettingRow
-              title="Show Avatar"
-              description="Display your profile picture"
-              value={settings.show_avatar}
-              onChange={(value) => handleSettingChange('show_avatar', value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Activity Visibility */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Activity Visibility</h3>
-          </div>
-          
-          <SelectRow
-            title="Activity Visibility"
-            description="Who can see your posts and activities"
-            value={settings.activity_visibility}
-            onChange={(value) => handleSettingChange('activity_visibility', value)}
-            options={[
-              { value: 'public', label: 'Public' },
-              { value: 'friends', label: 'Friends Only' },
-              { value: 'private', label: 'Private' }
-            ]}
-            icon={<BarChart3 className="h-4 w-4" />}
-          />
-
-          <div className="space-y-2 pl-7">
-            <SettingRow
-              title="Show Posts"
-              description="Make your posts visible to others"
-              value={settings.show_posts}
-              onChange={(value) => handleSettingChange('show_posts', value)}
-            />
-            <SettingRow
-              title="Show Events"
-              description="Make your events visible to others"
-              value={settings.show_events}
-              onChange={(value) => handleSettingChange('show_events', value)}
-            />
-            <SettingRow
-              title="Show Services"
-              description="Make your services visible to others"
-              value={settings.show_services}
-              onChange={(value) => handleSettingChange('show_services', value)}
-            />
-            <SettingRow
-              title="Show Followers"
-              description="Display your follower count and list"
-              value={settings.show_followers}
-              onChange={(value) => handleSettingChange('show_followers', value)}
-            />
-            <SettingRow
-              title="Show Following"
-              description="Display who you're following"
-              value={settings.show_following}
-              onChange={(value) => handleSettingChange('show_following', value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Messages and Interactions */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Messages & Interactions</h3>
-          </div>
-          
-          <SelectRow
-            title="Allow Messages From"
-            description="Who can send you direct messages"
-            value={settings.allow_messages_from}
-            onChange={(value) => handleSettingChange('allow_messages_from', value)}
-            options={[
-              { value: 'all', label: 'Everyone' },
-              { value: 'followers', label: 'Followers Only' },
-              { value: 'none', label: 'No One' }
-            ]}
-            icon={<MessageCircle className="h-4 w-4" />}
-          />
-
-          <div className="space-y-2 pl-7">
-            <SettingRow
-              title="Allow Follow Requests"
-              description="Let others send you follow requests"
-              value={settings.allow_follow_requests}
-              onChange={(value) => handleSettingChange('allow_follow_requests', value)}
-            />
-            <SettingRow
-              title="Allow Event Invites"
-              description="Let others invite you to events"
-              value={settings.allow_event_invites}
-              onChange={(value) => handleSettingChange('allow_event_invites', value)}
-            />
-            <SettingRow
-              title="Allow Service Requests"
-              description="Let others request your services"
-              value={settings.allow_service_requests}
-              onChange={(value) => handleSettingChange('allow_service_requests', value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Search and Discovery */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Search & Discovery</h3>
-          </div>
-          
-          <div className="space-y-2">
-            <SettingRow
-              title="Searchable Profile"
-              description="Allow others to find you through search"
-              value={settings.searchable}
-              onChange={(value) => handleSettingChange('searchable', value)}
-              icon={<Search className="h-4 w-4" />}
-            />
-            <SettingRow
-              title="Show in Suggestions"
-              description="Appear in friend and connection suggestions"
-              value={settings.show_in_suggestions}
-              onChange={(value) => handleSettingChange('show_in_suggestions', value)}
-            />
-            <SettingRow
-              title="Show in Leaderboard"
-              description="Include your activity in community leaderboards"
-              value={settings.show_in_leaderboard}
-              onChange={(value) => handleSettingChange('show_in_leaderboard', value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Data Sharing */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Data Sharing</h3>
-          </div>
-          
-          <div className="space-y-2">
-            <SettingRow
-              title="Analytics & Improvement"
-              description="Help improve the app by sharing anonymous usage data"
-              value={settings.analytics_enabled}
-              onChange={(value) => handleSettingChange('analytics_enabled', value)}
-              icon={<BarChart3 className="h-4 w-4" />}
-            />
-            <SettingRow
-              title="Personalized Recommendations"
-              description="Allow personalized content and suggestions"
-              value={settings.personalization_enabled}
-              onChange={(value) => handleSettingChange('personalization_enabled', value)}
-            />
-            <SettingRow
-              title="Marketing Emails"
-              description="Receive promotional emails and updates"
-              value={settings.marketing_emails}
-              onChange={(value) => handleSettingChange('marketing_emails', value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Anonymous Mode */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <UserX className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Anonymous Mode</h3>
-            <Badge variant="secondary" className="text-xs">Beta</Badge>
-          </div>
-          
-          <div className="space-y-2">
-            <SettingRow
-              title="Enable Anonymous Mode"
-              description="Allow posting and interacting anonymously"
-              value={settings.anonymous_mode}
-              onChange={(value) => handleSettingChange('anonymous_mode', value)}
-              icon={<UserX className="h-4 w-4" />}
-            />
-            <SettingRow
-              title="Anonymous Posts"
-              description="Allow creating posts without revealing identity"
-              value={settings.anonymous_posts}
-              onChange={(value) => handleSettingChange('anonymous_posts', value)}
-            />
-            <SettingRow
-              title="Anonymous Comments"
-              description="Allow commenting without revealing identity"
-              value={settings.anonymous_comments}
-              onChange={(value) => handleSettingChange('anonymous_comments', value)}
-            />
-            <SettingRow
-              title="Anonymous Votes"
-              description="Allow voting without revealing identity"
-              value={settings.anonymous_votes}
-              onChange={(value) => handleSettingChange('anonymous_votes', value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Location Privacy */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <h3 className="text-lg font-medium">Location Privacy</h3>
-          </div>
-          
-          <div className="space-y-2">
-            <SettingRow
-              title="Location Sharing"
-              description="Share your location for local features"
-              value={settings.location_sharing}
-              onChange={(value) => handleSettingChange('location_sharing', value)}
-              icon={<MapPin className="h-4 w-4" />}
-            />
-            <SettingRow
-              title="Precise Location"
-              description="Share exact coordinates (not just city/state)"
-              value={settings.precise_location}
-              onChange={(value) => handleSettingChange('precise_location', value)}
-            />
-            <SettingRow
-              title="Location History"
-              description="Store your location history for better recommendations"
-              value={settings.location_history}
-              onChange={(value) => handleSettingChange('location_history', value)}
-            />
-          </div>
-        </div>
-
-        {/* Privacy Notice */}
-        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                Privacy Notice
-              </h4>
-              <p className="text-xs text-blue-700 dark:text-blue-300">
-                Your privacy settings control how your information is shared within the platform. 
-                These settings do not affect data shared with third-party services or required for 
-                platform functionality. Anonymous mode allows you to participate without revealing 
-                your identity, but all content is still subject to our community guidelines.
-              </p>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all ${
+                  privacyScore >= 80 ? 'bg-green-500' : 
+                  privacyScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${privacyScore}%` }}
+              />
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {hasChanges && (
+            <Button onClick={saveSettings} disabled={isLoading} className="w-full">
+              {isLoading ? 'Saving...' : 'Save Settings'}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Privacy Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Shield className="h-5 w-5 mr-2" />
+            Privacy Overview
+          </CardTitle>
+          <CardDescription>
+            Your current privacy level and recommendations
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-2xl font-bold text-primary">{privacyScore}</div>
+              <div className="text-sm text-muted-foreground">Privacy Score</div>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-2xl font-bold text-primary">{privacyLevel}</div>
+              <div className="text-sm text-muted-foreground">Privacy Level</div>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-2xl font-bold text-primary">
+                {anonymousUser ? '🕵️' : '👤'}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {anonymousUser ? 'Anonymous' : 'Identified'}
+              </div>
+            </div>
+          </div>
+
+          {privacyScore < 60 && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Your privacy score is low. Consider enabling anonymous mode or adjusting your visibility settings.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Profile Privacy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <User className="h-5 w-5 mr-2" />
+            Profile Privacy
+          </CardTitle>
+          <CardDescription>
+            Control what information is visible on your profile
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-base font-medium">Profile Visibility</Label>
+            <Select
+              value={settings.profileVisibility}
+              onValueChange={(value: any) => updateSetting('profileVisibility', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Public - Everyone can see your profile</SelectItem>
+                <SelectItem value="friends">Friends - Only your connections can see</SelectItem>
+                <SelectItem value="private">Private - Only you can see your profile</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Email</Label>
+                <p className="text-xs text-muted-foreground">Display email on profile</p>
+              </div>
+              <Switch
+                checked={settings.showEmail}
+                onCheckedChange={(checked) => updateSetting('showEmail', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Phone</Label>
+                <p className="text-xs text-muted-foreground">Display phone on profile</p>
+              </div>
+              <Switch
+                checked={settings.showPhone}
+                onCheckedChange={(checked) => updateSetting('showPhone', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Location</Label>
+                <p className="text-xs text-muted-foreground">Display location on profile</p>
+              </div>
+              <Switch
+                checked={settings.showLocation}
+                onCheckedChange={(checked) => updateSetting('showLocation', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Website</Label>
+                <p className="text-xs text-muted-foreground">Display website on profile</p>
+              </div>
+              <Switch
+                checked={settings.showWebsite}
+                onCheckedChange={(checked) => updateSetting('showWebsite', checked)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Anonymous Mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <EyeOff className="h-5 w-5 mr-2" />
+            Anonymous Mode
+          </CardTitle>
+          <CardDescription>
+            Use anonymous usernames for enhanced privacy
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-base font-medium">Enable Anonymous Mode</Label>
+              <p className="text-sm text-muted-foreground">
+                Use auto-generated usernames instead of your real name
+              </p>
+            </div>
+            <Switch
+              checked={settings.anonymousMode}
+              onCheckedChange={(checked) => updateSetting('anonymousMode', checked)}
+            />
+          </div>
+
+          {settings.anonymousMode && (
+            <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Anonymous Posts</Label>
+                  <p className="text-xs text-muted-foreground">Post anonymously by default</p>
+                </div>
+                <Switch
+                  checked={settings.anonymousPosts}
+                  onCheckedChange={(checked) => updateSetting('anonymousPosts', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Anonymous Comments</Label>
+                  <p className="text-xs text-muted-foreground">Comment anonymously by default</p>
+                </div>
+                <Switch
+                  checked={settings.anonymousComments}
+                  onCheckedChange={(checked) => updateSetting('anonymousComments', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Anonymous Votes</Label>
+                  <p className="text-xs text-muted-foreground">Vote anonymously by default</p>
+                </div>
+                <Switch
+                  checked={settings.anonymousVotes}
+                  onCheckedChange={(checked) => updateSetting('anonymousVotes', checked)}
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Location Privacy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MapPin className="h-5 w-5 mr-2" />
+            Location Privacy
+          </CardTitle>
+          <CardDescription>
+            Control how much location information you share
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-base font-medium">Location Sharing</Label>
+            <Select
+              value={settings.locationSharing}
+              onValueChange={(value: any) => updateSetting('locationSharing', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None - Don't share location</SelectItem>
+                <SelectItem value="city">City - Share city only</SelectItem>
+                <SelectItem value="precise">Precise - Share exact location</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">Precise Location</Label>
+              <p className="text-xs text-muted-foreground">Share precise coordinates</p>
+            </div>
+            <Switch
+              checked={settings.preciseLocation}
+              onCheckedChange={(checked) => updateSetting('preciseLocation', checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-sm font-medium">Location History</Label>
+              <p className="text-xs text-muted-foreground">Store location history</p>
+            </div>
+            <Switch
+              checked={settings.locationHistory}
+              onCheckedChange={(checked) => updateSetting('locationHistory', checked)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity Privacy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BarChart3 className="h-5 w-5 mr-2" />
+            Activity Privacy
+          </CardTitle>
+          <CardDescription>
+            Control what activities are visible to others
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-base font-medium">Activity Visibility</Label>
+            <Select
+              value={settings.activityVisibility}
+              onValueChange={(value: any) => updateSetting('activityVisibility', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Public - Everyone can see your activity</SelectItem>
+                <SelectItem value="friends">Friends - Only your connections can see</SelectItem>
+                <SelectItem value="private">Private - Only you can see your activity</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Posts</Label>
+                <p className="text-xs text-muted-foreground">Display your posts</p>
+              </div>
+              <Switch
+                checked={settings.showPosts}
+                onCheckedChange={(checked) => updateSetting('showPosts', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Events</Label>
+                <p className="text-xs text-muted-foreground">Display your events</p>
+              </div>
+              <Switch
+                checked={settings.showEvents}
+                onCheckedChange={(checked) => updateSetting('showEvents', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Followers</Label>
+                <p className="text-xs text-muted-foreground">Display follower count</p>
+              </div>
+              <Switch
+                checked={settings.showFollowers}
+                onCheckedChange={(checked) => updateSetting('showFollowers', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Show Following</Label>
+                <p className="text-xs text-muted-foreground">Display following count</p>
+              </div>
+              <Switch
+                checked={settings.showFollowing}
+                onCheckedChange={(checked) => updateSetting('showFollowing', checked)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Communication Privacy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MessageSquare className="h-5 w-5 mr-2" />
+            Communication Privacy
+          </CardTitle>
+          <CardDescription>
+            Control who can contact you and how
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-base font-medium">Allow Messages From</Label>
+            <Select
+              value={settings.allowMessagesFrom}
+              onValueChange={(value: any) => updateSetting('allowMessagesFrom', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Everyone</SelectItem>
+                <SelectItem value="followers">Followers Only</SelectItem>
+                <SelectItem value="none">No One</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Follow Requests</Label>
+                <p className="text-xs text-muted-foreground">Allow follow requests</p>
+              </div>
+              <Switch
+                checked={settings.allowFollowRequests}
+                onCheckedChange={(checked) => updateSetting('allowFollowRequests', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Event Invites</Label>
+                <p className="text-xs text-muted-foreground">Allow event invitations</p>
+              </div>
+              <Switch
+                checked={settings.allowEventInvites}
+                onCheckedChange={(checked) => updateSetting('allowEventInvites', checked)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data & Analytics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BarChart3 className="h-5 w-5 mr-2" />
+            Data & Analytics
+          </CardTitle>
+          <CardDescription>
+            Control data collection and personalization
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Analytics</Label>
+                <p className="text-xs text-muted-foreground">Allow usage analytics</p>
+              </div>
+              <Switch
+                checked={settings.analyticsEnabled}
+                onCheckedChange={(checked) => updateSetting('analyticsEnabled', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Personalization</Label>
+                <p className="text-xs text-muted-foreground">Personalized content</p>
+              </div>
+              <Switch
+                checked={settings.personalizationEnabled}
+                onCheckedChange={(checked) => updateSetting('personalizationEnabled', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Marketing Emails</Label>
+                <p className="text-xs text-muted-foreground">Receive promotional emails</p>
+              </div>
+              <Switch
+                checked={settings.marketingEmails}
+                onCheckedChange={(checked) => updateSetting('marketingEmails', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-sm font-medium">Searchable</Label>
+                <p className="text-xs text-muted-foreground">Appear in search results</p>
+              </div>
+              <Switch
+                checked={settings.searchable}
+                onCheckedChange={(checked) => updateSetting('searchable', checked)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Privacy-First Identity System */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Shield className="h-5 w-5" />
+            <span>Privacy-First Identity System</span>
+          </CardTitle>
+          <CardDescription>
+            Advanced privacy controls with anonymous usernames and opt-in identity reveal
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PrivacyFirstIdentitySystem 
+            compact={compact}
+            showStats={!compact}
+            onSettingsChange={(settings) => {
+              if (onSettingsChange) {
+                // Convert PrivacyFirstIdentitySystem settings to PrivacySettings format
+                const convertedSettings: PrivacySettings = {
+                  profileVisibility: settings.profile_visibility,
+                  showEmail: true, // Default values
+                  showPhone: true,
+                  showLocation: settings.location_sharing,
+                  showWebsite: true,
+                  showBio: true,
+                  showAvatar: true,
+                  activityVisibility: settings.activity_visibility,
+                  showPosts: settings.show_posts,
+                  showEvents: settings.show_events,
+                  showServices: settings.show_services,
+                  showFollowers: settings.show_followers,
+                  showFollowing: settings.show_following,
+                  allowMessagesFrom: 'all',
+                  allowFollowRequests: true,
+                  allowEventInvites: true,
+                  allowServiceRequests: true,
+                  searchable: true,
+                  showInSuggestions: true,
+                  showInLeaderboard: true,
+                  analyticsEnabled: settings.analytics_enabled,
+                  personalizationEnabled: settings.personalization_enabled,
+                  marketingEmails: settings.marketing_emails,
+                  anonymousMode: settings.is_anonymous,
+                  anonymousPosts: settings.anonymous_posts,
+                  anonymousComments: settings.anonymous_comments,
+                  anonymousVotes: settings.anonymous_votes,
+                  locationSharing: settings.location_sharing,
+                  preciseLocation: settings.precise_location,
+                  locationHistory: settings.location_history
+                };
+                onSettingsChange(convertedSettings);
+              }
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <Button
+          onClick={saveSettings}
+          disabled={!hasChanges || isLoading}
+          className="flex-1"
+        >
+          {isLoading ? 'Saving...' : 'Save Settings'}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={resetToDefaults}
+          disabled={isLoading}
+        >
+          Reset to Defaults
+        </Button>
+      </div>
+    </div>
   );
 };

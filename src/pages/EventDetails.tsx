@@ -30,7 +30,8 @@ import {
   Map,
   ExternalLink,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Building2
 } from "lucide-react";
 import { useEvents, Event } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
@@ -284,6 +285,36 @@ const EventDetails = () => {
                         <Tag className="w-3 h-3 mr-1" />
                         {tag}
                       </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Government Authority Information */}
+            {(selectedEvent.target_authority && selectedEvent.target_authority.length > 0) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="w-5 h-5" />
+                    Government Authorities
+                  </CardTitle>
+                  <CardDescription>
+                    This event involves the following government authorities
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {selectedEvent.target_authority.map((authorityId: string, index: number) => (
+                      <div key={index} className="p-3 border rounded-lg bg-blue-50">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium">Government Authority #{index + 1}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Authority ID: {authorityId}
+                        </p>
+                      </div>
                     ))}
                   </div>
                 </CardContent>
