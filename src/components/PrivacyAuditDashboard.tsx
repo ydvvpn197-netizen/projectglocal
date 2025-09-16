@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,9 +48,9 @@ export const PrivacyAuditDashboard: React.FC = () => {
 
   useEffect(() => {
     loadPrivacyData();
-  }, []);
+  }, [loadPrivacyData]);
 
-  const loadPrivacyData = async () => {
+  const loadPrivacyData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [summaryData, logsData] = await Promise.all([
@@ -70,7 +70,7 @@ export const PrivacyAuditDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const handleExportData = async () => {
     try {

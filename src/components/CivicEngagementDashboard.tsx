@@ -139,7 +139,7 @@ export const CivicEngagementDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const getActivityIcon = (type: string) => {
     switch (type) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -100,9 +100,9 @@ export const IssueTrackingSystem: React.FC = () => {
   useEffect(() => {
     loadIssues();
     loadAnalytics();
-  }, []);
+  }, [loadIssues]);
 
-  const loadIssues = async () => {
+  const loadIssues = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -135,7 +135,7 @@ export const IssueTrackingSystem: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const loadAnalytics = async () => {
     try {
@@ -439,7 +439,7 @@ export const IssueTrackingSystem: React.FC = () => {
                 <label className="text-sm font-medium">Category *</label>
                 <Select
                   value={newIssue.category}
-                  onValueChange={(value: any) => setNewIssue(prev => ({ ...prev, category: value }))}
+                  onValueChange={(value: string) => setNewIssue(prev => ({ ...prev, category: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -472,7 +472,7 @@ export const IssueTrackingSystem: React.FC = () => {
                 <label className="text-sm font-medium">Priority</label>
                 <Select
                   value={newIssue.priority}
-                  onValueChange={(value: any) => setNewIssue(prev => ({ ...prev, priority: value }))}
+                  onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => setNewIssue(prev => ({ ...prev, priority: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -490,7 +490,7 @@ export const IssueTrackingSystem: React.FC = () => {
                 <label className="text-sm font-medium">Severity</label>
                 <Select
                   value={newIssue.severity}
-                  onValueChange={(value: any) => setNewIssue(prev => ({ ...prev, severity: value }))}
+                  onValueChange={(value: 'minor' | 'moderate' | 'major' | 'critical') => setNewIssue(prev => ({ ...prev, severity: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

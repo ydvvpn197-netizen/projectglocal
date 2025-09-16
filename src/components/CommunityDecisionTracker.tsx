@@ -97,7 +97,7 @@ export const CommunityDecisionTracker: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const loadAnalytics = async () => {
     try {

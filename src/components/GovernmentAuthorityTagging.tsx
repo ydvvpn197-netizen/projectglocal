@@ -60,7 +60,7 @@ export const GovernmentAuthorityTagging: React.FC<GovernmentAuthorityTaggingProp
   // Load government authorities
   useEffect(() => {
     loadAuthorities();
-  }, []);
+  }, [loadAuthorities]);
 
   // Filter authorities based on search and level
   useEffect(() => {

@@ -121,7 +121,7 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
     } finally {
       setLoading(false);
     }
-  }, [timePeriod]);
+  }, [timePeriod, sentimentService, trendService]);
 
   const getSentimentColor = (sentiment: number) => {
     if (sentiment > 0.1) return 'text-green-600';
