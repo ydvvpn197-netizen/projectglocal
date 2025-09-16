@@ -41,10 +41,6 @@ export const EventDiscussion: React.FC<EventDiscussionProps> = ({ eventId, class
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
 
-  useEffect(() => {
-    fetchDiscussions();
-  }, [eventId, fetchDiscussions]);
-
   const fetchDiscussions = useCallback(async () => {
     try {
       setLoading(true);
@@ -71,6 +67,10 @@ export const EventDiscussion: React.FC<EventDiscussionProps> = ({ eventId, class
       setLoading(false);
     }
   }, [eventId, toast]);
+
+  useEffect(() => {
+    fetchDiscussions();
+  }, [fetchDiscussions]);
 
   const handleSubmitDiscussion = async () => {
     if (!user) {

@@ -58,6 +58,15 @@ const EventDetails = () => {
   const [userBooking, setUserBooking] = useState<any>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
 
+  const checkUserBooking = async (eventId: string) => {
+    try {
+      const { hasBooked, booking } = await EventBookingService.hasUserBookedEvent(eventId);
+      setUserBooking(hasBooked ? booking : null);
+    } catch (error) {
+      console.error('Error checking user booking:', error);
+    }
+  };
+
   useEffect(() => {
     if (eventId && events.length > 0) {
       const event = events.find(e => e.id === eventId);
@@ -69,15 +78,6 @@ const EventDetails = () => {
       }
     }
   }, [eventId, events, user]);
-
-  const checkUserBooking = async (eventId: string) => {
-    try {
-      const { hasBooked, booking } = await EventBookingService.hasUserBookedEvent(eventId);
-      setUserBooking(hasBooked ? booking : null);
-    } catch (error) {
-      console.error('Error checking user booking:', error);
-    }
-  };
 
   const formatDate = (dateString: string) => {
     try {
