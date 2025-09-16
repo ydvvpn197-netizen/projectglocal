@@ -20,6 +20,7 @@ const ChatDebugTest = React.lazy(() => import('@/components/ChatDebugTest'));
 const SimpleChatTest = React.lazy(() => import('@/components/SimpleChatTest'));
 const ChatTest = React.lazy(() => import('@/components/ChatTest'));
 const TestButtons = React.lazy(() => import('@/pages/TestButtons'));
+const ProfileTest = React.lazy(() => import('@/components/ProfileTest'));
 
 // Monetization test page
 const MonetizationTest = React.lazy(() => import('@/pages/MonetizationTest'));
@@ -301,6 +302,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/simple-chat-test" element={<ProtectedRoute><SimpleChatTest /></ProtectedRoute>} />
       <Route path="/monetization-test" element={<ProtectedRoute><MonetizationTest /></ProtectedRoute>} />
       <Route path="/test-buttons" element={<ProtectedRoute><TestButtons /></ProtectedRoute>} />
+      <Route path="/test-profile" element={<ProtectedRoute><ProfileTest /></ProtectedRoute>} />
       
       {/* Debug route to catch all unmatched routes */}
       <Route path="/chat/*" element={

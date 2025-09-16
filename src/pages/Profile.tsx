@@ -40,7 +40,16 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  User,
+  Bell,
+  Lock,
+  Eye,
+  EyeOff,
+  Download,
+  Upload,
+  Trash2,
+  RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -415,8 +424,12 @@ const Profile = () => {
         )}
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="messages" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
             <TabsTrigger value="messages" className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
               Messages
@@ -437,7 +450,137 @@ const Profile = () => {
               <Trophy className="w-4 h-4" />
               Badges
             </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
+            </TabsTrigger>
           </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Recent Activity
+                  </CardTitle>
+                  <CardDescription>
+                    Your latest interactions and updates
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {posts.slice(0, 3).map((post) => (
+                      <div key={post.id} className="flex gap-3 p-3 rounded-lg border">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <BookOpen className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm">{post.title}</h4>
+                          <p className="text-xs text-muted-foreground">{post.createdAt}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {posts.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No recent activity</p>
+                        <Button size="sm" className="mt-2" onClick={handleCreatePost}>
+                          Create Your First Post
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    Quick Actions
+                  </CardTitle>
+                  <CardDescription>
+                    Common tasks and shortcuts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" onClick={handleCreatePost}>
+                      <Plus className="w-5 h-5" />
+                      <span className="text-sm">Create Post</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" asChild>
+                      <a href="/events">
+                        <Calendar className="w-5 h-5" />
+                        <span className="text-sm">Browse Events</span>
+                      </a>
+                    </Button>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" asChild>
+                      <a href="/community">
+                        <Users className="w-5 h-5" />
+                        <span className="text-sm">Join Community</span>
+                      </a>
+                    </Button>
+                    <Button variant="outline" className="h-auto p-4 flex flex-col gap-2" asChild>
+                      <a href="/settings">
+                        <Settings className="w-5 h-5" />
+                        <span className="text-sm">Settings</span>
+                      </a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Profile Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Summary</CardTitle>
+                <CardDescription>
+                  A complete overview of your profile information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Display Name</Label>
+                      <p className="text-sm text-muted-foreground">{profile?.display_name || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Email</Label>
+                      <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Location</Label>
+                      <p className="text-sm text-muted-foreground">{location}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Bio</Label>
+                      <p className="text-sm text-muted-foreground">{profile?.bio || 'No bio added yet'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Member Since</Label>
+                      <p className="text-sm text-muted-foreground">{formatJoinedDate(profile?.created_at || '')}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Account Status</Label>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm text-green-600">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Messages Tab */}
           <TabsContent value="messages" className="space-y-4">
@@ -623,6 +766,214 @@ const Profile = () => {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-4">
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Account Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Account Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your account information and preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Email Address</Label>
+                    <div className="flex items-center gap-2">
+                      <Input value={user?.email || ''} disabled />
+                      <Button variant="outline" size="sm">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Password</Label>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Lock className="w-4 h-4 mr-2" />
+                      Change Password
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Two-Factor Authentication</Label>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Add an extra layer of security</span>
+                      <Button variant="outline" size="sm">
+                        Enable
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Privacy Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Privacy Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Control your privacy and visibility
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Profile Visibility</Label>
+                      <p className="text-sm text-muted-foreground">Make your profile public</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Show Email</Label>
+                      <p className="text-sm text-muted-foreground">Display email on profile</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <EyeOff className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Activity Status</Label>
+                      <p className="text-sm text-muted-foreground">Show when you're online</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Notification Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    Notifications
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your notification preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Email Notifications</Label>
+                      <p className="text-sm text-muted-foreground">Receive updates via email</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Bell className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Push Notifications</Label>
+                      <p className="text-sm text-muted-foreground">Get notified in real-time</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Bell className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Marketing Emails</Label>
+                      <p className="text-sm text-muted-foreground">Receive promotional content</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Bell className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Data Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Download className="w-5 h-5" />
+                    Data Management
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your data and account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download My Data
+                  </Button>
+
+                  <Button variant="outline" className="w-full justify-start">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import Data
+                  </Button>
+
+                  <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Account
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Advanced Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Advanced Settings</CardTitle>
+                <CardDescription>
+                  Advanced configuration options
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Theme Preference</Label>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">Light</Button>
+                      <Button variant="outline" size="sm">Dark</Button>
+                      <Button variant="outline" size="sm">System</Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Language</Label>
+                    <Button variant="outline" className="w-full justify-start">
+                      English (US)
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Time Zone</Label>
+                    <Button variant="outline" className="w-full justify-start">
+                      UTC-8 (Pacific Time)
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Refresh Data</Label>
+                    <Button variant="outline" className="w-full justify-start" onClick={refreshAll}>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Refresh All Data
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
