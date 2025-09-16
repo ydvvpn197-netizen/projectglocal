@@ -1,15 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface LayoutContextType {
-  sidebarOpen: boolean;
-  toggleSidebar: () => void;
-  setSidebarOpen: (open: boolean) => void;
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
-}
-
-export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
+import React, { useContext, useState, useEffect, ReactNode } from 'react';
+import { LayoutContext, LayoutContextType } from './LayoutContext';
 
 interface LayoutProviderProps {
   children: ReactNode;

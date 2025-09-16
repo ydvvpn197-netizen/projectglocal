@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUserSettings } from "@/hooks/useUserSettings";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
@@ -31,31 +32,50 @@ interface ProfileSettingsProps {
 
 export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }: ProfileSettingsProps) => {
   const { toast } = useToast();
+  const { role, isArtist } = useUserRole();
   const {
+    profile,
+    artistProfile,
     settings,
-    saving,
-    updateProfileSettings,
-    handleSettingChange
-  } = useUserSettings();
+    loading,
+    updateProfile,
+    updateArtistProfile,
+    updateSettings
+  } = useUserProfile();
 
+  const [localProfile, setLocalProfile] = useState(profile);
+  const [localArtistProfile, setLocalArtistProfile] = useState(artistProfile);
   const [localSettings, setLocalSettings] = useState(settings);
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  // Update local settings when settings change
+  // Update local state when data changes
   useEffect(() => {
+    setLocalProfile(profile);
+    setLocalArtistProfile(artistProfile);
     setLocalSettings(settings);
-  }, [settings]);
+  }, [profile, artistProfile, settings]);
 
   // Check for changes
   useEffect(() => {
-    const changed = JSON.stringify(localSettings) !== JSON.stringify(settings);
-    setHasChanges(changed);
-  }, [localSettings, settings]);
+    const profileChanged = JSON.stringify(localProfile) !== JSON.stringify(profile);
+    const artistChanged = JSON.stringify(localArtistProfile) !== JSON.stringify(artistProfile);
+    const settingsChanged = JSON.stringify(localSettings) !== JSON.stringify(settings);
+    setHasChanges(profileChanged || artistChanged || settingsChanged);
+  }, [localProfile, localArtistProfile, localSettings, profile, artistProfile, settings]);
 
   const handleInputChange = (key: string, value: unknown) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleProfileChange = (key: string, value: unknown) => {
+    setLocalProfile(prev => prev ? { ...prev, [key]: value } : null);
+  };
+
+  const handleArtistProfileChange = (key: string, value: unknown) => {
+    setLocalArtistProfile(prev => prev ? { ...prev, [key]: value } : null);
   };
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,35 +92,81 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
 
   const handleSave = async () => {
     try {
-      const result = await updateProfileSettings(localSettings);
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Profile updated successfully",
-        });
-        if (onClose) onClose();
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to update profile",
-          variant: "destructive",
-        });
+      setSaving(true);
+      
+      // Update profile
+      if (localProfile) {
+        const profileResult = await updateProfile(localProfile);
+        if (!profileResult.success) {
+          toast({
+            title: "Error",
+            description: profileResult.error || "Failed to update profile",
+            variant: "destructive",
+          });
+          return;
+        }
       }
+
+      // Update artist profile if user is an artist
+      if (isArtist && localArtistProfile) {
+        const artistResult = await updateArtistProfile(localArtistProfile);
+        if (!artistResult.success) {
+          toast({
+            title: "Error",
+            description: artistResult.error || "Failed to update artist profile",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Update settings
+      if (localSettings) {
+        const settingsResult = await updateSettings(localSettings);
+        if (!settingsResult.success) {
+          toast({
+            title: "Error",
+            description: settingsResult.error || "Failed to update settings",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+      if (onClose) onClose();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update profile",
         variant: "destructive",
       });
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleCancel = () => {
+    setLocalProfile(profile);
+    setLocalArtistProfile(artistProfile);
     setLocalSettings(settings);
     setAvatarFile(null);
     setAvatarPreview(null);
     if (onClose) onClose();
   };
+
+  if (loading) {
+    return (
+      <Card className={compact ? "" : "w-full max-w-4xl"}>
+        <CardContent className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={compact ? "" : "w-full max-w-4xl"}>
@@ -130,11 +196,11 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
             <div className="relative">
               <Avatar className="h-20 w-20">
                 <AvatarImage 
-                  src={avatarPreview || settings.avatar_url || undefined} 
+                  src={avatarPreview || profile?.avatar_url || undefined} 
                   alt="Profile avatar" 
                 />
                 <AvatarFallback className="text-lg">
-                  {settings.display_name?.charAt(0) || settings.first_name?.charAt(0) || "U"}
+                  {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer hover:bg-primary/90">
@@ -165,8 +231,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="first_name">First Name *</Label>
               <Input
                 id="first_name"
-                value={localSettings.first_name || ""}
-                onChange={(e) => handleInputChange('first_name', e.target.value)}
+                value={localProfile?.first_name || ""}
+                onChange={(e) => handleProfileChange('first_name', e.target.value)}
                 placeholder="Enter your first name"
               />
             </div>
@@ -175,8 +241,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="last_name">Last Name *</Label>
               <Input
                 id="last_name"
-                value={localSettings.last_name || ""}
-                onChange={(e) => handleInputChange('last_name', e.target.value)}
+                value={localProfile?.last_name || ""}
+                onChange={(e) => handleProfileChange('last_name', e.target.value)}
                 placeholder="Enter your last name"
               />
             </div>
@@ -186,8 +252,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
             <Label htmlFor="display_name">Display Name</Label>
             <Input
               id="display_name"
-              value={localSettings.display_name || ""}
-              onChange={(e) => handleInputChange('display_name', e.target.value)}
+              value={localProfile?.display_name || ""}
+              onChange={(e) => handleProfileChange('display_name', e.target.value)}
               placeholder="Enter your display name"
             />
             <p className="text-sm text-muted-foreground">
@@ -199,8 +265,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
             <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
-              value={localSettings.bio || ""}
-              onChange={(e) => handleInputChange('bio', e.target.value)}
+              value={localProfile?.bio || ""}
+              onChange={(e) => handleProfileChange('bio', e.target.value)}
               placeholder="Tell us about yourself, your interests, and what you do..."
               rows={4}
             />
@@ -304,7 +370,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
         </div>
 
         {/* Professional Information (for artists) */}
-        {settings.user_type === 'artist' && (
+        {isArtist && (
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Professional Information</h3>
             
@@ -317,8 +383,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                     id="experience_years"
                     type="number"
                     min="0"
-                    value={localSettings.experience_years || ""}
-                    onChange={(e) => handleInputChange('experience_years', parseInt(e.target.value) || 0)}
+                    value={localArtistProfile?.experience_years || ""}
+                    onChange={(e) => handleArtistProfileChange('experience_years', parseInt(e.target.value) || 0)}
                     placeholder="0"
                     className="pl-10"
                   />
@@ -344,8 +410,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="artist_skills">Skills & Specialties</Label>
               <Textarea
                 id="artist_skills"
-                value={Array.isArray(localSettings.artist_skills) ? localSettings.artist_skills.join(', ') : ""}
-                onChange={(e) => handleInputChange('artist_skills', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                value={Array.isArray(localArtistProfile?.specialty) ? localArtistProfile.specialty.join(', ') : ""}
+                onChange={(e) => handleArtistProfileChange('specialty', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
                 placeholder="Enter your skills and specialties, separated by commas"
                 rows={3}
               />
@@ -359,8 +425,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                   type="number"
                   min="0"
                   step="0.01"
-                  value={localSettings.hourly_rate_min || ""}
-                  onChange={(e) => handleInputChange('hourly_rate_min', parseFloat(e.target.value) || 0)}
+                  value={localArtistProfile?.hourly_rate_min || ""}
+                  onChange={(e) => handleArtistProfileChange('hourly_rate_min', parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
                 />
               </div>
@@ -372,8 +438,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                   type="number"
                   min="0"
                   step="0.01"
-                  value={localSettings.hourly_rate_max || ""}
-                  onChange={(e) => handleInputChange('hourly_rate_max', parseFloat(e.target.value) || 0)}
+                  value={localArtistProfile?.hourly_rate_max || ""}
+                  onChange={(e) => handleArtistProfileChange('hourly_rate_max', parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
                 />
               </div>
@@ -383,8 +449,8 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="portfolio_urls">Portfolio URLs</Label>
               <Textarea
                 id="portfolio_urls"
-                value={Array.isArray(localSettings.portfolio_urls) ? localSettings.portfolio_urls.join('\n') : ""}
-                onChange={(e) => handleInputChange('portfolio_urls', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
+                value={Array.isArray(localArtistProfile?.portfolio_urls) ? localArtistProfile.portfolio_urls.join('\n') : ""}
+                onChange={(e) => handleArtistProfileChange('portfolio_urls', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
                 placeholder="Enter your portfolio URLs, one per line"
                 rows={3}
               />

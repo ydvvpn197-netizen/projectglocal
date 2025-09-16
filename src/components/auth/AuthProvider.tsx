@@ -4,6 +4,7 @@ import { resilientSupabase, withErrorHandling, getConnectionStatus, forceReconne
 import { useToast } from '@/hooks/use-toast';
 import { clearAuthData, checkForStaleAuthData } from '@/utils/clearAuthData';
 import { AuthContext } from './AuthContext';
+import { UserService } from '@/services/userService';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -242,11 +243,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error(errorMessage) };
       }
 
-      if (result?.user && !result?.session) {
-        toast({
-          title: "Sign Up Successful",
-          description: "Please check your email to verify your account.",
-        });
+      // If user was created successfully, the database trigger will automatically create the profile
+      if (result?.user) {
+        // For immediate session users, ensure profile exists
+        if (result.session) {
+          try {
+            const profileResult = await UserService.getUserProfile(result.user.id);
+            if (!profileResult.profile) {
+              // Fallback: manually create profile if trigger didn't work
+              await UserService.createUserProfile({
+                user_id: result.user.id,
+                user_type: userType || 'user',
+                display_name: `${firstName || ''} ${lastName || ''}`.trim() || email,
+                first_name: firstName,
+                last_name: lastName,
+              });
+            }
+          } catch (profileError) {
+            console.error('Error ensuring profile exists:', profileError);
+            // Don't fail the signup for profile creation issues
+          }
+        }
+
+        if (!result.session) {
+          toast({
+            title: "Sign Up Successful",
+            description: "Please check your email to verify your account.",
+          });
+        } else {
+          toast({
+            title: "Welcome!",
+            description: `Account created successfully as ${userType || 'user'}.`,
+          });
+        }
       }
 
       return { error: null };

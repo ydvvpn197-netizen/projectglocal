@@ -1,9 +1,91 @@
-[33m37fd32f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: Complete community platform implementation with anonymous users and Indian pricing
-[33m5f23b68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Google OAuth authentication 404 error
-[33m953e408[m feat: Complete project deployment setup with comprehensive features
-[33me4bfd0f[m CRITICAL FIX: Resolve Supabase connection issues in production
-[33m2a01b4f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix linting errors: improve TypeScript types and resolve lexical declaration issues
-[33mc76564d[m  Deploy: Add new Edge Functions for Legal Assistant and Life Wish features
-[33mc7a1db8[m Fix TypeScript linting errors: Replace all 'any' types with proper TypeScript interfaces
-[33m0339534[m trigger: Deploy to GitHub Pages - TheGlocal platform ready for production
-[33mbed68a6[m feat: Complete TheGlocal platform implementation with all core features
+[1mdiff --git a/src/integrations/supabase/client.ts b/src/integrations/supabase/client.ts[m
+[1mindex e3a4cde..c57c112 100644[m
+[1m--- a/src/integrations/supabase/client.ts[m
+[1m+++ b/src/integrations/supabase/client.ts[m
+[36m@@ -50,45 +50,52 @@[m [mconst validateSupabaseConfig = (): boolean => {[m
+ // Create Supabase client with validation and enhanced error handling[m
+ let supabase: ReturnType<typeof createClient<Database>>;[m
+ [m
+[31m-if (validateSupabaseConfig()) {[m
+[31m-  try {[m
+[31m-    supabase = createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {[m
+[31m-      auth: {[m
+[31m-        storage: localStorage,[m
+[31m-        persistSession: true,[m
+[31m-        autoRefreshToken: true,[m
+[31m-        detectSessionInUrl: true,[m
+[31m-        flowType: 'pkce',[m
+[31m-      },[m
+[31m-      realtime: {[m
+[31m-        params: {[m
+[31m-          eventsPerSecond: 10,[m
+[32m+[m[32m// Initialize Supabase client immediately to avoid initialization errors[m
+[32m+[m[32mconst initializeSupabaseClient = (): ReturnType<typeof createClient<Database>> => {[m
+[32m+[m[32m  if (validateSupabaseConfig()) {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      const client = createClient<Database>(supabaseConfig.url, supabaseConfig.anonKey, {[m
+[32m+[m[32m        auth: {[m
+[32m+[m[32m          storage: localStorage,[m
+[32m+[m[32m          persistSession: true,[m
+[32m+[m[32m          autoRefreshToken: true,[m
+[32m+[m[32m          detectSessionInUrl: true,[m
+[32m+[m[32m          flowType: 'pkce',[m
+         },[m
+[31m-      },[m
+[31m-      global: {[m
+[31m-        headers: {[m
+[31m-          'X-Client-Info': 'projectglocal-web',[m
+[32m+[m[32m        realtime: {[m
+[32m+[m[32m          params: {[m
+[32m+[m[32m            eventsPerSecond: 10,[m
+[32m+[m[32m          },[m
+         },[m
+[31m-      },[m
+[31m-      db: {[m
+[31m-        schema: 'public',[m
+[31m-      },[m
+[31m-    });[m
+[31m-    [m
+[31m-    console.log('✅ Supabase client initialized successfully');[m
+[31m-    [m
+[31m-  } catch (error) {[m
+[31m-    console.error('❌ Failed to initialize Supabase client:', error);[m
+[32m+[m[32m        global: {[m
+[32m+[m[32m          headers: {[m
+[32m+[m[32m            'X-Client-Info': 'projectglocal-web',[m
+[32m+[m[32m          },[m
+[32m+[m[32m        },[m
+[32m+[m[32m        db: {[m
+[32m+[m[32m          schema: 'public',[m
+[32m+[m[32m        },[m
+[32m+[m[32m      });[m
+[32m+[m[41m      [m
+[32m+[m[32m      console.log('✅ Supabase client initialized successfully');[m
+[32m+[m[32m      return client;[m
+[32m+[m[41m      [m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m      console.error('❌ Failed to initialize Supabase client:', error);[m
+[32m+[m[32m      connectionStatus = 'failed';[m
+[32m+[m[32m      // Create a mock client that will fail gracefully[m
+[32m+[m[32m      return createClient<Database>('https://invalid.supabase.co', 'invalid-key');[m
+[32m+[m[32m    }[m
+[32m+[m[32m  } else {[m
+[32m+[m[32m    console.error('❌ Supabase configuration is invalid');[m
+     connectionStatus = 'failed';[m
+     // Create a mock client that will fail gracefully[m
+[31m-    supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');[m
+[32m+[m[32m    return createClient<Database>('https://invalid.supabase.co', 'invalid-key');[m
+   }[m
+[31m-} else {[m
+[31m-  console.error('❌ Supabase configuration is invalid');[m
+[31m-  connectionStatus = 'failed';[m
+[31m-  // Create a mock client that will fail gracefully[m
+[31m-  supabase = createClient<Database>('https://invalid.supabase.co', 'invalid-key');[m
+[31m-}[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32m// Initialize the client immediately[m
+[32m+[m[32msupabase = initializeSupabaseClient();[m
+ [m
+ // A second client export (alias) commonly used around the app[m
+ export const resilientSupabase = supabase;[m

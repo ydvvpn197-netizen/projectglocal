@@ -48,7 +48,7 @@ const validateSupabaseConfig = (): boolean => {
 };
 
 // Create Supabase client with validation and enhanced error handling
-let supabase: ReturnType<typeof createClient<Database>>;
+const supabase: ReturnType<typeof createClient<Database>> = initializeSupabaseClient();
 
 // Initialize Supabase client immediately to avoid initialization errors
 const initializeSupabaseClient = (): ReturnType<typeof createClient<Database>> => {
@@ -94,8 +94,7 @@ const initializeSupabaseClient = (): ReturnType<typeof createClient<Database>> =
   }
 };
 
-// Initialize the client immediately
-supabase = initializeSupabaseClient();
+// Client is now initialized above
 
 // A second client export (alias) commonly used around the app
 export const resilientSupabase = supabase;

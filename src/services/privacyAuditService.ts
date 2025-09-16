@@ -6,13 +6,13 @@ export interface PrivacyAuditLog {
   action_type: 'identity_reveal' | 'identity_hide' | 'privacy_setting_change' | 'anonymous_post' | 'data_access' | 'data_deletion';
   resource_type: 'profile' | 'post' | 'comment' | 'event' | 'service' | 'message';
   resource_id?: string;
-  old_value?: any;
-  new_value?: any;
+  old_value?: unknown;
+  new_value?: unknown;
   ip_address?: string;
   user_agent?: string;
   location?: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PrivacySettings {
@@ -32,9 +32,9 @@ export class PrivacyAuditService {
     actionType: PrivacyAuditLog['action_type'],
     resourceType: PrivacyAuditLog['resource_type'],
     resourceId?: string,
-    oldValue?: any,
-    newValue?: any,
-    metadata?: Record<string, any>
+    oldValue?: unknown,
+    newValue?: unknown,
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -76,7 +76,7 @@ export class PrivacyAuditService {
     resourceType: PrivacyAuditLog['resource_type'],
     resourceId: string,
     isRevealed: boolean,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction(
       isRevealed ? 'identity_reveal' : 'identity_hide',
@@ -93,9 +93,9 @@ export class PrivacyAuditService {
    */
   static async logPrivacySettingChange(
     setting: keyof PrivacySettings,
-    oldValue: any,
-    newValue: any,
-    metadata?: Record<string, any>
+    oldValue: unknown,
+    newValue: unknown,
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction(
       'privacy_setting_change',
@@ -113,7 +113,7 @@ export class PrivacyAuditService {
   static async logAnonymousPost(
     resourceType: PrivacyAuditLog['resource_type'],
     resourceId: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction(
       'anonymous_post',
@@ -131,7 +131,7 @@ export class PrivacyAuditService {
   static async logDataAccess(
     resourceType: PrivacyAuditLog['resource_type'],
     resourceId: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction(
       'data_access',
@@ -149,7 +149,7 @@ export class PrivacyAuditService {
   static async logDataDeletion(
     resourceType: PrivacyAuditLog['resource_type'],
     resourceId: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction(
       'data_deletion',
@@ -248,7 +248,7 @@ export class PrivacyAuditService {
   static async exportPrivacyData(): Promise<{
     audit_logs: PrivacyAuditLog[];
     privacy_settings: PrivacySettings;
-    anonymous_usernames: any[];
+    anonymous_usernames: unknown[];
     export_timestamp: string;
   }> {
     try {

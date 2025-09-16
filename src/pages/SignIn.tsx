@@ -61,8 +61,10 @@ const SignIn = () => {
       if (isSignUp) {
         const { error } = await signUp(email, password, firstName, lastName, userType);
         if (!error) {
+          // Profile will be automatically created by database trigger
+          // Navigate to appropriate page based on user type
           if (userType === 'artist') {
-            // Navigate to artist onboarding for additional details
+            // For artists, we can still collect additional details if needed
             const artistData = {
               bio,
               artistSkills,
