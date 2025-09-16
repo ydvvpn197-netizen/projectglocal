@@ -57,8 +57,8 @@ export const AnonymousUsernameGenerator: React.FC<AnonymousUsernameGeneratorProp
 
   // Generate preview usernames
   useEffect(() => {
-    const generatePreview = () => {
-      const { anonymousUsernameService } = require('@/services/anonymousUsernameService');
+    const generatePreview = async () => {
+      const { anonymousUsernameService } = await import('@/services/anonymousUsernameService');
       const previews = [];
       for (let i = 0; i < 3; i++) {
         previews.push(anonymousUsernameService.generateUsername({
@@ -71,7 +71,7 @@ export const AnonymousUsernameGenerator: React.FC<AnonymousUsernameGeneratorProp
       setPreviewUsernames(previews);
     };
 
-    generatePreview();
+    generatePreview().catch(console.error);
   }, [selectedPrivacyLevel, includeNumbers, includeSpecialChars, usernameLength]);
 
   const handleCreateUser = async () => {

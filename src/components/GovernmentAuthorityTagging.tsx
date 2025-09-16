@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +83,7 @@ export const GovernmentAuthorityTagging: React.FC<GovernmentAuthorityTaggingProp
     setFilteredAuthorities(filtered);
   }, [authorities, searchQuery, levelFilter]);
 
-  const loadAuthorities = async () => {
+  const loadAuthorities = useCallback(async () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -105,7 +105,7 @@ export const GovernmentAuthorityTagging: React.FC<GovernmentAuthorityTaggingProp
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleAuthorityToggle = (authorityId: string) => {
     const newSelection = selectedAuthorities.includes(authorityId)
