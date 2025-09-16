@@ -39,6 +39,7 @@ const Community = React.lazy(() => import('@/pages/Community'));
 const CommunityDetail = React.lazy(() => import('@/pages/CommunityDetail'));
 const CreateDiscussion = React.lazy(() => import('@/pages/CreateDiscussion'));
 const CreateGroup = React.lazy(() => import('@/pages/CreateGroup'));
+const CreatePost = React.lazy(() => import('@/pages/CreatePost'));
 
 // Event pages (grouped together)
 const Events = React.lazy(() => import('@/pages/Events'));
@@ -153,7 +154,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
       <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-      <Route path="/create" element={<ProtectedRoute><SimplifiedPostCreator /></ProtectedRoute>} />
+      <Route path="/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
       
       {/* New Features routes */}
       <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
