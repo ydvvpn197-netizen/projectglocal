@@ -65,6 +65,8 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip'],
           supabase: ['@supabase/supabase-js'],
           utils: ['date-fns', 'clsx', 'class-variance-authority', 'tailwind-merge'],
+          animations: ['framer-motion'],
+          charts: ['chart.js', 'react-chartjs-2', 'recharts'],
         },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',

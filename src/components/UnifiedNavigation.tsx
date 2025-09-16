@@ -41,20 +41,17 @@ interface NavigationItem {
 }
 
 const navigationItems: NavigationItem[] = [
-  // High Priority - Always visible
+  // High Priority - Always visible (Core features)
   { path: '/feed', label: 'Feed', icon: Home, priority: 'high' },
   { path: '/community', label: 'Community', icon: Users, priority: 'high' },
   { path: '/events', label: 'Events', icon: Calendar, priority: 'high' },
   
-  // Medium Priority - Contextual
+  // Medium Priority - Contextual (Secondary features)
   { path: '/news', label: 'News', icon: Newspaper, priority: 'medium' },
   { path: '/polls', label: 'Polls', icon: Vote, priority: 'medium' },
-  { path: '/civic-engagement', label: 'Civic', icon: Megaphone, priority: 'medium' },
-  { path: '/communities', label: 'Local Communities', icon: Building2, priority: 'medium' },
   { path: '/businesses', label: 'Businesses', icon: Store, priority: 'medium' },
-  { path: '/book-artist', label: 'Book Artists', icon: Palette, priority: 'medium' },
   
-  // Low Priority - Collapsible
+  // Low Priority - Collapsible (Tools & utilities)
   { path: '/legal-assistant', label: 'Legal Assistant', icon: Scale, priority: 'low' },
   { path: '/life-wish', label: 'Life Wishes', icon: Heart, priority: 'low' },
 ];
@@ -83,6 +80,8 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ className 
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setIsSearchOpen(false);
   }, [location.pathname]);
 
   const isActive = (path: string) => {
@@ -135,16 +134,16 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ className 
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${
                   isActive(item.path)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
               >
                 <item.icon className="h-4 w-4" />
                 <span>{item.label}</span>
                 {item.badge && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
+                  <Badge variant="secondary" className="ml-1 text-xs animate-pulse">
                     {item.badge}
                   </Badge>
                 )}
@@ -250,6 +249,8 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ className 
               size="sm"
               className="lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>

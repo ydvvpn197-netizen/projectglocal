@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -312,8 +312,8 @@ const Feed = () => {
   };
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-8">
+    <PageLayout layout="main" showSidebar={true} showHeader={true} showFooter={true}>
+      <div className="space-y-8 p-6">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -689,7 +689,7 @@ const Feed = () => {
           </div>
         </div>
       </div>
-    </ResponsiveLayout>
+    </PageLayout>
   );
 };
 

@@ -267,7 +267,7 @@ export class PrivacyControlsService {
       );
 
       // Update the specific resource based on type
-      let updateData: any = { is_anonymous: !request.reveal };
+      const updateData: any = { is_anonymous: !request.reveal };
       
       if (request.reveal) {
         // When revealing, we might want to set the user_id or remove anonymous_user_id

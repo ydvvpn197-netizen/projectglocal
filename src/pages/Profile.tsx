@@ -543,18 +543,10 @@ const Profile = () => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Overview
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Messages
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Bookings
             </TabsTrigger>
             <TabsTrigger value="communities" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -563,10 +555,6 @@ const Profile = () => {
             <TabsTrigger value="subscription" className="flex items-center gap-2">
               <Crown className="w-4 h-4" />
               Subscription
-            </TabsTrigger>
-            <TabsTrigger value="badges" className="flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
-              Badges
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />

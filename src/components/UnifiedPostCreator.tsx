@@ -60,7 +60,7 @@ interface PostType {
 const postTypes: PostType[] = [
   {
     id: 'post',
-    label: 'General Post',
+    label: 'Post',
     icon: FileText,
     description: 'Share thoughts, updates, or photos',
     requiresAuth: true,
@@ -75,28 +75,12 @@ const postTypes: PostType[] = [
     fields: ['title', 'content', 'date', 'time', 'location', 'price', 'capacity'],
   },
   {
-    id: 'service',
-    label: 'Service',
-    icon: Star,
-    description: 'Offer your skills or services',
-    requiresAuth: true,
-    fields: ['title', 'content', 'price', 'area', 'availability'],
-  },
-  {
     id: 'discussion',
     label: 'Discussion',
     icon: MessageCircle,
     description: 'Start a community discussion',
     requiresAuth: true,
-    fields: ['title', 'content', 'category', 'guidelines'],
-  },
-  {
-    id: 'poll',
-    label: 'Poll',
-    icon: Megaphone,
-    description: 'Ask the community a question',
-    requiresAuth: true,
-    fields: ['title', 'content', 'options', 'duration'],
+    fields: ['title', 'content', 'category'],
   },
 ];
 

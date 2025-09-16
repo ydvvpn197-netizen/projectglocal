@@ -208,7 +208,7 @@ export const IssueTrackingSystem: React.FC = () => {
 
       toast({
         title: "Vote Recorded",
-        description: `Your ${voteType}vote has been recorded.`,
+        description: `Your ${voteType} vote has been recorded.`,
       });
 
       loadIssues();
@@ -280,6 +280,17 @@ export const IssueTrackingSystem: React.FC = () => {
               <CardContent className="p-6">
                 <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
                 <div className="h-8 bg-muted rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-6 bg-muted rounded w-1/2 mb-4"></div>
+                <div className="h-4 bg-muted rounded w-full mb-2"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
               </CardContent>
             </Card>
           ))}
@@ -358,7 +369,7 @@ export const IssueTrackingSystem: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -472,7 +483,7 @@ export const IssueTrackingSystem: React.FC = () => {
                 <label className="text-sm font-medium">Priority</label>
                 <Select
                   value={newIssue.priority}
-                  onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => setNewIssue(prev => ({ ...prev, priority: value }))}
+                  onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') => setNewIssue(prev => ({ ...prev, priority: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -490,7 +501,7 @@ export const IssueTrackingSystem: React.FC = () => {
                 <label className="text-sm font-medium">Severity</label>
                 <Select
                   value={newIssue.severity}
-                  onValueChange={(value: 'minor' | 'moderate' | 'major' | 'critical') => setNewIssue(prev => ({ ...prev, severity: value }))}
+                  onValueChange={(value: 'minor' | 'moderate' | 'major' | 'severe') => setNewIssue(prev => ({ ...prev, severity: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

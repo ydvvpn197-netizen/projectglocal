@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { lazyImport } from '@/lib/lazyImport';
-import { UnifiedPostCreator } from '@/components/UnifiedPostCreator';
+import { SimplifiedPostCreator } from '@/components/SimplifiedPostCreator';
 
 // Core pages (loaded immediately)
 const Index = React.lazy(() => import('@/pages/EnhancedIndex').then(module => ({ default: module.EnhancedIndex })));
@@ -21,6 +21,7 @@ const SimpleChatTest = React.lazy(() => import('@/components/SimpleChatTest'));
 const ChatTest = React.lazy(() => import('@/components/ChatTest'));
 const TestButtons = React.lazy(() => import('@/pages/TestButtons'));
 const ProfileTest = React.lazy(() => import('@/components/ProfileTest'));
+const LayoutDemo = React.lazy(() => import('@/pages/LayoutDemo'));
 
 // Monetization test page
 const MonetizationTest = React.lazy(() => import('@/pages/MonetizationTest'));
@@ -152,7 +153,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
       <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-      <Route path="/create" element={<ProtectedRoute><UnifiedPostCreator /></ProtectedRoute>} />
+      <Route path="/create" element={<ProtectedRoute><SimplifiedPostCreator /></ProtectedRoute>} />
       
       {/* New Features routes */}
       <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
@@ -317,6 +318,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/monetization-test" element={<ProtectedRoute><MonetizationTest /></ProtectedRoute>} />
       <Route path="/test-buttons" element={<ProtectedRoute><TestButtons /></ProtectedRoute>} />
       <Route path="/test-profile" element={<ProtectedRoute><ProfileTest /></ProtectedRoute>} />
+      <Route path="/layout-demo" element={<ProtectedRoute><LayoutDemo /></ProtectedRoute>} />
       
       {/* Debug route to catch all unmatched routes */}
       <Route path="/chat/*" element={
