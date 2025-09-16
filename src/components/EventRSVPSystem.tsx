@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -76,9 +76,9 @@ export const EventRSVPSystem: React.FC<EventRSVPSystemProps> = ({
   // Load attendees and user RSVP status
   useEffect(() => {
     loadRSVPData();
-  }, [eventId, user]);
+  }, [loadRSVPData]);
 
-  const loadRSVPData = async () => {
+  const loadRSVPData = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -136,7 +136,7 @@ export const EventRSVPSystem: React.FC<EventRSVPSystemProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId, user, toast]);
 
   const handleRSVP = async (status: 'attending' | 'declined') => {
     if (!user) {

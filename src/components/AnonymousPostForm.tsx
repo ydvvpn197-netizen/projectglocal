@@ -284,7 +284,7 @@ export const AnonymousPostForm: React.FC<AnonymousPostFormProps> = ({
                 <Label className="text-base font-medium">Privacy Level</Label>
                 <Select
                   value={privacyLevel}
-                  onValueChange={(value: any) => setPrivacyLevel(value)}
+                  onValueChange={(value: 'anonymous' | 'pseudonymous' | 'public') => setPrivacyLevel(value)}
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue />
@@ -329,7 +329,7 @@ export const AnonymousPostForm: React.FC<AnonymousPostFormProps> = ({
                 <Label className="text-base font-medium">Location Sharing</Label>
                 <Select
                   value={locationSharing}
-                  onValueChange={(value: any) => setLocationSharing(value)}
+                  onValueChange={(value: 'none' | 'city' | 'district' | 'precise') => setLocationSharing(value)}
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue />

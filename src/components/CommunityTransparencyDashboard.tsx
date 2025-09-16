@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,9 +75,9 @@ export const CommunityTransparencyDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, [timeRange]);
+  }, [loadDashboardData]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -96,7 +96,7 @@ export const CommunityTransparencyDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [timeRange]);
 
   const getActionIcon = (actionType: string) => {
     switch (actionType) {

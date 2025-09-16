@@ -150,7 +150,7 @@ export const EnhancedEventForm: React.FC<EnhancedEventFormProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof EnhancedEventData, value: any) => {
+  const handleInputChange = (field: keyof EnhancedEventData, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

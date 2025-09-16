@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,9 +66,9 @@ export const CommunityDecisionTracker: React.FC = () => {
   useEffect(() => {
     loadDecisions();
     loadAnalytics();
-  }, []);
+  }, [loadDecisions]);
 
-  const loadDecisions = async () => {
+  const loadDecisions = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -97,7 +97,7 @@ export const CommunityDecisionTracker: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const loadAnalytics = async () => {
     try {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -96,9 +96,9 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
 
   useEffect(() => {
     loadInsightsData();
-  }, [timePeriod]);
+  }, [loadInsightsData]);
 
-  const loadInsightsData = async () => {
+  const loadInsightsData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -121,7 +121,7 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [timePeriod]);
 
   const getSentimentColor = (sentiment: number) => {
     if (sentiment > 0.1) return 'text-green-600';

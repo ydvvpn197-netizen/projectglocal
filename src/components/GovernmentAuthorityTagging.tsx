@@ -175,7 +175,7 @@ export const GovernmentAuthorityTagging: React.FC<GovernmentAuthorityTaggingProp
             className="text-sm"
           />
           
-          <Select value={levelFilter} onValueChange={(value: any) => setLevelFilter(value)}>
+          <Select value={levelFilter} onValueChange={(value: 'all' | 'local' | 'state' | 'national') => setLevelFilter(value)}>
             <SelectTrigger className="text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -249,7 +249,7 @@ export const GovernmentAuthorityTagging: React.FC<GovernmentAuthorityTaggingProp
 
           <div>
             <Label htmlFor="level-filter" className="text-sm font-medium">Filter by Level</Label>
-            <Select value={levelFilter} onValueChange={(value: any) => setLevelFilter(value)}>
+            <Select value={levelFilter} onValueChange={(value: 'all' | 'local' | 'state' | 'national') => setLevelFilter(value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
