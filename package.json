@@ -1,0 +1,26 @@
+{
+  "name": "glocal-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "npm run -w @glocal/api start:dev",
+    "build": "npm run -w @glocal/api build",
+    "test": "npm run -w @glocal/api test",
+    "lint": "npm run -w @glocal/api lint",
+    "typecheck": "npm run -w @glocal/api typecheck",
+    "migrate": "npm run -w @glocal/api migrate",
+    "seed": "npm run -w @glocal/api seed"
+  },
+  "packageManager": "npm@10.8.1"
+}
+
+
