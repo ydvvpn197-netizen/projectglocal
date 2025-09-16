@@ -179,5 +179,3 @@ export const useABTest = (testId: string) => {
     isTreatment: variant === 'treatment'
   };
 };
-
-export default useABTesting;

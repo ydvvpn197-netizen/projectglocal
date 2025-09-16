@@ -4,7 +4,7 @@ import { useABTesting } from './useABTesting';
 
 interface AnalyticsEvent {
   event: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   timestamp: string;
   userId?: string;
   sessionId: string;
@@ -48,7 +48,7 @@ class AnalyticsService {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  track(event: string, properties: Record<string, any> = {}) {
+  track(event: string, properties: Record<string, unknown> = {}) {
     const analyticsEvent: AnalyticsEvent = {
       event,
       properties: {
@@ -85,7 +85,7 @@ class AnalyticsService {
     return interactionEvents.includes(event);
   }
 
-  trackPageView(page: string, properties: Record<string, any> = {}) {
+  trackPageView(page: string, properties: Record<string, unknown> = {}) {
     this.pageViews++;
     this.track('page_view', {
       page,
@@ -166,7 +166,7 @@ class AnalyticsService {
   }
 
   // Performance tracking
-  trackPerformance(metric: string, value: number, properties: Record<string, any> = {}) {
+  trackPerformance(metric: string, value: number, properties: Record<string, unknown> = {}) {
     this.track('performance_metric', {
       metric,
       value,
@@ -175,7 +175,7 @@ class AnalyticsService {
   }
 
   // Error tracking
-  trackError(error: Error, context: Record<string, any> = {}) {
+  trackError(error: Error, context: Record<string, unknown> = {}) {
     this.track('error', {
       error: error.message,
       stack: error.stack,
@@ -184,7 +184,7 @@ class AnalyticsService {
   }
 
   // User behavior tracking
-  trackUserBehavior(action: string, element: string, properties: Record<string, any> = {}) {
+  trackUserBehavior(action: string, element: string, properties: Record<string, unknown> = {}) {
     this.track('user_behavior', {
       action,
       element,
@@ -198,7 +198,7 @@ export const useAnalytics = () => {
   const { trackEvent } = useABTesting();
   const [analytics] = useState(() => new AnalyticsService());
 
-  const track = useCallback((event: string, properties: Record<string, any> = {}) => {
+  const track = useCallback((event: string, properties: Record<string, unknown> = {}) => {
     analytics.track(event, {
       ...properties,
       userId: user?.id,
@@ -206,7 +206,7 @@ export const useAnalytics = () => {
     });
   }, [analytics, user]);
 
-  const trackPageView = useCallback((page: string, properties: Record<string, any> = {}) => {
+  const trackPageView = useCallback((page: string, properties: Record<string, unknown> = {}) => {
     analytics.trackPageView(page, {
       ...properties,
       userId: user?.id,
@@ -238,14 +238,14 @@ export const useAnalytics = () => {
     trackEvent('task_abandonment', 'abandoned', { taskId, taskName, duration });
   }, [analytics, trackEvent]);
 
-  const trackPerformance = useCallback((metric: string, value: number, properties: Record<string, any> = {}) => {
+  const trackPerformance = useCallback((metric: string, value: number, properties: Record<string, unknown> = {}) => {
     analytics.trackPerformance(metric, value, {
       ...properties,
       userId: user?.id
     });
   }, [analytics, user]);
 
-  const trackError = useCallback((error: Error, context: Record<string, any> = {}) => {
+  const trackError = useCallback((error: Error, context: Record<string, unknown> = {}) => {
     analytics.trackError(error, {
       ...context,
       userId: user?.id,
@@ -253,7 +253,7 @@ export const useAnalytics = () => {
     });
   }, [analytics, user]);
 
-  const trackUserBehavior = useCallback((action: string, element: string, properties: Record<string, any> = {}) => {
+  const trackUserBehavior = useCallback((action: string, element: string, properties: Record<string, unknown> = {}) => {
     analytics.trackUserBehavior(action, element, {
       ...properties,
       userId: user?.id

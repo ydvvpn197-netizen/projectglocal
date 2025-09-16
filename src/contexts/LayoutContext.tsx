@@ -75,4 +75,5 @@ const useLayout = (): LayoutContextType => {
   return context;
 };
 
-export { LayoutProvider, useLayout };
+export { LayoutProvider };
+export { useLayout };
