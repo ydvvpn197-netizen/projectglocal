@@ -94,6 +94,9 @@ const initializeSupabaseClient = (): ReturnType<typeof createClient<Database>> =
 // Create Supabase client with validation and enhanced error handling
 const supabase: ReturnType<typeof createClient<Database>> = initializeSupabaseClient();
 
+// Create the test connection function after client is initialized
+const testConnection = createTestConnection(supabase);
+
 // A second client export (alias) commonly used around the app
 export const resilientSupabase = supabase;
 
@@ -205,7 +208,7 @@ export const getSupabaseStatus = async (): Promise<{
   
   try {
     // Test connection with a simple auth call instead of a table query
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await resilientSupabase.auth.getSession();
     
     if (error) {
       connectionStatus = 'failed';
