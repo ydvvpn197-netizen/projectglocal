@@ -26,6 +26,23 @@ export const useOffline = () => {
     initializeOffline();
   }, []);
 
+  // Sync pending interactions
+  const syncPendingInteractions = useCallback(async () => {
+    if (!isOnline || !isInitialized) {
+      return;
+    }
+
+    try {
+      await offlineService.syncPendingInteractions();
+      
+      // Update cache size after sync
+      const size = await offlineService.getCacheSize();
+      setCacheSize(size);
+    } catch (error) {
+      console.error('Failed to sync pending interactions:', error);
+    }
+  }, [isOnline, isInitialized]);
+
   // Monitor online/offline status
   useEffect(() => {
     const handleOnline = () => {
@@ -46,23 +63,6 @@ export const useOffline = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, [syncPendingInteractions]);
-
-  // Sync pending interactions
-  const syncPendingInteractions = useCallback(async () => {
-    if (!isOnline || !isInitialized) {
-      return;
-    }
-
-    try {
-      await offlineService.syncPendingInteractions();
-      
-      // Update cache size after sync
-      const size = await offlineService.getCacheSize();
-      setCacheSize(size);
-    } catch (error) {
-      console.error('Failed to sync pending interactions:', error);
-    }
-  }, [isOnline, isInitialized]);
 
   // Cache articles offline
   const cacheArticles = useCallback(async (articles: NewsArticle[]) => {

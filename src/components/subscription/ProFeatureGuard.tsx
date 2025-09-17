@@ -23,12 +23,6 @@ export function ProFeatureGuard({
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
 
-  useEffect(() => {
-    if (user?.id) {
-      checkAccess();
-    }
-  }, [user?.id, feature, checkAccess]);
-
   const checkAccess = useCallback(async () => {
     if (!user?.id) {
       setHasAccess(false);
@@ -65,6 +59,12 @@ export function ProFeatureGuard({
       setLoading(false);
     }
   }, [user?.id, feature]);
+
+  useEffect(() => {
+    if (user?.id) {
+      checkAccess();
+    }
+  }, [user?.id, feature, checkAccess]);
 
   const handleUpgrade = () => {
     if (onUpgradeClick) {

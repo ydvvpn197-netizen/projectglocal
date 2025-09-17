@@ -42,6 +42,8 @@ export interface CreateEventData {
   price?: number;
   image_url?: string;
   tags?: string[];
+  government_authority_id?: string;
+  target_authority?: string[];
 }
 
 export const useEvents = () => {

@@ -42,20 +42,20 @@ const newFeaturesItems = [
 
 const artistItems = [
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
-  { title: "Messages", url: "/enhanced-messages", icon: MessageSquare },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Privacy", url: "/privacy", icon: Shield },
-  { title: "Subscription", url: "/public-square-subscription", icon: Crown },
+  { title: "Subscription", url: "/subscription", icon: Crown },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
 ];
 
 const regularUserItems = [
   { title: "My Dashboard", url: "/dashboard", icon: User },
-  { title: "Messages", url: "/enhanced-messages", icon: MessageSquare },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Privacy", url: "/privacy", icon: Shield },
-  { title: "Subscription", url: "/public-square-subscription", icon: Crown },
+  { title: "Subscription", url: "/subscription", icon: Crown },
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "About", url: "/about", icon: MapPin },
 ];

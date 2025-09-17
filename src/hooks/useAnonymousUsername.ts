@@ -1,253 +1,237 @@
+/**
+ * useAnonymousUsername Hook
+ * 
+ * Provides anonymous username generation and management similar to Reddit's system.
+ * Users get random usernames by default and can choose to reveal their identity.
+ */
+
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AnonymousUser {
   id: string;
-  user_id: string;
-  generated_username: string;
-  privacy_level: 'low' | 'medium' | 'high' | 'maximum';
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  username: string;
+  display_name?: string;
+  is_anonymous: boolean;
+  reveal_count: number;
+  last_reveal?: string;
 }
 
-interface CreateAnonymousUserParams {
-  privacyLevel: 'low' | 'medium' | 'high' | 'maximum';
-  includeNumbers: boolean;
-  includeSpecialChars: boolean;
-  length: number;
+interface UseAnonymousUsernameReturn {
+  currentUser: AnonymousUser | null;
+  generateUsername: () => string;
+  revealIdentity: () => Promise<boolean>;
+  hideIdentity: () => Promise<boolean>;
+  updateDisplayName: (name: string) => Promise<boolean>;
+  isLoading: boolean;
+  error: string | null;
 }
 
-export const useAnonymousUsername = () => {
+// Adjective and noun lists for username generation
+const ADJECTIVES = [
+  'Swift', 'Bright', 'Clever', 'Bold', 'Calm', 'Cool', 'Fast', 'Kind',
+  'Smart', 'Wise', 'Brave', 'Gentle', 'Happy', 'Lucky', 'Magic', 'Pure',
+  'Quick', 'Sharp', 'Strong', 'Sweet', 'True', 'Wild', 'Young', 'Zest',
+  'Epic', 'Noble', 'Radiant', 'Vibrant', 'Dynamic', 'Elegant', 'Fierce',
+  'Golden', 'Harmonic', 'Infinite', 'Jovial', 'Keen', 'Luminous'
+];
+
+const NOUNS = [
+  'Tiger', 'Eagle', 'Wolf', 'Bear', 'Fox', 'Hawk', 'Lion', 'Deer',
+  'Owl', 'Raven', 'Falcon', 'Shark', 'Dolphin', 'Phoenix', 'Dragon',
+  'Unicorn', 'Pegasus', 'Griffin', 'Sphinx', 'Basilisk', 'Phoenix',
+  'Explorer', 'Navigator', 'Pioneer', 'Adventurer', 'Dreamer', 'Creator',
+  'Builder', 'Artist', 'Writer', 'Sage', 'Mage', 'Warrior', 'Guardian',
+  'Wanderer', 'Seeker', 'Thinker', 'Innovator', 'Visionary', 'Legend'
+];
+
+const COLORS = [
+  'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Cyan',
+  'Magenta', 'Lime', 'Indigo', 'Teal', 'Coral', 'Gold', 'Silver', 'Copper',
+  'Emerald', 'Ruby', 'Sapphire', 'Amber', 'Pearl', 'Crystal', 'Shadow',
+  'Light', 'Dark', 'Bright', 'Deep', 'Rich', 'Vivid', 'Pastel'
+];
+
+export const useAnonymousUsername = (): UseAnonymousUsernameReturn => {
   const { user } = useAuth();
-  const [anonymousUser, setAnonymousUser] = useState<AnonymousUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AnonymousUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load user's anonymous username
-  useEffect(() => {
-    if (user) {
-      loadAnonymousUser();
-    }
-  }, [user, loadAnonymousUser]);
+  /**
+   * Generate a random anonymous username
+   */
+  const generateUsername = useCallback((): string => {
+    const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+    const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const number = Math.floor(Math.random() * 9999) + 1;
+    
+    // Random format selection
+    const formats = [
+      `${adjective}${noun}${number}`,
+      `${color}${noun}${number}`,
+      `${adjective}${color}${number}`,
+      `${noun}${color}${number}`,
+      `${adjective}${noun}`,
+      `${color}${noun}`
+    ];
+    
+    return formats[Math.floor(Math.random() * formats.length)];
+  }, []);
 
-  const loadAnonymousUser = useCallback(async () => {
-    if (!user) return;
+  /**
+   * Load current user's anonymous profile
+   */
+  const loadUserProfile = useCallback(async () => {
+    if (!user?.id) return;
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('anonymous_usernames')
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
       }
 
-      setAnonymousUser(data);
+      if (!data) {
+        // Create new anonymous profile
+        const newUsername = generateUsername();
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            username: newUsername,
+            display_name: newUsername,
+            is_anonymous: true,
+            reveal_count: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        setCurrentUser(newProfile);
+      } else {
+        setCurrentUser(data);
+      }
     } catch (err) {
-      console.error('Error loading anonymous user:', err);
-      setError('Failed to load anonymous username');
+      console.error('Error loading user profile:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load profile');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user?.id, generateUsername]);
 
-  const generateUsername = (params: CreateAnonymousUserParams): string => {
-    const { privacyLevel, includeNumbers, includeSpecialChars, length } = params;
-    
-    const adjectives = [
-      'Swift', 'Bold', 'Bright', 'Calm', 'Cool', 'Dark', 'Fast', 'Free', 'Good', 'Great',
-      'Happy', 'Kind', 'Light', 'New', 'Old', 'Pure', 'Real', 'Rich', 'Safe', 'Smart',
-      'Strong', 'True', 'Wise', 'Young', 'Wild', 'Brave', 'Clear', 'Deep', 'Fair', 'Fine'
-    ];
-    
-    const nouns = [
-      'Tiger', 'Eagle', 'Wolf', 'Bear', 'Lion', 'Fox', 'Hawk', 'Falcon', 'Raven', 'Owl',
-      'Storm', 'Wind', 'Fire', 'Water', 'Earth', 'Sky', 'Star', 'Moon', 'Sun', 'Cloud',
-      'River', 'Mountain', 'Forest', 'Ocean', 'Desert', 'Valley', 'Peak', 'Creek', 'Lake', 'Bay'
-    ];
-    
-    const numbers = includeNumbers ? ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] : [];
-    const specialChars = includeSpecialChars ? ['_', '-', '.'] : [];
-    
-    let username = '';
-    
-    switch (privacyLevel) {
-      case 'low':
-        // More memorable, easier to trace
-        username = adjectives[Math.floor(Math.random() * adjectives.length)] + 
-                  nouns[Math.floor(Math.random() * nouns.length)];
-        if (includeNumbers) {
-          username += Math.floor(Math.random() * 100);
-        }
-        break;
-        
-      case 'medium':
-        // Balanced approach
-        username = adjectives[Math.floor(Math.random() * adjectives.length)] + 
-                  nouns[Math.floor(Math.random() * nouns.length)] +
-                  (includeNumbers ? Math.floor(Math.random() * 1000) : '');
-        break;
-        
-      case 'high':
-        // More random
-        username = adjectives[Math.floor(Math.random() * adjectives.length)] + 
-                  nouns[Math.floor(Math.random() * nouns.length)] +
-                  (includeNumbers ? Math.floor(Math.random() * 10000) : '') +
-                  (includeSpecialChars ? specialChars[Math.floor(Math.random() * specialChars.length)] : '');
-        break;
-        
-      case 'maximum': {
-        // Completely random
-        const chars = 'abcdefghijklmnopqrstuvwxyz' + 
-                     (includeNumbers ? '0123456789' : '') + 
-                     (includeSpecialChars ? '_-.' : '');
-        for (let i = 0; i < length; i++) {
-          username += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        break;
-      }
-    }
-    
-    // Ensure username meets length requirements
-    if (username.length < length) {
-      const padding = 'abcdefghijklmnopqrstuvwxyz';
-      while (username.length < length) {
-        username += padding.charAt(Math.floor(Math.random() * padding.length));
-      }
-    } else if (username.length > length) {
-      username = username.substring(0, length);
-    }
-    
-    return username;
-  };
-
-  const createAnonymousUser = async (params: CreateAnonymousUserParams) => {
-    if (!user) {
-      throw new Error('User must be logged in');
-    }
+  /**
+   * Reveal user's real identity
+   */
+  const revealIdentity = useCallback(async (): Promise<boolean> => {
+    if (!user?.id || !currentUser) return false;
 
     try {
-      setIsLoading(true);
       setError(null);
 
-      // Generate username
-      const generatedUsername = generateUsername(params);
-
-      // Check if username already exists
-      const { data: existingUser } = await supabase
-        .from('anonymous_usernames')
-        .select('id')
-        .eq('generated_username', generatedUsername)
-        .single();
-
-      if (existingUser) {
-        // If username exists, try again with slight variation
-        const newParams = { ...params, length: params.length + 1 };
-        return createAnonymousUser(newParams);
-      }
-
-      // Create new anonymous username
-      const { data, error } = await supabase
-        .from('anonymous_usernames')
-        .insert({
-          user_id: user.id,
-          generated_username: generatedUsername,
-          privacy_level: params.privacyLevel,
-          is_active: true
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setAnonymousUser(data);
-      return data;
-    } catch (err) {
-      console.error('Error creating anonymous user:', err);
-      setError('Failed to create anonymous username');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const regenerateUsername = async (params: CreateAnonymousUserParams) => {
-    if (!user || !anonymousUser) {
-      throw new Error('No anonymous user to regenerate');
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Generate new username
-      const generatedUsername = generateUsername(params);
-
-      // Check if username already exists
-      const { data: existingUser } = await supabase
-        .from('anonymous_usernames')
-        .select('id')
-        .eq('generated_username', generatedUsername)
-        .neq('id', anonymousUser.id)
-        .single();
-
-      if (existingUser) {
-        // If username exists, try again with slight variation
-        const newParams = { ...params, length: params.length + 1 };
-        return regenerateUsername(newParams);
-      }
-
-      // Update existing anonymous username
-      const { data, error } = await supabase
-        .from('anonymous_usernames')
+      const { error: updateError } = await supabase
+        .from('profiles')
         .update({
-          generated_username: generatedUsername,
-          privacy_level: params.privacyLevel,
+          is_anonymous: false,
+          reveal_count: (currentUser.reveal_count || 0) + 1,
+          last_reveal: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .eq('id', anonymousUser.id)
-        .select()
-        .single();
+        .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      setAnonymousUser(data);
-      return data;
+      // Reload profile to get updated data
+      await loadUserProfile();
+      return true;
     } catch (err) {
-      console.error('Error regenerating username:', err);
-      setError('Failed to regenerate username');
-      throw err;
-    } finally {
-      setIsLoading(false);
+      console.error('Error revealing identity:', err);
+      setError(err instanceof Error ? err.message : 'Failed to reveal identity');
+      return false;
     }
-  };
+  }, [user?.id, currentUser, loadUserProfile]);
 
-  const getPrivacyRecommendations = () => {
-    // This would typically analyze user behavior and provide recommendations
-    return {
-      highPostingFrequency: true,
-      locationSharingEnabled: true,
-      realNameUsage: false
-    };
-  };
+  /**
+   * Hide user's real identity
+   */
+  const hideIdentity = useCallback(async (): Promise<boolean> => {
+    if (!user?.id) return false;
 
-  const clearError = () => {
-    setError(null);
-  };
+    try {
+      setError(null);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          is_anonymous: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Reload profile to get updated data
+      await loadUserProfile();
+      return true;
+    } catch (err) {
+      console.error('Error hiding identity:', err);
+      setError(err instanceof Error ? err.message : 'Failed to hide identity');
+      return false;
+    }
+  }, [user?.id, loadUserProfile]);
+
+  /**
+   * Update user's display name
+   */
+  const updateDisplayName = useCallback(async (name: string): Promise<boolean> => {
+    if (!user?.id || !name.trim()) return false;
+
+    try {
+      setError(null);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          display_name: name.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Reload profile to get updated data
+      await loadUserProfile();
+      return true;
+    } catch (err) {
+      console.error('Error updating display name:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update display name');
+      return false;
+    }
+  }, [user?.id, loadUserProfile]);
+
+  // Load profile on mount
+  useEffect(() => {
+    loadUserProfile();
+  }, [loadUserProfile]);
 
   return {
-    anonymousUser,
+    currentUser,
+    generateUsername,
+    revealIdentity,
+    hideIdentity,
+    updateDisplayName,
     isLoading,
-    error,
-    createAnonymousUser,
-    regenerateUsername,
-    getPrivacyRecommendations,
-    clearError
+    error
   };
 };

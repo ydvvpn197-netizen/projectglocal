@@ -127,9 +127,9 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
       mobile: true,
     },
     {
-      label: 'Discover',
-      href: '/discover',
-      icon: <Globe className="h-4 w-4" />,
+      label: 'Messages',
+      href: '/messages',
+      icon: <MessageCircle className="h-4 w-4" />,
       mobile: true,
     },
     {

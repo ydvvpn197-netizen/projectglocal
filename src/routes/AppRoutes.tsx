@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { lazyImport } from '@/lib/lazyImport';
 import { SimplifiedPostCreator } from '@/components/SimplifiedPostCreator';
+import { createOptimizedLazyComponent, preloadRouteGroup } from '@/lib/routeOptimization';
 
 // Core pages (loaded immediately)
 const Index = React.lazy(() => import('@/pages/EnhancedIndex').then(module => ({ default: module.EnhancedIndex })));
@@ -79,6 +80,7 @@ const LocalCommunities = React.lazy(() => import('@/pages/LocalCommunities'));
 const LocalBusinesses = React.lazy(() => import('@/pages/LocalBusinesses'));
 const PublicSquare = React.lazy(() => import('@/pages/PublicSquare'));
 const PublicSquareSubscription = React.lazy(() => import('@/pages/PublicSquareSubscription'));
+const FeatureShowcase = React.lazy(() => import('@/pages/FeatureShowcase'));
 
 // Civic Engagement
 const CivicEngagementDashboard = React.lazy(() => import('@/components/CivicEngagementDashboard').then(module => ({ default: module.CivicEngagementDashboard })));
@@ -170,6 +172,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/civic-engagement" element={<ProtectedRoute><CivicEngagementDashboard /></ProtectedRoute>} />
       <Route path="/civic-engagement-test" element={<CivicEngagementTest />} />
       <Route path="/community-insights" element={<ProtectedRoute><CommunityInsights /></ProtectedRoute>} />
+      <Route path="/features" element={<FeatureShowcase />} />
       
       {/* Community Moderation routes */}
       <Route path="/community-transparency" element={<CommunityTransparency />} />
@@ -179,12 +182,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/payment/success" element={<PaymentSuccess />} />
       <Route path="/payment/cancel" element={<PaymentCancel />} />
       
-      {/* Subscription routes - redirect to profile subscription tab */}
+      {/* Unified Subscription System */}
       <Route path="/subscription" element={<ProtectedRoute><Navigate to="/profile?tab=subscription" replace /></ProtectedRoute>} />
       <Route path="/subscription/plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
       <Route path="/subscription/success" element={<SubscriptionSuccess />} />
       <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
-      <Route path="/subscription/test" element={<ProtectedRoute><SubscriptionTest /></ProtectedRoute>} />
       
       {/* Document type routes */}
       <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />
@@ -204,12 +206,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
       <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
       
-      {/* User routes */}
+      {/* Unified User Profile System */}
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile/:userId" element={<EnhancedProfile />} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
-      <Route path="/user/:userId" element={<UserProfile />} />
-      <Route path="/profile/:userId" element={<EnhancedProfile />} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
@@ -218,29 +219,9 @@ export const AppRoutes: React.FC = () => {
       <Route path="/artist/:artistId" element={<ArtistProfile />} />
       <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
       
-      {/* Chat routes */}
-      <Route path="/chat/:conversationId" element={
-        <ProtectedRoute>
-          <div>
-            {console.log("Chat route matched!")}
-            <Chat />
-          </div>
-        </ProtectedRoute>
-      } />
-      <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-      <Route path="/enhanced-chat/:conversationId" element={<ProtectedRoute><EnhancedChat /></ProtectedRoute>} />
-      <Route path="/enhanced-messages" element={<ProtectedRoute><EnhancedMessages /></ProtectedRoute>} />
-      
-      {/* Test chat route */}
-      <Route path="/test-chat-route/:conversationId" element={<ChatTest />} />
-      <Route path="/test-chat-unprotected/:conversationId" element={<Chat />} />
-      <Route path="/debug-chat/:conversationId" element={
-        <div style={{padding: '20px'}}>
-          <h1>Debug Chat Route</h1>
-          <p>This route is working!</p>
-          <p>Conversation ID: {window.location.pathname.split('/').pop()}</p>
-        </div>
-      } />
+      {/* Unified Chat System */}
+      <Route path="/messages" element={<ProtectedRoute><EnhancedMessages /></ProtectedRoute>} />
+      <Route path="/messages/:conversationId" element={<ProtectedRoute><EnhancedChat /></ProtectedRoute>} />
       
       
       {/* Admin routes */}
@@ -309,27 +290,21 @@ export const AppRoutes: React.FC = () => {
         </AdminAuthGuard>
       } />
       
-      {/* Test routes - moved to end to avoid conflicts */}
-      <Route path="/test-router" element={<TestRouter />} />
-      <Route path="/test-notifications" element={<ProtectedRoute><NotificationSystemTest /></ProtectedRoute>} />
-      <Route path="/test-booking" element={<ProtectedRoute><BookingSystemTest /></ProtectedRoute>} />
-      <Route path="/test-chat" element={<ProtectedRoute><ChatFlowTest /></ProtectedRoute>} />
-      <Route path="/debug-chat" element={<ProtectedRoute><ChatDebugTest /></ProtectedRoute>} />
-      <Route path="/simple-chat-test" element={<ProtectedRoute><SimpleChatTest /></ProtectedRoute>} />
-      <Route path="/monetization-test" element={<ProtectedRoute><MonetizationTest /></ProtectedRoute>} />
-      <Route path="/test-buttons" element={<ProtectedRoute><TestButtons /></ProtectedRoute>} />
-      <Route path="/test-profile" element={<ProtectedRoute><ProfileTest /></ProtectedRoute>} />
-      <Route path="/layout-demo" element={<ProtectedRoute><LayoutDemo /></ProtectedRoute>} />
-      
-      {/* Debug route to catch all unmatched routes */}
-      <Route path="/chat/*" element={
-        <div style={{padding: '20px', backgroundColor: 'yellow'}}>
-          <h1>Chat Wildcard Route Matched</h1>
-          <p>URL: {window.location.href}</p>
-          <p>Pathname: {window.location.pathname}</p>
-          <p>This means the specific /chat/:conversationId route is not matching</p>
-        </div>
-      } />
+      {/* Development/Testing routes - only available in development mode */}
+      {process.env.NODE_ENV === 'development' && (
+        <>
+          <Route path="/test-router" element={<TestRouter />} />
+          <Route path="/test-notifications" element={<ProtectedRoute><NotificationSystemTest /></ProtectedRoute>} />
+          <Route path="/test-booking" element={<ProtectedRoute><BookingSystemTest /></ProtectedRoute>} />
+          <Route path="/test-chat" element={<ProtectedRoute><ChatFlowTest /></ProtectedRoute>} />
+          <Route path="/debug-chat" element={<ProtectedRoute><ChatDebugTest /></ProtectedRoute>} />
+          <Route path="/simple-chat-test" element={<ProtectedRoute><SimpleChatTest /></ProtectedRoute>} />
+          <Route path="/monetization-test" element={<ProtectedRoute><MonetizationTest /></ProtectedRoute>} />
+          <Route path="/test-buttons" element={<ProtectedRoute><TestButtons /></ProtectedRoute>} />
+          <Route path="/test-profile" element={<ProtectedRoute><ProfileTest /></ProtectedRoute>} />
+          <Route path="/layout-demo" element={<ProtectedRoute><LayoutDemo /></ProtectedRoute>} />
+        </>
+      )}
       
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />

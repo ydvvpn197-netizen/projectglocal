@@ -1,343 +1,448 @@
+/**
+ * UnifiedNavigation Component
+ * 
+ * Provides a consistent navigation experience across all pages
+ * with optimized routing and user-friendly interface.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
+import { useAnonymousUsername } from '@/hooks/useAnonymousUsername';
+import { AnonymousIdentityToggle } from '@/components/AnonymousIdentityToggle';
+import { 
   Home, 
-  Users, 
+  MessageCircle, 
   Calendar, 
-  Plus, 
-  Bell, 
-  User, 
-  Settings, 
+  Users, 
+  Star, 
+  Megaphone,
+  Newspaper,
   Search,
+  Bell,
+  Settings,
+  User,
+  LogOut,
   Menu,
   X,
-  Globe,
-  Newspaper,
-  Vote,
-  Megaphone,
-  Building2,
-  Store,
-  Palette,
-  Scale,
-  Heart,
   Shield,
   Crown,
-  MapPin
+  Globe
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useNotifications } from '@/hooks/useNotifications';
-import { UnifiedNotificationSystem } from './UnifiedNotificationSystem';
 
 interface NavigationItem {
-  path: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  priority: 'high' | 'medium' | 'low';
+  href: string;
+  icon: React.ComponentType<any>;
   badge?: string;
   requiresAuth?: boolean;
+  isActive?: boolean;
 }
-
-const navigationItems: NavigationItem[] = [
-  // High Priority - Always visible (Core features)
-  { path: '/feed', label: 'Feed', icon: Home, priority: 'high' },
-  { path: '/community', label: 'Community', icon: Users, priority: 'high' },
-  { path: '/events', label: 'Events', icon: Calendar, priority: 'high' },
-  
-  // Medium Priority - Contextual (Secondary features)
-  { path: '/news', label: 'News', icon: Newspaper, priority: 'medium' },
-  { path: '/polls', label: 'Polls', icon: Vote, priority: 'medium' },
-  { path: '/businesses', label: 'Businesses', icon: Store, priority: 'medium' },
-  
-  // Low Priority - Collapsible (Tools & utilities)
-  { path: '/legal-assistant', label: 'Legal Assistant', icon: Scale, priority: 'low' },
-  { path: '/life-wish', label: 'Life Wishes', icon: Heart, priority: 'low' },
-];
-
-const userItems = [
-  { path: '/profile', label: 'Profile', icon: User },
-  { path: '/settings', label: 'Settings', icon: Settings },
-  { path: '/privacy', label: 'Privacy', icon: Shield },
-  { path: '/public-square-subscription', label: 'Subscription', icon: Crown },
-];
 
 interface UnifiedNavigationProps {
-  className?: string;
+  variant?: 'header' | 'sidebar' | 'mobile';
+  showUserMenu?: boolean;
+  showNotifications?: boolean;
+  onNavigate?: (path: string) => void;
 }
 
-export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({ className = '' }) => {
-  const { user, signOut } = useAuth();
-  const { counts } = useNotifications();
+export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
+  variant = 'header',
+  showUserMenu = true,
+  showNotifications = true,
+  onNavigate
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { currentUser } = useAnonymousUsername();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setIsUserMenuOpen(false);
-    setIsSearchOpen(false);
-  }, [location.pathname]);
-
-  const isActive = (path: string) => {
-    if (path === '/feed' && location.pathname === '/') return true;
-    return location.pathname.startsWith(path);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setIsSearchOpen(false);
-      setSearchQuery('');
+  const navigationItems: NavigationItem[] = [
+    {
+      label: 'Home',
+      href: '/',
+      icon: Home,
+      isActive: location.pathname === '/'
+    },
+    {
+      label: 'Feed',
+      href: '/feed',
+      icon: Globe,
+      requiresAuth: true,
+      isActive: location.pathname === '/feed'
+    },
+    {
+      label: 'News',
+      href: '/news',
+      icon: Newspaper,
+      requiresAuth: true,
+      isActive: location.pathname.startsWith('/news')
+    },
+    {
+      label: 'Messages',
+      href: '/messages',
+      icon: MessageCircle,
+      requiresAuth: true,
+      isActive: location.pathname.startsWith('/messages')
+    },
+    {
+      label: 'Events',
+      href: '/events',
+      icon: Calendar,
+      isActive: location.pathname.startsWith('/events')
+    },
+    {
+      label: 'Community',
+      href: '/community',
+      icon: Users,
+      isActive: location.pathname.startsWith('/community')
+    },
+    {
+      label: 'Artists',
+      href: '/book-artist',
+      icon: Star,
+      requiresAuth: true,
+      isActive: location.pathname.startsWith('/book-artist')
+    },
+    {
+      label: 'Civic Engagement',
+      href: '/civic-engagement',
+      icon: Megaphone,
+      requiresAuth: true,
+      isActive: location.pathname.startsWith('/civic-engagement')
     }
+  ];
+
+  const userMenuItems = [
+    {
+      label: 'Profile',
+      href: '/profile',
+      icon: User
+    },
+    {
+      label: 'Settings',
+      href: '/settings',
+      icon: Settings
+    },
+    {
+      label: 'Privacy',
+      href: '/privacy',
+      icon: Shield
+    },
+    {
+      label: 'Subscription',
+      href: '/subscription',
+      icon: Crown
+    }
+  ];
+
+  const handleNavigation = (href: string) => {
+    navigate(href);
+    setIsMobileMenuOpen(false);
+    onNavigate?.(href);
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
-  const getInitials = (name?: string) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const getDisplayName = () => {
+    if (!currentUser) return 'User';
+    return currentUser.is_anonymous ? currentUser.username : (currentUser.display_name || currentUser.username);
   };
 
-  const highPriorityItems = navigationItems.filter(item => item.priority === 'high');
-  const mediumPriorityItems = navigationItems.filter(item => item.priority === 'medium');
-  const lowPriorityItems = navigationItems.filter(item => item.priority === 'low');
+  const getAvatarFallback = () => {
+    const name = getDisplayName();
+    return name.charAt(0).toUpperCase();
+  };
 
-  return (
-    <nav className={`bg-background border-b border-border sticky top-0 z-50 ${className}`}>
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <img 
-              src="/logo.png" 
-              alt="Glocal Logo" 
-              className="h-8 w-8 object-contain"
-            />
-            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              Glocal
-            </span>
+  if (variant === 'mobile') {
+    return (
+      <div className="lg:hidden">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-background">
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <Globe className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-bold text-lg">TheGlocal</span>
           </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
-            {highPriorityItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${
-                  isActive(item.path)
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-                {item.badge && (
-                  <Badge variant="secondary" className="ml-1 text-xs animate-pulse">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Link>
-            ))}
-          </div>
-
-          {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4">
-            <form onSubmit={handleSearch} className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search events, communities, discussions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-              />
-            </form>
-          </div>
-
-          {/* Right Side Actions */}
-          <div className="flex items-center gap-2">
-            {/* Create Button */}
-            <Button
-              onClick={() => navigate('/create')}
-              size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Create</span>
-            </Button>
-
-            {/* Notifications */}
-            <UnifiedNotificationSystem />
-
-            {/* User Menu */}
-            {user ? (
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-xs">
-                      {getInitials(user.user_metadata?.full_name || user.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden sm:inline text-sm font-medium">
-                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                  </span>
-                </Button>
-
-                {/* User Dropdown */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-background border border-border rounded-lg shadow-lg z-50">
-                    <div className="p-4 border-b border-border">
-                      <p className="font-medium">{user.user_metadata?.full_name || 'User'}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                    </div>
-                    <div className="p-2">
-                      {userItems.map((item) => (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          {item.label}
-                        </Link>
-                      ))}
-                      <div className="border-t border-border mt-2 pt-2">
-                        <button
-                          onClick={handleSignOut}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors w-full"
-                        >
-                          <Shield className="h-4 w-4" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/signin')}>
-                  Sign In
-                </Button>
-                <Button size="sm" onClick={() => navigate('/signin')}>
-                  Get Started
-                </Button>
-              </div>
+          
+          <div className="flex items-center space-x-2">
+            {showNotifications && (
+              <Button variant="ghost" size="sm">
+                <Bell className="w-5 h-5" />
+              </Button>
             )}
-
-            {/* Mobile Menu Button */}
+            
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMobileMenuOpen}
             >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-background">
-            <div className="p-4 space-y-2">
-              {/* High Priority Items */}
-              {highPriorityItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-b bg-background"
+            >
+              <div className="p-4 space-y-2">
+                {navigationItems
+                  .filter(item => !item.requiresAuth || user)
+                  .map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Button
+                        key={item.href}
+                        variant={item.isActive ? "default" : "ghost"}
+                        className="w-full justify-start"
+                        onClick={() => handleNavigation(item.href)}
+                      >
+                        <Icon className="w-4 h-4 mr-2" />
+                        {item.label}
+                        {item.badge && (
+                          <Badge variant="secondary" className="ml-auto">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Button>
+                    );
+                  })}
+                
+                {user && (
+                  <div className="pt-4 border-t">
+                    <div className="space-y-2">
+                      {userMenuItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Button
+                            key={item.href}
+                            variant="ghost"
+                            className="w-full justify-start"
+                            onClick={() => handleNavigation(item.href)}
+                          >
+                            <Icon className="w-4 h-4 mr-2" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
+                      
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-destructive"
+                        onClick={handleSignOut}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  if (variant === 'header') {
+    return (
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Globe className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-lg">TheGlocal</span>
+            </Link>
+
+            {/* Navigation Items */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navigationItems
+                .filter(item => !item.requiresAuth || user)
+                .map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Button
+                      key={item.href}
+                      variant={item.isActive ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => handleNavigation(item.href)}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      {item.label}
+                      {item.badge && (
+                        <Badge variant="secondary" className="ml-2">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Button>
+                  );
+                })}
+            </nav>
+
+            {/* Right Side */}
+            <div className="flex items-center space-x-2">
+              {showNotifications && (
+                <Button variant="ghost" size="sm">
+                  <Bell className="w-5 h-5" />
+                </Button>
+              )}
+
+              {user && showUserMenu ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={currentUser?.avatar_url} alt={getDisplayName()} />
+                        <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {getDisplayName()}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {currentUser?.is_anonymous ? 'Anonymous' : 'Public'}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    
+                    {userMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <DropdownMenuItem
+                          key={item.href}
+                          onClick={() => handleNavigation(item.href)}
+                        >
+                          <Icon className="mr-2 h-4 w-4" />
+                          {item.label}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                    
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button onClick={() => navigate('/signin')} size="sm">
+                  Sign In
+                </Button>
+              )}
+
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // Sidebar variant
+  return (
+    <aside className="w-64 border-r bg-background">
+      <div className="p-4">
+        {/* Logo */}
+        <Link to="/" className="flex items-center space-x-2 mb-6">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <Globe className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-lg">TheGlocal</span>
+        </Link>
+
+        {/* Navigation Items */}
+        <nav className="space-y-1">
+          {navigationItems
+            .filter(item => !item.requiresAuth || user)
+            .map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.href}
+                  variant={item.isActive ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => handleNavigation(item.href)}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <Icon className="w-4 h-4 mr-3" />
                   {item.label}
-                </Link>
-              ))}
+                  {item.badge && (
+                    <Badge variant="secondary" className="ml-auto">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </Button>
+              );
+            })}
+        </nav>
 
-              {/* Medium Priority Items */}
-              <div className="pt-2 border-t border-border">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                  More Features
-                </p>
-                {mediumPriorityItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive(item.path)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                    }`}
+        {/* User Section */}
+        {user && (
+          <div className="mt-6 pt-6 border-t">
+            <div className="space-y-2">
+              {userMenuItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.href}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => handleNavigation(item.href)}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <Icon className="w-4 h-4 mr-3" />
                     {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Low Priority Items */}
-              <div className="pt-2 border-t border-border">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                  Tools
-                </p>
-                {lowPriorityItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive(item.path)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Mobile Search */}
-              <div className="pt-2 border-t border-border">
-                <form onSubmit={handleSearch} className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </form>
-              </div>
+                  </Button>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
-    </nav>
+    </aside>
   );
 };
-
-export default UnifiedNavigation;
