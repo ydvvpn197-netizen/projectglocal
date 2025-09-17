@@ -100,13 +100,13 @@ export const resilientSupabase = supabase;
 // Export the main client
 export { supabase };
 
-// Enhanced connection test with timeout - now using the local supabase variable
-const testConnection = async (): Promise<boolean> => {
+// Enhanced connection test with timeout - using a factory function to avoid circular dependency
+const createTestConnection = (client: ReturnType<typeof createClient<Database>>) => async (): Promise<boolean> => {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CLIENT_CONFIG.connectionTimeout);
     
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await client.auth.getSession();
     
     clearTimeout(timeoutId);
     
