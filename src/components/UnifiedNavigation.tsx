@@ -45,7 +45,7 @@ import {
 interface NavigationItem {
   label: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   requiresAuth?: boolean;
   isActive?: boolean;

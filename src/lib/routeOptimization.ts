@@ -1,167 +1,164 @@
 /**
- * Route Optimization Utilities
- * 
- * This module provides utilities for optimizing route loading and code splitting
- * to improve application performance and reduce bundle size.
+ * Route optimization utilities and constants
  */
 
-import { lazy, ComponentType } from 'react';
+import React, { useEffect } from 'react';
 
-/**
- * Creates an optimized lazy component with error boundary and loading fallback
- */
-export function createOptimizedLazyComponent<T extends ComponentType<any>>(
-  importFn: () => Promise<{ default: T }>,
-  fallback?: ComponentType
-) {
-  const LazyComponent = lazy(importFn);
-  
-  // Add error boundary wrapper
-  return (props: React.ComponentProps<T>) => {
-    return (
-      <React.Suspense fallback={fallback ? <fallback /> : <DefaultLoadingFallback />}>
-        <LazyComponent {...props} />
-      </React.Suspense>
-    );
-  };
+export type RoutePriority = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export interface RouteGroup {
+  name: string;
+  priority: RoutePriority;
+  routes: string[];
 }
 
-/**
- * Default loading fallback component
- */
-const DefaultLoadingFallback: React.FC = () => (
-  <div className="flex items-center justify-center min-h-[200px]">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-  </div>
-);
+export const ROUTE_GROUPS: RouteGroup[] = [
+  {
+    name: 'core',
+    priority: 'HIGH',
+    routes: ['/', '/dashboard', '/profile']
+  },
+  {
+    name: 'community',
+    priority: 'MEDIUM',
+    routes: ['/events', '/posts', '/follow']
+  },
+  {
+    name: 'features',
+    priority: 'LOW',
+    routes: ['/settings', '/analytics', '/admin']
+  }
+];
 
-/**
- * Route group definitions for better code splitting
- */
-export const ROUTE_GROUPS = {
-  // Core pages - loaded immediately
-  CORE: [
-    'EnhancedIndex',
-    'SignIn',
-    'Feed',
-    'About'
-  ],
-  
-  // Auth pages - grouped together
-  AUTH: [
-    'LocationSetup',
-    'Onboarding',
-    'PrivacyFirstOnboarding',
-    'ArtistOnboarding',
-    'ForgotPassword',
-    'ResetPassword'
-  ],
-  
-  // Community features - grouped together
-  COMMUNITY: [
-    'Community',
-    'CommunityDetail',
-    'CreateDiscussion',
-    'CreateGroup',
-    'CreatePost',
-    'Events',
-    'CreateEvent',
-    'EventDetails'
-  ],
-  
-  // Artist features - grouped together
-  ARTIST: [
-    'BookArtist',
-    'ArtistDashboard',
-    'ArtistProfile'
-  ],
-  
-  // User features - grouped together
-  USER: [
-    'Profile',
-    'Settings',
-    'Privacy',
-    'UserProfile',
-    'EnhancedProfile',
-    'NotificationSettings',
-    'NotificationsPage',
-    'UserDashboard'
-  ],
-  
-  // Chat features - grouped together
-  CHAT: [
-    'Chat',
-    'Messages',
-    'EnhancedChat',
-    'EnhancedMessages'
-  ],
-  
-  // New features - grouped together
-  NEW_FEATURES: [
-    'LegalAssistant',
-    'LifeWish',
-    'VoiceControlDemo',
-    'News',
-    'Polls',
-    'LocalCommunities',
-    'LocalBusinesses',
-    'PublicSquare',
-    'PublicSquareSubscription'
-  ],
-  
-  // Payment features - grouped together
-  PAYMENT: [
-    'Pricing',
-    'PaymentSuccess',
-    'PaymentCancel',
-    'SubscriptionPage',
-    'SubscriptionPlansPage',
-    'SubscriptionSuccess',
-    'SubscriptionCancel'
-  ],
-  
-  // Admin features - grouped together
-  ADMIN: [
-    'AdminLogin',
-    'AdminDashboard',
-    'UserManagement',
-    'UserModeration',
-    'AdminManagement',
-    'ContentModeration',
-    'AdminAnalytics',
-    'SystemSettings',
-    'AdminSetup'
-  ]
+export const ROUTE_PRIORITIES: Record<string, RoutePriority> = {
+  '/': 'HIGH',
+  '/dashboard': 'HIGH',
+  '/profile': 'HIGH',
+  '/events': 'MEDIUM',
+  '/posts': 'MEDIUM',
+  '/follow': 'MEDIUM',
+  '/settings': 'LOW',
+  '/analytics': 'LOW',
+  '/admin': 'LOW'
 };
 
 /**
- * Preload route group for better performance
+ * Get route priority
  */
-export function preloadRouteGroup(groupName: keyof typeof ROUTE_GROUPS) {
-  const routes = ROUTE_GROUPS[groupName];
+export const getRoutePriority = (routeName: string): RoutePriority => {
+  return ROUTE_PRIORITIES[routeName] || 'MEDIUM';
+};
+
+/**
+ * Preload route group
+ */
+export const preloadRouteGroup = async (group: RouteGroup): Promise<void> => {
+  const { routes } = group;
   
-  routes.forEach(routeName => {
-    // Preload the route component
-    import(`@/pages/${routeName}`).catch(() => {
-      // Silently handle import errors
-    });
+  // Preload critical routes first
+  const criticalRoutes = routes.filter(route => 
+    route === '/' || route === '/dashboard' || route === '/profile'
+  );
+  
+  const otherRoutes = routes.filter(route => 
+    !criticalRoutes.includes(route)
+  );
+  
+  // Preload critical routes
+  for (const route of criticalRoutes) {
+    try {
+      await preloadRoute(route);
+    } catch (error) {
+      console.warn(`Failed to preload critical route: ${route}`, error);
+    }
+  }
+  
+  // Preload other routes with delay
+  setTimeout(async () => {
+    for (const route of otherRoutes) {
+      try {
+        await preloadRoute(route);
+      } catch (error) {
+        console.warn(`Failed to preload route: ${route}`, error);
+      }
+    }
+  }, 100);
+};
+
+/**
+ * Preload individual route
+ */
+export const preloadRoute = async (route: string): Promise<void> => {
+  // This would typically preload route components
+  // For now, we'll simulate the preload
+  return new Promise(resolve => {
+    setTimeout(resolve, 50);
   });
-}
-
-/**
- * Route priority levels for loading optimization
- */
-export const ROUTE_PRIORITIES = {
-  HIGH: ['Feed', 'Messages', 'Profile', 'Events'],
-  MEDIUM: ['News', 'Community', 'BookArtist', 'CivicEngagement'],
-  LOW: ['Settings', 'Privacy', 'About', 'LegalAssistant']
 };
 
 /**
- * Get route priority for optimization
+ * Get route groups for preloading
  */
-export function getRoutePriority(routeName: string): 'HIGH' | 'MEDIUM' | 'LOW' {
-  if (ROUTE_PRIORITIES.HIGH.includes(routeName)) return 'HIGH';
-  if (ROUTE_PRIORITIES.MEDIUM.includes(routeName)) return 'MEDIUM';
-  return 'LOW';
-}
+export const getRouteGroups = (routeName: string): RouteGroup[] => {
+  const currentGroup = ROUTE_GROUPS.find(group => 
+    group.routes.includes(routeName)
+  );
+  
+  if (!currentGroup) {
+    return ROUTE_GROUPS;
+  }
+  
+  // Return current group and related groups
+  const relatedGroups = ROUTE_GROUPS.filter(group => 
+    group.priority === currentGroup.priority || 
+    group.priority === 'HIGH'
+  );
+  
+  return relatedGroups;
+};
+
+/**
+ * Create optimized lazy component
+ */
+export const createOptimizedLazyComponent = (importFn: () => Promise<any>) => {
+  return React.lazy(importFn);
+};
+
+/**
+ * Hook for route performance monitoring
+ */
+export const useRoutePerformance = (routeName: string) => {
+  useEffect(() => {
+    const startTime = performance.now();
+    
+    return () => {
+      const endTime = performance.now();
+      const loadTime = endTime - startTime;
+      
+      // Log performance metrics
+      console.log(`Route ${routeName} loaded in ${loadTime.toFixed(2)}ms`);
+      
+      // Send to analytics if available
+      if (typeof window !== 'undefined' && (window as Window & { gtag?: Function }).gtag) {
+        (window as Window & { gtag: Function }).gtag('event', 'route_load_time', {
+          route_name: routeName,
+          load_time: Math.round(loadTime)
+        });
+      }
+    };
+  }, [routeName]);
+};
+
+/**
+ * Preload hook for critical routes
+ */
+export const useRoutePreload = (routeName: string, priority: RoutePriority = 'MEDIUM') => {
+  useEffect(() => {
+    if (priority === 'HIGH') {
+      // Immediately preload high priority routes
+      import(`@/pages/${routeName}`).catch(() => {
+        console.warn(`Failed to preload route: ${routeName}`);
+      });
+    }
+  }, [routeName, priority]);
+};

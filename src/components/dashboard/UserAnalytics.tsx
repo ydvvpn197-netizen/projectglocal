@@ -82,7 +82,7 @@ export const UserAnalytics = () => {
     if (user) {
       fetchAnalytics();
     }
-  }, [user, timeRange]);
+  }, [user, timeRange, fetchAnalytics]);
 
   const fetchAnalytics = async () => {
     setLoading(true);

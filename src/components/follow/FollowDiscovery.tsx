@@ -124,7 +124,7 @@ export const FollowDiscovery = ({ className }: FollowDiscoveryProps) => {
 
   useEffect(() => {
     setDiscoveryUsers(mockDiscoveryUsers);
-  }, []);
+  }, [mockDiscoveryUsers]);
 
   const handleFollow = async (userId: string) => {
     try {

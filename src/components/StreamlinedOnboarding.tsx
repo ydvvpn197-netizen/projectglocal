@@ -287,7 +287,7 @@ export const StreamlinedOnboarding: React.FC = () => {
                         ? 'border-primary bg-primary/5'
                         : 'border-border hover:border-primary/50'
                     }`}
-                    onClick={() => setFormData(prev => ({ ...prev, privacyLevel: option.value as any }))}
+                    onClick={() => setFormData(prev => ({ ...prev, privacyLevel: option.value as 'public' | 'community' | 'private' }))}
                   >
                     <div className="flex items-center space-x-3">
                       <option.icon className="w-5 h-5 text-primary" />

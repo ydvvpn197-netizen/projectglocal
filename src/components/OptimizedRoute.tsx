@@ -7,7 +7,14 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { createOptimizedLazyComponent, preloadRouteGroup, getRoutePriority } from '@/lib/routeOptimization';
+import { 
+  createOptimizedLazyComponent, 
+  preloadRouteGroup, 
+  getRoutePriority, 
+  useRoutePerformance, 
+  useRoutePreload,
+  RoutePriority 
+} from '@/lib/routeOptimization';
 
 interface OptimizedRouteProps {
   children: React.ReactNode;
@@ -141,41 +148,3 @@ export const OptimizedRoute: React.FC<OptimizedRouteProps> = ({
   );
 };
 
-/**
- * Hook for route performance monitoring
- */
-export const useRoutePerformance = (routeName: string) => {
-  useEffect(() => {
-    const startTime = performance.now();
-    
-    return () => {
-      const endTime = performance.now();
-      const loadTime = endTime - startTime;
-      
-      // Log performance metrics
-      console.log(`Route ${routeName} loaded in ${loadTime.toFixed(2)}ms`);
-      
-      // Send to analytics if available
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'route_load_time', {
-          route_name: routeName,
-          load_time: Math.round(loadTime)
-        });
-      }
-    };
-  }, [routeName]);
-};
-
-/**
- * Preload hook for critical routes
- */
-export const useRoutePreload = (routeName: string, priority: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM') => {
-  useEffect(() => {
-    if (priority === 'HIGH') {
-      // Immediately preload high priority routes
-      import(`@/pages/${routeName}`).catch(() => {
-        console.warn(`Failed to preload route: ${routeName}`);
-      });
-    }
-  }, [routeName, priority]);
-};

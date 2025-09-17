@@ -65,7 +65,7 @@ export const ActivityFeed = () => {
     if (user) {
       fetchActivities();
     }
-  }, [user, filter]);
+  }, [user, filter, fetchActivities]);
 
   const fetchActivities = async () => {
     setLoading(true);
