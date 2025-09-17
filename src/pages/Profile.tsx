@@ -363,21 +363,9 @@ const Profile = () => {
     }
   }, [searchParams]);
 
-  if (loading) {
-    return (
-      <ResponsiveLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading profile...</span>
-          </div>
-        </div>
-      </ResponsiveLayout>
-    );
-  }
-
   // Show loading state while fetching profile
   if (loading) {
+    console.log('Profile component: Loading state active', { user, loading, profile });
     return (
       <ResponsiveLayout>
         <div className="text-center py-12">
@@ -386,6 +374,9 @@ const Profile = () => {
           <p className="text-muted-foreground">
             Please wait while we load your profile data.
           </p>
+          <div className="mt-4 text-sm text-muted-foreground">
+            Debug: User ID: {user?.id || 'No user'}, Loading: {loading.toString()}
+          </div>
         </div>
       </ResponsiveLayout>
     );

@@ -28,26 +28,32 @@ export const useUserProfile = (userId?: string) => {
   const targetUserId = userId || user?.id;
 
   const fetchProfile = useCallback(async () => {
+    console.log('useUserProfile: fetchProfile called', { targetUserId, user: user?.id });
+    
     if (!targetUserId) {
+      console.log('useUserProfile: No targetUserId, setting loading to false');
       setLoading(false);
       return;
     }
 
     try {
+      console.log('useUserProfile: Starting profile fetch for user:', targetUserId);
       setLoading(true);
       const profileData = await userProfileService.getUserProfile(targetUserId);
+      console.log('useUserProfile: Profile data received:', profileData);
       setProfile(profileData);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('useUserProfile: Error fetching profile:', error);
       toast({
         title: "Error",
         description: "Failed to load profile data",
         variant: "destructive"
       });
     } finally {
+      console.log('useUserProfile: Setting loading to false');
       setLoading(false);
     }
-  }, [targetUserId, toast]);
+  }, [targetUserId, toast, user?.id]);
 
   const fetchStats = useCallback(async () => {
     if (!targetUserId) return;
