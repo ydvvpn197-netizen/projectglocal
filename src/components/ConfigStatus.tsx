@@ -150,8 +150,8 @@ export const ConfigStatus: React.FC = () => {
             <Button 
               onClick={() => {
                 const envContent = `# Supabase Configuration (Required)
-VITE_SUPABASE_URL=https://tepvzhbgobckybyhryuj.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHZ6aGJnb2Jja3lieWhyeXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzODIzNzQsImV4cCI6MjA2OTk1ODM3NH0.RBtDkdzRu-rgRs-kYHj9zlChhqO7lLvrnnVR2vBwji4
+VITE_SUPABASE_URL=your_supabase_project_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 # Copy this to your .env file
 # Never commit .env files to version control`;
