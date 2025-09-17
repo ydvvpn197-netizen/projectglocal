@@ -48,7 +48,7 @@ export class PostService {
             display_name,
             avatar_url
           ),
-          groups (
+          community_groups (
             name
           ),
           post_votes!inner (
@@ -103,7 +103,7 @@ export class PostService {
         ...post,
         author_name: post.is_anonymous ? 'Anonymous' : post.profiles?.display_name,
         author_avatar: post.is_anonymous ? undefined : post.profiles?.avatar_url,
-        group_name: post.groups?.name,
+        group_name: post.community_groups?.name,
         user_vote: post.post_votes?.[0]?.vote_type || 0,
         has_voted: !!post.post_votes?.[0]
       }));
@@ -161,7 +161,7 @@ export class PostService {
         ...data,
         author_name: data.is_anonymous ? 'Anonymous' : data.profiles?.display_name,
         author_avatar: data.is_anonymous ? undefined : data.profiles?.avatar_url,
-        group_name: data.groups?.name,
+        group_name: data.community_groups?.name,
         user_vote: data.post_votes?.[0]?.vote_type || 0,
         has_voted: !!data.post_votes?.[0]
       };
@@ -276,7 +276,7 @@ export class PostService {
             display_name,
             avatar_url
           ),
-          groups (
+          community_groups (
             name
           )
         `)
@@ -300,7 +300,7 @@ export class PostService {
         ...post,
         author_name: post.is_anonymous ? 'Anonymous' : post.profiles?.display_name,
         author_avatar: post.is_anonymous ? undefined : post.profiles?.avatar_url,
-        group_name: post.groups?.name
+        group_name: post.community_groups?.name
       }));
     } catch (error) {
       console.error('Error searching posts:', error);

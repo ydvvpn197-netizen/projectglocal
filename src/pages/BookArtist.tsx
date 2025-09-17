@@ -138,23 +138,12 @@ const BookArtist = () => {
 
       const { min: budgetMinParsed, max: budgetMaxParsed } = parseBudget(sanitizedData.budget);
 
-      // Find the artists.id for the selected profile user
-      const { data: artistRow, error: artistLookupError } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('user_id', selectedArtist.user_id)
-        .single();
-
-      if (artistLookupError || !artistRow?.id) {
-        throw artistLookupError || new Error('Artist profile not found');
-      }
-
-      // Create a booking request (NOT a feed post)
+      // Create a booking request directly with the artist's user_id
       const { data: bookingRow, error: bookingError } = await supabase
         .from('artist_bookings')
         .insert({
           user_id: user.id,
-          artist_id: artistRow.id,
+          artist_id: selectedArtist.user_id, // Use user_id directly
           event_date: bookingDate.toISOString(),
           event_location: sanitizedData.location,
           event_description: sanitizedData.description,

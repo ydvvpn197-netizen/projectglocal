@@ -336,7 +336,7 @@ const ArtistProfile = () => {
         .from('artist_bookings')
         .select('id')
         .eq('user_id', user.id)
-        .eq('artist_id', artist?.id)
+        .eq('artist_id', artist?.user_id)
         .eq('event_date', eventDate)
         .single();
 
@@ -353,7 +353,7 @@ const ArtistProfile = () => {
         .from('artist_bookings')
         .insert({
           user_id: user.id,
-          artist_id: artist?.id,
+          artist_id: artist?.user_id,
           event_date: eventDate,
           event_location: eventLocation,
           event_description: eventDescription,

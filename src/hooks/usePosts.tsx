@@ -50,7 +50,7 @@ export const usePosts = () => {
       // Try the direct query approach first since RPC might have authentication issues
       console.log('Attempting direct query to posts table...');
       const { data: directData, error: directError } = await supabase
-        .from('posts')
+        .from('social_posts')
         .select(`
           *,
           profiles:user_id (
@@ -101,11 +101,11 @@ export const usePosts = () => {
 
     try {
       const { data, error } = await supabase
-        .from('posts')
+        .from('social_posts')
         .insert({
           ...postData,
           user_id: user.id,
-          type: postData.type // Cast to match database enum
+          post_type: postData.type // Cast to match database enum
         })
         .select()
         .single();
