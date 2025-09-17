@@ -283,12 +283,14 @@ export class UserService {
 
       if (profileResult.error) {
         console.error('Error fetching profile:', profileResult.error);
-        return { settings: null, error: profileResult.error.message };
+        // Don't return error for missing notification settings, just use defaults
+        if (notificationResult.error) {
+          console.warn('Error fetching notification settings:', notificationResult.error);
+        }
       }
 
-      if (notificationResult.error) {
-        console.error('Error fetching notification settings:', notificationResult.error);
-        return { settings: null, error: notificationResult.error.message };
+      if (notificationResult.error && !profileResult.error) {
+        console.warn('Error fetching notification settings:', notificationResult.error);
       }
 
       const settings: UserSettings = {
@@ -306,35 +308,35 @@ export class UserService {
         location_country: profile?.location_country,
         real_time_location_enabled: profile?.real_time_location_enabled,
         
-        // Privacy settings
-        privacy_profile: profile?.privacy_profile,
-        show_location: profile?.show_location,
-        show_contact_info: profile?.show_contact_info,
-        allow_messages_from: profile?.allow_messages_from,
+        // Privacy settings (defaults)
+        privacy_profile: false,
+        show_location: true,
+        show_contact_info: true,
+        allow_messages_from: 'followers' as const,
         
-        // Notification settings
-        email_notifications: notifications?.email_notifications,
-        push_notifications: notifications?.push_notifications,
-        booking_notifications: notifications?.booking_notifications,
-        message_notifications: notifications?.message_notifications,
-        follower_notifications: notifications?.follower_notifications,
-        event_notifications: notifications?.event_notifications,
-        discussion_notifications: notifications?.discussion_notifications,
-        payment_notifications: notifications?.payment_notifications,
-        system_notifications: notifications?.system_notifications,
-        marketing_notifications: notifications?.marketing_notifications,
-        quiet_hours_enabled: notifications?.quiet_hours_enabled,
-        quiet_hours_start: notifications?.quiet_hours_start,
-        quiet_hours_end: notifications?.quiet_hours_end,
+        // Notification settings (with defaults)
+        email_notifications: notifications?.email_notifications ?? true,
+        push_notifications: notifications?.push_notifications ?? true,
+        booking_notifications: notifications?.booking_notifications ?? true,
+        message_notifications: notifications?.message_notifications ?? true,
+        follower_notifications: notifications?.follower_notifications ?? true,
+        event_notifications: notifications?.event_notifications ?? true,
+        discussion_notifications: notifications?.discussion_notifications ?? true,
+        payment_notifications: notifications?.payment_notifications ?? true,
+        system_notifications: notifications?.system_notifications ?? true,
+        marketing_notifications: notifications?.marketing_notifications ?? false,
+        quiet_hours_enabled: notifications?.quiet_hours_enabled ?? false,
+        quiet_hours_start: notifications?.quiet_hours_start ?? '22:00',
+        quiet_hours_end: notifications?.quiet_hours_end ?? '08:00',
         
-        // Appearance settings
-        dark_mode: profile?.dark_mode,
-        language: profile?.language,
-        timezone: profile?.timezone,
+        // Appearance settings (defaults)
+        dark_mode: false,
+        language: 'en',
+        timezone: 'UTC',
         
-        // Security settings
-        two_factor_enabled: profile?.two_factor_enabled,
-        login_notifications: profile?.login_notifications,
+        // Security settings (defaults)
+        two_factor_enabled: false,
+        login_notifications: true,
       };
 
       return { settings };

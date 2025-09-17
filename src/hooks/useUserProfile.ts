@@ -45,12 +45,13 @@ export const useUserProfile = (): UseUserProfileReturn => {
       }
 
       if (settingsResult.error) {
-        throw new Error(settingsResult.error);
+        console.warn('Error fetching settings:', settingsResult.error);
+        // Don't throw error, just use null settings
       }
 
       setProfile(profileResult.profile);
       setArtistProfile(profileResult.artistProfile || null);
-      setSettings(settingsResult.settings);
+      setSettings(settingsResult.settings || null);
     } catch (err) {
       console.error('Error fetching user profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch user profile');

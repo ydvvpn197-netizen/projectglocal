@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { 
   User, 
   Camera, 
@@ -45,7 +46,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
 
   const [localProfile, setLocalProfile] = useState(profile);
   const [localArtistProfile, setLocalArtistProfile] = useState(artistProfile);
-  const [localSettings, setLocalSettings] = useState(settings);
+  const [localSettings, setLocalSettings] = useState(settings || {});
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -55,7 +56,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
   useEffect(() => {
     setLocalProfile(profile);
     setLocalArtistProfile(artistProfile);
-    setLocalSettings(settings);
+    setLocalSettings(settings || {});
   }, [profile, artistProfile, settings]);
 
   // Check for changes
@@ -67,7 +68,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
   }, [localProfile, localArtistProfile, localSettings, profile, artistProfile, settings]);
 
   const handleInputChange = (key: string, value: unknown) => {
-    setLocalSettings(prev => ({ ...prev, [key]: value }));
+    setLocalSettings(prev => ({ ...(prev || {}), [key]: value }));
   };
 
   const handleProfileChange = (key: string, value: unknown) => {
@@ -152,7 +153,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
   const handleCancel = () => {
     setLocalProfile(profile);
     setLocalArtistProfile(artistProfile);
-    setLocalSettings(settings);
+    setLocalSettings(settings || {});
     setAvatarFile(null);
     setAvatarPreview(null);
     if (onClose) onClose();
@@ -163,31 +164,53 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
       <Card className={compact ? "" : "w-full max-w-4xl"}>
         <CardContent className="flex items-center justify-center p-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-2 text-sm text-muted-foreground">Loading profile...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <Card className={compact ? "" : "w-full max-w-4xl"}>
+        <CardContent className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="text-destructive mb-4">
+            <svg className="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Failed to load profile</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Try Again
+          </Button>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className={compact ? "" : "w-full max-w-4xl"}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Settings
-            </CardTitle>
-            <CardDescription>
-              Update your personal information and profile details.
-            </CardDescription>
+    <ErrorBoundary>
+      <Card className={compact ? "" : "w-full max-w-4xl"}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Profile Settings
+              </CardTitle>
+              <CardDescription>
+                Update your personal information and profile details.
+              </CardDescription>
+            </div>
+            {onClose && (
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </CardHeader>
+        </CardHeader>
       
       <CardContent className="space-y-6">
         {/* Avatar Section */}
@@ -287,7 +310,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                 <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="phone_number"
-                  value={localSettings.phone_number || ""}
+                  value={localSettings?.phone_number || ""}
                   onChange={(e) => handleInputChange('phone_number', e.target.value)}
                   placeholder="Enter your phone number"
                   className="pl-10"
@@ -301,7 +324,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                 <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="website_url"
-                  value={localSettings.website_url || ""}
+                  value={localSettings?.website_url || ""}
                   onChange={(e) => handleInputChange('website_url', e.target.value)}
                   placeholder="https://yourwebsite.com"
                   className="pl-10"
@@ -317,7 +340,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Input
                 id="email"
                 type="email"
-                value={localSettings.email || ""}
+                value={localSettings?.email || ""}
                 disabled
                 className="pl-10"
               />
@@ -339,7 +362,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="location_city"
-                  value={localSettings.location_city || ""}
+                  value={localSettings?.location_city || ""}
                   onChange={(e) => handleInputChange('location_city', e.target.value)}
                   placeholder="Enter your city"
                   className="pl-10"
@@ -351,7 +374,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="location_state">State/Province</Label>
               <Input
                 id="location_state"
-                value={localSettings.location_state || ""}
+                value={localSettings?.location_state || ""}
                 onChange={(e) => handleInputChange('location_state', e.target.value)}
                 placeholder="Enter your state"
               />
@@ -361,7 +384,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="location_country">Country</Label>
               <Input
                 id="location_country"
-                value={localSettings.location_country || ""}
+                value={localSettings?.location_country || ""}
                 onChange={(e) => handleInputChange('location_country', e.target.value)}
                 placeholder="Enter your country"
               />
@@ -397,7 +420,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                   <Award className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="education"
-                    value={localSettings.education || ""}
+                    value={localSettings?.education || ""}
                     onChange={(e) => handleInputChange('education', e.target.value)}
                     placeholder="e.g., Bachelor's in Fine Arts"
                     className="pl-10"
@@ -476,5 +499,6 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
         </div>
       </CardContent>
     </Card>
+    </ErrorBoundary>
   );
 };
