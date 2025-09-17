@@ -105,7 +105,7 @@ const LocalCommunities = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, selectedCity, currentLocation]);
+  }, [activeTab, selectedCity, currentLocation, toast]);
 
   const loadTrendingCommunities = useCallback(async () => {
     try {

@@ -461,7 +461,12 @@ export class CommunityService {
     }
   }
 
-  async debugGroupIssues(): Promise<any> {
+  async debugGroupIssues(): Promise<{
+    groups: any[];
+    members: any[];
+    groupsError: any;
+    membersError: any;
+  }> {
     try {
       const { data: groups, error: groupsError } = await supabase
         .from('community_groups')

@@ -708,7 +708,7 @@ const Profile = () => {
                                       variant={profile?.privacy_level === value ? "default" : "outline"}
                                       size="sm"
                                       className="flex flex-col h-auto p-3 text-xs"
-                                      onClick={() => updateProfile({ privacy_level: value as any })}
+                                      onClick={() => updateProfile({ privacy_level: value as 'public' | 'friends' | 'private' | 'anonymous' })}
                                       disabled={updating}
                                     >
                                       <Icon className="w-4 h-4 mb-1" />
