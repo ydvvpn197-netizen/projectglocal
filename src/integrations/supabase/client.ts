@@ -94,22 +94,19 @@ const initializeSupabaseClient = (): ReturnType<typeof createClient<Database>> =
 // Create Supabase client with validation and enhanced error handling
 const supabase: ReturnType<typeof createClient<Database>> = initializeSupabaseClient();
 
-// Create the test connection function after client is initialized
-const testConnection = createTestConnection(supabase);
-
 // A second client export (alias) commonly used around the app
 export const resilientSupabase = supabase;
 
 // Export the main client
 export { supabase };
 
-// Enhanced connection test with timeout - using a factory function to avoid circular dependency
-const createTestConnection = (client: ReturnType<typeof createClient<Database>>) => async (): Promise<boolean> => {
+// Enhanced connection test with timeout
+const testConnection = async (): Promise<boolean> => {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CLIENT_CONFIG.connectionTimeout);
     
-    const { data, error } = await client.auth.getSession();
+    const { data, error } = await supabase.auth.getSession();
     
     clearTimeout(timeoutId);
     

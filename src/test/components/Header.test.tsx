@@ -8,7 +8,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { UniformHeader } from '../../components/UniformHeader';
+import { UniformHeader } from '@/components/UniformHeader';
 
 // Mock the AuthContext
 const mockUser = {
@@ -27,16 +27,27 @@ const mockAuthContext = {
   signUp: vi.fn(),
 };
 
-vi.mock('../../hooks/useAuth', () => ({
+vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => mockAuthContext,
 }));
 
+// Mock the location manager hook
+vi.mock('@/hooks/useLocationManager', () => ({
+  useLocationManager: () => ({
+    location: null,
+    enabled: false,
+    loading: false,
+    detectLocation: vi.fn(),
+    refreshLocation: vi.fn()
+  }),
+}));
+
 // Mock the notification components
-vi.mock('../../components/NotificationBell', () => ({
+vi.mock('@/components/NotificationBell', () => ({
   NotificationBell: () => <div data-testid="notification-bell">Notification Bell</div>,
 }));
 
-vi.mock('../../components/NotificationButton', () => ({
+vi.mock('@/components/NotificationButton', () => ({
   NotificationButton: () => <div data-testid="notification-button">Notification Button</div>,
 }));
 
