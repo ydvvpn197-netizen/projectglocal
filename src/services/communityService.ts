@@ -265,6 +265,227 @@ export class CommunityService {
     }
   }
 
+  async getGroups(filters?: {
+    category?: string;
+    is_public?: boolean;
+    location_city?: string;
+    member_count_min?: number;
+  }): Promise<CommunityGroup[]> {
+    try {
+      let query = supabase
+        .from('community_groups')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (filters?.category) {
+        query = query.eq('category', filters.category);
+      }
+      if (filters?.is_public !== undefined) {
+        query = query.eq('is_public', filters.is_public);
+      }
+      if (filters?.location_city) {
+        query = query.eq('location_city', filters.location_city);
+      }
+      if (filters?.member_count_min) {
+        query = query.gte('member_count', filters.member_count_min);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      return [];
+    }
+  }
+
+  async getUserGroups(userId: string): Promise<CommunityGroup[]> {
+    try {
+      const { data, error } = await supabase
+        .from('group_members')
+        .select(`
+          group:community_groups(*)
+        `)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return data?.map(item => item.group).filter(Boolean) || [];
+    } catch (error) {
+      console.error('Error fetching user groups:', error);
+      return [];
+    }
+  }
+
+  async addGroupMember(groupId: string, userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: groupId,
+          user_id: userId,
+          role: 'member'
+        });
+
+      if (error) throw error;
+
+      // Update member count
+      await supabase
+        .from('community_groups')
+        .update({ member_count: supabase.raw('member_count + 1') })
+        .eq('id', groupId);
+
+      return true;
+    } catch (error) {
+      console.error('Error adding group member:', error);
+      return false;
+    }
+  }
+
+  async removeGroupMember(groupId: string, userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      // Update member count
+      await supabase
+        .from('community_groups')
+        .update({ member_count: supabase.raw('member_count - 1') })
+        .eq('id', groupId);
+
+      return true;
+    } catch (error) {
+      console.error('Error removing group member:', error);
+      return false;
+    }
+  }
+
+  async isGroupMember(groupId: string, userId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return !!data;
+    } catch (error) {
+      console.error('Error checking group membership:', error);
+      return false;
+    }
+  }
+
+  async getUserRole(groupId: string, userId: string): Promise<'admin' | 'moderator' | 'member' | null> {
+    try {
+      const { data, error } = await supabase
+        .from('group_members')
+        .select('role')
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data?.role || null;
+    } catch (error) {
+      console.error('Error getting user role:', error);
+      return null;
+    }
+  }
+
+  async searchGroups(query: string, filters?: {
+    category?: string;
+    location_city?: string;
+  }): Promise<CommunityGroup[]> {
+    try {
+      let searchQuery = supabase
+        .from('community_groups')
+        .select('*')
+        .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+        .eq('is_public', true)
+        .order('member_count', { ascending: false });
+
+      if (filters?.category) {
+        searchQuery = searchQuery.eq('category', filters.category);
+      }
+      if (filters?.location_city) {
+        searchQuery = searchQuery.eq('location_city', filters.location_city);
+      }
+
+      const { data, error } = await searchQuery;
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error searching groups:', error);
+      return [];
+    }
+  }
+
+  async validateGroupForJoining(groupId: string, userId: string): Promise<{
+    canJoin: boolean;
+    reason?: string;
+    group?: CommunityGroup;
+  }> {
+    try {
+      // Check if group exists
+      const { data: group, error: groupError } = await supabase
+        .from('community_groups')
+        .select('*')
+        .eq('id', groupId)
+        .single();
+
+      if (groupError || !group) {
+        return { canJoin: false, reason: 'Group not found' };
+      }
+
+      // Check if user is already a member
+      const isMember = await this.isGroupMember(groupId, userId);
+      if (isMember) {
+        return { canJoin: false, reason: 'Already a member', group };
+      }
+
+      // Check if group is public
+      if (!group.is_public) {
+        return { canJoin: false, reason: 'Cannot join private group', group };
+      }
+
+      return { canJoin: true, group };
+    } catch (error) {
+      console.error('Error validating group for joining:', error);
+      return { canJoin: false, reason: 'Validation error' };
+    }
+  }
+
+  async debugGroupIssues(): Promise<any> {
+    try {
+      const { data: groups, error: groupsError } = await supabase
+        .from('community_groups')
+        .select('id, name, is_public, member_count')
+        .limit(5);
+
+      const { data: members, error: membersError } = await supabase
+        .from('group_members')
+        .select('id, group_id, user_id, role')
+        .limit(5);
+
+      return {
+        groups: groups || [],
+        members: members || [],
+        groupsError,
+        membersError,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error debugging group issues:', error);
+      return { error: error.message };
+    }
+  }
+
   // Event Discussions
   async createEventDiscussion(
     eventId: string,

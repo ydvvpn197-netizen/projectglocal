@@ -16,12 +16,20 @@ export interface UserProfile {
   user_type: string | null;
   created_at: string;
   updated_at: string;
+  // Privacy and anonymous fields
+  is_anonymous?: boolean | null;
+  privacy_level?: string | null;
   // Additional fields for artists
   artist_skills?: string[] | null;
   hourly_rate_min?: number | null;
   hourly_rate_max?: number | null;
   portfolio_urls?: string[] | null;
   real_time_location_enabled?: boolean | null;
+  // Contact fields
+  website_url?: string | null;
+  phone_number?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
 }
 
 export interface ProfileUpdateData {
@@ -36,11 +44,14 @@ export interface ProfileUpdateData {
   phone_number?: string;
   first_name?: string;
   last_name?: string;
+  username?: string;
   artist_skills?: string[];
   hourly_rate_min?: number;
   hourly_rate_max?: number;
   portfolio_urls?: string[];
   real_time_location_enabled?: boolean;
+  is_anonymous?: boolean;
+  privacy_level?: 'public' | 'friends' | 'private' | 'anonymous';
 }
 
 export interface UserStats {
@@ -130,6 +141,12 @@ class UserProfileService {
         return null;
       }
 
+      // Check if profile is incomplete and needs basic data
+      if (data && !data.display_name && !data.bio) {
+        console.log('Profile exists but is incomplete, will be handled by frontend for user:', userId);
+        // Return the incomplete profile - the frontend will handle showing the setup page
+      }
+
       return data;
     } catch (error) {
       console.error('Error in getUserProfile:', error);
@@ -139,7 +156,7 @@ class UserProfileService {
 
   async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: UserProfile }> {
     try {
-      // Simple validation
+      // Input validation
       if (updateData.display_name && updateData.display_name.length > 100) {
         return { success: false, error: 'Display name must be 100 characters or less' };
       }
@@ -148,28 +165,67 @@ class UserProfileService {
         return { success: false, error: 'Bio must be 1000 characters or less' };
       }
 
+      if (updateData.first_name && updateData.first_name.length > 50) {
+        return { success: false, error: 'First name must be 50 characters or less' };
+      }
+
+      if (updateData.last_name && updateData.last_name.length > 50) {
+        return { success: false, error: 'Last name must be 50 characters or less' };
+      }
+
+      // Get current profile to check anonymous mode and restrictions
+      const { data: currentProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('is_anonymous, privacy_level, username')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current profile:', fetchError);
+        return { success: false, error: 'Failed to fetch current profile' };
+      }
+
+      // Check for username restrictions in anonymous mode
+      if (currentProfile?.is_anonymous && 'username' in updateData && updateData.username !== currentProfile.username) {
+        return { success: false, error: 'Username cannot be changed while in anonymous mode' };
+      }
+
+      // Prepare update data with proper field handling
+      const updatePayload: Record<string, unknown> = {
+        updated_at: new Date().toISOString()
+      };
+
+      // Only include fields that are provided in updateData
+      if (updateData.display_name !== undefined) updatePayload.display_name = updateData.display_name;
+      if (updateData.bio !== undefined) updatePayload.bio = updateData.bio;
+      if (updateData.location_city !== undefined) updatePayload.location_city = updateData.location_city;
+      if (updateData.location_state !== undefined) updatePayload.location_state = updateData.location_state;
+      if (updateData.location_country !== undefined) updatePayload.location_country = updateData.location_country;
+      if (updateData.avatar_url !== undefined) updatePayload.avatar_url = updateData.avatar_url;
+      if (updateData.cover_url !== undefined) updatePayload.cover_url = updateData.cover_url;
+      if (updateData.website_url !== undefined) updatePayload.website_url = updateData.website_url;
+      if (updateData.phone_number !== undefined) updatePayload.phone_number = updateData.phone_number;
+      if (updateData.first_name !== undefined) updatePayload.first_name = updateData.first_name;
+      if (updateData.last_name !== undefined) updatePayload.last_name = updateData.last_name;
+      if (updateData.real_time_location_enabled !== undefined) updatePayload.real_time_location_enabled = updateData.real_time_location_enabled;
+      if (updateData.artist_skills !== undefined) updatePayload.artist_skills = updateData.artist_skills;
+      if (updateData.hourly_rate_min !== undefined) updatePayload.hourly_rate_min = updateData.hourly_rate_min;
+      if (updateData.hourly_rate_max !== undefined) updatePayload.hourly_rate_max = updateData.hourly_rate_max;
+      if (updateData.portfolio_urls !== undefined) updatePayload.portfolio_urls = updateData.portfolio_urls;
+
+      // Only allow username updates for non-anonymous users
+      if (!currentProfile?.is_anonymous && updateData.username !== undefined) {
+        updatePayload.username = updateData.username;
+      }
+
+      // Handle privacy level and anonymous mode updates
+      if (updateData.is_anonymous !== undefined) updatePayload.is_anonymous = updateData.is_anonymous;
+      if (updateData.privacy_level !== undefined) updatePayload.privacy_level = updateData.privacy_level;
+
       // Use direct table update to avoid RPC function issues
       const { data, error } = await supabase
         .from('profiles')
-        .update({
-          display_name: updateData.display_name,
-          bio: updateData.bio,
-          location_city: updateData.location_city,
-          location_state: updateData.location_state,
-          location_country: updateData.location_country,
-          avatar_url: updateData.avatar_url,
-          cover_url: updateData.cover_url,
-          website_url: updateData.website_url,
-          phone_number: updateData.phone_number,
-          first_name: updateData.first_name,
-          last_name: updateData.last_name,
-          real_time_location_enabled: updateData.real_time_location_enabled,
-          artist_skills: updateData.artist_skills,
-          hourly_rate_min: updateData.hourly_rate_min,
-          hourly_rate_max: updateData.hourly_rate_max,
-          portfolio_urls: updateData.portfolio_urls,
-          updated_at: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('user_id', userId)
         .select()
         .single();
@@ -182,6 +238,53 @@ class UserProfileService {
       return { success: true, data: data };
     } catch (error: unknown) {
       console.error('Error in updateUserProfile:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async toggleAnonymousMode(userId: string, isAnonymous: boolean): Promise<{ success: boolean; error?: string; data?: UserProfile }> {
+    try {
+      // Get current profile
+      const { data: currentProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current profile:', fetchError);
+        return { success: false, error: 'Failed to fetch current profile' };
+      }
+
+      // Prepare update payload
+      const updatePayload: Record<string, unknown> = {
+        is_anonymous: isAnonymous,
+        updated_at: new Date().toISOString()
+      };
+
+      // When switching to anonymous mode, set privacy_level to 'anonymous'
+      if (isAnonymous) {
+        updatePayload.privacy_level = 'anonymous';
+      } else {
+        // When leaving anonymous mode, restore to 'public' by default
+        updatePayload.privacy_level = 'public';
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updatePayload)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error toggling anonymous mode:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data };
+    } catch (error: unknown) {
+      console.error('Error in toggleAnonymousMode:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }

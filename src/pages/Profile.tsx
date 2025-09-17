@@ -80,6 +80,7 @@ const Profile = () => {
     updating,
     updateProfile,
     uploadAvatar,
+    toggleAnonymousMode,
     refreshAll
   } = useUserProfile();
 
@@ -103,6 +104,7 @@ const Profile = () => {
     phone_number: '',
     first_name: '',
     last_name: '',
+    username: '',
     artist_skills: [] as string[],
     hourly_rate_min: '',
     hourly_rate_max: '',
@@ -123,6 +125,7 @@ const Profile = () => {
         phone_number: profile.phone_number || '',
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
+        username: profile.username || '',
         artist_skills: profile.artist_skills || [],
         hourly_rate_min: profile.hourly_rate_min?.toString() || '',
         hourly_rate_max: profile.hourly_rate_max?.toString() || '',
@@ -382,8 +385,8 @@ const Profile = () => {
     );
   }
 
-  // If no profile found, create one automatically or show setup
-  if (!profile && user) {
+  // If no profile found or profile is incomplete, create one automatically or show setup
+  if ((!profile || (!profile.display_name && !profile.bio)) && user) {
     return (
       <ResponsiveLayout>
         <div className="text-center py-12">
@@ -527,11 +530,33 @@ const Profile = () => {
                     </p>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    {/* Anonymous Mode Toggle */}
+                    <Button 
+                      variant={profile?.is_anonymous ? "secondary" : "outline"} 
+                      size="sm"
+                      onClick={() => toggleAnonymousMode(!profile?.is_anonymous)}
+                      disabled={updating}
+                      title={profile?.is_anonymous ? "Disable anonymous mode" : "Enable anonymous mode"}
+                    >
+                      {profile?.is_anonymous ? (
+                        <>
+                          <EyeOff className="w-4 h-4 mr-2" />
+                          Anonymous
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Public
+                        </>
+                      )}
+                    </Button>
+                    
                     <Button variant="outline" size="sm">
                       <Share2 className="w-4 h-4 mr-2" />
                       Share Profile
                     </Button>
+                    
                     <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                       <DialogTrigger asChild>
                         <Button size="sm">
@@ -548,14 +573,35 @@ const Profile = () => {
                         </DialogHeader>
                         
                         <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="display_name">Display Name</Label>
-                            <Input
-                              id="display_name"
-                              value={editForm.display_name}
-                              onChange={(e) => setEditForm({...editForm, display_name: e.target.value})}
-                              placeholder="Enter your display name"
-                            />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="display_name">Display Name</Label>
+                              <Input
+                                id="display_name"
+                                value={editForm.display_name}
+                                onChange={(e) => setEditForm({...editForm, display_name: e.target.value})}
+                                placeholder="Enter your display name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="username">
+                                Username 
+                                {profile?.is_anonymous && (
+                                  <Badge variant="outline" className="ml-2 text-xs">
+                                    <Lock className="w-3 h-3 mr-1" />
+                                    Anonymous Mode
+                                  </Badge>
+                                )}
+                              </Label>
+                              <Input
+                                id="username"
+                                value={editForm.username}
+                                onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                                placeholder="Enter your username"
+                                disabled={profile?.is_anonymous}
+                                title={profile?.is_anonymous ? "Username cannot be changed in anonymous mode" : ""}
+                              />
+                            </div>
                           </div>
                           
                           <div>
@@ -567,6 +613,48 @@ const Profile = () => {
                               rows={4}
                               placeholder="Tell us about yourself..."
                             />
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="first_name">First Name</Label>
+                              <Input
+                                id="first_name"
+                                value={editForm.first_name}
+                                onChange={(e) => setEditForm({...editForm, first_name: e.target.value})}
+                                placeholder="Enter your first name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="last_name">Last Name</Label>
+                              <Input
+                                id="last_name"
+                                value={editForm.last_name}
+                                onChange={(e) => setEditForm({...editForm, last_name: e.target.value})}
+                                placeholder="Enter your last name"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="website_url">Website</Label>
+                              <Input
+                                id="website_url"
+                                value={editForm.website_url}
+                                onChange={(e) => setEditForm({...editForm, website_url: e.target.value})}
+                                placeholder="https://your-website.com"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="phone_number">Phone Number</Label>
+                              <Input
+                                id="phone_number"
+                                value={editForm.phone_number}
+                                onChange={(e) => setEditForm({...editForm, phone_number: e.target.value})}
+                                placeholder="Enter your phone number"
+                              />
+                            </div>
                           </div>
                           
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -596,6 +684,40 @@ const Profile = () => {
                                 onChange={(e) => setEditForm({...editForm, location_country: e.target.value})}
                                 placeholder="Country"
                               />
+                            </div>
+                          </div>
+                          
+                          {/* Privacy Settings */}
+                          <div className="border-t pt-4">
+                            <h4 className="font-medium mb-3 flex items-center gap-2">
+                              <Shield className="w-4 h-4" />
+                              Privacy Settings
+                            </h4>
+                            <div className="space-y-3">
+                              <div>
+                                <Label className="text-sm font-medium">Profile Visibility</Label>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                                  {[
+                                    { value: 'public', label: 'Public', icon: Globe, desc: 'Visible to everyone' },
+                                    { value: 'friends', label: 'Friends', icon: Users, desc: 'Visible to followers only' },
+                                    { value: 'private', label: 'Private', icon: Lock, desc: 'Only visible to you' },
+                                    { value: 'anonymous', label: 'Anonymous', icon: EyeOff, desc: 'Completely anonymous' }
+                                  ].map(({ value, label, icon: Icon, desc }) => (
+                                    <Button
+                                      key={value}
+                                      variant={profile?.privacy_level === value ? "default" : "outline"}
+                                      size="sm"
+                                      className="flex flex-col h-auto p-3 text-xs"
+                                      onClick={() => updateProfile({ privacy_level: value as any })}
+                                      disabled={updating}
+                                    >
+                                      <Icon className="w-4 h-4 mb-1" />
+                                      <span className="font-medium">{label}</span>
+                                      <span className="text-xs opacity-70 mt-1">{desc}</span>
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
                           </div>
                           

@@ -196,6 +196,49 @@ export const useUserProfile = (userId?: string) => {
     }
   }, [targetUserId, toast, fetchProfile]);
 
+  const toggleAnonymousMode = useCallback(async (isAnonymous: boolean) => {
+    if (!targetUserId) {
+      toast({
+        title: "Error",
+        description: "User not authenticated",
+        variant: "destructive"
+      });
+      return { success: false };
+    }
+
+    try {
+      setUpdating(true);
+      const result = await userProfileService.toggleAnonymousMode(targetUserId, isAnonymous);
+      
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: `Anonymous mode ${isAnonymous ? 'enabled' : 'disabled'} successfully`
+        });
+        // Refresh profile data
+        await fetchProfile();
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to toggle anonymous mode",
+          variant: "destructive"
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error toggling anonymous mode:', error);
+      toast({
+        title: "Error",
+        description: "Failed to toggle anonymous mode",
+        variant: "destructive"
+      });
+      return { success: false, error: "Unknown error" };
+    } finally {
+      setUpdating(false);
+    }
+  }, [targetUserId, toast, fetchProfile]);
+
   const refreshAll = useCallback(async () => {
     if (!targetUserId) return;
     
@@ -225,6 +268,7 @@ export const useUserProfile = (userId?: string) => {
     updating,
     updateProfile,
     uploadAvatar,
+    toggleAnonymousMode,
     refreshAll,
     fetchProfile,
     fetchStats,

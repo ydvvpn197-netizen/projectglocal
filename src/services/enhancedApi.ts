@@ -351,10 +351,10 @@ export class CommunityApiService extends EnhancedApiService {
       `community:${id}`,
       async () => {
         const { data, error } = await supabase
-          .from('groups')
+          .from('community_groups')
           .select(`
             *,
-            creator:profiles!groups_created_by_fkey(
+            creator:profiles!community_groups_created_by_fkey(
               user_id,
               display_name,
               avatar_url,
@@ -387,7 +387,7 @@ export class CommunityApiService extends EnhancedApiService {
 
   async createCommunity(communityData: Partial<CommunityGroup>) {
     const { data, error } = await supabase
-      .from('groups')
+      .from('community_groups')
       .insert(communityData)
       .select()
       .single();

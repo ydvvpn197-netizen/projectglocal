@@ -65,14 +65,10 @@ const LocalCommunities = () => {
     { value: 'Pune', label: 'Pune' }
   ];
 
-  useEffect(() => {
-    loadCommunities();
-    loadTrendingCommunities();
-  }, [activeTab, selectedCity, currentLocation, loadCommunities, loadTrendingCommunities]);
-
   const loadCommunities = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Loading communities...', { activeTab, selectedCity, currentLocation });
       let result;
 
       if (activeTab === 'nearby' && currentLocation) {
@@ -98,6 +94,7 @@ const LocalCommunities = () => {
       }
 
       setCommunities(result.communities);
+      console.log('Communities loaded successfully:', result.communities.length);
     } catch (error) {
       console.error('Error loading communities:', error);
       toast({
@@ -108,7 +105,7 @@ const LocalCommunities = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, selectedCity, currentLocation, toast]);
+  }, [activeTab, selectedCity, currentLocation]);
 
   const loadTrendingCommunities = useCallback(async () => {
     try {
@@ -120,6 +117,12 @@ const LocalCommunities = () => {
       console.error('Error loading trending communities:', error);
     }
   }, []);
+
+  useEffect(() => {
+    console.log('LocalCommunities useEffect triggered', { activeTab, selectedCity, currentLocation });
+    loadCommunities();
+    loadTrendingCommunities();
+  }, [activeTab, selectedCity, currentLocation, loadCommunities, loadTrendingCommunities]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
