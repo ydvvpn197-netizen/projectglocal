@@ -130,7 +130,7 @@ class PerformanceMonitor {
   /**
    * Record a performance metric
    */
-  recordMetric(name: string, value: number, metadata?: Record<string, any>) {
+  recordMetric(name: string, value: number, metadata?: Record<string, unknown>) {
     const metric: PerformanceMetric = {
       name,
       value,
@@ -180,7 +180,7 @@ class PerformanceMonitor {
   /**
    * Record user interaction
    */
-  recordUserInteraction(action: string, target: string, metadata?: Record<string, any>) {
+  recordUserInteraction(action: string, target: string, metadata?: Record<string, unknown>) {
     const interaction: UserInteraction = {
       action,
       target,

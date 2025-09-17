@@ -120,7 +120,7 @@ export const getRouteGroups = (routeName: string): RouteGroup[] => {
 /**
  * Create optimized lazy component
  */
-export const createOptimizedLazyComponent = (importFn: () => Promise<{ default: React.ComponentType<any> }>) => {
+export const createOptimizedLazyComponent = (importFn: () => Promise<{ default: React.ComponentType<Record<string, unknown>> }>) => {
   return React.lazy(importFn);
 };
 

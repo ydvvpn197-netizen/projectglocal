@@ -201,7 +201,7 @@ export const UserAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  }, [timeRange, followStats]);
+  }, [followStats]);
 
   if (loading) {
     return (
