@@ -155,24 +155,42 @@ export class LocalCommunityService {
     longitude?: number;
   }): Promise<{ success: boolean; communityId?: string; error?: string }> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get the current user and session
+      const { data: { user, session }, error: authError } = await supabase.auth.getUser();
+      
+      console.log('Creating community - Auth check:', { 
+        user: user ? { id: user.id, email: user.email } : null, 
+        hasSession: !!session,
+        authError 
+      });
+      
       if (!user) {
         return { success: false, error: 'Not authenticated' };
       }
 
+      // Log the data being inserted
+      const insertData = {
+        ...communityData,
+        created_by: user.id
+      };
+      
+      console.log('Inserting community data:', insertData);
+
       const { data, error } = await supabase
         .from('local_communities')
-        .insert({
-          ...communityData,
-          created_by: user.id
-        })
+        .insert(insertData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error creating community:', error);
+        throw error;
+      }
 
       // Add creator as admin member
-      await supabase
+      console.log('Adding creator as admin member:', { community_id: data.id, user_id: user.id });
+      
+      const { error: memberError } = await supabase
         .from('community_members')
         .insert({
           community_id: data.id,
@@ -180,6 +198,13 @@ export class LocalCommunityService {
           role: 'admin'
         });
 
+      if (memberError) {
+        console.error('Error adding creator as member:', memberError);
+        // Don't fail the entire operation if member addition fails
+        // The community is still created successfully
+      }
+
+      console.log('Community created successfully:', { communityId: data.id });
       return { success: true, communityId: data.id };
     } catch (error: unknown) {
       console.error('Error creating community:', error);
