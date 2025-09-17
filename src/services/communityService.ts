@@ -462,10 +462,22 @@ export class CommunityService {
   }
 
   async debugGroupIssues(): Promise<{
-    groups: any[];
-    members: any[];
-    groupsError: any;
-    membersError: any;
+    groups: Array<{
+      id: string;
+      name: string;
+      is_public: boolean;
+      member_count: number;
+    }>;
+    members: Array<{
+      id: string;
+      group_id: string;
+      user_id: string;
+      role: string;
+    }>;
+    groupsError: Error | null;
+    membersError: Error | null;
+    timestamp?: string;
+    error?: string;
   }> {
     try {
       const { data: groups, error: groupsError } = await supabase
@@ -487,7 +499,13 @@ export class CommunityService {
       };
     } catch (error) {
       console.error('Error debugging group issues:', error);
-      return { error: error.message };
+      return {
+        groups: [],
+        members: [],
+        groupsError: null,
+        membersError: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 
