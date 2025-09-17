@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
-import { AdvancedButton } from '@/components/ui/AdvancedButton';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { DynamicStats } from '@/components/DynamicStats';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -436,18 +436,17 @@ export const EnhancedIndex: React.FC = () => {
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
             >
-              <AdvancedButton
+              <UnifiedButton
                 onClick={handleGetStarted}
                 size="lg"
-                variant="default"
                 leftIcon={<Sparkles className="h-5 w-5" />}
                 rightIcon={<ArrowRight className="h-5 w-5" />}
               >
                 {user ? 'Go to Feed' : 'Get Started'}
-              </AdvancedButton>
+              </UnifiedButton>
               
               {!user && (
-                <AdvancedButton
+                <UnifiedButton
                   onClick={() => navigate('/privacy-first-onboarding')}
                   size="lg"
                   variant="outline"
@@ -455,7 +454,7 @@ export const EnhancedIndex: React.FC = () => {
                   rightIcon={<EyeOff className="h-5 w-5" />}
                 >
                   Anonymous Mode
-                </AdvancedButton>
+                </UnifiedButton>
               )}
             </motion.div>
 
@@ -580,37 +579,37 @@ export const EnhancedIndex: React.FC = () => {
                             <span>{trendingEvents[currentEventIndex].attendees}/{trendingEvents[currentEventIndex].maxAttendees}</span>
                           </div>
                         </div>
-                        <AdvancedButton
-                          variant="secondary"
+                        <UnifiedButton
+                          variant="outline"
                           size="sm"
                           onClick={() => handleEventNavigation(trendingEvents[currentEventIndex].id)}
                         >
                           Learn More
-                        </AdvancedButton>
+                        </UnifiedButton>
                       </div>
                     </div>
                   </AnimatedCard>
 
                   {/* Carousel Controls */}
                   <div className="absolute top-1/2 transform -translate-y-1/2 left-4">
-                    <AdvancedButton
-                      variant="secondary"
+                    <UnifiedButton
+                      variant="outline"
                       size="icon"
                       onClick={prevEvent}
-                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30"
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                    </AdvancedButton>
+                    </UnifiedButton>
                   </div>
                   <div className="absolute top-1/2 transform -translate-y-1/2 right-4">
-                    <AdvancedButton
-                      variant="secondary"
+                    <UnifiedButton
+                      variant="outline"
                       size="icon"
                       onClick={nextEvent}
-                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30"
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30"
                     >
                       <ChevronRight className="h-4 w-4" />
-                    </AdvancedButton>
+                    </UnifiedButton>
                   </div>
 
                   {/* Event Cards Grid */}

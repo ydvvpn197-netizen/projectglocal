@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { Button } from "@/components/ui/button";
+import { UnifiedButton } from "@/components/ui/UnifiedButton";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -322,13 +322,15 @@ const Feed = () => {
               Discover and engage with community content
             </p>
           </div>
-          <Button 
-            className="btn-community w-full sm:w-auto"
+          <UnifiedButton 
+            context="community"
+            fullWidth
+            className="sm:w-auto"
             onClick={() => navigate('/create')}
+            leftIcon={<Plus className="w-4 h-4" />}
           >
-            <Plus className="w-4 h-4 mr-2" />
             Create Post
-          </Button>
+          </UnifiedButton>
         </div>
 
         {/* Search and Filters */}

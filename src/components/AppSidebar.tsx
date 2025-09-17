@@ -20,17 +20,20 @@ import {
 } from "@/components/ui/sidebarExports";
 
 const mainItems = [
-  { title: "Feed", url: "/feed", icon: Home },
-  { title: "Public Square", url: "/public-square", icon: Globe },
-  { title: "News Feed", url: "/news", icon: Newspaper },
-  { title: "Discover", url: "/discover", icon: Search },
-  { title: "Events", url: "/events", icon: Calendar },
-  { title: "Community", url: "/community", icon: Users },
-  { title: "Local Communities", url: "/communities", icon: Building2 },
-  { title: "Local Businesses", url: "/businesses", icon: Store },
-  { title: "Polls", url: "/polls", icon: Vote },
-  { title: "Civic Engagement", url: "/civic-engagement", icon: Megaphone },
-  { title: "Book Artists", url: "/book-artist", icon: Palette },
+  { title: "Feed", url: "/feed", icon: Home, priority: "high" },
+  { title: "Events", url: "/events", icon: Calendar, priority: "high" },
+  { title: "Community", url: "/community", icon: Users, priority: "high" },
+  { title: "News", url: "/news", icon: Newspaper, priority: "medium" },
+  { title: "Discover", url: "/discover", icon: Search, priority: "medium" },
+];
+
+const secondaryItems = [
+  { title: "Public Square", url: "/public-square", icon: Globe, priority: "low" },
+  { title: "Local Communities", url: "/communities", icon: Building2, priority: "low" },
+  { title: "Local Businesses", url: "/businesses", icon: Store, priority: "low" },
+  { title: "Polls", url: "/polls", icon: Vote, priority: "low" },
+  { title: "Civic Engagement", url: "/civic-engagement", icon: Megaphone, priority: "low" },
+  { title: "Book Artists", url: "/book-artist", icon: Palette, priority: "low" },
 ];
 
 const newFeaturesItems = [
@@ -167,6 +170,27 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Secondary Navigation - Collapsible */}
+        {!collapsed && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Explore</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {secondaryItems.slice(0, 3).map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} end className={getNavClass}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* New Features Navigation */}
         <SidebarGroup>
