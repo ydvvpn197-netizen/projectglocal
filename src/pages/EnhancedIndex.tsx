@@ -61,6 +61,7 @@ import {
   Info,
 } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { AdvancedButton } from '@/components/ui/AdvancedButton';
 
 // Enhanced sample data
 const heroFeatures = [
