@@ -9,7 +9,7 @@ interface PerformanceMetric {
   name: string;
   value: number;
   timestamp: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface RoutePerformance {
@@ -24,7 +24,7 @@ interface UserInteraction {
   action: string;
   target: string;
   timestamp: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 class PerformanceMonitor {
@@ -53,8 +53,8 @@ class PerformanceMonitor {
             if (entry.entryType === 'navigation') {
               this.recordMetric('navigation', entry.duration, {
                 type: 'navigation',
-                domContentLoaded: (entry as any).domContentLoadedEventEnd - (entry as any).domContentLoadedEventStart,
-                loadComplete: (entry as any).loadEventEnd - (entry as any).loadEventStart
+                domContentLoaded: (entry as PerformanceNavigationTiming).domContentLoadedEventEnd - (entry as PerformanceNavigationTiming).domContentLoadedEventStart,
+                loadComplete: (entry as PerformanceNavigationTiming).loadEventEnd - (entry as PerformanceNavigationTiming).loadEventStart
               });
             }
           });
@@ -73,7 +73,7 @@ class PerformanceMonitor {
             if (entry.entryType === 'resource') {
               this.recordMetric('resource', entry.duration, {
                 name: entry.name,
-                size: (entry as any).transferSize || 0,
+                size: (entry as PerformanceResourceTiming).transferSize || 0,
                 type: entry.name.split('.').pop()
               });
             }
@@ -94,7 +94,7 @@ class PerformanceMonitor {
     if (typeof window === 'undefined') return;
 
     let routeStartTime = 0;
-    let currentRoute = '';
+    const currentRoute = '';
 
     // Track route changes
     const originalPushState = history.pushState;
@@ -158,7 +158,7 @@ class PerformanceMonitor {
       loadTime,
       timestamp: Date.now(),
       userAgent: navigator.userAgent,
-      connectionType: (navigator as any).connection?.effectiveType
+      connectionType: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType
     };
 
     this.routeMetrics.push(routeMetric);
@@ -258,10 +258,10 @@ class PerformanceMonitor {
   /**
    * Send data to analytics
    */
-  private sendToAnalytics(type: string, data: any) {
+  private sendToAnalytics(type: string, data: unknown) {
     // Google Analytics 4
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'performance_metric', {
+    if (typeof window !== 'undefined' && (window as Window & { gtag?: (event: string, action: string, params: Record<string, unknown>) => void }).gtag) {
+      (window as Window & { gtag: (event: string, action: string, params: Record<string, unknown>) => void }).gtag('event', 'performance_metric', {
         metric_type: type,
         metric_data: JSON.stringify(data)
       });

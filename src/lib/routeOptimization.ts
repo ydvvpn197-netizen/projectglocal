@@ -120,7 +120,7 @@ export const getRouteGroups = (routeName: string): RouteGroup[] => {
 /**
  * Create optimized lazy component
  */
-export const createOptimizedLazyComponent = (importFn: () => Promise<any>) => {
+export const createOptimizedLazyComponent = (importFn: () => Promise<{ default: React.ComponentType<any> }>) => {
   return React.lazy(importFn);
 };
 
@@ -139,8 +139,8 @@ export const useRoutePerformance = (routeName: string) => {
       console.log(`Route ${routeName} loaded in ${loadTime.toFixed(2)}ms`);
       
       // Send to analytics if available
-      if (typeof window !== 'undefined' && (window as Window & { gtag?: Function }).gtag) {
-        (window as Window & { gtag: Function }).gtag('event', 'route_load_time', {
+      if (typeof window !== 'undefined' && (window as Window & { gtag?: (event: string, action: string, params: Record<string, unknown>) => void }).gtag) {
+        (window as Window & { gtag: (event: string, action: string, params: Record<string, unknown>) => void }).gtag('event', 'route_load_time', {
           route_name: routeName,
           load_time: Math.round(loadTime)
         });

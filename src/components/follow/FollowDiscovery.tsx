@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -59,7 +59,7 @@ export const FollowDiscovery = ({ className }: FollowDiscoveryProps) => {
   const [loading, setLoading] = useState(false);
   const [discoveryUsers, setDiscoveryUsers] = useState<DiscoveryUser[]>([]);
 
-  const mockDiscoveryUsers: DiscoveryUser[] = [
+  const mockDiscoveryUsers: DiscoveryUser[] = useMemo(() => [
     {
       id: '1',
       displayName: 'Sarah Johnson',
@@ -120,7 +120,7 @@ export const FollowDiscovery = ({ className }: FollowDiscoveryProps) => {
       commonInterests: ['Community', 'Business'],
       reason: 'Local business leader'
     }
-  ];
+  ], []);
 
   useEffect(() => {
     setDiscoveryUsers(mockDiscoveryUsers);

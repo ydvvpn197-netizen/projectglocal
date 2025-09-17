@@ -119,7 +119,7 @@ export const OptimizedRoute: React.FC<OptimizedRouteProps> = ({
       Promise.all(
         preloadGroups.map(group => {
           try {
-            preloadRouteGroup(group as any);
+            preloadRouteGroup(group as { name: string; priority: 'HIGH' | 'MEDIUM' | 'LOW'; routes: string[] });
           } catch (error) {
             console.warn(`Failed to preload route group: ${group}`, error);
           }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,7 @@ export const ActivityFeed = () => {
     }
   }, [user, filter, fetchActivities]);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     setLoading(true);
     try {
       // Mock activity data - in real app, this would come from API
@@ -222,7 +222,7 @@ export const ActivityFeed = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
   const getActivityIcon = (type: string) => {
     switch (type) {

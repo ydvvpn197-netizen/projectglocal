@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -84,7 +84,7 @@ export const UserAnalytics = () => {
     }
   }, [user, timeRange, fetchAnalytics]);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       // Mock analytics data - in real app, this would come from API
@@ -201,7 +201,7 @@ export const UserAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange, followStats]);
 
   if (loading) {
     return (
