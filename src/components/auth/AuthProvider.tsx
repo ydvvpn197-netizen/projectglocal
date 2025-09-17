@@ -245,12 +245,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If user was created successfully, the database trigger will automatically create the profile
       if (result?.user) {
-        // For immediate session users, ensure profile exists
+        // For immediate session users, ensure profile exists and is properly configured
         if (result.session) {
           try {
+            // Wait a moment for the trigger to complete
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
             const profileResult = await UserService.getUserProfile(result.user.id);
             if (!profileResult.profile) {
               // Fallback: manually create profile if trigger didn't work
+              console.log('Profile not found, creating manually...');
               await UserService.createUserProfile({
                 user_id: result.user.id,
                 user_type: userType || 'user',
@@ -258,6 +262,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 first_name: firstName,
                 last_name: lastName,
               });
+            } else {
+              // Check if profile needs updates (e.g., user_type wasn't set correctly)
+              const needsUpdate = 
+                profileResult.profile.user_type !== (userType || 'user') ||
+                !profileResult.profile.first_name ||
+                !profileResult.profile.last_name ||
+                !profileResult.profile.display_name;
+                
+              if (needsUpdate) {
+                console.log('Updating profile with missing fields...');
+                const { error: updateError } = await resilientSupabase
+                  .from('profiles')
+                  .update({
+                    user_type: userType || 'user',
+                    first_name: firstName || profileResult.profile.first_name,
+                    last_name: lastName || profileResult.profile.last_name,
+                    display_name: profileResult.profile.display_name || 
+                      `${firstName || ''} ${lastName || ''}`.trim() || email,
+                  })
+                  .eq('user_id', result.user.id);
+                  
+                if (updateError) {
+                  console.error('Error updating profile:', updateError);
+                }
+              }
+              
+              // For artists, ensure artist record exists
+              if ((userType || 'user') === 'artist' && !profileResult.artistProfile) {
+                console.log('Creating artist profile...');
+                const { error: artistError } = await resilientSupabase
+                  .from('artists')
+                  .insert({
+                    user_id: result.user.id,
+                    specialty: [],
+                    experience_years: 0,
+                    portfolio_urls: [],
+                    bio: 'Professional artist - completing profile setup...',
+                    is_available: true,
+                  });
+                  
+                if (artistError) {
+                  console.error('Error creating artist profile:', artistError);
+                }
+              }
             }
           } catch (profileError) {
             console.error('Error ensuring profile exists:', profileError);
