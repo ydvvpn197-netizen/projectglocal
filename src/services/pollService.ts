@@ -464,4 +464,197 @@ export class PollService {
       return { stats: null, error: error.message };
     }
   }
+
+  /**
+   * Get active polls
+   */
+  static async getActivePolls(limit: number = 20): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('community_polls')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching active polls:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get expired polls
+   */
+  static async getExpiredPolls(limit: number = 20): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('community_polls')
+        .select('*')
+        .eq('is_active', false)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching expired polls:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user poll votes
+   */
+  static async getUserPollVotes(userId: string, limit: number = 50): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('community_poll_votes')
+        .select(`
+          *,
+          community_polls(*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching user poll votes:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get poll by post ID
+   */
+  static async getPollByPostId(postId: string): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_polls')
+        .select('*')
+        .eq('post_id', postId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching poll by post ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get poll by ID
+   */
+  static async getPollById(pollId: string): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_polls')
+        .select('*')
+        .eq('id', pollId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching poll by ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get poll results
+   */
+  static async getPollResults(pollId: string): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_poll_votes')
+        .select('*')
+        .eq('poll_id', pollId);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching poll results:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update poll
+   */
+  static async updatePoll(pollId: string, updates: any): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('community_polls')
+        .update(updates)
+        .eq('id', pollId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error updating poll:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Search polls
+   */
+  static async searchPolls(query: string, filters?: any): Promise<any[]> {
+    try {
+      let dbQuery = supabase
+        .from('community_polls')
+        .select('*')
+        .ilike('title', `%${query}%`);
+
+      if (filters?.is_active !== undefined) {
+        dbQuery = dbQuery.eq('is_active', filters.is_active);
+      }
+
+      if (filters?.is_anonymous !== undefined) {
+        dbQuery = dbQuery.eq('is_anonymous', filters.is_anonymous);
+      }
+
+      const { data, error } = await dbQuery;
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error searching polls:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Check if poll is expired
+   */
+  static isPollExpired(poll: any): boolean {
+    if (!poll.expires_at) return false;
+    return new Date(poll.expires_at) < new Date();
+  }
+
+  /**
+   * Get time remaining until poll expires
+   */
+  static getTimeRemaining(poll: any): string {
+    if (!poll.expires_at) return 'No expiry';
+    
+    const now = new Date();
+    const expiry = new Date(poll.expires_at);
+    const diff = expiry.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Expired';
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h left`;
+    return 'Less than 1h left';
+  }
 }

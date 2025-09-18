@@ -36,7 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Polls = () => {
   const { user } = useAuth();
-  const { currentLocation } = useLocation();
+  const locationState = useLocation();
   const { toast } = useToast();
   const { 
     polls, 

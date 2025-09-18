@@ -84,11 +84,11 @@ export const useCommunityPolls = () => {
 
     try {
       setCreating(true);
-      const newPoll = await PollService.createPoll(pollData);
+      const result = await PollService.createPoll(pollData);
       
-      if (newPoll) {
+      if (result.success && result.pollId) {
         // Award points for creating poll
-        await PointsService.handlePollCreation(newPoll.id, user.id);
+        await PointsService.handlePollCreation(result.pollId, user.id);
         
         toast({
           title: "Success",
@@ -99,9 +99,10 @@ export const useCommunityPolls = () => {
         await fetchPolls();
         await fetchActivePolls();
         
-        return newPoll;
+        // Return the created poll (we'd need to fetch it)
+        return await PollService.getPollById(result.pollId);
       } else {
-        throw new Error('Failed to create poll');
+        throw new Error(result.error || 'Failed to create poll');
       }
     } catch (error) {
       console.error('Error creating poll:', error);
@@ -137,7 +138,7 @@ export const useCommunityPolls = () => {
   }, []);
 
   // Vote on a poll
-  const voteOnPoll = useCallback(async (pollId: string, voteData: PollVoteRequest): Promise<boolean> => {
+  const voteOnPoll = useCallback(async (pollId: string, optionIndex: number): Promise<boolean> => {
     if (!user) {
       toast({
         title: "Error",
@@ -149,9 +150,9 @@ export const useCommunityPolls = () => {
 
     try {
       setVoting(pollId);
-      const success = await PollService.voteOnPoll(pollId, voteData);
+      const result = await PollService.voteOnPoll(pollId, optionIndex);
       
-      if (success) {
+      if (result.success) {
         toast({
           title: "Success",
           description: "Vote submitted successfully!",
@@ -162,7 +163,7 @@ export const useCommunityPolls = () => {
         
         return true;
       } else {
-        throw new Error('Failed to vote on poll');
+        throw new Error(result.error || 'Failed to vote on poll');
       }
     } catch (error) {
       console.error('Error voting on poll:', error);
@@ -221,9 +222,9 @@ export const useCommunityPolls = () => {
   // Delete a poll
   const deletePoll = useCallback(async (pollId: string): Promise<boolean> => {
     try {
-      const success = await PollService.deletePoll(pollId);
+      const result = await PollService.deletePoll(pollId);
       
-      if (success) {
+      if (result.success) {
         toast({
           title: "Success",
           description: "Poll deleted successfully!",
@@ -236,7 +237,7 @@ export const useCommunityPolls = () => {
         
         return true;
       } else {
-        throw new Error('Failed to delete poll');
+        throw new Error(result.error || 'Failed to delete poll');
       }
     } catch (error) {
       console.error('Error deleting poll:', error);
