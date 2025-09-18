@@ -366,16 +366,7 @@ const Profile = () => {
     }
   }, [searchParams]);
 
-  // Redirect to dashboard if user comes from profile button (no specific tab requested)
-  useEffect(() => {
-    const tab = searchParams.get('tab');
-    const fromDashboard = searchParams.get('from');
-    
-    // If no specific tab is requested and user is not coming from dashboard, redirect to dashboard
-    if (!tab && !fromDashboard && user && !loading) {
-      navigate('/my-dashboard', { replace: true });
-    }
-  }, [user, loading, searchParams, navigate]);
+  // Note: Dashboard redirect logic moved to main render logic to handle profile state properly
 
   // Show loading state while fetching profile
   if (loading) {
@@ -406,8 +397,19 @@ const Profile = () => {
     shouldShowSetup: (!profile || (!profile.display_name && !profile.bio)) && user
   });
 
-  // If no profile found or profile is incomplete, create one automatically or show setup
-  if ((!profile || (!profile.display_name && !profile.bio)) && user) {
+  // Check if this is a direct profile access or if user should be redirected to dashboard
+  const tab = searchParams.get('tab');
+  const fromDashboard = searchParams.get('from');
+  
+  // If no profile found or profile is incomplete, and no specific tab is requested, redirect to dashboard
+  if ((!profile || (!profile.display_name && !profile.bio)) && user && !tab && !fromDashboard) {
+    // Instead of showing setup page, redirect to dashboard which will handle the user properly
+    navigate('/my-dashboard', { replace: true });
+    return null;
+  }
+
+  // If profile is incomplete but user specifically requested profile page (with tab or from dashboard), show setup
+  if ((!profile || (!profile.display_name && !profile.bio)) && user && (tab || fromDashboard)) {
     return (
       <ResponsiveLayout>
         <div className="text-center py-12">
