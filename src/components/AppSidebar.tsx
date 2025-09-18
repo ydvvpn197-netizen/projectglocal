@@ -21,19 +21,19 @@ import {
 
 const mainItems = [
   { title: "Feed", url: "/feed", icon: Home, priority: "high" },
+  { title: "Discover", url: "/discover", icon: Search, priority: "high" },
   { title: "Events", url: "/events", icon: Calendar, priority: "high" },
   { title: "Community", url: "/community", icon: Users, priority: "high" },
-  { title: "News", url: "/news", icon: Newspaper, priority: "medium" },
-  { title: "Discover", url: "/discover", icon: Search, priority: "medium" },
+  { title: "Book Artists", url: "/book-artist", icon: Palette, priority: "high" },
 ];
 
 const secondaryItems = [
+  { title: "News", url: "/news", icon: Newspaper, priority: "medium" },
   { title: "Public Square", url: "/public-square", icon: Globe, priority: "low" },
   { title: "Local Communities", url: "/communities", icon: Building2, priority: "low" },
   { title: "Local Businesses", url: "/businesses", icon: Store, priority: "low" },
   { title: "Polls", url: "/polls", icon: Vote, priority: "low" },
   { title: "Civic Engagement", url: "/civic-engagement", icon: Megaphone, priority: "low" },
-  { title: "Book Artists", url: "/book-artist", icon: Palette, priority: "low" },
 ];
 
 const newFeaturesItems = [
@@ -133,10 +133,10 @@ export function AppSidebar() {
               <h2 className="text-lg font-bold text-sidebar-foreground flex items-center gap-2">
                 <img 
                   src="/logo.png" 
-                  alt="Glocal Logo" 
+                  alt="TheGlocal Logo" 
                   className="h-5 w-5 object-contain"
                 />
-                Glocal
+                TheGlocal
               </h2>
               {user ? <NotificationBell /> : <NotificationButton />}
             </div>

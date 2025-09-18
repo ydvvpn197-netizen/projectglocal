@@ -44,7 +44,7 @@ const mobileNavItems = [
   { title: 'Discover', url: '/discover', icon: Search },
   { title: 'Events', url: '/events', icon: Calendar },
   { title: 'Community', url: '/community', icon: Users },
-  { title: 'Artists', url: '/book-artist', icon: Palette },
+  { title: 'Book Artists', url: '/book-artist', icon: Palette },
 ];
 
 const newFeaturesItems = [
@@ -120,8 +120,8 @@ export function MobileLayout({ children }: MobileLayoutProps) {
               alt="TheGlocal Logo" 
               className="h-5 w-5 object-contain"
             />
-                              <span className="hidden xs:inline">TheGlocal</span>
-                          <span className="xs:hidden">G</span>
+            <span className="hidden xs:inline">TheGlocal</span>
+            <span className="xs:hidden">TG</span>
           </Link>
           
           {/* Right side actions */}
