@@ -20,10 +20,7 @@ import {
   Globe,
   MapPin,
   Mail,
-  Calendar,
-  Award,
-  Languages,
-  Briefcase
+  Award
 } from "lucide-react";
 
 interface ProfileSettingsProps {
@@ -34,7 +31,7 @@ interface ProfileSettingsProps {
 
 export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }: ProfileSettingsProps) => {
   const { toast } = useToast();
-  const { role, isArtist } = useUserRole();
+  const { role } = useUserRole();
   const {
     profile,
     loading: profileLoading,
@@ -110,22 +107,9 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
         }
       }
 
-      // Update artist profile if user is an artist
-      if (isArtist && localArtistProfile) {
-        const artistResult = await updateArtistProfile(localArtistProfile);
-        if (!artistResult.success) {
-          toast({
-            title: "Error",
-            description: artistResult.error || "Failed to update artist profile",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
       // Update settings
       if (localSettings) {
-        const settingsResult = await updateSettings(localSettings);
+        const settingsResult = await updateProfileSettings(localSettings);
         if (!settingsResult.success) {
           toast({
             title: "Error",
@@ -154,7 +138,6 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
 
   const handleCancel = () => {
     setLocalProfile(profile);
-    setLocalArtistProfile(artistProfile);
     setLocalSettings(settings || {});
     setAvatarFile(null);
     setAvatarPreview(null);
@@ -172,25 +155,6 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
     );
   }
 
-  // Handle error state
-  if (error) {
-    return (
-      <Card className={compact ? "" : "w-full max-w-4xl"}>
-        <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-          <div className="text-destructive mb-4">
-            <svg className="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Failed to load profile</h3>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            Try Again
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <ErrorBoundary>
@@ -394,94 +358,24 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
           </div>
         </div>
 
-        {/* Professional Information (for artists) */}
-        {isArtist && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Professional Information</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="experience_years">Years of Experience</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="experience_years"
-                    type="number"
-                    min="0"
-                    value={localArtistProfile?.experience_years || ""}
-                    onChange={(e) => handleArtistProfileChange('experience_years', parseInt(e.target.value) || 0)}
-                    placeholder="0"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="education">Education</Label>
-                <div className="relative">
-                  <Award className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="education"
-                    value={localSettings?.education || ""}
-                    onChange={(e) => handleInputChange('education', e.target.value)}
-                    placeholder="e.g., Bachelor's in Fine Arts"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="artist_skills">Skills & Specialties</Label>
-              <Textarea
-                id="artist_skills"
-                value={Array.isArray(localArtistProfile?.specialty) ? localArtistProfile.specialty.join(', ') : ""}
-                onChange={(e) => handleArtistProfileChange('specialty', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                placeholder="Enter your skills and specialties, separated by commas"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="hourly_rate_min">Minimum Hourly Rate ($)</Label>
-                <Input
-                  id="hourly_rate_min"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={localArtistProfile?.hourly_rate_min || ""}
-                  onChange={(e) => handleArtistProfileChange('hourly_rate_min', parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="hourly_rate_max">Maximum Hourly Rate ($)</Label>
-                <Input
-                  id="hourly_rate_max"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={localArtistProfile?.hourly_rate_max || ""}
-                  onChange={(e) => handleArtistProfileChange('hourly_rate_max', parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="portfolio_urls">Portfolio URLs</Label>
-              <Textarea
-                id="portfolio_urls"
-                value={Array.isArray(localArtistProfile?.portfolio_urls) ? localArtistProfile.portfolio_urls.join('\n') : ""}
-                onChange={(e) => handleArtistProfileChange('portfolio_urls', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
-                placeholder="Enter your portfolio URLs, one per line"
-                rows={3}
+        {/* Additional Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Additional Information</h3>
+          
+          <div className="space-y-2">
+            <Label htmlFor="education">Education</Label>
+            <div className="relative">
+              <Award className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="education"
+                value={localSettings?.education || ""}
+                onChange={(e) => handleInputChange('education', e.target.value)}
+                placeholder="e.g., Bachelor's in Fine Arts"
+                className="pl-10"
               />
             </div>
           </div>
-        )}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t">

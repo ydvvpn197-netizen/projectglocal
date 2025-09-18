@@ -396,6 +396,16 @@ const Profile = () => {
     );
   }
 
+  // Debug logging for profile state
+  console.log('Profile state:', { 
+    profile, 
+    user: user?.id, 
+    loading, 
+    hasDisplayName: profile?.display_name,
+    hasBio: profile?.bio,
+    shouldShowSetup: (!profile || (!profile.display_name && !profile.bio)) && user
+  });
+
   // If no profile found or profile is incomplete, create one automatically or show setup
   if ((!profile || (!profile.display_name && !profile.bio)) && user) {
     return (
@@ -411,6 +421,13 @@ const Profile = () => {
               <Button 
                 onClick={async () => {
                   console.log('Create My Profile button clicked');
+                  
+                  // Show immediate feedback
+                  toast({
+                    title: "Creating Profile",
+                    description: "Setting up your profile now...",
+                  });
+                  
                   try {
                     console.log('Starting profile creation for user:', user?.id);
                     // Create a basic profile for the user
@@ -426,9 +443,18 @@ const Profile = () => {
                     console.log('Profile creation result:', result);
                     if (result.success) {
                       console.log('Profile created successfully, refreshing data');
+                      toast({
+                        title: "Success!",
+                        description: "Your profile has been created successfully.",
+                      });
                       await refreshAll();
                     } else {
                       console.error('Profile creation failed:', result.error);
+                      toast({
+                        title: "Error",
+                        description: result.error || "Failed to create profile. Please try again.",
+                        variant: "destructive"
+                      });
                     }
                   } catch (error) {
                     console.error('Error creating profile:', error);
@@ -438,7 +464,7 @@ const Profile = () => {
                       variant: "destructive"
                     });
                   }
-                }}
+                }
                 disabled={updating}
                 className="w-full"
               >
@@ -458,6 +484,10 @@ const Profile = () => {
                 variant="outline" 
                 onClick={() => {
                   console.log('Complete Setup Later button clicked');
+                  toast({
+                    title: "Redirecting",
+                    description: "Taking you to the onboarding page...",
+                  });
                   navigate('/onboarding');
                 }}
                 className="w-full"
