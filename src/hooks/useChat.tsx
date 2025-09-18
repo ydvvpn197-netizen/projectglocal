@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -37,32 +37,9 @@ export const useChat = (conversationId?: string) => {
   const [loading, setLoading] = useState(true);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  useEffect(() => {
+  const fetchConversation = useCallback(async () => {
     if (!conversationId || !user) return;
-    setLoading(true);
-    fetchConversation();
-    fetchMessages();
-
-    // Subscribe to realtime messages for this conversation
-    const channel = supabase
-      .channel(`chat_messages_${conversationId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${conversationId}` },
-        (payload: { new: ChatMessage }) => {
-          setMessages((prev) => [...prev, payload.new as ChatMessage]);
-        }
-      )
-      .subscribe();
-    channelRef.current = channel;
-
-    return () => {
-      if (channelRef.current) supabase.removeChannel(channelRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, user?.id]);
-
-  const fetchConversation = async () => {
+    
     try {
       const { data, error } = await supabase
         .from('chat_conversations')
@@ -100,9 +77,11 @@ export const useChat = (conversationId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversationId, user, toast]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
+    if (!conversationId) return;
+    
     try {
       const { data, error } = await supabase
         .from('chat_messages')
@@ -116,7 +95,32 @@ export const useChat = (conversationId?: string) => {
       console.error('Error fetching messages:', err);
       toast({ title: 'Error', description: err instanceof Error ? err.message : 'Failed to load messages', variant: 'destructive' });
     }
-  };
+  }, [conversationId, toast]);
+
+  useEffect(() => {
+    if (!conversationId || !user) return;
+    setLoading(true);
+    fetchConversation();
+    fetchMessages();
+
+    // Subscribe to realtime messages for this conversation
+    const channel = supabase
+      .channel(`chat_messages_${conversationId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${conversationId}` },
+        (payload: { new: ChatMessage }) => {
+          setMessages((prev) => [...prev, payload.new as ChatMessage]);
+        }
+      )
+      .subscribe();
+    channelRef.current = channel;
+
+    return () => {
+      if (channelRef.current) supabase.removeChannel(channelRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, user?.id, fetchConversation, fetchMessages]);
 
   const sendMessage = async (content: string) => {
     if (!user || !conversationId) {

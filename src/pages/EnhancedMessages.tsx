@@ -36,12 +36,6 @@ const EnhancedMessages: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  useEffect(() => {
-    if (currentUser) {
-      loadConversations();
-    }
-  }, [currentUser, loadConversations]);
-
   const loadConversations = useCallback(async () => {
     if (!currentUser) return;
 
@@ -65,6 +59,12 @@ const EnhancedMessages: React.FC = () => {
       setIsLoading(false);
     }
   }, [currentUser, toast]);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadConversations();
+    }
+  }, [currentUser, loadConversations]);
 
   const handleAcceptRequest = async (conversationId: string) => {
     try {
