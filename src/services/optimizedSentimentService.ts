@@ -107,7 +107,11 @@ export class OptimizedSentimentService {
   /**
    * Process raw sentiment data into dashboard format
    */
-  private processSentimentData(data: any[]): OptimizedSentimentData {
+  private processSentimentData(data: Array<{
+    sentiment_score: number;
+    sentiment_label: string;
+    created_at: string;
+  }>): OptimizedSentimentData {
     const totalAnalyses = data.length;
     const averageSentiment = data.reduce((sum, item) => sum + item.sentiment_score, 0) / totalAnalyses;
     
@@ -126,7 +130,7 @@ export class OptimizedSentimentService {
     const dailyData = this.groupByDay(data);
     const sentimentEvolution = Object.entries(dailyData).map(([date, items]) => ({
       date,
-      average_sentiment: items.reduce((sum: number, item: any) => sum + item.sentiment_score, 0) / items.length,
+      average_sentiment: items.reduce((sum: number, item: { sentiment_score: number }) => sum + item.sentiment_score, 0) / items.length,
       count: items.length
     })).sort((a, b) => a.date.localeCompare(b.date));
 
@@ -141,15 +145,15 @@ export class OptimizedSentimentService {
   /**
    * Group sentiment data by day
    */
-  private groupByDay(data: any[]): Record<string, any[]> {
-    return data.reduce((acc: Record<string, any[]>, item: any) => {
+  private groupByDay(data: Array<{ created_at: string; sentiment_score: number }>): Record<string, Array<{ created_at: string; sentiment_score: number }>> {
+    return data.reduce((acc: Record<string, Array<{ created_at: string; sentiment_score: number }>>, item: { created_at: string; sentiment_score: number }) => {
       const date = new Date(item.created_at).toISOString().split('T')[0];
       if (!acc[date]) {
         acc[date] = [];
       }
       acc[date].push(item);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Array<{ created_at: string; sentiment_score: number }>>);
   }
 
   /**

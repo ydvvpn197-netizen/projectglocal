@@ -81,7 +81,7 @@ export class OptimizedTrendService {
     horizon: 'short' | 'medium' | 'long' = 'short'
   ): Promise<OptimizedPredictionData[]> {
     try {
-      let query = supabase
+      const query = supabase
         .from('community_predictions')
         .select('*')
         .eq('prediction_type', predictionType)
@@ -121,7 +121,13 @@ export class OptimizedTrendService {
   async getAnalyticsData(
     metricNames: string[] = ['total_posts', 'active_users', 'engagement_rate'],
     timePeriod: 'daily' | 'weekly' | 'monthly' = 'weekly'
-  ): Promise<any[]> {
+  ): Promise<Array<{
+    id: string;
+    metric_name: string;
+    metric_value: number;
+    time_period: string;
+    calculated_at: string;
+  }>> {
     try {
       const { data: analyticsData, error } = await supabase
         .from('community_analytics')
@@ -230,7 +236,7 @@ export class OptimizedTrendService {
   /**
    * Calculate trend metrics from analytics data
    */
-  calculateTrendMetrics(data: any[]): {
+  calculateTrendMetrics(data: Array<{ metric_value: number }>): {
     growth_rate: number;
     trend_direction: 'rising' | 'falling' | 'stable';
     confidence: number;
