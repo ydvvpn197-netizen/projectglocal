@@ -56,6 +56,17 @@ interface UserActivity {
   status?: string;
 }
 
+interface BookingData {
+  id: string;
+  status: 'pending' | 'accepted' | 'completed' | 'cancelled';
+}
+
+interface PostData {
+  id: string;
+  title: string;
+  created_at: string;
+}
+
 const UserDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -142,9 +153,9 @@ const UserDashboard = () => {
         .eq('follower_id', user.id);
 
       const totalBookings = bookingsData?.length || 0;
-      const pendingBookings = bookingsData?.filter((b: any) => b.status === 'pending').length || 0;
-      const activeBookings = bookingsData?.filter((b: any) => b.status === 'accepted').length || 0;
-      const completedBookings = bookingsData?.filter((b: any) => b.status === 'completed').length || 0;
+      const pendingBookings = bookingsData?.filter((b: BookingData) => b.status === 'pending').length || 0;
+      const activeBookings = bookingsData?.filter((b: BookingData) => b.status === 'accepted').length || 0;
+      const completedBookings = bookingsData?.filter((b: BookingData) => b.status === 'completed').length || 0;
 
       setStats({
         totalBookings,
@@ -162,7 +173,7 @@ const UserDashboard = () => {
       // Create recent activity from posts
       const activities: UserActivity[] = [];
       if (postsData) {
-        postsData.forEach((post: any) => {
+        postsData.forEach((post: PostData) => {
           activities.push({
             id: post.id,
             type: 'post',
