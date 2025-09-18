@@ -4,8 +4,8 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Set base URL for production deployment - use absolute paths for custom domain
-  base: '/',
+  // Set base URL for production deployment - GitHub Pages requires repo name
+  base: process.env.NODE_ENV === 'production' ? '/projectglocal/' : '/',
   
   server: {
     host: "::",
