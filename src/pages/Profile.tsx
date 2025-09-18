@@ -366,6 +366,17 @@ const Profile = () => {
     }
   }, [searchParams]);
 
+  // Redirect to dashboard if user comes from profile button (no specific tab requested)
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const fromDashboard = searchParams.get('from');
+    
+    // If no specific tab is requested and user is not coming from dashboard, redirect to dashboard
+    if (!tab && !fromDashboard && user && !loading) {
+      navigate('/my-dashboard', { replace: true });
+    }
+  }, [user, loading, searchParams, navigate]);
+
   // Show loading state while fetching profile
   if (loading) {
     console.log('Profile component: Loading state active', { user, loading, profile });

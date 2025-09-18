@@ -386,7 +386,7 @@ const ArtistDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/profile')}>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/profile?from=dashboard')}>
                     <Eye className="h-4 w-4 mr-2" />
                     View Public Profile
                   </Button>

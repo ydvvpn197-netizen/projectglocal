@@ -240,7 +240,7 @@ const UserDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => navigate('/profile')}>
+            <Button variant="outline" onClick={() => navigate('/profile?from=dashboard')}>
               <User className="h-4 w-4 mr-2" />
               View Profile
             </Button>
@@ -607,7 +607,7 @@ const UserDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/profile')}>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/profile?from=dashboard')}>
                     <User className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>

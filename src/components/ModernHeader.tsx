@@ -187,7 +187,7 @@ export function ModernHeader({
                       <User className="h-4 w-4 mr-2" />
                       Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <DropdownMenuItem onClick={() => navigate('/profile?from=dashboard')}>
                       <User className="h-4 w-4 mr-2" />
                       Profile
                     </DropdownMenuItem>
