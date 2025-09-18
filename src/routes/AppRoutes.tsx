@@ -61,6 +61,7 @@ const EnhancedProfile = React.lazy(() => import('@/pages/EnhancedProfile'));
 const NotificationSettings = React.lazy(() => import('@/pages/NotificationSettings'));
 const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage'));
 const UserDashboard = React.lazy(() => import('@/pages/UserDashboard'));
+const DashboardRouter = React.lazy(() => import('@/components/DashboardRouter'));
 
 // Chat pages (grouped together)
 const Chat = React.lazy(() => import('@/pages/Chat'));
@@ -213,6 +214,9 @@ export const AppRoutes: React.FC = () => {
       <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+      
+      {/* Dashboard Routing */}
+      <Route path="/my-dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
       
       {/* Artist routes */}

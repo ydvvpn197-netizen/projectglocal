@@ -44,6 +44,7 @@ const newFeaturesItems = [
 
 
 const artistItems = [
+  { title: "My Dashboard", url: "/my-dashboard", icon: User },
   { title: "Artist Dashboard", url: "/artist-dashboard", icon: Zap },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
@@ -54,7 +55,7 @@ const artistItems = [
 ];
 
 const regularUserItems = [
-  { title: "My Dashboard", url: "/dashboard", icon: User },
+  { title: "My Dashboard", url: "/my-dashboard", icon: User },
   { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
   { title: "Privacy", url: "/privacy", icon: Shield },

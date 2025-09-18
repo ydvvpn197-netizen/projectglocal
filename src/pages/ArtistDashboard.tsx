@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, DollarSign, Star, TrendingUp, MessageCircle, Settings } from "lucide-react";
+import { CalendarDays, DollarSign, Star, TrendingUp, MessageCircle, Settings, CheckCircle, User, Eye, Activity, Trophy, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -202,21 +202,16 @@ const ArtistDashboard = () => {
           </CardHeader>
         </Card>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setActiveTab("bookings")}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-              <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalBookings}</div>
-              <p className="text-xs text-muted-foreground">
-                Click to view all bookings
-              </p>
+            <CardContent className="p-4 text-center">
+              <CalendarDays className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+              <div className="text-xl font-bold text-blue-600">{stats.totalBookings}</div>
+              <div className="text-xs text-muted-foreground">Total Bookings</div>
             </CardContent>
           </Card>
 
@@ -224,15 +219,10 @@ const ArtistDashboard = () => {
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setActiveTab("bookings")}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingRequests}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.pendingRequests > 0 ? "Awaiting your response" : "No pending requests"}
-              </p>
+            <CardContent className="p-4 text-center">
+              <MessageCircle className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
+              <div className="text-xl font-bold text-yellow-600">{stats.pendingRequests}</div>
+              <div className="text-xs text-muted-foreground">Pending Requests</div>
             </CardContent>
           </Card>
 
@@ -240,15 +230,21 @@ const ArtistDashboard = () => {
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setActiveTab("earnings")}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.totalEarnings.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                Click for earnings details
-              </p>
+            <CardContent className="p-4 text-center">
+              <DollarSign className="h-6 w-6 mx-auto mb-2 text-green-600" />
+              <div className="text-xl font-bold text-green-600">${stats.totalEarnings.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground">Total Earnings</div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveTab("performance")}
+          >
+            <CardContent className="p-4 text-center">
+              <Star className="h-6 w-6 mx-auto mb-2 text-purple-600" />
+              <div className="text-xl font-bold text-purple-600">{stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A'}</div>
+              <div className="text-xs text-muted-foreground">Average Rating</div>
             </CardContent>
           </Card>
 
@@ -256,34 +252,57 @@ const ArtistDashboard = () => {
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setActiveTab("chats")}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A'}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.totalBookings > 0 ? `From ${stats.totalBookings} bookings` : "Complete bookings to get rated"}
-              </p>
+            <CardContent className="p-4 text-center">
+              <TrendingUp className="h-6 w-6 mx-auto mb-2 text-indigo-600" />
+              <div className="text-xl font-bold text-indigo-600">85%</div>
+              <div className="text-xs text-muted-foreground">Response Rate</div>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setActiveTab("portfolio")}
+          >
+            <CardContent className="p-4 text-center">
+              <Settings className="h-6 w-6 mx-auto mb-2 text-orange-600" />
+              <div className="text-xl font-bold text-orange-600">Pro</div>
+              <div className="text-xs text-muted-foreground">Account Type</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="bookings">
-              Booking Requests
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="bookings" className="flex items-center gap-2">
+              <CalendarDays className="w-4 h-4" />
+              Bookings
               {stats.pendingRequests > 0 && (
-                <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                <Badge variant="destructive" className="ml-1 h-4 w-4 rounded-full p-0 text-xs">
                   {stats.pendingRequests}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="accepted">Accepted Bookings</TabsTrigger>
-            <TabsTrigger value="chats">Active Chats</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
-            <TabsTrigger value="moderation">Discussion Moderation</TabsTrigger>
+            <TabsTrigger value="accepted" className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="chats" className="flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Chats
+            </TabsTrigger>
+            <TabsTrigger value="earnings" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Earnings
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="portfolio" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Portfolio
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="bookings">
@@ -302,8 +321,120 @@ const ArtistDashboard = () => {
             <EarningsPanel />
           </TabsContent>
 
-          <TabsContent value="moderation">
-            <ArtistModerationPanel />
+          <TabsContent value="performance">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="w-5 h-5" />
+                    Performance Metrics
+                  </CardTitle>
+                  <CardDescription>
+                    Your performance as an artist
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Average Rating</span>
+                    <span className="text-lg font-bold">{stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Response Rate</span>
+                    <span className="text-lg font-bold">85%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Completion Rate</span>
+                    <span className="text-lg font-bold">92%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Repeat Clients</span>
+                    <span className="text-lg font-bold">67%</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    Growth Insights
+                  </CardTitle>
+                  <CardDescription>
+                    Track your business growth
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <p className="text-muted-foreground">Growth analytics coming soon</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="portfolio">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Portfolio Management
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your portfolio and showcase your work
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/profile')}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Public Profile
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/artist-onboarding')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Update Portfolio
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Manage Skills
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Portfolio Analytics
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    Quick Actions
+                  </CardTitle>
+                  <CardDescription>
+                    Common artist tasks
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/create')}>
+                    <Activity className="h-4 w-4 mr-2" />
+                    Share Your Work
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/messages')}>
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Message Clients
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/settings')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Account Settings
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.reload()}>
+                    <Activity className="h-4 w-4 mr-2" />
+                    Refresh Dashboard
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
