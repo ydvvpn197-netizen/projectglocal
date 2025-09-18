@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { PageLayout } from "@/components/layout/PageLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { UnifiedButton } from "@/components/ui/UnifiedButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -313,7 +313,7 @@ const Feed = () => {
   };
 
   return (
-    <PageLayout layout="main" showSidebar={true} showHeader={true} showFooter={true}>
+    <ResponsiveLayout>
       <div className="space-y-8 p-6">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -692,7 +692,7 @@ const Feed = () => {
           </div>
         </div>
       </div>
-    </PageLayout>
+    </ResponsiveLayout>
   );
 };
 

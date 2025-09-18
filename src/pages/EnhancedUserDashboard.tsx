@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { PageLayout } from "@/components/layout/PageLayout";
+import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -198,13 +198,13 @@ const EnhancedUserDashboard = () => {
 
   if (loading) {
     return (
-      <PageLayout layout="main" showSidebar={true} showHeader={true} showFooter={false}>
+      <ResponsiveLayout>
         <div className="container max-w-7xl mx-auto p-6">
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         </div>
-      </PageLayout>
+      </ResponsiveLayout>
     );
   }
 

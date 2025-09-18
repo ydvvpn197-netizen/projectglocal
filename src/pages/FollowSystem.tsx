@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PageLayout } from '@/components/layout/PageLayout';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ export const FollowSystem = () => {
 
   if (!user) {
     return (
-      <PageLayout layout="main" showSidebar={true} showHeader={true} showFooter={false}>
+      <ResponsiveLayout>
         <div className="container max-w-6xl mx-auto p-6">
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -47,7 +47,7 @@ export const FollowSystem = () => {
             <p className="text-muted-foreground">Please sign in to discover and connect with people in your community.</p>
           </div>
         </div>
-      </PageLayout>
+      </ResponsiveLayout>
     );
   }
 
