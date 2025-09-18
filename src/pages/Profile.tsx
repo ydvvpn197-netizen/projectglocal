@@ -521,7 +521,7 @@ const Profile = () => {
     );
   }
 
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || user?.user_metadata?.full_name || 'User';
   const location = profile ? ([profile.location_city, profile.location_state, profile.location_country]
     .filter(Boolean)
     .join(', ') || 'Location not set') : 'Location not set';
@@ -539,7 +539,7 @@ const Profile = () => {
                 <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
                   <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
                   <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-                    {displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    {displayName ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <Button 
@@ -889,7 +889,7 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {posts.slice(0, 5).map((post) => (
+                    {(posts || []).slice(0, 5).map((post) => (
                       <div key={post.id} className="flex gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                           <BookOpen className="w-5 h-5 text-primary" />
