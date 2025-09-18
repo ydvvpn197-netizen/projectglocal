@@ -116,41 +116,61 @@ const validateSupabaseKey = (key) => {
   return { valid: true, message: 'Key is valid' };
 };
 
-// Test Supabase connection
-const testSupabaseConnection = async (url, key) => {
-  try {
-    // Import Supabase client dynamically
-    const { createClient } = await import('@supabase/supabase-js');
-    
-    // Create client
-    const supabase = createClient(url, key);
-    
-    // Test connection by making a simple request
-    const { data, error } = await supabase.from('_supabase_migrations').select('*').limit(1);
-    
-    if (error) {
-      // If the migrations table doesn't exist, try a different approach
-      const { data: healthData, error: healthError } = await supabase
-        .from('_supabase_health')
-        .select('*')
-        .limit(1);
+// Test Supabase connection with timeout
+const testSupabaseConnection = async (url, key, timeoutMs = 10000) => {
+  // Create a timeout promise
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
+  });
+  
+  // Create the actual test promise
+  const testPromise = async () => {
+    try {
+      // Import Supabase client dynamically
+      const { createClient } = await import('@supabase/supabase-js');
       
-      if (healthError) {
-        // If both fail, try to get the current user (this should work even if tables don't exist)
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        
-        if (userError && userError.message.includes('Invalid API key')) {
-          return { success: false, message: 'Invalid API key' };
+      // Create client with shorter timeout
+      const supabase = createClient(url, key, {
+        global: {
+          fetch: (url, options = {}) => {
+            // Create abort controller for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            return fetch(url, {
+              ...options,
+              signal: controller.signal
+            }).finally(() => clearTimeout(timeoutId));
+          }
         }
-        
-        // If we get here, the connection is working
-        return { success: true, message: 'Connection successful' };
+      });
+      
+      // Test connection with a simple auth check (fastest and most reliable)
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      // Even if user is not authenticated, a successful response means connection works
+      if (userError) {
+        // Check for network/connection errors vs auth errors
+        if (userError.message.includes('fetch') || 
+            userError.message.includes('network') ||
+            userError.message.includes('timeout') ||
+            userError.message.includes('Invalid API key')) {
+          return { success: false, message: `Connection failed: ${userError.message}` };
+        }
       }
+      
+      // If we get here, the connection is working
+      return { success: true, message: 'Connection successful' };
+    } catch (error) {
+      return { success: false, message: `Connection failed: ${error.message}` };
     }
-    
-    return { success: true, message: 'Connection successful' };
+  };
+  
+  try {
+    // Race between the test and timeout
+    return await Promise.race([testPromise(), timeoutPromise]);
   } catch (error) {
-    return { success: false, message: `Connection failed: ${error.message}` };
+    return { success: false, message: `Connection test failed: ${error.message}` };
   }
 };
 
