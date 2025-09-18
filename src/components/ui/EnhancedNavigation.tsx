@@ -31,6 +31,7 @@ import {
   X,
   Settings,
   LogOut,
+  Edit,
   Heart,
   MessageCircle,
   Calendar,
@@ -167,14 +168,14 @@ export const EnhancedNavigation: React.FC<EnhancedNavigationProps> = ({
 
   const userMenuItems = [
     {
-      label: 'Profile',
-      href: '/profile',
+      label: 'My Dashboard',
+      href: '/my-dashboard',
       icon: <User className="h-4 w-4" />,
     },
     {
-      label: 'Dashboard',
-      href: '/dashboard',
-      icon: <Zap className="h-4 w-4" />,
+      label: 'Profile Settings',
+      href: '/profile?tab=overview&from=dashboard',
+      icon: <Edit className="h-4 w-4" />,
     },
     {
       label: 'Settings',

@@ -401,14 +401,14 @@ const Profile = () => {
   const tab = searchParams.get('tab');
   const fromDashboard = searchParams.get('from');
   
-  // If no profile found or profile is incomplete, and no specific tab is requested, redirect to dashboard
-  if ((!profile || (!profile.display_name && !profile.bio)) && user && !tab && !fromDashboard) {
-    // Instead of showing setup page, redirect to dashboard which will handle the user properly
+  // For users clicking profile button without specific intent, redirect to dashboard
+  if (user && !tab && !fromDashboard) {
+    console.log('Profile: Redirecting user to dashboard (no specific tab requested)');
     navigate('/my-dashboard', { replace: true });
     return null;
   }
 
-  // If profile is incomplete but user specifically requested profile page (with tab or from dashboard), show setup
+  // If profile is incomplete and user specifically requested profile page, show setup
   if ((!profile || (!profile.display_name && !profile.bio)) && user && (tab || fromDashboard)) {
     return (
       <ResponsiveLayout>
