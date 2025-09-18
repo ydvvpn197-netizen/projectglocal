@@ -60,6 +60,7 @@ interface SentimentData {
 interface TrendData {
   trend_type: string;
   trend_name: string;
+  trend_description?: string;
   trend_score: number;
   trend_direction: 'rising' | 'falling' | 'stable';
   confidence_level: number;
@@ -91,17 +92,14 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
     'sentiment', 'trends', 'predictions', 'engagement'
   ]);
 
-  const sentimentService = SentimentAnalysisService.getInstance();
-  const trendService = TrendPredictionService.getInstance();
-
-  useEffect(() => {
-    loadInsightsData();
-  }, [loadInsightsData]);
-
   const loadInsightsData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Get service instances inside the function to avoid circular dependency
+      const sentimentService = SentimentAnalysisService.getInstance();
+      const trendService = TrendPredictionService.getInstance();
 
       // Load sentiment data
       const sentiment = await sentimentService.getCommunitySentimentSummary(timePeriod);
@@ -121,7 +119,11 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
     } finally {
       setLoading(false);
     }
-  }, [timePeriod, sentimentService, trendService]);
+  }, [timePeriod]);
+
+  useEffect(() => {
+    loadInsightsData();
+  }, [loadInsightsData]);
 
   const getSentimentColor = (sentiment: number) => {
     if (sentiment > 0.1) return 'text-green-600';
@@ -377,7 +379,7 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
                 <h4 className="font-medium text-gray-900">{trend.trend_name}</h4>
                 {getTrendIcon(trend.trend_direction)}
               </div>
-              <p className="text-sm text-gray-600 mb-2">{trend.trend_description}</p>
+              <p className="text-sm text-gray-600 mb-2">{trend.trend_description || `${trend.trend_name} analysis`}</p>
               <div className="flex items-center justify-between">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTrendColor(trend.trend_direction)}`}>
                   {trend.trend_direction}
