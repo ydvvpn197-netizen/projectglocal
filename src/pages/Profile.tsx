@@ -464,7 +464,7 @@ const Profile = () => {
                       variant: "destructive"
                     });
                   }
-                }
+                }}
                 disabled={updating}
                 className="w-full"
               >
