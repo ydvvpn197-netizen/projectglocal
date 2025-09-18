@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { MainLayout } from './MainLayout';
+import { MainLayout } from '@/components/MainLayout';
 import { SidebarLayout } from './SidebarLayout';
 import { cn } from '@/lib/utils';
 
@@ -52,12 +52,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     case 'main':
     default:
       return (
-        <MainLayout
-          showSidebar={showSidebar}
-          showHeader={showHeader}
-          showFooter={showFooter}
-          className={className}
-        >
+        <MainLayout showNewsFeed={true}>
           {children}
         </MainLayout>
       );
