@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useLayout } from '@/hooks/useLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useIsAdmin } from '@/hooks/useRBAC';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -92,6 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { toggleSidebar } = useLayout();
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
+  const { isAdmin } = useIsAdmin();
 
   const sidebarContent = customContent || (
     <div className="flex flex-col h-full">
@@ -116,9 +118,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const showBadge = item.badge === 'unread' && unreadCount > 0;
+        {navigationItems
+          .filter((item) => {
+            // Hide Analytics for non-admin users
+            if (item.name === 'Analytics' && !isAdmin) {
+              return false;
+            }
+            return true;
+          })
+          .map((item) => {
+            const Icon = item.icon;
+            const showBadge = item.badge === 'unread' && unreadCount > 0;
           
           return (
             <Button

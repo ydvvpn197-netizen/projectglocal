@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AdminRoute } from '@/components/AdminRoute';
 import { lazyImport } from '@/lib/lazyImport';
 import { SimplifiedPostCreator } from '@/components/SimplifiedPostCreator';
 import { createOptimizedLazyComponent, preloadRouteGroup } from '@/lib/routeOptimization';
@@ -172,7 +173,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/public-square-subscription" element={<ProtectedRoute><PublicSquareSubscription /></ProtectedRoute>} />
       <Route path="/civic-engagement" element={<ProtectedRoute><CivicEngagementDashboard /></ProtectedRoute>} />
       <Route path="/civic-engagement-test" element={<CivicEngagementTest />} />
-      <Route path="/community-insights" element={<ProtectedRoute><CommunityInsights /></ProtectedRoute>} />
+      <Route path="/community-insights" element={<AdminRoute><CommunityInsights /></AdminRoute>} />
       <Route path="/features" element={<FeatureShowcase />} />
       
       {/* Community Moderation routes */}
