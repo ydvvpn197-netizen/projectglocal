@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -36,36 +37,40 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
   const { role, isArtist } = useUserRole();
   const {
     profile,
-    artistProfile,
-    settings,
-    loading,
+    loading: profileLoading,
+    updating,
     updateProfile,
-    updateArtistProfile,
-    updateSettings
+    uploadAvatar
   } = useUserProfile();
+  
+  const {
+    settings,
+    loading: settingsLoading,
+    updateProfileSettings,
+    updateNotificationSettings
+  } = useUserSettings();
 
   const [localProfile, setLocalProfile] = useState(profile);
-  const [localArtistProfile, setLocalArtistProfile] = useState(artistProfile);
   const [localSettings, setLocalSettings] = useState(settings || {});
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  
+  const loading = profileLoading || settingsLoading;
 
   // Update local state when data changes
   useEffect(() => {
     setLocalProfile(profile);
-    setLocalArtistProfile(artistProfile);
     setLocalSettings(settings || {});
-  }, [profile, artistProfile, settings]);
+  }, [profile, settings]);
 
   // Check for changes
   useEffect(() => {
     const profileChanged = JSON.stringify(localProfile) !== JSON.stringify(profile);
-    const artistChanged = JSON.stringify(localArtistProfile) !== JSON.stringify(artistProfile);
     const settingsChanged = JSON.stringify(localSettings) !== JSON.stringify(settings);
-    setHasChanges(profileChanged || artistChanged || settingsChanged);
-  }, [localProfile, localArtistProfile, localSettings, profile, artistProfile, settings]);
+    setHasChanges(profileChanged || settingsChanged);
+  }, [localProfile, localSettings, profile, settings]);
 
   const handleInputChange = (key: string, value: unknown) => {
     setLocalSettings(prev => ({ ...(prev || {}), [key]: value }));
@@ -75,9 +80,6 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
     setLocalProfile(prev => prev ? { ...prev, [key]: value } : null);
   };
 
-  const handleArtistProfileChange = (key: string, value: unknown) => {
-    setLocalArtistProfile(prev => prev ? { ...prev, [key]: value } : null);
-  };
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

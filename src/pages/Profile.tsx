@@ -410,7 +410,9 @@ const Profile = () => {
             <div className="space-y-4">
               <Button 
                 onClick={async () => {
+                  console.log('Create My Profile button clicked');
                   try {
+                    console.log('Starting profile creation for user:', user?.id);
                     // Create a basic profile for the user
                     const result = await updateProfile({
                       display_name: user.email?.split('@')[0] || 'User',
@@ -421,8 +423,12 @@ const Profile = () => {
                       first_name: user.email?.split('@')[0] || '',
                       last_name: ''
                     });
+                    console.log('Profile creation result:', result);
                     if (result.success) {
-                      refreshAll();
+                      console.log('Profile created successfully, refreshing data');
+                      await refreshAll();
+                    } else {
+                      console.error('Profile creation failed:', result.error);
                     }
                   } catch (error) {
                     console.error('Error creating profile:', error);
@@ -450,7 +456,10 @@ const Profile = () => {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/onboarding')}
+                onClick={() => {
+                  console.log('Complete Setup Later button clicked');
+                  navigate('/onboarding');
+                }}
                 className="w-full"
               >
                 Complete Setup Later
