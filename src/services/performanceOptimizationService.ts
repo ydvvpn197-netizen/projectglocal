@@ -36,8 +36,8 @@ class PerformanceOptimizationService {
     cacheStrategy: 'aggressive',
     prefetchStrategy: 'hover'
   };
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
-  private preloadQueue: Array<() => Promise<any>> = [];
+  private cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
+  private preloadQueue: Array<() => Promise<unknown>> = [];
   private intersectionObserver?: IntersectionObserver;
 
   static getInstance(): PerformanceOptimizationService {
@@ -83,7 +83,7 @@ class PerformanceOptimizationService {
       // Navigation timing
       const navigationObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
+        entries.forEach((entry: PerformanceNavigationTiming) => {
           this.metrics.renderTime = entry.loadEventEnd - entry.loadEventStart;
         });
       });
@@ -207,7 +207,7 @@ class PerformanceOptimizationService {
     const pathname = url.pathname;
 
     // Define preloading strategies for different routes
-    const preloadStrategies: Record<string, () => Promise<any>> = {
+    const preloadStrategies: Record<string, () => Promise<unknown>> = {
       '/profile': () => this.preloadUserProfile(),
       '/community': () => this.preloadCommunityData(),
       '/events': () => this.preloadEventsData(),
@@ -230,7 +230,7 @@ class PerformanceOptimizationService {
   /**
    * Preload user profile data
    */
-  private async preloadUserProfile(): Promise<any> {
+  private async preloadUserProfile(): Promise<unknown> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -255,7 +255,7 @@ class PerformanceOptimizationService {
   /**
    * Preload community data
    */
-  private async preloadCommunityData(): Promise<any> {
+  private async preloadCommunityData(): Promise<unknown> {
     const cacheKey = 'community_posts_recent';
     if (this.isValidCache(cacheKey)) {
       return this.getFromCache(cacheKey);
@@ -277,7 +277,7 @@ class PerformanceOptimizationService {
   /**
    * Preload events data
    */
-  private async preloadEventsData(): Promise<any> {
+  private async preloadEventsData(): Promise<unknown> {
     const cacheKey = 'events_upcoming';
     if (this.isValidCache(cacheKey)) {
       return this.getFromCache(cacheKey);
@@ -300,7 +300,7 @@ class PerformanceOptimizationService {
   /**
    * Preload news data
    */
-  private async preloadNewsData(): Promise<any> {
+  private async preloadNewsData(): Promise<unknown> {
     const cacheKey = 'news_recent';
     if (this.isValidCache(cacheKey)) {
       return this.getFromCache(cacheKey);
@@ -322,7 +322,7 @@ class PerformanceOptimizationService {
   /**
    * Cache management
    */
-  private setCache(key: string, data: any, ttl: number): void {
+  private setCache(key: string, data: unknown, ttl: number): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -335,7 +335,7 @@ class PerformanceOptimizationService {
     }
   }
 
-  private getFromCache(key: string): any {
+  private getFromCache(key: string): unknown {
     const cached = this.cache.get(key);
     return cached?.data;
   }
@@ -369,7 +369,7 @@ class PerformanceOptimizationService {
     // Memory usage monitoring
     if ('memory' in performance) {
       setInterval(() => {
-        const memory = (performance as any).memory;
+        const memory = (performance as { memory: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
         this.metrics.memoryUsage = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
       }, 10000); // Every 10 seconds
     }
@@ -430,17 +430,18 @@ class PerformanceOptimizationService {
     // Shallow comparison for props
     if (prevProps === nextProps) return false;
 
-    if (typeof prevProps !== 'object' || typeof nextProps !== 'object') {
+    if (typeof prevProps !== 'object' || typeof nextProps !== 'object' || 
+        prevProps === null || nextProps === null) {
       return prevProps !== nextProps;
     }
 
-    const prevKeys = Object.keys(prevProps as object);
-    const nextKeys = Object.keys(nextProps as object);
+    const prevKeys = Object.keys(prevProps as Record<string, unknown>);
+    const nextKeys = Object.keys(nextProps as Record<string, unknown>);
 
     if (prevKeys.length !== nextKeys.length) return true;
 
     for (const key of prevKeys) {
-      if ((prevProps as any)[key] !== (nextProps as any)[key]) {
+      if ((prevProps as Record<string, unknown>)[key] !== (nextProps as Record<string, unknown>)[key]) {
         return true;
       }
     }

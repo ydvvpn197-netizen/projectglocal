@@ -16,7 +16,8 @@ vi.mock('../../hooks/useAuth', () => ({
 }));
 
 vi.mock('../../hooks/useRBAC', () => ({
-  useIsAdmin: vi.fn()
+  useIsAdmin: vi.fn(),
+  useRole: vi.fn()
 }));
 
 vi.mock('../../hooks/useSecurityAudit', () => ({
