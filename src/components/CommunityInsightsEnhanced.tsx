@@ -210,7 +210,7 @@ export const CommunityInsightsEnhanced: React.FC<CommunityInsightsEnhancedProps>
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { dataset: { label: string }; parsed: { y: number } }) {
             return `${context.dataset.label}: ${context.parsed.y}`;
           }
         }
@@ -232,7 +232,7 @@ export const CommunityInsightsEnhanced: React.FC<CommunityInsightsEnhancedProps>
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: { label: string; parsed: number }) {
             return `${context.label}: ${context.parsed}%`;
           }
         }

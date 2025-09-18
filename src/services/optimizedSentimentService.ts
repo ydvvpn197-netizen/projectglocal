@@ -142,7 +142,7 @@ export class OptimizedSentimentService {
    * Group sentiment data by day
    */
   private groupByDay(data: any[]): Record<string, any[]> {
-    return data.reduce((acc, item) => {
+    return data.reduce((acc: Record<string, any[]>, item: any) => {
       const date = new Date(item.created_at).toISOString().split('T')[0];
       if (!acc[date]) {
         acc[date] = [];

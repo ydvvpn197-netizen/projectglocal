@@ -8,9 +8,34 @@ interface RealTimeInsightsConfig {
 }
 
 interface InsightsData {
-  sentiment: any;
-  trends: any[];
-  predictions: any[];
+  sentiment: {
+    total_analyses: number;
+    average_sentiment: number;
+    sentiment_distribution: {
+      positive: number;
+      negative: number;
+      neutral: number;
+    };
+    sentiment_evolution: Array<{
+      date: string;
+      average_sentiment: number;
+      count: number;
+    }>;
+  };
+  trends: Array<{
+    id: string;
+    type: string;
+    title: string;
+    description: string;
+    score: number;
+    created_at: string;
+  }>;
+  predictions: Array<{
+    type: string;
+    prediction: string;
+    confidence: number;
+    timeframe: string;
+  }>;
   lastUpdated: Date;
 }
 
@@ -21,7 +46,7 @@ export const useRealTimeInsights = (config: RealTimeInsightsConfig) => {
   const [isConnected, setIsConnected] = useState(false);
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const subscriptionRef = useRef<any>(null);
+  const subscriptionRef = useRef<(() => void) | null>(null);
 
   const loadData = useCallback(async () => {
     try {
