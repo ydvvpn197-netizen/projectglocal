@@ -910,7 +910,7 @@ const Profile = () => {
                         </div>
                       </div>
                     ))}
-                    {posts.length === 0 && (
+                    {(posts || []).length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
                         <p className="mb-2">No recent activity</p>
@@ -1042,9 +1042,9 @@ const Profile = () => {
               </Button>
             </div>
             
-            {bookings.length > 0 ? (
+            {(bookings || []).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {bookings.map((booking) => (
+                {(bookings || []).map((booking) => (
                   <Card key={booking.id} className="event-card">
                     <CardContent className="p-4">
                       <div className="flex gap-4">
@@ -1111,9 +1111,9 @@ const Profile = () => {
               </Button>
             </div>
             
-            {communities.length > 0 ? (
+            {(communities || []).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {communities.map((community) => (
+                {(communities || []).map((community) => (
                   <Card key={community.id} className="community-card">
                     <CardContent className="p-4">
                       <div className="flex gap-3">
@@ -1273,14 +1273,14 @@ const Profile = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                         <p className="mt-2 text-gray-600">Loading subscription history...</p>
                       </div>
-                    ) : subscriptionHistory.length === 0 ? (
+                    ) : (subscriptionHistory || []).length === 0 ? (
                       <div className="text-center py-8">
                         <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-600">No subscription history found</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {subscriptionHistory.map((subscription) => (
+                        {(subscriptionHistory || []).map((subscription) => (
                           <div
                             key={subscription.id}
                             className="flex items-center justify-between p-4 border rounded-lg"
@@ -1331,13 +1331,13 @@ const Profile = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Achievement Badges</h2>
               <span className="text-sm text-muted-foreground">
-                {badges.length} badges earned
+                {(badges || []).length} badges earned
               </span>
             </div>
             
-            {badges.length > 0 ? (
+            {(badges || []).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {badges.map((badge) => {
+                {(badges || []).map((badge) => {
                   const BadgeIcon = getBadgeIcon(badge.icon);
                   return (
                     <Card key={badge.id} className="trending-card">
