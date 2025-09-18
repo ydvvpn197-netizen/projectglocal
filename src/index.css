@@ -208,19 +208,19 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Enhanced Primary Colors - Modern Glocal Brand */
-    --primary: 220 100% 50%;
-    --primary-foreground: 210 40% 98%;
+    /* Enhanced Primary Colors - Orange to Green Gradient Theme */
+    --primary: 24 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary Colors - Clean and Professional */
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    /* Secondary Colors - Complementary Green */
+    --secondary: 142 76% 36%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 220 100% 50%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -239,28 +239,28 @@ All colors MUST be HSL.
     --info: 217 91% 60%;
     --info-foreground: 213 31% 91%;
     
-    /* Enhanced Gradients - Modern Glocal Brand */
-    --gradient-primary: linear-gradient(135deg, hsl(220 100% 50%), hsl(200 100% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 14.3% 95.9%), hsl(210 40% 96.1%));
-    --gradient-event: linear-gradient(135deg, hsl(15 100% 50%), hsl(45 100% 50%));
-    --gradient-community: linear-gradient(135deg, hsl(220 100% 50%), hsl(240 100% 60%));
-    --gradient-trending: linear-gradient(135deg, hsl(0 100% 50%), hsl(15 100% 50%));
+    /* Enhanced Gradients - Orange to Green Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(24 100% 50%), hsl(142 76% 36%));
+    --gradient-secondary: linear-gradient(135deg, hsl(24 80% 90%), hsl(142 60% 85%));
+    --gradient-event: linear-gradient(135deg, hsl(24 100% 50%), hsl(45 100% 50%));
+    --gradient-community: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 50%));
+    --gradient-trending: linear-gradient(135deg, hsl(24 100% 50%), hsl(35 100% 50%));
     
-    /* Enhanced Shadows */
-    --shadow-elegant: 0 10px 30px -10px hsl(220 100% 50% / 0.3);
+    /* Enhanced Shadows - Orange to Green Theme */
+    --shadow-elegant: 0 10px 30px -10px hsl(24 100% 50% / 0.3);
     --shadow-card: 0 2px 10px hsl(220 13% 91% / 0.5);
-    --shadow-event: 0 8px 25px -5px hsl(15 100% 50% / 0.3);
-    --shadow-community: 0 8px 25px -5px hsl(220 100% 50% / 0.3);
+    --shadow-event: 0 8px 25px -5px hsl(24 100% 50% / 0.3);
+    --shadow-community: 0 8px 25px -5px hsl(142 76% 36% / 0.3);
 
-    /* New Design System Colors */
-    --event-primary: 15 100% 50%;
+    /* New Design System Colors - Orange to Green Theme */
+    --event-primary: 24 100% 50%;
     --event-secondary: 45 100% 50%;
-    --community-primary: 220 100% 50%;
-    --community-secondary: 240 100% 60%;
-    --trending-primary: 0 100% 50%;
-    --trending-secondary: 15 100% 50%;
-    --discussion-primary: 200 100% 50%;
-    --discussion-secondary: 220 100% 60%;
+    --community-primary: 142 76% 36%;
+    --community-secondary: 142 76% 50%;
+    --trending-primary: 24 100% 50%;
+    --trending-secondary: 35 100% 50%;
+    --discussion-primary: 142 76% 36%;
+    --discussion-secondary: 142 76% 50%;
     
     /* Status Colors */
     --status-online: 142 76% 36%;
@@ -288,16 +288,16 @@ All colors MUST be HSL.
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 220 100% 50%;
+    --primary: 24 100% 50%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 215 27.9% 16.9%;
+    --secondary: 142 76% 36%;
     --secondary-foreground: 210 20% 98%;
 
     --muted: 215 27.9% 16.9%;
     --muted-foreground: 217.9 10.6% 64.9%;
 
-    --accent: 215 27.9% 16.9%;
+    --accent: 142 76% 36%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -317,28 +317,28 @@ All colors MUST be HSL.
     --info: 217 91% 60%;
     --info-foreground: 213 31% 91%;
     
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(220 100% 50%), hsl(200 100% 60%));
+    /* Dark mode gradients - Orange to Green Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(24 100% 50%), hsl(142 76% 36%));
     --gradient-secondary: linear-gradient(135deg, hsl(215 27.9% 16.9%), hsl(210 27.9% 17.9%));
-    --gradient-event: linear-gradient(135deg, hsl(15 100% 50%), hsl(45 100% 50%));
-    --gradient-community: linear-gradient(135deg, hsl(220 100% 50%), hsl(240 100% 60%));
-    --gradient-trending: linear-gradient(135deg, hsl(0 100% 50%), hsl(15 100% 50%));
+    --gradient-event: linear-gradient(135deg, hsl(24 100% 50%), hsl(45 100% 50%));
+    --gradient-community: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 50%));
+    --gradient-trending: linear-gradient(135deg, hsl(24 100% 50%), hsl(35 100% 50%));
     
-    /* Dark mode shadows */
-    --shadow-elegant: 0 10px 30px -10px hsl(220 100% 50% / 0.3);
+    /* Dark mode shadows - Orange to Green Theme */
+    --shadow-elegant: 0 10px 30px -10px hsl(24 100% 50% / 0.3);
     --shadow-card: 0 2px 10px hsl(215 27.9% 16.9% / 0.5);
-    --shadow-event: 0 8px 25px -5px hsl(15 100% 50% / 0.3);
-    --shadow-community: 0 8px 25px -5px hsl(220 100% 50% / 0.3);
+    --shadow-event: 0 8px 25px -5px hsl(24 100% 50% / 0.3);
+    --shadow-community: 0 8px 25px -5px hsl(142 76% 36% / 0.3);
 
-    /* Dark mode design system colors */
-    --event-primary: 15 100% 50%;
+    /* Dark mode design system colors - Orange to Green Theme */
+    --event-primary: 24 100% 50%;
     --event-secondary: 45 100% 50%;
-    --community-primary: 220 100% 50%;
-    --community-secondary: 240 100% 60%;
-    --trending-primary: 0 100% 50%;
-    --trending-secondary: 15 100% 50%;
-    --discussion-primary: 200 100% 50%;
-    --discussion-secondary: 220 100% 60%;
+    --community-primary: 142 76% 36%;
+    --community-secondary: 142 76% 50%;
+    --trending-primary: 24 100% 50%;
+    --trending-secondary: 35 100% 50%;
+    --discussion-primary: 142 76% 36%;
+    --discussion-secondary: 142 76% 50%;
     
     /* Dark mode status colors */
     --status-online: 142 76% 36%;

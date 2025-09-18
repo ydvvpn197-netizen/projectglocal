@@ -5,7 +5,7 @@ import { accentColors } from './themeConstants';
 
 export const EnhancedThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState('system');
-  const [accentColor, setAccentColor] = useState(accentColors.blue);
+  const [accentColor, setAccentColor] = useState(accentColors.orange);
   const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
