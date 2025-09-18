@@ -402,8 +402,8 @@ const Profile = () => {
   const fromDashboard = searchParams.get('from');
   
   // For users clicking profile button without specific intent, redirect to dashboard
-  if (user && !tab && !fromDashboard) {
-    console.log('Profile: Redirecting user to dashboard (no specific tab requested)');
+  if (user && !tab && !fromDashboard && !loading) {
+    console.log('Profile: Redirecting user to dashboard (no specific tab requested)', { user: user.id, loading });
     navigate('/my-dashboard', { replace: true });
     return null;
   }

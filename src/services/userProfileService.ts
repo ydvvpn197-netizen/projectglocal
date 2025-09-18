@@ -106,6 +106,8 @@ class UserProfileService {
 
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     try {
+      console.log('Fetching profile for user:', userId);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -118,12 +120,19 @@ class UserProfileService {
         // If profile doesn't exist, create a basic one
         if (error.code === 'PGRST116') {
           console.log('Profile not found, creating basic profile for user:', userId);
+          
+          // Get user info from auth.users to populate profile
+          const { data: authUser } = await supabase.auth.getUser();
+          const userEmail = authUser?.user?.email;
+          const userName = authUser?.user?.user_metadata?.full_name || userEmail?.split('@')[0] || 'User';
+          
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
               user_id: userId,
-              display_name: null,
-              bio: null,
+              display_name: userName,
+              bio: 'Welcome to TheGlocal!',
+              user_type: 'user',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
@@ -135,18 +144,14 @@ class UserProfileService {
             return null;
           }
 
+          console.log('Created new profile:', newProfile);
           return newProfile;
         }
         
         return null;
       }
 
-      // Check if profile is incomplete and needs basic data
-      if (data && !data.display_name && !data.bio) {
-        console.log('Profile exists but is incomplete, will be handled by frontend for user:', userId);
-        // Return the incomplete profile - the frontend will handle showing the setup page
-      }
-
+      console.log('Profile fetched successfully:', data);
       return data;
     } catch (error) {
       console.error('Error in getUserProfile:', error);
