@@ -88,7 +88,7 @@ const CivicEngagementDashboard = React.lazy(() => import('@/components/CivicEnga
 const CivicEngagementTest = React.lazy(() => import('@/pages/CivicEngagementTest').then(module => ({ default: module.CivicEngagementTest })));
 
 // Community Insights
-const CommunityInsights = React.lazy(() => import('@/pages/CommunityInsights'));
+const CommunityInsights = React.lazy(() => import('@/pages/CommunityInsightsSimple'));
 
 // Community Moderation
 const CommunityTransparency = React.lazy(() => import('@/pages/CommunityTransparency'));

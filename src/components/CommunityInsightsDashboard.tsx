@@ -26,8 +26,7 @@ import {
   MapPin,
   Filter
 } from 'lucide-react';
-import { SentimentAnalysisService } from '../services/sentimentAnalysisService';
-import { TrendPredictionService } from '../services/trendPredictionService';
+// Services will be imported dynamically to avoid bundling issues
 
 // Register Chart.js components
 ChartJS.register(
@@ -97,7 +96,16 @@ export const CommunityInsightsDashboard: React.FC<CommunityInsightsDashboardProp
       setLoading(true);
       setError(null);
 
-      // Get service instances inside the function to avoid circular dependency
+      // Dynamically import services to avoid bundling issues
+      const [
+        { SentimentAnalysisService },
+        { TrendPredictionService }
+      ] = await Promise.all([
+        import('../services/sentimentAnalysisService'),
+        import('../services/trendPredictionService')
+      ]);
+
+      // Get service instances
       const sentimentService = SentimentAnalysisService.getInstance();
       const trendService = TrendPredictionService.getInstance();
 
