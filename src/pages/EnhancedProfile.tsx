@@ -68,6 +68,52 @@ const EnhancedProfile: React.FC = () => {
     }
   }, [userId, loadProfile]);
 
+  const handleCoverUpload = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file && currentUser) {
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `cover-${currentUser.id}-${Date.now()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('profile-images')
+            .upload(fileName, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('profile-images')
+            .getPublicUrl(fileName);
+
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ cover_image: publicUrl })
+            .eq('id', currentUser.id);
+
+          if (updateError) throw updateError;
+
+          setProfile(prev => prev ? { ...prev, cover_image: publicUrl } : null);
+          toast({
+            title: "Cover updated!",
+            description: "Your cover photo has been updated successfully.",
+          });
+        } catch (error) {
+          console.error('Error uploading cover:', error);
+          toast({
+            title: "Upload failed",
+            description: "Failed to update cover photo. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+    input.click();
+  };
+
   const loadProfile = useCallback(async () => {
     if (!userId) return;
     
@@ -264,7 +310,7 @@ const EnhancedProfile: React.FC = () => {
                 size="sm"
                 variant="secondary"
                 className="absolute top-4 right-4"
-                onClick={() => {/* TODO: Implement cover upload */}}
+                onClick={() => handleCoverUpload()}
               >
                 <Camera className="w-4 h-4 mr-2" />
                 Edit Cover

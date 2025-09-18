@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { EventCard } from "@/components/EventCard";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 // Sample data for the enhanced homepage
 const trendingEvent = {
@@ -150,20 +151,95 @@ const Index = () => {
     await toggleAttendance(eventId);
   };
 
-  const handleLikeEvent = (eventId: string) => {
-    // TODO: Implement like functionality
-    toast({
-      title: "Feature Coming Soon",
-      description: "Event liking functionality will be available soon!",
-    });
+  const handleLikeEvent = async (eventId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Login required",
+          description: "Please login to like events",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if already liked
+      const { data: existingLike } = await supabase
+        .from('event_likes')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingLike) {
+        // Unlike
+        await supabase
+          .from('event_likes')
+          .delete()
+          .eq('event_id', eventId)
+          .eq('user_id', user.id);
+        
+        toast({
+          title: "Event unliked",
+          description: "Removed from your liked events",
+        });
+      } else {
+        // Like
+        await supabase
+          .from('event_likes')
+          .insert({
+            event_id: eventId,
+            user_id: user.id
+          });
+        
+        toast({
+          title: "Event liked!",
+          description: "Added to your liked events",
+        });
+      }
+
+      // Refresh events to update like status
+      loadEvents();
+    } catch (error) {
+      console.error('Error liking event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to like event",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleShareEvent = (eventId: string) => {
-    // TODO: Implement share functionality
-    toast({
-      title: "Feature Coming Soon",
-      description: "Event sharing functionality will be available soon!",
-    });
+  const handleShareEvent = async (eventId: string) => {
+    try {
+      const event = events.find(e => e.id === eventId);
+      if (!event) return;
+
+      const shareData = {
+        title: event.title,
+        text: `Join "${event.title}" on TheGlocal community platform!`,
+        url: `${window.location.origin}/events/${eventId}`
+      };
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy to clipboard
+        const shareText = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
+        await navigator.clipboard.writeText(shareText);
+        toast({
+          title: "Event link copied!",
+          description: "Share link copied to clipboard",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing event:', error);
+      toast({
+        title: "Share failed",
+        description: "Unable to share event",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

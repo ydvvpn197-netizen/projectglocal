@@ -192,7 +192,7 @@ export const ArtistFollowerEngagement: React.FC<ArtistFollowerEngagementProps> =
         comments_count: post.post_comments?.length || 0,
         shares_count: post.post_shares?.length || 0,
         is_liked: post.post_likes?.some((like: { user_id: string }) => like.user_id === user?.id) || false,
-        is_bookmarked: false // TODO: Implement bookmarks
+        is_bookmarked: post.post_bookmarks?.some((bookmark: { user_id: string }) => bookmark.user_id === user?.id) || false
       })) || [];
 
       setPosts(postsData);

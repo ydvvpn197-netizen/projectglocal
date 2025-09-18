@@ -348,8 +348,14 @@ export class PrivacyService {
         case 'public':
           return true;
         case 'friends':
-          // TODO: Implement friend check
-          return false;
+          // Check if the viewer is following the user (friend relationship)
+          const { data: followData } = await supabase
+            .from('user_follows')
+            .select('id')
+            .eq('follower_id', viewerId)
+            .eq('following_id', userId)
+            .single();
+          return !!followData;
         case 'private':
           return false;
         default:
@@ -370,8 +376,14 @@ export class PrivacyService {
         case 'all':
           return true;
         case 'followers':
-          // TODO: Implement follower check
-          return false;
+          // Check if the viewer is following the user
+          const { data: followerData } = await supabase
+            .from('user_follows')
+            .select('id')
+            .eq('follower_id', viewerId)
+            .eq('following_id', userId)
+            .single();
+          return !!followerData;
         case 'none':
           return false;
         default:
@@ -396,8 +408,14 @@ export class PrivacyService {
         case 'public':
           return true;
         case 'friends':
-          // TODO: Implement friend check
-          return false;
+          // Check if the viewer is following the user (friend relationship)
+          const { data: activityFollowData } = await supabase
+            .from('user_follows')
+            .select('id')
+            .eq('follower_id', viewerId)
+            .eq('following_id', userId)
+            .single();
+          return !!activityFollowData;
         case 'private':
           return false;
         default:

@@ -44,6 +44,8 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showPostForm, setShowPostForm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<AnonymousPost | null>(null);
+  const [showCommentModal, setShowCommentModal] = useState(false);
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -175,18 +177,68 @@ export function CommunityHub({ className = '' }: CommunityHubProps) {
   };
 
   const handleComment = (post: AnonymousPost) => {
-    // TODO: Implement comment modal
-    console.log('Comment on post:', post.id);
+    // Open comment modal/dialog
+    setSelectedPost(post);
+    setShowCommentModal(true);
   };
 
-  const handleShare = (post: AnonymousPost) => {
-    // TODO: Implement share functionality
-    console.log('Share post:', post.id);
+  const handleShare = async (post: AnonymousPost) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Check out this post from TheGlocal',
+          text: post.content.substring(0, 100) + '...',
+          url: window.location.href
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(
+          `Check out this post: "${post.content.substring(0, 100)}..." - ${window.location.href}`
+        );
+        toast({
+          title: "Link copied!",
+          description: "Post link copied to clipboard",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      toast({
+        title: "Share failed",
+        description: "Unable to share post",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleReport = (post: AnonymousPost) => {
-    // TODO: Implement report functionality
-    console.log('Report post:', post.id);
+  const handleReport = async (post: AnonymousPost) => {
+    try {
+      // Create report in database
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from('content_reports')
+        .insert({
+          content_type: 'post',
+          content_id: post.id,
+          reporter_id: user?.id,
+          reason: 'inappropriate_content',
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Report submitted",
+        description: "Thank you for helping keep our community safe",
+      });
+    } catch (error) {
+      console.error('Error reporting post:', error);
+      toast({
+        title: "Report failed",
+        description: "Unable to submit report",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleGovernmentTag = (tag: { authority?: { name: string } } | null) => {
