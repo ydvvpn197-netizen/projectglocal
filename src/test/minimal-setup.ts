@@ -4,7 +4,8 @@
  */
 
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 // Basic window mocks
 Object.defineProperty(window, 'matchMedia', {
@@ -35,8 +36,43 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
-// Basic cleanup
+// Mock Worker to prevent memory leaks
+global.Worker = vi.fn().mockImplementation(() => ({
+  postMessage: vi.fn(),
+  terminate: vi.fn(),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+  onerror: null,
+  onmessage: null,
+  onmessageerror: null,
+}));
+
+// Suppress React Router future flag warnings in tests
+const originalConsoleWarn = console.warn;
+console.warn = (...args: any[]) => {
+  const message = args[0];
+  if (
+    typeof message === 'string' && 
+    (message.includes('React Router Future Flag Warning') ||
+     message.includes('v7_startTransition') ||
+     message.includes('v7_relativeSplatPath') ||
+     message.includes('ReactDOMTestUtils.act'))
+  ) {
+    return;
+  }
+  originalConsoleWarn.apply(console, args);
+};
+
+// Enhanced cleanup
 afterEach(() => {
+  cleanup();
   vi.clearAllMocks();
   document.body.innerHTML = '';
+  
+  // Clean up any lingering timers
+  vi.clearAllTimers();
+  
+  // Reset console.warn
+  console.warn = originalConsoleWarn;
 });

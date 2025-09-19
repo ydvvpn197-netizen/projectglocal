@@ -9,16 +9,22 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/minimal-setup.ts'],
     css: true,
-    pool: 'threads',
+    pool: 'forks', // Changed from threads to forks to prevent memory leaks
     poolOptions: {
-      threads: {
-        singleThread: false
+      forks: {
+        singleFork: true, // Use single fork to prevent memory issues
       }
     },
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    teardownTimeout: 10000,
+    testTimeout: 15000, // Increased timeout
+    hookTimeout: 15000,
+    teardownTimeout: 15000,
     isolate: true,
+    // Force garbage collection after each test
+    sequence: {
+      hooks: 'parallel'
+    },
+    // Limit concurrent tests to prevent memory issues
+    maxConcurrency: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

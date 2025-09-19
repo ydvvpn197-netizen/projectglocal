@@ -17,7 +17,11 @@ vi.mock('../../hooks/useAuth', () => ({
 
 vi.mock('../../hooks/useRBAC', () => ({
   useIsAdmin: vi.fn(),
-  useRole: vi.fn()
+  useRole: vi.fn(() => ({
+    role: 'user',
+    loading: false
+  })),
+  useHasRole: vi.fn(() => false)
 }));
 
 vi.mock('../../hooks/useSecurityAudit', () => ({
@@ -38,7 +42,12 @@ const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
 const mockUseIsAdmin = useIsAdmin as ReturnType<typeof vi.fn>;
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <BrowserRouter>
+  <BrowserRouter
+    future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }}
+  >
     {children}
   </BrowserRouter>
 );

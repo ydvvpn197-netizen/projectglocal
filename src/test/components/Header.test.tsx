@@ -67,7 +67,12 @@ describe('Header Component', () => {
   it('should render the header with logo', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <UniformHeader />
         </BrowserRouter>
       </QueryClientProvider>
@@ -79,7 +84,12 @@ describe('Header Component', () => {
   it('should render navigation links when user is authenticated', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <UniformHeader />
         </BrowserRouter>
       </QueryClientProvider>
@@ -95,7 +105,12 @@ describe('Header Component', () => {
   it('should render notification bell when user is authenticated', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <UniformHeader />
         </BrowserRouter>
       </QueryClientProvider>
@@ -107,7 +122,12 @@ describe('Header Component', () => {
   it('should render search input when user is authenticated', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <UniformHeader />
         </BrowserRouter>
       </QueryClientProvider>
@@ -119,7 +139,12 @@ describe('Header Component', () => {
   it('should render user menu button when user is authenticated', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <UniformHeader />
         </BrowserRouter>
       </QueryClientProvider>

@@ -4,8 +4,8 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Set base URL for production deployment - GitHub Pages requires repo name
-  base: process.env.NODE_ENV === 'production' ? '/projectglocal/' : '/',
+  // Set base URL for production deployment - Custom domain deployment
+  base: '/',
   
   server: {
     host: "::",
@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
         "font-src 'self' data:; " +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in https://ydvvpn197-netizen.github.io http://localhost:* http://127.0.0.1:*; " +
         "frame-ancestors 'none';"
     }
   },

@@ -114,16 +114,16 @@ jobs:
       - run: sleep 30
       - run: |
           if [ "${{ needs.build-and-deploy.result }}" = "success" ]; then
-            echo "✅ Deployment completed: https://ydvvpn197-netizen.github.io/projectglocal/"
+            echo "✅ Deployment completed: https://theglocal.in/"
           else
             echo "❌ Deployment failed"; exit 1;
           fi
       - run: |
-          SITE_URL="https://ydvvpn197-netizen.github.io/projectglocal/"
+          SITE_URL="https://theglocal.in/"
           if curl -s -o /dev/null -w "%{http_code}" "$SITE_URL" | grep -q "200"; then
             echo "✅ Site is accessible"
           else
-            echo "⚠️ Site may not be fully deployed yet"
+            echo "⚠️ Site may not be fully deployed yet (DNS propagation may take time)"
           fi
 
   notify:
