@@ -77,7 +77,7 @@ const LegalAssistant = React.lazy(() => import('@/pages/LegalAssistant'));
 const LifeWish = React.lazy(() => import('@/pages/LifeWish'));
 const VoiceControlDemo = React.lazy(() => import('@/pages/VoiceControlDemo'));
 const News = React.lazy(() => import('@/pages/News'));
-const Polls = React.lazy(() => import('@/pages/Polls'));
+const Polls = React.lazy(() => import('@/pages/Polls').then(module => ({ default: module.default })));
 const LocalCommunities = React.lazy(() => import('@/pages/LocalCommunities'));
 const LocalBusinesses = React.lazy(() => import('@/pages/LocalBusinesses'));
 const PublicSquare = React.lazy(() => import('@/pages/PublicSquare'));

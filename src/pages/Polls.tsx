@@ -11,7 +11,7 @@ import { CreatePollDialog } from '@/components/CreatePollDialog';
 import { GovernmentTaggingPoll } from '@/components/GovernmentTaggingPoll';
 import { usePolls } from '@/hooks/usePolls';
 import { useAuth } from '@/hooks/useAuth';
-import { useLocation } from '@/hooks/useLocation';
+import { useLocation as useLocationState } from '@/hooks/useLocation';
 import { CommunityPoll, PollOption } from '@/types/community';
 import { 
   Plus, 
@@ -36,7 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Polls = () => {
   const { user } = useAuth();
-  const locationState = useLocation();
+  const locationState = useLocationState();
   const { toast } = useToast();
   const { 
     polls, 
