@@ -211,7 +211,7 @@ export class PollService {
       return { authorities: data || [], error: null };
     } catch (error: unknown) {
       console.error('Error fetching government authorities:', error);
-      return { authorities: [], error: error.message };
+      return { authorities: [], error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -461,14 +461,14 @@ export class PollService {
       return { stats, error: null };
     } catch (error: unknown) {
       console.error('Error getting poll stats:', error);
-      return { stats: null, error: error.message };
+      return { stats: null, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
   /**
    * Get active polls
    */
-  static async getActivePolls(limit: number = 20): Promise<any[]> {
+  static async getActivePolls(limit: number = 20): Promise<Poll[]> {
     try {
       const { data, error } = await supabase
         .from('community_polls')
@@ -479,7 +479,7 @@ export class PollService {
 
       if (error) throw error;
       return data || [];
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching active polls:', error);
       return [];
     }
@@ -488,7 +488,7 @@ export class PollService {
   /**
    * Get expired polls
    */
-  static async getExpiredPolls(limit: number = 20): Promise<any[]> {
+  static async getExpiredPolls(limit: number = 20): Promise<Poll[]> {
     try {
       const { data, error } = await supabase
         .from('community_polls')
@@ -499,7 +499,7 @@ export class PollService {
 
       if (error) throw error;
       return data || [];
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching expired polls:', error);
       return [];
     }
@@ -508,7 +508,7 @@ export class PollService {
   /**
    * Get user poll votes
    */
-  static async getUserPollVotes(userId: string, limit: number = 50): Promise<any[]> {
+  static async getUserPollVotes(userId: string, limit: number = 50): Promise<Array<{ id: string; user_id: string; poll_id: string; option_index: number; created_at: string; community_polls: Poll | null }>> {
     try {
       const { data, error } = await supabase
         .from('community_poll_votes')
@@ -522,7 +522,7 @@ export class PollService {
 
       if (error) throw error;
       return data || [];
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching user poll votes:', error);
       return [];
     }
@@ -531,7 +531,7 @@ export class PollService {
   /**
    * Get poll by post ID
    */
-  static async getPollByPostId(postId: string): Promise<any | null> {
+  static async getPollByPostId(postId: string): Promise<Poll | null> {
     try {
       const { data, error } = await supabase
         .from('community_polls')
@@ -541,7 +541,7 @@ export class PollService {
 
       if (error) throw error;
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching poll by post ID:', error);
       return null;
     }
@@ -550,7 +550,7 @@ export class PollService {
   /**
    * Get poll by ID
    */
-  static async getPollById(pollId: string): Promise<any | null> {
+  static async getPollById(pollId: string): Promise<Poll | null> {
     try {
       const { data, error } = await supabase
         .from('community_polls')
@@ -560,7 +560,7 @@ export class PollService {
 
       if (error) throw error;
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching poll by ID:', error);
       return null;
     }
@@ -569,7 +569,7 @@ export class PollService {
   /**
    * Get poll results
    */
-  static async getPollResults(pollId: string): Promise<any | null> {
+  static async getPollResults(pollId: string): Promise<Array<{ id: string; user_id: string; poll_id: string; option_index: number; created_at: string }> | null> {
     try {
       const { data, error } = await supabase
         .from('community_poll_votes')
@@ -578,7 +578,7 @@ export class PollService {
 
       if (error) throw error;
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching poll results:', error);
       return null;
     }
@@ -587,7 +587,7 @@ export class PollService {
   /**
    * Update poll
    */
-  static async updatePoll(pollId: string, updates: any): Promise<boolean> {
+  static async updatePoll(pollId: string, updates: Partial<Poll>): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('community_polls')
@@ -596,7 +596,7 @@ export class PollService {
 
       if (error) throw error;
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating poll:', error);
       return false;
     }
@@ -605,7 +605,7 @@ export class PollService {
   /**
    * Search polls
    */
-  static async searchPolls(query: string, filters?: any): Promise<any[]> {
+  static async searchPolls(query: string, filters?: { is_active?: boolean; is_anonymous?: boolean }): Promise<Poll[]> {
     try {
       let dbQuery = supabase
         .from('community_polls')
@@ -624,7 +624,7 @@ export class PollService {
 
       if (error) throw error;
       return data || [];
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error searching polls:', error);
       return [];
     }
@@ -633,7 +633,7 @@ export class PollService {
   /**
    * Check if poll is expired
    */
-  static isPollExpired(poll: any): boolean {
+  static isPollExpired(poll: Poll): boolean {
     if (!poll.expires_at) return false;
     return new Date(poll.expires_at) < new Date();
   }
@@ -641,7 +641,7 @@ export class PollService {
   /**
    * Get time remaining until poll expires
    */
-  static getTimeRemaining(poll: any): string {
+  static getTimeRemaining(poll: Poll): string {
     if (!poll.expires_at) return 'No expiry';
     
     const now = new Date();

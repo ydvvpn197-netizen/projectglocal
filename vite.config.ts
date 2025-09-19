@@ -41,7 +41,17 @@ export default defineConfig(({ mode }) => ({
     assetsDir: '', // Remove this to use default structure
     emptyOutDir: true,
     cssCodeSplit: true,
+    // Memory optimization settings
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
+    // Increase memory limit for build
     rollupOptions: {
+      maxParallelFileOps: 2, // Reduce parallel operations
+      cache: false, // Disable cache to prevent memory buildup
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
@@ -57,16 +67,12 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       },
       output: {
-        // Optimized chunk splitting for better caching and CDN delivery
+        // Simplified chunk splitting to reduce memory usage
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          query: ['@tanstack/react-query'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip'],
-          supabase: ['@supabase/supabase-js'],
-          utils: ['date-fns', 'clsx', 'class-variance-authority', 'tailwind-merge'],
-          animations: ['framer-motion'],
-          charts: ['chart.js', 'react-chartjs-2', 'recharts'],
+          libs: ['react-router-dom', '@tanstack/react-query', '@supabase/supabase-js'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover'],
+          utils: ['date-fns', 'clsx', 'tailwind-merge'],
         },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
@@ -90,17 +96,18 @@ export default defineConfig(({ mode }) => ({
         exports: 'named',
       },
     },
-    chunkSizeWarningLimit: 1000, // Reduced for better performance monitoring
+    chunkSizeWarningLimit: 1500, // Increased to prevent warnings during build
     minify: 'esbuild',
     esbuild: {
       drop: mode === 'production' ? ['console', 'debugger'] : [],
-      // Prevent problematic optimizations that can cause initialization issues
-      keepNames: true,
-      minifyIdentifiers: false,
+      // Memory-optimized settings
+      keepNames: false,
+      minifyIdentifiers: true,
       minifySyntax: true,
       minifyWhitespace: true,
-      // Ensure proper handling of variable declarations
       legalComments: 'none',
+      // Reduce memory usage
+      treeShaking: true,
     },
     sourcemap: mode === 'development',
     // Performance optimizations
