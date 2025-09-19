@@ -51,7 +51,7 @@ npm run lint
 
 # Run tests
 Write-Host "🧪 Running tests..." -ForegroundColor Yellow
-npm run test:run
+npm run test:fast
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Tests failed" -ForegroundColor Red
     exit 1

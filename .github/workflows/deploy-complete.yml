@@ -63,12 +63,13 @@ jobs:
 
       - name: Run tests
         if: ${{ inputs.skip_tests != true }}
-        run: npm run test:run
+        run: npm run test:fast
         env:
           CI: true
+          NODE_OPTIONS: "--max-old-space-size=2048"
 
       - name: Test Supabase connection
-        timeout-minutes: 3
+        timeout-minutes: 1
         run: npm run test:supabase
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}

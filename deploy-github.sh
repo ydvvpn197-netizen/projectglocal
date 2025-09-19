@@ -36,7 +36,7 @@ npm run lint
 
 # Run tests
 echo "🧪 Running tests..."
-npm run test:run
+npm run test:fast
 
 # Build the project
 echo "🔨 Building project..."

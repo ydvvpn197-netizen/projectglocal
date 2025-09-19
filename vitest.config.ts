@@ -15,16 +15,16 @@ export default defineConfig({
         singleFork: true, // Use single fork to prevent memory issues
       }
     },
-    testTimeout: 15000, // Increased timeout
-    hookTimeout: 15000,
-    teardownTimeout: 15000,
-    isolate: true,
+    testTimeout: 10000, // Reduced timeout for faster tests
+    hookTimeout: 10000,
+    teardownTimeout: 5000,
+    isolate: false, // Disable isolation for faster tests
     // Force garbage collection after each test
     sequence: {
       hooks: 'parallel'
     },
     // Limit concurrent tests to prevent memory issues
-    maxConcurrency: 1,
+    maxConcurrency: 2, // Allow slightly more concurrency
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

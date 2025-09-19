@@ -117,10 +117,10 @@ const validateSupabaseKey = (key) => {
 };
 
 // Test Supabase connection with timeout
-const testSupabaseConnection = async (url, key, timeoutMs = 10000) => {
+const testSupabaseConnection = async (url, key, timeoutMs = 5000) => {
   // Create a timeout promise
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
+    setTimeout(() => reject(new Error('Connection timeout (5s)')), timeoutMs);
   });
   
   // Create the actual test promise
@@ -129,19 +129,24 @@ const testSupabaseConnection = async (url, key, timeoutMs = 10000) => {
       // Import Supabase client dynamically
       const { createClient } = await import('@supabase/supabase-js');
       
-      // Create client with shorter timeout
+      // Create client with aggressive timeout settings
       const supabase = createClient(url, key, {
         global: {
           fetch: (url, options = {}) => {
             // Create abort controller for timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
             
             return fetch(url, {
               ...options,
-              signal: controller.signal
+              signal: controller.signal,
+              timeout: 3000
             }).finally(() => clearTimeout(timeoutId));
           }
+        },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false
         }
       });
       
@@ -154,7 +159,8 @@ const testSupabaseConnection = async (url, key, timeoutMs = 10000) => {
         if (userError.message.includes('fetch') || 
             userError.message.includes('network') ||
             userError.message.includes('timeout') ||
-            userError.message.includes('Invalid API key')) {
+            userError.message.includes('Invalid API key') ||
+            userError.message.includes('AbortError')) {
           return { success: false, message: `Connection failed: ${userError.message}` };
         }
       }
@@ -162,6 +168,10 @@ const testSupabaseConnection = async (url, key, timeoutMs = 10000) => {
       // If we get here, the connection is working
       return { success: true, message: 'Connection successful' };
     } catch (error) {
+      // Handle specific error types
+      if (error.name === 'AbortError' || error.message.includes('aborted')) {
+        return { success: false, message: 'Connection timeout' };
+      }
       return { success: false, message: `Connection failed: ${error.message}` };
     }
   };
@@ -170,6 +180,9 @@ const testSupabaseConnection = async (url, key, timeoutMs = 10000) => {
     // Race between the test and timeout
     return await Promise.race([testPromise(), timeoutPromise]);
   } catch (error) {
+    if (error.message.includes('timeout')) {
+      return { success: false, message: 'Connection timeout' };
+    }
     return { success: false, message: `Connection test failed: ${error.message}` };
   }
 };
