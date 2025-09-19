@@ -21,7 +21,7 @@ import {
   Globe,
   Loader2
 } from 'lucide-react';
-import { useNewsData, useNewsInteractions, useLocation, useNewsRealtime } from '@/hooks/useNews.tsx';
+import { useNewsData, useNewsInteractions, useLocation, useNewsRealtime } from '@/hooks/useNews';
 import { NewsCard } from './NewsCard';
 import { NewsPoll } from './NewsPoll';
 import { NewsComments } from './NewsComments';

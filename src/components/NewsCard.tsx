@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { OptimizedImage } from './OptimizedImage';
-import { useNewsRealtime } from '@/hooks/useNews.tsx';
+import { useNewsRealtime } from '@/hooks/useNews';
 import type { NewsCardProps } from '@/types/news';
 
 export const NewsCard: React.FC<NewsCardProps> = ({

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNewsComments, useNewsRealtime } from '@/hooks/useNews.tsx';
+import { useNewsComments, useNewsRealtime } from '@/hooks/useNews';
 import type { NewsComment, CreateCommentRequest } from '@/types/news';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
