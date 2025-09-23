@@ -53,7 +53,7 @@ export const usePosts = () => {
         .from('social_posts')
         .select(`
           *,
-          profiles:user_id (
+          profiles!social_posts_user_id_fkey (
             display_name,
             username,
             avatar_url
