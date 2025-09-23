@@ -75,11 +75,24 @@ const CreatePost = () => {
           tags: tags.length > 0 ? sanitizeTags(tags) : undefined
         };
 
+        console.log('Form data extracted:', {
+          title: formData.get('title'),
+          content: formData.get('content'),
+          type,
+          tags
+        });
+        console.log('Post data to send:', postData);
+
         const { error } = await createPost(postData);
         if (!error) {
           navigate('/feed');
+        } else {
+          console.error('Failed to create post:', error);
         }
       }
+    } catch (error) {
+      console.error('Error creating post:', error);
+      // The error will be shown via toast from the usePosts hook
     } finally {
       setLoading(false);
     }

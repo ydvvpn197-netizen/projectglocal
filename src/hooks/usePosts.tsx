@@ -97,22 +97,34 @@ export const usePosts = () => {
     price_range?: string;
     tags?: string[];
   }) => {
-    if (!user) return { error: new Error('Not authenticated') };
+    if (!user) {
+      console.error('User not authenticated');
+      return { error: new Error('Not authenticated') };
+    }
+
+    console.log('Creating post with data:', postData);
 
     try {
+      const insertData = {
+        ...postData,
+        user_id: user.id,
+        post_type: postData.type // Cast to match database enum
+      };
+      
+      console.log('Insert data:', insertData);
+
       const { data, error } = await supabase
         .from('social_posts')
-        .insert({
-          ...postData,
-          user_id: user.id,
-          post_type: postData.type // Cast to match database enum
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
+
+      console.log('Post created successfully:', data);
 
       toast({
         title: "Post created",
@@ -124,6 +136,7 @@ export const usePosts = () => {
 
       return { data, error: null };
     } catch (error: unknown) {
+      console.error('Error in createPost:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create post';
       toast({
         title: "Error creating post",
