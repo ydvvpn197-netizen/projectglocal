@@ -51,14 +51,7 @@ export const usePosts = () => {
       console.log('Attempting direct query to posts table...');
       const { data: directData, error: directError } = await supabase
         .from('social_posts')
-        .select(`
-          *,
-          profiles!social_posts_user_id_fkey (
-            display_name,
-            username,
-            avatar_url
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (directError) {
@@ -105,10 +98,16 @@ export const usePosts = () => {
     console.log('Creating post with data:', postData);
 
     try {
+      // Clean up the insert data to only include valid fields
       const insertData = {
-        ...postData,
         user_id: user.id,
-        post_type: postData.type // Cast to match database enum
+        title: postData.title || null,
+        content: postData.content,
+        post_type: postData.type,
+        event_date: postData.event_date || null,
+        event_location: postData.event_location || null,
+        price_range: postData.price_range || null,
+        tags: postData.tags || null
       };
       
       console.log('Insert data:', insertData);

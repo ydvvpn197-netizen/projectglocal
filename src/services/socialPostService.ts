@@ -188,20 +188,20 @@ export class SocialPostService {
         .from('social_posts')
         .insert({
           user_id: user.id,
-          title: postData.title,
+          title: postData.title || null,
           content: postData.content,
           post_type: postData.post_type || 'post',
-          location_city: postData.location_city,
-          location_state: postData.location_state,
-          location_country: postData.location_country,
-          latitude: postData.latitude,
-          longitude: postData.longitude,
-          event_date: postData.event_date,
-          event_location: postData.event_location,
-          price_range: postData.price_range,
-          contact_info: postData.contact_info,
-          tags: postData.tags,
-          image_urls: postData.image_urls,
+          location_city: postData.location_city || null,
+          location_state: postData.location_state || null,
+          location_country: postData.location_country || null,
+          latitude: postData.latitude || null,
+          longitude: postData.longitude || null,
+          event_date: postData.event_date || null,
+          event_location: postData.event_location || null,
+          price_range: postData.price_range || null,
+          contact_info: postData.contact_info || null,
+          tags: postData.tags || null,
+          image_urls: postData.image_urls || null,
           is_anonymous: postData.is_anonymous || false
         })
         .select()
