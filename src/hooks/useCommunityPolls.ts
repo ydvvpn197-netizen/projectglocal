@@ -280,14 +280,38 @@ export const useCommunityPolls = () => {
 
   // Initialize data
   useEffect(() => {
-    fetchPolls();
-    fetchActivePolls();
-    fetchExpiredPolls();
-  }, [fetchPolls, fetchActivePolls, fetchExpiredPolls]);
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+        const [pollsData, activeData, expiredData] = await Promise.all([
+          PollService.getActivePolls(),
+          PollService.getActivePolls(20),
+          PollService.getExpiredPolls(20)
+        ]);
+        
+        setPolls(pollsData);
+        setActivePolls(activeData);
+        setExpiredPolls(expiredData);
+      } catch (error) {
+        console.error('Error initializing polls data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load polls data",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeData();
+  }, [toast]);
 
   useEffect(() => {
-    fetchUserPollVotes();
-  }, [fetchUserPollVotes]);
+    if (user) {
+      fetchUserPollVotes();
+    }
+  }, [user, fetchUserPollVotes]);
 
   return {
     // State

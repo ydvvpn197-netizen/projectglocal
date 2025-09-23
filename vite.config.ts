@@ -74,7 +74,10 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover'],
           utils: ['date-fns', 'clsx', 'tailwind-merge'],
         },
-        chunkFileNames: 'js/[name]-[hash].js',
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `js/${facadeModuleId}-[hash].js`;
+        },
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (!assetInfo.name) return 'assets/[name]-[hash].[ext]';
