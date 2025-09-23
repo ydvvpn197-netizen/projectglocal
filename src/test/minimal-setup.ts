@@ -50,7 +50,7 @@ global.Worker = vi.fn().mockImplementation(() => ({
 
 // Suppress React Router future flag warnings in tests
 const originalConsoleWarn = console.warn;
-console.warn = (...args: any[]) => {
+console.warn = (...args: unknown[]) => {
   const message = args[0];
   if (
     typeof message === 'string' && 

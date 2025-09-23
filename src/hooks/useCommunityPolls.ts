@@ -309,9 +309,17 @@ export const useCommunityPolls = () => {
 
   useEffect(() => {
     if (user) {
-      fetchUserPollVotes();
+      const loadUserVotes = async () => {
+        try {
+          const data = await PollService.getUserPollVotes(user.id, 50);
+          setUserPollVotes(data);
+        } catch (error) {
+          console.error('Error fetching user poll votes:', error);
+        }
+      };
+      loadUserVotes();
     }
-  }, [user, fetchUserPollVotes]);
+  }, [user]);
 
   return {
     // State

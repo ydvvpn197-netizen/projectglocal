@@ -347,15 +347,16 @@ export class PrivacyService {
       switch (privacySettings.profile_visibility) {
         case 'public':
           return true;
-        case 'friends':
+        case 'friends': {
           // Check if the viewer is following the user (friend relationship)
           const { data: followData } = await supabase
             .from('user_follows')
             .select('id')
             .eq('follower_id', viewerId)
-            .eq('following_id', userId)
+            .eq('following_id', profileOwnerId)
             .single();
           return !!followData;
+        }
         case 'private':
           return false;
         default:
@@ -375,15 +376,16 @@ export class PrivacyService {
       switch (privacySettings.allow_messages_from) {
         case 'all':
           return true;
-        case 'followers':
+        case 'followers': {
           // Check if the viewer is following the user
           const { data: followerData } = await supabase
             .from('user_follows')
             .select('id')
-            .eq('follower_id', viewerId)
-            .eq('following_id', userId)
+            .eq('follower_id', senderId)
+            .eq('following_id', recipientId)
             .single();
           return !!followerData;
+        }
         case 'none':
           return false;
         default:
@@ -407,15 +409,16 @@ export class PrivacyService {
       switch (privacySettings.activity_visibility) {
         case 'public':
           return true;
-        case 'friends':
+        case 'friends': {
           // Check if the viewer is following the user (friend relationship)
           const { data: activityFollowData } = await supabase
             .from('user_follows')
             .select('id')
             .eq('follower_id', viewerId)
-            .eq('following_id', userId)
+            .eq('following_id', activityOwnerId)
             .single();
           return !!activityFollowData;
+        }
         case 'private':
           return false;
         default:

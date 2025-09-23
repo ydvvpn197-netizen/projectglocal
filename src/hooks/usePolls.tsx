@@ -336,10 +336,49 @@ export const usePolls = () => {
 
   // Load initial data
   useEffect(() => {
-    fetchPolls();
-    fetchGovernmentPolls();
-    fetchAuthorities();
-  }, [fetchPolls, fetchGovernmentPolls, fetchAuthorities]);
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+        const [pollsResult, governmentPollsResult, authoritiesResult] = await Promise.allSettled([
+          PollService.fetchPolls(),
+          PollService.fetchGovernmentPolls(),
+          PollService.fetchGovernmentAuthorities()
+        ]);
+
+        // Handle polls result
+        if (pollsResult.status === 'fulfilled' && !pollsResult.value.error) {
+          setPolls(pollsResult.value.polls);
+        } else if (pollsResult.status === 'rejected') {
+          console.error('Error fetching polls:', pollsResult.reason);
+          toast({
+            title: "Error",
+            description: "Failed to load polls.",
+            variant: "destructive",
+          });
+        }
+
+        // Handle government polls result
+        if (governmentPollsResult.status === 'fulfilled' && !governmentPollsResult.value.error) {
+          setGovernmentPolls(governmentPollsResult.value.polls);
+        } else if (governmentPollsResult.status === 'rejected') {
+          console.error('Error fetching government polls:', governmentPollsResult.reason);
+        }
+
+        // Handle authorities result
+        if (authoritiesResult.status === 'fulfilled' && !authoritiesResult.value.error) {
+          setAuthorities(authoritiesResult.value.authorities);
+        } else if (authoritiesResult.status === 'rejected') {
+          console.error('Error fetching authorities:', authoritiesResult.reason);
+        }
+      } catch (error) {
+        console.error('Error initializing polls data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeData();
+  }, [toast]);
 
   return {
     polls,
