@@ -42,7 +42,7 @@ vi.mock('../../components/CommunityInsightsDashboard', () => ({
 }));
 
 import { useAuth } from '../../hooks/useAuth';
-import { useIsAdmin, useIsSuperAdmin } from '../../hooks/useRBAC';
+import { useIsAdmin, useIsSuperAdmin } from '../../hooks/useRBACConsolidated';
 
 const mockUseAuth = useAuth as ReturnType<typeof vi.fn>;
 const mockUseIsAdmin = useIsAdmin as ReturnType<typeof vi.fn>;

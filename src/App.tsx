@@ -1,22 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { registerServiceWorker } from '@/utils/serviceWorker';
 import { ComprehensiveErrorBoundary } from '@/components/error/ComprehensiveErrorBoundary';
-import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
-import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
-import { VoiceControlPanel } from '@/components/voice/VoiceControlPanel';
-import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
-import { initializePerformanceMonitoring } from '@/utils/performanceMonitor';
+import { initializePerformanceMonitoring } from '@/utils/performanceOptimizer';
 import { initializeSecurityAudit } from '@/utils/securityAudit';
 
-// Import your existing components
-import { AuthProvider } from '@/components/auth/AuthProvider';
-import { AppRoutes } from '@/routes/AppRoutes';
-import { ResponsiveLayout } from '@/components/ResponsiveLayout';
-import { LazyLoader } from '@/components/LazyLoader';
+// Lazy load components for better performance
+const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
+const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation'));
+const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel'));
+const AuthProvider = lazy(() => import('@/components/auth/AuthProvider'));
+const AppRoutes = lazy(() => import('@/routes/AppRoutes'));
+const ResponsiveLayout = lazy(() => import('@/components/ResponsiveLayout'));
+const LazyLoader = lazy(() => import('@/components/LazyLoader'));
+
+// Import hooks normally (hooks can't be lazy loaded)
+import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -98,10 +100,12 @@ function App() {
   if (showOnboarding) {
     return (
       <ComprehensiveErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
-        <OnboardingFlow 
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading onboarding...</div>}>
+          <OnboardingFlow 
+            onComplete={handleOnboardingComplete}
+            onSkip={handleOnboardingSkip}
+          />
+        </Suspense>
       </ComprehensiveErrorBoundary>
     );
   }
@@ -123,35 +127,45 @@ function App() {
 
   return (
     <ComprehensiveErrorBoundary level="critical" showDetails={process.env.NODE_ENV === 'development'}>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-            {/* Main App Layout */}
-            <ResponsiveLayout>
-              <Routes>
-                <Route path="/*" element={<AppRoutes />} />
-              </Routes>
-            </ResponsiveLayout>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading app...</div>}>
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen bg-gray-50">
+              {/* Main App Layout */}
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
+                <ResponsiveLayout>
+                  <Routes>
+                    <Route path="/*" element={
+                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
+                        <AppRoutes />
+                      </Suspense>
+                    } />
+                  </Routes>
+                </ResponsiveLayout>
+              </Suspense>
 
-            {/* Voice Control Panel - Desktop only */}
-            <div className="hidden md:block fixed bottom-4 right-4 z-40">
-              <VoiceControlPanel compact />
-            </div>
-
-            {/* Service Worker Status Indicator */}
-            {isServiceWorkerRegistered && (
-              <div className="fixed top-4 right-4 z-50">
-                <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
-                  Offline Ready
-                </div>
+              {/* Voice Control Panel - Desktop only */}
+              <div className="hidden md:block fixed bottom-4 right-4 z-40">
+                <Suspense fallback={<div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>}>
+                  <VoiceControlPanel compact />
+                </Suspense>
               </div>
-            )}
 
-            {/* Toast Notifications */}
-            <Toaster />
-          </div>
-        </Router>
-      </AuthProvider>
+              {/* Service Worker Status Indicator */}
+              {isServiceWorkerRegistered && (
+                <div className="fixed top-4 right-4 z-50">
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                    Offline Ready
+                  </div>
+                </div>
+              )}
+
+              {/* Toast Notifications */}
+              <Toaster />
+            </div>
+          </Router>
+        </AuthProvider>
+      </Suspense>
     </ComprehensiveErrorBoundary>
   );
 }

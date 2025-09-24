@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, memo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { resilientSupabase, withErrorHandling, getConnectionStatus, forceReconnection } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +6,7 @@ import { clearAuthData, checkForStaleAuthData } from '@/utils/clearAuthData';
 import { AuthContext } from './AuthContext';
 import { UserService } from '@/services/userService';
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -542,28 +542,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: new Error('Network offline') };
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/password-reset`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          action: 'reset',
-          token: token,
-          newPassword: newPassword
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
+      // Validate password strength
+      if (newPassword.length < 12) {
         toast({
-          title: "Password Reset Failed",
-          description: data.error || "Failed to reset password",
+          title: "Password Too Weak",
+          description: "Password must be at least 12 characters long.",
           variant: "destructive",
         });
-        return { error: new Error(data.error) };
+        return { error: new Error('Password too weak') };
+      }
+
+      // Use Supabase's built-in password reset instead of custom endpoint
+      const { error } = await resilientSupabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Password Reset Failed",
+          description: error.message || "Failed to reset password",
+          variant: "destructive",
+        });
+        return { error: new Error(error.message) };
       }
 
       toast({
@@ -615,4 +615,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
+});

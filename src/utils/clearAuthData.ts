@@ -1,56 +1,42 @@
 /**
- * Utility function to clear all authentication-related data from localStorage
- * This can help resolve authentication state inconsistencies
+ * Clear Auth Data Utilities
+ * Utilities for clearing authentication data
  */
+
 export const clearAuthData = (): void => {
   try {
-    // Clear all Supabase auth-related keys
-    const keysToRemove = [
-      'supabase.auth.token',
-      'supabase.auth.expires_at',
-      'supabase.auth.refresh_token',
-      'supabase.auth.expires_in',
-      'supabase.auth.access_token',
-      'supabase.auth.provider_token',
-      'supabase.auth.provider_refresh_token'
-    ];
-
-    keysToRemove.forEach(key => {
-      localStorage.removeItem(key);
-    });
-
-    // Also clear any other auth-related data
-    const allKeys = Object.keys(localStorage);
-    allKeys.forEach(key => {
-      if (key.includes('supabase') || key.includes('auth')) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    console.log('Authentication data cleared successfully');
+    // Clear localStorage
+    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('supabase.auth.session');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_session');
+    
+    // Clear sessionStorage
+    sessionStorage.removeItem('supabase.auth.token');
+    sessionStorage.removeItem('supabase.auth.session');
+    sessionStorage.removeItem('auth_user');
+    sessionStorage.removeItem('auth_session');
+    
+    console.log('Auth data cleared successfully');
   } catch (error) {
-    console.error('Error clearing authentication data:', error);
+    console.error('Error clearing auth data:', error);
   }
 };
 
-/**
- * Check if there's stale authentication data that should be cleared
- */
 export const checkForStaleAuthData = (): boolean => {
   try {
     const authToken = localStorage.getItem('supabase.auth.token');
     if (!authToken) return false;
-
+    
     const tokenData = JSON.parse(authToken);
-    if (!tokenData || !tokenData.expires_at) return true;
-
-    const expiresAt = new Date(tokenData.expires_at * 1000);
-    const now = new Date();
-
-    // If token is expired or will expire in the next 5 minutes, consider it stale
-    return expiresAt <= new Date(now.getTime() + 5 * 60 * 1000);
+    const expiresAt = tokenData.expires_at;
+    
+    if (!expiresAt) return true;
+    
+    const now = Date.now() / 1000;
+    return now > expiresAt;
   } catch (error) {
-    console.error('Error checking for stale auth data:', error);
-    return true; // If we can't parse the data, consider it stale
+    console.error('Error checking stale auth data:', error);
+    return true;
   }
 };
