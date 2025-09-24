@@ -3,7 +3,7 @@
  * Provides comprehensive role-based access control functionality
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './useAuth';
 import { RBACService } from '@/services/rbacService';
 import { stripeService } from '@/services/stripeService';
@@ -149,7 +149,7 @@ export function useRBACConsolidated(): UseRBACConsolidatedReturn {
   const isPro = planInfo?.is_premium || false;
 
   // Pro permissions based on plan
-  const proPermissions: ProPermission = {
+  const proPermissions: ProPermission = useMemo(() => ({
     canCreateServices: planInfo?.can_create_services || false,
     canFeatureEvents: planInfo?.can_feature_events || false,
     canAccessAnalytics: planInfo?.is_premium || false,
@@ -158,7 +158,7 @@ export function useRBACConsolidated(): UseRBACConsolidatedReturn {
     canAccessAPI: planInfo?.is_premium || false,
     canCreatePolls: planInfo?.is_premium || false,
     canAccessVoiceControl: planInfo?.is_premium || false,
-  };
+  }), [planInfo, isModerator, isAdmin]);
 
   // Role checking functions
   const hasRequiredRole = useCallback((role: UserRole): boolean => {

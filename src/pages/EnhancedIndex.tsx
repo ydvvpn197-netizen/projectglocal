@@ -282,7 +282,7 @@ export const EnhancedIndex: React.FC = () => {
     } catch (error) {
       console.error('Error navigating to next event:', error);
     }
-  }, [trendingEvents.length]);
+  }, [trendingEvents]);
 
   const prevEvent = useCallback(() => {
     try {
@@ -290,7 +290,7 @@ export const EnhancedIndex: React.FC = () => {
     } catch (error) {
       console.error('Error navigating to previous event:', error);
     }
-  }, [trendingEvents.length]);
+  }, [trendingEvents]);
 
   const handleEventNavigation = (eventId: number) => {
     try {

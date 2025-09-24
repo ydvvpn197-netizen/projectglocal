@@ -263,7 +263,7 @@ export function useNewsRealtime({
         }
       });
     };
-  }, []); // Empty dependency array - only run on unmount
+  }, [subscriptions]); // Include subscriptions dependency
 
   return {
     data,

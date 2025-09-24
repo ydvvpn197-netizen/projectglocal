@@ -68,7 +68,7 @@ export class InputSanitizer {
     }
     
     // Remove HTML tags and dangerous characters
-    let sanitized = content
+    const sanitized = content
       .replace(/<[^>]*>/g, '') // Remove HTML tags
       .replace(/[<>]/g, '') // Remove remaining angle brackets
       .replace(/javascript:/gi, '') // Remove javascript: protocols
@@ -129,7 +129,7 @@ export class InputSanitizer {
     });
     
     // Remove or escape dangerous characters for SQL
-    let sanitized = content
+    const sanitized = content
       .replace(/['"]/g, '') // Remove quotes
       .replace(/[;]/g, '') // Remove semicolons
       .replace(/--/g, '') // Remove SQL comments
@@ -357,7 +357,7 @@ export class InputSanitizer {
         case 'url':
           results[key] = this.sanitizeUrl(input.value);
           break;
-        case 'html':
+        case 'html': {
           const htmlResult = this.sanitizeHtml(input.value);
           results[key] = {
             isValid: htmlResult.isValid,
@@ -365,13 +365,16 @@ export class InputSanitizer {
             warnings: []
           };
           break;
-        default:
+        }
+        default: {
           const textResult = this.sanitizeText(input.value);
           results[key] = {
             isValid: textResult.isValid,
             errors: textResult.warnings,
             warnings: []
           };
+          break;
+        }
       }
     }
     

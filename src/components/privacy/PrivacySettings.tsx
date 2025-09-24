@@ -94,7 +94,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
     }
   }, [user, loadPrivacySettings]);
 
-  const loadPrivacySettings = async () => {
+  const loadPrivacySettings = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('user_privacy_settings')
@@ -108,7 +108,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
     } catch (error) {
       console.error('Error loading privacy settings:', error);
     }
-  };
+  }, [user]);
 
   const savePrivacySettings = async () => {
     if (!user) return;
