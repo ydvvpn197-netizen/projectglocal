@@ -45,7 +45,7 @@ export class SocialPostService {
         .from('community_posts')
         .select(`
           *,
-          profiles:user_id(
+          profiles!community_posts_user_id_fkey(
             display_name,
             avatar_url,
             username
@@ -133,7 +133,7 @@ export class SocialPostService {
         .from('community_posts')
         .select(`
           *,
-          profiles:user_id(
+          profiles!community_posts_user_id_fkey(
             display_name,
             avatar_url,
             username
@@ -349,7 +349,7 @@ export class SocialPostService {
         .select(`
           community_posts!post_saves_post_id_fkey(
             *,
-            profiles:user_id(
+            profiles!community_posts_user_id_fkey(
               display_name,
               avatar_url,
               username
@@ -394,7 +394,7 @@ export class SocialPostService {
         .from('community_posts')
         .select(`
           *,
-          profiles:user_id(
+          profiles!community_posts_user_id_fkey(
             display_name,
             avatar_url,
             username
