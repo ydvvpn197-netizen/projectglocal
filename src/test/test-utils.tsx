@@ -1,10 +1,9 @@
 /**
- * Test Utilities
- * Reusable test components and utilities
+ * Test Components
+ * React components for testing
  */
 
-import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -49,31 +48,3 @@ export const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children
     </RouterWrapper>
   </QueryWrapper>
 );
-
-// Custom render function
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllProviders, ...options });
-
-// Re-export specific testing utilities
-export {
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-  within,
-  getByText,
-  getByRole,
-  getByTestId,
-  queryByText,
-  queryByRole,
-  queryByTestId,
-  findByText,
-  findByRole,
-  findByTestId,
-  fireEvent,
-  act
-} from '@testing-library/react';
-
-// Export custom render function
-export { customRender as render };

@@ -42,10 +42,10 @@ export class SocialPostService {
   static async getPosts(filters: PostFilters = {}): Promise<SocialPost[]> {
     try {
       let query = supabase
-        .from('social_posts')
+        .from('community_posts')
         .select(`
           *,
-          profiles!social_posts_user_id_fkey(
+          profiles:user_id(
             display_name,
             avatar_url,
             username
@@ -59,8 +59,7 @@ export class SocialPostService {
           post_views!post_views_post_id_fkey(
             user_id
           )
-        `)
-        .eq('status', 'active');
+        `);
 
       // Apply filters
       if (filters.post_type) {
@@ -131,10 +130,10 @@ export class SocialPostService {
   static async getPost(postId: string): Promise<SocialPost | null> {
     try {
       const { data, error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .select(`
           *,
-          profiles!social_posts_user_id_fkey(
+          profiles:user_id(
             display_name,
             avatar_url,
             username
@@ -150,7 +149,6 @@ export class SocialPostService {
           )
         `)
         .eq('id', postId)
-        .eq('status', 'active')
         .single();
 
       if (error) {
@@ -185,7 +183,7 @@ export class SocialPostService {
       }
 
       const { data, error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .insert({
           user_id: user.id,
           title: postData.title || null,
@@ -349,9 +347,9 @@ export class SocialPostService {
       const { data, error } = await supabase
         .from('post_saves')
         .select(`
-          social_posts!post_saves_post_id_fkey(
+          community_posts!post_saves_post_id_fkey(
             *,
-            profiles!social_posts_user_id_fkey(
+            profiles:user_id(
               display_name,
               avatar_url,
               username
@@ -368,21 +366,20 @@ export class SocialPostService {
           )
         `)
         .eq('user_id', targetUserId)
-        .eq('social_posts.status', 'active')
-        .order('saved_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) {
         throw error;
       }
 
       return data.map(item => ({
-        ...item.social_posts,
-        author_name: item.social_posts.profiles?.display_name,
-        author_avatar: item.social_posts.profiles?.avatar_url,
-        author_username: item.social_posts.profiles?.username,
-        user_vote: item.social_posts.post_votes?.[0]?.vote_type || 0,
+        ...item.community_posts,
+        author_name: item.community_posts.profiles?.display_name,
+        author_avatar: item.community_posts.profiles?.avatar_url,
+        author_username: item.community_posts.profiles?.username,
+        user_vote: item.community_posts.post_votes?.[0]?.vote_type || 0,
         is_saved: true,
-        has_viewed: item.social_posts.post_views?.length > 0
+        has_viewed: item.community_posts.post_views?.length > 0
       }));
     } catch (error) {
       console.error('Error fetching saved posts:', error);
@@ -394,10 +391,10 @@ export class SocialPostService {
   static async getTrendingPosts(limit: number = 10): Promise<SocialPost[]> {
     try {
       const { data, error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .select(`
           *,
-          profiles!social_posts_user_id_fkey(
+          profiles:user_id(
             display_name,
             avatar_url,
             username
@@ -412,8 +409,6 @@ export class SocialPostService {
             user_id
           )
         `)
-        .eq('status', 'active')
-        .eq('is_trending', true)
         .order('view_count', { ascending: false })
         .limit(limit);
 
@@ -445,7 +440,7 @@ export class SocialPostService {
       }
 
       const { data, error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .update({
           ...updates,
           updated_at: new Date().toISOString()
@@ -475,8 +470,8 @@ export class SocialPostService {
       }
 
       const { error } = await supabase
-        .from('social_posts')
-        .update({ status: 'deleted' })
+        .from('community_posts')
+        .delete()
         .eq('id', postId)
         .eq('user_id', user.id);
 
@@ -500,7 +495,7 @@ export class SocialPostService {
       }
 
       const { error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .update({ is_pinned: isPinned })
         .eq('id', postId)
         .eq('user_id', user.id);
@@ -525,7 +520,7 @@ export class SocialPostService {
       }
 
       const { error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .update({ is_locked: isLocked })
         .eq('id', postId)
         .eq('user_id', user.id);

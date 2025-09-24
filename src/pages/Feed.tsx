@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { UnifiedButton } from "@/components/ui/UnifiedButton";
 import { Button } from "@/components/ui/button";
@@ -88,10 +88,21 @@ const Feed = () => {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [trendingTopics, setTrendingTopics] = useState<Array<{name: string, count: number, trending: boolean}>>([]);
-  const [sidebarHighlights, setSidebarHighlights] = useState<Array<any>>([]);
+  const [sidebarHighlights, setSidebarHighlights] = useState<Array<{
+    id: string;
+    type: 'event' | 'community' | 'discussion';
+    title: string;
+    image: string;
+    date?: string;
+    attendees?: number;
+    members?: number;
+    description?: string;
+    author?: string;
+    replies?: number;
+  }>>([]);
 
   // Fetch posts from database
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -99,23 +110,28 @@ const Feed = () => {
 
     try {
       setLoading(true);
-      const postsData = await SocialPostService.getPosts({});
-      
-      // Fetch author profiles for each post
-      const postsWithAuthors = await Promise.all(
-        postsData.map(async (post) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url, username')
-            .eq('user_id', post.user_id)
-            .single();
-          
-          return {
-            ...post,
-            author: profile || { display_name: 'Anonymous', avatar_url: null }
-          };
-        })
-      );
+      // Use community_posts table instead of social_posts
+      const { data: postsData, error: postsError } = await supabase
+        .from('community_posts')
+        .select(`
+          *,
+          profiles:user_id (
+            display_name,
+            avatar_url,
+            username
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (postsError) {
+        console.error('Error fetching posts:', postsError);
+        throw postsError;
+      }
+
+      const postsWithAuthors = (postsData || []).map((post) => ({
+        ...post,
+        author: post.profiles || { display_name: 'Anonymous', avatar_url: null }
+      }));
 
       setPosts(postsWithAuthors);
     } catch (error) {
@@ -128,13 +144,13 @@ const Feed = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   // Fetch trending topics
   const fetchTrendingTopics = async () => {
     try {
       const { data } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .select('tags')
         .not('tags', 'is', null);
       
@@ -206,7 +222,7 @@ const Feed = () => {
     fetchPosts();
     fetchTrendingTopics();
     fetchSidebarHighlights();
-  }, [user]);
+  }, [fetchPosts]);
 
   // Update active tab when URL parameter changes
   useEffect(() => {
