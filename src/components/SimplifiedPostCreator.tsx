@@ -318,28 +318,51 @@ export const SimplifiedPostCreator: React.FC<SimplifiedPostCreatorProps> = ({
             </div>
           )}
 
-          {/* Post Type Selection */}
-          <div className="space-y-2">
-            <Label>Post Type</Label>
-            <div className="grid grid-cols-3 gap-2">
+          {/* Post Type Selection - Improved based on audit */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">What would you like to share?</Label>
+            <div className="grid grid-cols-1 gap-3">
               {[
-                { id: 'post', label: 'Post', icon: '📝' },
-                { id: 'event', label: 'Event', icon: '📅' },
-                { id: 'discussion', label: 'Discussion', icon: '💬' },
+                { 
+                  id: 'post', 
+                  label: 'General Post', 
+                  icon: '📝',
+                  description: 'Share thoughts, updates, or stories with the community'
+                },
+                { 
+                  id: 'event', 
+                  label: 'Event', 
+                  icon: '📅',
+                  description: 'Create or promote an event for others to join'
+                },
+                { 
+                  id: 'discussion', 
+                  label: 'Discussion Topic', 
+                  icon: '💬',
+                  description: 'Start a conversation or ask questions'
+                },
               ].map((type) => (
                 <button
                   key={type.id}
                   type="button"
                   onClick={() => setPostType(type.id as 'post' | 'event' | 'discussion')}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
+                  className={`p-4 rounded-lg border text-left transition-all duration-200 ${
                     postType === type.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:bg-muted/50'
+                      ? 'border-primary bg-primary/10 shadow-sm'
+                      : 'border-border hover:bg-muted/50 hover:border-primary/50'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{type.icon}</span>
-                    <span className="font-medium text-sm">{type.label}</span>
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">{type.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-base mb-1">{type.label}</div>
+                      <div className="text-sm text-muted-foreground">{type.description}</div>
+                    </div>
+                    {postType === type.id && (
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                      </div>
+                    )}
                   </div>
                 </button>
               ))}

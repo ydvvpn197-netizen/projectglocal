@@ -211,6 +211,27 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
           </div>
         )}
 
+        {/* Profile Completion Progress */}
+        {localProfile && (
+          <div className="bg-muted/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Profile Completion</span>
+              <span className="text-sm text-muted-foreground">
+                {Math.round((Object.values(localProfile).filter(v => v && v.toString().trim()).length / 5) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(Object.values(localProfile).filter(v => v && v.toString().trim()).length / 5) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Complete your profile to help others connect with you
+            </p>
+          </div>
+        )}
+
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Basic Information</h3>
@@ -223,6 +244,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                 value={localProfile?.first_name || ""}
                 onChange={(e) => handleProfileChange('first_name', e.target.value)}
                 placeholder="Enter your first name"
+                className={!localProfile?.first_name ? 'border-orange-200' : ''}
               />
             </div>
             
@@ -233,6 +255,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
                 value={localProfile?.last_name || ""}
                 onChange={(e) => handleProfileChange('last_name', e.target.value)}
                 placeholder="Enter your last name"
+                className={!localProfile?.last_name ? 'border-orange-200' : ''}
               />
             </div>
           </div>
@@ -246,7 +269,7 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               placeholder="Enter your display name"
             />
             <p className="text-sm text-muted-foreground">
-              This is the name that will be shown to other users.
+              This is the name that will be shown to other users. Leave empty to use your first and last name.
             </p>
           </div>
 
@@ -259,9 +282,14 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               placeholder="Tell us about yourself, your interests, and what you do..."
               rows={4}
             />
-            <p className="text-sm text-muted-foreground">
-              Share a bit about yourself with the community.
-            </p>
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                Share a bit about yourself with the community.
+              </p>
+              <span className="text-xs text-muted-foreground">
+                {localProfile?.bio?.length || 0}/500
+              </span>
+            </div>
           </div>
         </div>
 

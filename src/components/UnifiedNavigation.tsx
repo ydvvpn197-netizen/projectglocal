@@ -70,7 +70,8 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
   const { currentUser } = useAnonymousUsername();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navigationItems: NavigationItem[] = [
+  // Consolidated navigation structure based on audit findings
+  const primaryNavigation: NavigationItem[] = [
     {
       label: 'Home',
       href: '/',
@@ -85,18 +86,10 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
       isActive: location.pathname === '/feed'
     },
     {
-      label: 'News',
-      href: '/news',
-      icon: Newspaper,
-      requiresAuth: true,
-      isActive: location.pathname.startsWith('/news')
-    },
-    {
-      label: 'Messages',
-      href: '/messages',
-      icon: MessageCircle,
-      requiresAuth: true,
-      isActive: location.pathname.startsWith('/messages')
+      label: 'Discover',
+      href: '/discover',
+      icon: Search,
+      isActive: location.pathname.startsWith('/discover')
     },
     {
       label: 'Events',
@@ -109,6 +102,16 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
       href: '/community',
       icon: Users,
       isActive: location.pathname.startsWith('/community')
+    }
+  ];
+
+  const secondaryNavigation: NavigationItem[] = [
+    {
+      label: 'News',
+      href: '/news',
+      icon: Newspaper,
+      requiresAuth: true,
+      isActive: location.pathname.startsWith('/news')
     },
     {
       label: 'Artists',
@@ -125,6 +128,19 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
       isActive: location.pathname.startsWith('/civic-engagement')
     }
   ];
+
+  // Get navigation items based on variant
+  const getNavigationItems = () => {
+    if (variant === 'header') {
+      // Header shows primary navigation only
+      return primaryNavigation;
+    } else {
+      // Sidebar and mobile show all navigation
+      return [...primaryNavigation, ...secondaryNavigation];
+    }
+  };
+
+  const navigationItems = getNavigationItems();
 
   const userMenuItems = [
     {
@@ -212,56 +228,94 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
               exit={{ opacity: 0, height: 0 }}
               className="border-b bg-background"
             >
-              <div className="p-4 space-y-2">
-                {navigationItems
-                  .filter(item => !item.requiresAuth || user)
-                  .map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Button
-                        key={item.href}
-                        variant={item.isActive ? "default" : "ghost"}
-                        className="w-full justify-start"
-                        onClick={() => handleNavigation(item.href)}
-                      >
-                        <Icon className="w-4 h-4 mr-2" />
-                        {item.label}
-                        {item.badge && (
-                          <Badge variant="secondary" className="ml-auto">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </Button>
-                    );
-                  })}
-                
-                {user && (
-                  <div className="pt-4 border-t">
-                    <div className="space-y-2">
-                      {userMenuItems.map((item) => {
+              <div className="p-4 space-y-4">
+                {/* Primary Navigation */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Main
+                  </h3>
+                  {primaryNavigation
+                    .filter(item => !item.requiresAuth || user)
+                    .map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Button
+                          key={item.href}
+                          variant={item.isActive ? "default" : "ghost"}
+                          className="w-full justify-start h-12"
+                          onClick={() => handleNavigation(item.href)}
+                        >
+                          <Icon className="w-5 h-5 mr-3" />
+                          <span className="text-base">{item.label}</span>
+                          {item.badge && (
+                            <Badge variant="secondary" className="ml-auto">
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </Button>
+                      );
+                    })}
+                </div>
+
+                {/* Secondary Navigation */}
+                {secondaryNavigation.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      More
+                    </h3>
+                    {secondaryNavigation
+                      .filter(item => !item.requiresAuth || user)
+                      .map((item) => {
                         const Icon = item.icon;
                         return (
                           <Button
                             key={item.href}
-                            variant="ghost"
-                            className="w-full justify-start"
+                            variant={item.isActive ? "default" : "ghost"}
+                            className="w-full justify-start h-12"
                             onClick={() => handleNavigation(item.href)}
                           >
-                            <Icon className="w-4 h-4 mr-2" />
-                            {item.label}
+                            <Icon className="w-5 h-5 mr-3" />
+                            <span className="text-base">{item.label}</span>
+                            {item.badge && (
+                              <Badge variant="secondary" className="ml-auto">
+                                {item.badge}
+                              </Badge>
+                            )}
                           </Button>
                         );
                       })}
-                      
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-destructive"
-                        onClick={handleSignOut}
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sign Out
-                      </Button>
-                    </div>
+                  </div>
+                )}
+                
+                {/* User Section */}
+                {user && (
+                  <div className="pt-4 border-t space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Account
+                    </h3>
+                    {userMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Button
+                          key={item.href}
+                          variant="ghost"
+                          className="w-full justify-start h-12"
+                          onClick={() => handleNavigation(item.href)}
+                        >
+                          <Icon className="w-5 h-5 mr-3" />
+                          <span className="text-base">{item.label}</span>
+                        </Button>
+                      );
+                    })}
+                    
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12 text-destructive"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-5 h-5 mr-3" />
+                      <span className="text-base">Sign Out</span>
+                    </Button>
                   </div>
                 )}
               </div>

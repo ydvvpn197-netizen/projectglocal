@@ -137,6 +137,23 @@ export const UnifiedNotificationSystem: React.FC<UnifiedNotificationSystemProps>
     }
   };
 
+  const getNotificationCategory = (type: string) => {
+    switch (type) {
+      case 'like':
+      case 'comment':
+      case 'mention':
+        return 'Social';
+      case 'follow':
+        return 'Community';
+      case 'event':
+        return 'Events';
+      case 'system':
+        return 'System';
+      default:
+        return 'Other';
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -241,65 +258,83 @@ export const UnifiedNotificationSystem: React.FC<UnifiedNotificationSystemProps>
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-4 border-l-4 ${getPriorityColor(notification.priority)} ${
-                  !notification.read ? 'bg-muted/50' : ''
-                } hover:bg-muted/50 transition-colors cursor-pointer`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    {notification.avatar ? (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={notification.avatar} />
-                        <AvatarFallback>
-                          {notification.title.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                        {getNotificationIcon(notification.type)}
-                      </div>
-                    )}
+            <div className="divide-y divide-border">
+              {Object.entries(
+                notifications.reduce((acc, notification) => {
+                  const category = getNotificationCategory(notification.type);
+                  if (!acc[category]) acc[category] = [];
+                  acc[category].push(notification);
+                  return acc;
+                }, {} as Record<string, typeof notifications>)
+              ).map(([category, categoryNotifications]) => (
+                <div key={category}>
+                  <div className="px-4 py-2 bg-muted/30">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {category}
+                    </p>
                   </div>
+                  {categoryNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`p-4 border-l-4 ${getPriorityColor(notification.priority)} ${
+                        !notification.read ? 'bg-muted/50' : ''
+                      } hover:bg-muted/50 transition-colors cursor-pointer group`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0">
+                          {notification.avatar ? (
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={notification.avatar} />
+                              <AvatarFallback>
+                                {notification.title.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                          )}
+                        </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">
-                          {notification.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {notification.timestamp}
-                        </p>
-                      </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-foreground">
+                                {notification.title}
+                              </p>
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {notification.timestamp}
+                              </p>
+                            </div>
 
-                      <div className="flex items-center gap-1 ml-2">
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-primary rounded-full" />
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteNotification(notification.id);
-                          }}
-                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                            <div className="flex items-center gap-1 ml-2">
+                              {!notification.read && (
+                                <div className="w-2 h-2 bg-primary rounded-full" />
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteNotification(notification.id);
+                                }}
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 
