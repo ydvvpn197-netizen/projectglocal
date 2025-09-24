@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { vi } from 'vitest';
 import { ComprehensiveErrorBoundary } from '@/components/error/ComprehensiveErrorBoundary';
 import { OptimizedImage } from '@/components/optimization/OptimizedImage';
 import { ResponsiveImage } from '@/components/optimization/OptimizedImage';
@@ -186,7 +187,7 @@ describe('Comprehensive Test Suite', () => {
         <OptimizedImage
           src="invalid-url"
           alt="Test image"
-          onError={jest.fn()}
+          onError={vi.fn()}
         />
       );
 
@@ -201,7 +202,7 @@ describe('Comprehensive Test Suite', () => {
     });
 
     it('should handle image load success', async () => {
-      const onLoad = jest.fn();
+      const onLoad = vi.fn();
       
       render(
         <OptimizedImage

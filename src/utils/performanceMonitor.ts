@@ -289,19 +289,19 @@ export const usePerformanceMonitor = (componentName: string) => {
 };
 
 // Component performance wrapper
-export const withPerformanceMonitoring = <P extends object>(
+export function withPerformanceMonitoring<P extends object>(
   Component: React.ComponentType<P>,
   componentName: string
-) => {
+) {
   const WrappedComponent = (props: P) => {
     const { measureAsync } = usePerformanceMonitor(componentName);
     
-    return <Component {...props} measureAsync={measureAsync} />;
+    return React.createElement(Component, { ...props, measureAsync });
   };
 
   WrappedComponent.displayName = `withPerformanceMonitoring(${componentName})`;
   return WrappedComponent;
-};
+}
 
 // Initialize performance monitoring
 export const initializePerformanceMonitoring = () => {
