@@ -95,12 +95,12 @@ export class SecurityUtils {
   /**
    * Validate input against schema
    */
-  static validateInput(schema: any, input: string): { success: boolean; errors: string[] } {
+  static validateInput(schema: { safeParse: (input: string) => { success: boolean; error?: { errors: Array<{ message: string }> } } }, input: string): { success: boolean; errors: string[] } {
     try {
       const result = schema.safeParse(input);
       return {
         success: result.success,
-        errors: result.success ? [] : result.error?.errors?.map((e: any) => e.message) || []
+        errors: result.success ? [] : result.error?.errors?.map((e: { message: string }) => e.message) || []
       };
     } catch (error) {
       return {

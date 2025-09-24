@@ -31,7 +31,7 @@ import { useSecurity } from '@/utils/securityUtils';
 
 interface CommunityEngagementHubProps {
   className?: string;
-  onEngagement?: (type: string, data: any) => void;
+  onEngagement?: (type: string, data: Record<string, string | number | boolean>) => void;
 }
 
 interface LocalIssue {

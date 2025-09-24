@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
+import React from 'react';
 
-function App() {
+function App(): React.JSX.Element {
   return <div>Glocal Web</div>;
 }
 
@@ -9,6 +10,8 @@ if (container) {
   const root = createRoot(container);
   root.render(<App />);
 }
+
+export default App;
 
 
 

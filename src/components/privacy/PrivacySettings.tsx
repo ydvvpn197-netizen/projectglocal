@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,7 +103,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         .single();
 
       if (data && !error) {
-        setSettings(data.settings);
+        setSettings(data.settings as PrivacySettings);
       }
     } catch (error) {
       console.error('Error loading privacy settings:', error);
@@ -302,10 +302,10 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
                           { value: 'city', label: 'City', desc: 'City only' },
                           { value: 'region', label: 'Region', desc: 'State/Province' },
                           { value: 'none', label: 'Hidden', desc: 'No location' }
-                        ].map(({ value, label, desc }) => (
+                        ].map(({ value, label, desc }: { value: string; label: string; desc: string }) => (
                           <button
                             key={value}
-                            onClick={() => updateSetting('location_precision', value as any)}
+                            onClick={() => updateSetting('location_precision', value as 'exact' | 'city' | 'region' | 'none')}
                             className={`p-3 rounded-lg border text-left transition-all ${
                               settings.location_precision === value
                                 ? 'border-blue-500 bg-blue-50'
@@ -366,10 +366,10 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
                         { value: 'everyone', label: 'Everyone', desc: 'Anyone can send you messages' },
                         { value: 'friends', label: 'Friends Only', desc: 'Only people you follow' },
                         { value: 'none', label: 'No One', desc: 'Disable all messages' }
-                      ].map(({ value, label, desc }) => (
+                      ].map(({ value, label, desc }: { value: string; label: string; desc: string }) => (
                         <button
                           key={value}
-                          onClick={() => updateSetting('allow_messages', value as any)}
+                          onClick={() => updateSetting('allow_messages', value as 'everyone' | 'friends' | 'none')}
                           className={`p-3 rounded-lg border text-left transition-all ${
                             settings.allow_messages === value
                               ? 'border-blue-500 bg-blue-50'
@@ -441,10 +441,10 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
                           { value: 'exact', label: 'Exact', desc: 'Show exact time' },
                           { value: 'approximate', label: 'Approximate', desc: 'Show relative time' },
                           { value: 'hidden', label: 'Hidden', desc: 'Don\'t show time' }
-                        ].map(({ value, label, desc }) => (
+                        ].map(({ value, label, desc }: { value: string; label: string; desc: string }) => (
                           <button
                             key={value}
-                            onClick={() => updateSetting('last_seen_precision', value as any)}
+                            onClick={() => updateSetting('last_seen_precision', value as 'exact' | 'approximate' | 'hidden')}
                             className={`p-3 rounded-lg border text-left transition-all ${
                               settings.last_seen_precision === value
                                 ? 'border-blue-500 bg-blue-50'

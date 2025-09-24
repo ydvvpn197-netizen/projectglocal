@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-function AdminApp() {
+function AdminApp(): React.JSX.Element {
   return <div>Glocal Admin</div>;
 }
 
@@ -10,6 +10,8 @@ if (container) {
   const root = createRoot(container);
   root.render(<AdminApp />);
 }
+
+export default AdminApp;
 
 
 

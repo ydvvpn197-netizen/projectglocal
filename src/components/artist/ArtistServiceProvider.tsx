@@ -42,7 +42,7 @@ import { useSecurity } from '@/utils/securityUtils';
 
 interface ArtistServiceProviderProps {
   className?: string;
-  onServiceAction?: (action: string, data: any) => void;
+  onServiceAction?: (action: string, data: Record<string, string | number | boolean>) => void;
 }
 
 interface ArtistProfile {
