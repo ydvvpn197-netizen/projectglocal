@@ -1,0 +1,43 @@
+You are an expert full-stack developer. Extend my project **projectglocal** (Vite + React + Supabase) with a full Local News hub.
+
+Requirements:
+1. Frontend (React + Vite + Tailwind + Framer Motion)
+   - Component <LocalNews />:
+     * Detect geolocation (fallback to manual city input, default Delhi, IN).
+     * Reverse geocode → {city, country}.
+     * Fetch news from backend endpoint /fetchNews.
+     * Display cards: title (link), AI summary (2–3 sentences), source, time, image.
+     * Actions: Like, Comment, Poll, Share (with counts, realtime via Supabase).
+     * Tabs: Latest | Trending | For You.  
+   - Subcomponents: <NewsPoll /> (live votes), comment threads.  
+   - Responsive, card-based design with smooth animations.
+
+2. Backend Edge Functions
+   - `/fetchNews`: query GNews API, cache in Supabase (15 min), generate AI summaries with OpenAI, return normalized articles.
+   - `/trendingNews`: compute score = (likes + 2*comments + 1.5*shares + votes) × time-decay × locality boost. Return top items.
+   - `/forYouNews`: use user’s recent interactions to boost articles by city/source/keywords. Requires auth.
+   - `/clearNewsHistory`: lets user reset their interaction history.
+
+3. Supabase Schema
+   - `news_cache` (cached articles).
+   - `news_likes`, `news_comments` (threaded), `news_polls`, `news_poll_votes`, `news_shares`.
+   - `news_events` (user interactions for personalization).
+   - Use article_id = SHA-256(url).
+   - Enable RLS: users can read all, but only modify their own likes, comments, votes, shares, events.
+
+4. Trending & Personalization
+   - Trending = engagement × freshness with time-decay (λ≈0.08), +20% boost if same city, +10% if same country.
+   - For You = trending score × user prefs (cities, sources, keywords) from last 14 days.
+   - Keep boosts small (+0–30%). Store user preferences from `news_events`.
+
+5. UI/UX
+   - Show realtime counts with Supabase subscriptions.
+   - Skeleton loaders, infinite scroll per tab.
+   - Share via Web Share API or copy link.
+   - Accessible: alt text, keyboard nav, semantic markup.
+
+6. Environment
+   - `.env` includes VITE_GNEWS_API_KEY and OPENAI_API_KEY.
+   - Edge Functions must access securely.
+
+Goal: Build a polished Local News hub with AI summaries, caching, trending + personalized feeds, and community engagement (likes, comments, polls, shares).

@@ -1,0 +1,704 @@
+import { supabase } from '@/integrations/supabase/client';
+
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  location_city: string | null;
+  location_state: string | null;
+  location_country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  is_verified: boolean | null;
+  user_type: string | null;
+  created_at: string;
+  updated_at: string;
+  // Privacy and anonymous fields
+  is_anonymous?: boolean | null;
+  privacy_level?: string | null;
+  // Additional fields for artists
+  artist_skills?: string[] | null;
+  hourly_rate_min?: number | null;
+  hourly_rate_max?: number | null;
+  portfolio_urls?: string[] | null;
+  real_time_location_enabled?: boolean | null;
+  // Contact fields
+  website_url?: string | null;
+  phone_number?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+}
+
+export interface ProfileUpdateData {
+  display_name?: string;
+  bio?: string;
+  location_city?: string;
+  location_state?: string;
+  location_country?: string;
+  avatar_url?: string;
+  cover_url?: string;
+  website_url?: string;
+  phone_number?: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  artist_skills?: string[];
+  hourly_rate_min?: number;
+  hourly_rate_max?: number;
+  portfolio_urls?: string[];
+  real_time_location_enabled?: boolean;
+  is_anonymous?: boolean;
+  privacy_level?: 'public' | 'friends' | 'private' | 'anonymous';
+}
+
+export interface UserStats {
+  eventsAttended: number;
+  eventsCreated: number;
+  communitiesJoined: number;
+  postsCreated: number;
+  followers: number;
+  following: number;
+  points: number;
+}
+
+export interface UserBadge {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
+export interface UserPost {
+  id: string;
+  title: string;
+  content: string;
+  likes: number;
+  comments: number;
+  date: string;
+  image?: string;
+}
+
+export interface UserBooking {
+  id: string;
+  eventTitle: string;
+  eventImage: string;
+  date: string;
+  time: string;
+  location: string;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  tickets: number;
+}
+
+export interface UserCommunity {
+  id: string;
+  name: string;
+  image: string;
+  members: number;
+  role: 'admin' | 'moderator' | 'member';
+  joinedDate: string;
+}
+
+class UserProfileService {
+
+  async getUserProfile(userId: string): Promise<UserProfile | null> {
+    try {
+      console.log('Fetching profile for user:', userId);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        
+        // If profile doesn't exist, create a basic one
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating basic profile for user:', userId);
+          
+          // Get user info from auth.users to populate profile
+          const { data: authUser } = await supabase.auth.getUser();
+          const userEmail = authUser?.user?.email;
+          const userName = authUser?.user?.user_metadata?.full_name || userEmail?.split('@')[0] || 'User';
+          
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: userId,
+              display_name: userName,
+              bio: 'Welcome to TheGlocal!',
+              user_type: 'user',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            return null;
+          }
+
+          console.log('Created new profile:', newProfile);
+          return newProfile;
+        }
+        
+        return null;
+      }
+
+      console.log('Profile fetched successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in getUserProfile:', error);
+      return null;
+    }
+  }
+
+  async updateUserProfile(userId: string, updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: UserProfile }> {
+    try {
+      // Input validation
+      if (updateData.display_name && updateData.display_name.length > 100) {
+        return { success: false, error: 'Display name must be 100 characters or less' };
+      }
+      
+      if (updateData.bio && updateData.bio.length > 1000) {
+        return { success: false, error: 'Bio must be 1000 characters or less' };
+      }
+
+      if (updateData.first_name && updateData.first_name.length > 50) {
+        return { success: false, error: 'First name must be 50 characters or less' };
+      }
+
+      if (updateData.last_name && updateData.last_name.length > 50) {
+        return { success: false, error: 'Last name must be 50 characters or less' };
+      }
+
+      // Get current profile to check anonymous mode and restrictions
+      const { data: currentProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('is_anonymous, privacy_level, username')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current profile:', fetchError);
+        return { success: false, error: 'Failed to fetch current profile' };
+      }
+
+      // Check for username restrictions in anonymous mode
+      if (currentProfile?.is_anonymous && 'username' in updateData && updateData.username !== currentProfile.username) {
+        return { success: false, error: 'Username cannot be changed while in anonymous mode' };
+      }
+
+      // Prepare update data with proper field handling
+      const updatePayload: Record<string, unknown> = {
+        updated_at: new Date().toISOString()
+      };
+
+      // Only include fields that are provided in updateData
+      if (updateData.display_name !== undefined) updatePayload.display_name = updateData.display_name;
+      if (updateData.bio !== undefined) updatePayload.bio = updateData.bio;
+      if (updateData.location_city !== undefined) updatePayload.location_city = updateData.location_city;
+      if (updateData.location_state !== undefined) updatePayload.location_state = updateData.location_state;
+      if (updateData.location_country !== undefined) updatePayload.location_country = updateData.location_country;
+      if (updateData.avatar_url !== undefined) updatePayload.avatar_url = updateData.avatar_url;
+      if (updateData.cover_url !== undefined) updatePayload.cover_url = updateData.cover_url;
+      if (updateData.website_url !== undefined) updatePayload.website_url = updateData.website_url;
+      if (updateData.phone_number !== undefined) updatePayload.phone_number = updateData.phone_number;
+      if (updateData.first_name !== undefined) updatePayload.first_name = updateData.first_name;
+      if (updateData.last_name !== undefined) updatePayload.last_name = updateData.last_name;
+      if (updateData.real_time_location_enabled !== undefined) updatePayload.real_time_location_enabled = updateData.real_time_location_enabled;
+      if (updateData.artist_skills !== undefined) updatePayload.artist_skills = updateData.artist_skills;
+      if (updateData.hourly_rate_min !== undefined) updatePayload.hourly_rate_min = updateData.hourly_rate_min;
+      if (updateData.hourly_rate_max !== undefined) updatePayload.hourly_rate_max = updateData.hourly_rate_max;
+      if (updateData.portfolio_urls !== undefined) updatePayload.portfolio_urls = updateData.portfolio_urls;
+
+      // Only allow username updates for non-anonymous users
+      if (!currentProfile?.is_anonymous && updateData.username !== undefined) {
+        updatePayload.username = updateData.username;
+      }
+
+      // Handle privacy level and anonymous mode updates
+      if (updateData.is_anonymous !== undefined) updatePayload.is_anonymous = updateData.is_anonymous;
+      if (updateData.privacy_level !== undefined) updatePayload.privacy_level = updateData.privacy_level;
+
+      // Use direct table update to avoid RPC function issues
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updatePayload)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating user profile:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data };
+    } catch (error: unknown) {
+      console.error('Error in updateUserProfile:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async toggleAnonymousMode(userId: string, isAnonymous: boolean): Promise<{ success: boolean; error?: string; data?: UserProfile }> {
+    try {
+      // Get current profile
+      const { data: currentProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current profile:', fetchError);
+        return { success: false, error: 'Failed to fetch current profile' };
+      }
+
+      // Prepare update payload
+      const updatePayload: Record<string, unknown> = {
+        is_anonymous: isAnonymous,
+        updated_at: new Date().toISOString()
+      };
+
+      // When switching to anonymous mode, set privacy_level to 'anonymous'
+      if (isAnonymous) {
+        updatePayload.privacy_level = 'anonymous';
+      } else {
+        // When leaving anonymous mode, restore to 'public' by default
+        updatePayload.privacy_level = 'public';
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updatePayload)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error toggling anonymous mode:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data };
+    } catch (error: unknown) {
+      console.error('Error in toggleAnonymousMode:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async getUserStats(userId: string): Promise<UserStats> {
+    try {
+      // Fetch events created by user
+      const { data: eventsCreated } = await supabase
+        .from('events')
+        .select('id')
+        .eq('user_id', userId);
+
+      // Fetch posts created by user
+      const { data: postsCreated } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('user_id', userId);
+
+      // Fetch followers count
+      const { data: followers } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('followed_id', userId);
+
+      // Fetch following count
+      const { data: following } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', userId);
+
+      // Calculate points (simplified calculation)
+      const points = (eventsCreated?.length || 0) * 10 + (postsCreated?.length || 0) * 5 + (followers?.length || 0) * 2;
+
+      return {
+        eventsAttended: 0, // This would need a separate table to track
+        eventsCreated: eventsCreated?.length || 0,
+        communitiesJoined: 0, // This would need a separate table to track
+        postsCreated: postsCreated?.length || 0,
+        followers: followers?.length || 0,
+        following: following?.length || 0,
+        points
+      };
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      return {
+        eventsAttended: 0,
+        eventsCreated: 0,
+        communitiesJoined: 0,
+        postsCreated: 0,
+        followers: 0,
+        following: 0,
+        points: 0
+      };
+    }
+  }
+
+  async getUserPosts(userId: string): Promise<UserPost[]> {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          title,
+          content,
+          likes_count,
+          comments_count,
+          created_at,
+          image_url
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching user posts:', error);
+        return [];
+      }
+
+      return data?.map(post => ({
+        id: post.id,
+        title: post.title || 'Untitled Post',
+        content: post.content,
+        likes: post.likes_count || 0,
+        comments: post.comments_count || 0,
+        date: this.formatRelativeDate(post.created_at),
+        image: post.image_url
+      })) || [];
+    } catch (error) {
+      console.error('Error in getUserPosts:', error);
+      return [];
+    }
+  }
+
+  async getUserBookings(userId: string): Promise<UserBooking[]> {
+    try {
+      // Get events that the user is attending
+      const { data: eventAttendees, error: attendeesError } = await supabase
+        .from('event_attendees')
+        .select(`
+          id,
+          status,
+          events (
+            id,
+            title,
+            image_url,
+            event_date,
+            event_time,
+            location_name,
+            location_city,
+            location_state,
+            location_country
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'attending')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (attendeesError) {
+        console.error('Error fetching event attendees:', attendeesError);
+        return [];
+      }
+
+      // Get artist bookings
+      const { data: artistBookings, error: artistBookingsError } = await supabase
+        .from('artist_bookings')
+        .select(`
+          id,
+          event_date,
+          event_location,
+          event_description,
+          status,
+          artists (
+            id,
+            specialty,
+            bio
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (artistBookingsError) {
+        console.error('Error fetching artist bookings:', artistBookingsError);
+      }
+
+      const bookings: UserBooking[] = [];
+
+      // Add event attendees
+      eventAttendees?.forEach(attendee => {
+        if (attendee.events) {
+          const location = [
+            attendee.events.location_city,
+            attendee.events.location_state,
+            attendee.events.location_country
+          ].filter(Boolean).join(', ') || attendee.events.location_name;
+
+          bookings.push({
+            id: attendee.id,
+            eventTitle: attendee.events.title,
+            eventImage: attendee.events.image_url || '',
+            date: this.formatDate(attendee.events.event_date),
+            time: attendee.events.event_time,
+            location,
+            status: attendee.status === 'attending' ? 'confirmed' : 'pending',
+            tickets: 1
+          });
+        }
+      });
+
+      // Add artist bookings
+      artistBookings?.forEach(booking => {
+        const artistName = booking.artists?.specialty?.[0] || 'Artist';
+        bookings.push({
+          id: booking.id,
+          eventTitle: `${artistName} Booking`,
+          eventImage: '', // No image for artist bookings
+          date: this.formatDate(booking.event_date),
+          time: 'TBD',
+          location: booking.event_location,
+          status: booking.status as 'confirmed' | 'pending' | 'cancelled',
+          tickets: 1
+        });
+      });
+
+      // Sort by date and limit to 10
+      return bookings
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10);
+    } catch (error) {
+      console.error('Error in getUserBookings:', error);
+      return [];
+    }
+  }
+
+  async getUserCommunities(userId: string): Promise<UserCommunity[]> {
+    try {
+      // This would need a proper communities table and user_communities junction table
+      // For now, return mock data
+      return [
+        {
+          id: '1',
+          name: 'Local Artists Collective',
+          image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=100&h=100&fit=crop',
+          members: 234,
+          role: 'admin' as const,
+          joinedDate: 'Jan 2024'
+        },
+        {
+          id: '2',
+          name: 'Food Lovers United',
+          image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=100&h=100&fit=crop',
+          members: 456,
+          role: 'member' as const,
+          joinedDate: 'Feb 2024'
+        }
+      ];
+    } catch (error) {
+      console.error('Error in getUserCommunities:', error);
+      return [];
+    }
+  }
+
+  async getUserBadges(userId: string): Promise<UserBadge[]> {
+    try {
+      // This would need a proper badges system
+      // For now, return mock data based on user stats
+      const stats = await this.getUserStats(userId);
+      
+      const badges: UserBadge[] = [];
+      
+      if (stats.eventsCreated >= 5) {
+        badges.push({
+          id: 1,
+          name: 'Community Leader',
+          icon: 'Crown',
+          color: 'bg-yellow-500',
+          description: 'Created 5+ successful events'
+        });
+      }
+      
+      if (stats.postsCreated >= 10) {
+        badges.push({
+          id: 2,
+          name: 'Top Contributor',
+          icon: 'Trophy',
+          color: 'bg-orange-500',
+          description: 'Top 10% contributor'
+        });
+      }
+      
+      if (stats.followers >= 100) {
+        badges.push({
+          id: 3,
+          name: 'Social Butterfly',
+          icon: 'Users',
+          color: 'bg-pink-500',
+          description: '100+ followers'
+        });
+      }
+      
+      if (stats.points >= 1000) {
+        badges.push({
+          id: 4,
+          name: 'Point Collector',
+          icon: 'Star',
+          color: 'bg-purple-500',
+          description: 'Earned 1000+ points'
+        });
+      }
+      
+      return badges;
+    } catch (error) {
+      console.error('Error in getUserBadges:', error);
+      return [];
+    }
+  }
+
+  async uploadAvatar(userId: string, file: File): Promise<{ success: boolean; url?: string; error?: string }> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error uploading avatar:', uploadError);
+        return { success: false, error: uploadError.message };
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', userId);
+
+      if (updateError) {
+        console.error('Error updating profile with avatar:', updateError);
+        return { success: false, error: updateError.message };
+      }
+
+      return { success: true, url: publicUrl };
+    } catch (error: unknown) {
+      console.error('Error in uploadAvatar:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  private formatRelativeDate(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
+    
+    return date.toLocaleDateString();
+  }
+
+  async getProfileUpdateHistory(userId: string, limit: number = 10, offset: number = 0): Promise<{ success: boolean; error?: string; data?: unknown }> {
+    try {
+      const { data, error } = await supabase.rpc('get_profile_update_history', {
+        p_user_id: userId,
+        p_limit: limit,
+        p_offset: offset
+      });
+
+      if (error) {
+        console.error('Error fetching profile update history:', error);
+        return { success: false, error: error.message };
+      }
+
+      return data;
+    } catch (error: unknown) {
+      console.error('Error in getProfileUpdateHistory:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async getProfileStatistics(userId: string): Promise<{ success: boolean; error?: string; data?: unknown }> {
+    try {
+      const { data, error } = await supabase.rpc('get_profile_statistics', {
+        p_user_id: userId
+      });
+
+      if (error) {
+        console.error('Error fetching profile statistics:', error);
+        return { success: false, error: error.message };
+      }
+
+      return data;
+    } catch (error: unknown) {
+      console.error('Error in getProfileStatistics:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  async validateProfileData(updateData: ProfileUpdateData): Promise<{ success: boolean; error?: string; data?: unknown }> {
+    try {
+      const { data, error } = await supabase.rpc('validate_profile_data', {
+        p_display_name: updateData.display_name || null,
+        p_bio: updateData.bio || null,
+        p_location_city: updateData.location_city || null,
+        p_location_state: updateData.location_state || null,
+        p_location_country: updateData.location_country || null,
+        p_website_url: updateData.website_url || null,
+        p_phone_number: updateData.phone_number || null,
+        p_first_name: updateData.first_name || null,
+        p_last_name: updateData.last_name || null,
+        p_artist_skills: updateData.artist_skills || null,
+        p_hourly_rate_min: updateData.hourly_rate_min || null,
+        p_hourly_rate_max: updateData.hourly_rate_max || null,
+        p_portfolio_urls: updateData.portfolio_urls || null
+      });
+
+      if (error) {
+        console.error('Error validating profile data:', error);
+        return { success: false, error: error.message };
+      }
+
+      return data;
+    } catch (error: unknown) {
+      console.error('Error in validateProfileData:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  private formatDate(dateString: string): string {
+    if (!dateString) return 'TBD';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  }
+}
+
+export const userProfileService = new UserProfileService();

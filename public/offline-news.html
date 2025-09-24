@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News - Offline | TheGlocal</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .offline-container {
+            max-width: 400px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        p {
+            margin: 0 0 30px 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .cached-news {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .news-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4ade80;
+        }
+        .news-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .news-summary {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📰</div>
+        <h1>News Offline</h1>
+        <p>You're currently offline, but we've saved some news for you to read.</p>
+        
+        <a href="/" class="retry-btn" onclick="window.location.reload()">
+            Try Again
+        </a>
+        
+        <div class="cached-news" id="cachedNews">
+            <h3>Recently Cached News</h3>
+            <div id="newsList">
+                <p>Loading cached news...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load cached news from IndexedDB
+        async function loadCachedNews() {
+            try {
+                const db = await openDB();
+                const news = await db.getAll('news');
+                
+                const newsList = document.getElementById('newsList');
+                if (news.length === 0) {
+                    newsList.innerHTML = '<p>No cached news available.</p>';
+                    return;
+                }
+                
+                newsList.innerHTML = news.slice(0, 5).map(item => `
+                    <div class="news-item">
+                        <div class="news-title">${item.title || 'News Article'}</div>
+                        <div class="news-summary">${item.summary || 'Summary not available'}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load cached news:', error);
+                document.getElementById('newsList').innerHTML = '<p>Unable to load cached news.</p>';
+            }
+        }
+        
+        // Simple IndexedDB helper
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('TheGlocalOffline', 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('news')) {
+                        db.createObjectStore('news', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+        
+        // Load cached news on page load
+        loadCachedNews();
+        
+        // Check for online status
+        window.addEventListener('online', () => {
+            window.location.href = '/news';
+        });
+    </script>
+</body>
+</html>

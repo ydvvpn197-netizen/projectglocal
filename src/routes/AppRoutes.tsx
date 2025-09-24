@@ -1,0 +1,318 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AdminRoute } from '@/components/AdminRoute';
+import { lazyImport } from '@/lib/lazyImport';
+import { SimplifiedPostCreator } from '@/components/SimplifiedPostCreator';
+import { createOptimizedLazyComponent, preloadRouteGroup } from '@/lib/routeOptimization';
+
+// Core pages (loaded immediately)
+const Index = React.lazy(() => import('@/pages/EnhancedIndex').then(module => ({ default: module.EnhancedIndex })));
+const SignIn = React.lazy(() => import('@/pages/SignIn'));
+const Feed = React.lazy(() => import('@/pages/Feed'));
+const Discover = React.lazy(() => import('@/pages/Discover'));
+const About = React.lazy(() => import('@/pages/About'));
+
+// Test component for debugging
+const TestRouter = React.lazy(() => import('@/components/TestRouter'));
+const NotificationSystemTest = React.lazy(() => import('@/components/NotificationSystemTest'));
+const BookingSystemTest = React.lazy(() => import('@/components/BookingSystemTest'));
+const ChatFlowTest = React.lazy(() => import('@/components/ChatFlowTest'));
+const ChatDebugTest = React.lazy(() => import('@/components/ChatDebugTest'));
+const SimpleChatTest = React.lazy(() => import('@/components/SimpleChatTest'));
+const ChatTest = React.lazy(() => import('@/components/ChatTest'));
+const TestButtons = React.lazy(() => import('@/pages/TestButtons'));
+const ProfileTest = React.lazy(() => import('@/components/ProfileTest'));
+const LayoutDemo = React.lazy(() => import('@/pages/LayoutDemo'));
+
+// Monetization test page
+const MonetizationTest = React.lazy(() => import('@/pages/MonetizationTest'));
+
+// Auth/Onboarding pages (grouped together)
+const LocationSetup = React.lazy(() => import('@/pages/LocationSetup'));
+const Onboarding = React.lazy(() => import('@/pages/Onboarding'));
+const PrivacyFirstOnboarding = React.lazy(() => import('@/pages/PrivacyFirstOnboarding'));
+const ArtistOnboarding = React.lazy(() => import('@/pages/ArtistOnboarding'));
+const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
+
+// Community pages (grouped together)
+const Community = React.lazy(() => import('@/pages/Community'));
+const CommunityDetail = React.lazy(() => import('@/pages/CommunityDetail'));
+const CreateDiscussion = React.lazy(() => import('@/pages/CreateDiscussion'));
+const CreateGroup = React.lazy(() => import('@/pages/CreateGroup'));
+const CreatePost = React.lazy(() => import('@/pages/CreatePost'));
+
+// Event pages (grouped together)
+const Events = React.lazy(() => import('@/pages/Events'));
+const CreateEvent = React.lazy(() => import('@/pages/CreateEvent'));
+const EventDetails = React.lazy(() => import('@/pages/EventDetails'));
+
+// Artist pages (grouped together)
+const BookArtist = React.lazy(() => import('@/pages/BookArtistSimple'));
+const ArtistDashboard = React.lazy(() => import('@/pages/ArtistDashboard'));
+const ArtistProfile = React.lazy(() => import('@/pages/ArtistProfile'));
+
+// User pages (grouped together)
+const Profile = React.lazy(() => import('@/pages/Profile'));
+const Settings = React.lazy(() => import('@/pages/Settings'));
+const Privacy = React.lazy(() => import('@/pages/Privacy'));
+const UserProfile = React.lazy(() => import('@/pages/UserProfile'));
+const EnhancedProfile = React.lazy(() => import('@/pages/EnhancedProfile'));
+const NotificationSettings = React.lazy(() => import('@/pages/NotificationSettings'));
+const NotificationsPage = React.lazy(() => import('@/pages/NotificationsPage'));
+const UserDashboard = React.lazy(() => import('@/pages/UserDashboard'));
+const DashboardRouter = React.lazy(() => import('@/components/DashboardRouter'));
+
+// Chat pages (grouped together)
+const Chat = React.lazy(() => import('@/pages/Chat'));
+const Messages = React.lazy(() => import('@/pages/Messages'));
+const EnhancedChat = React.lazy(() => import('@/pages/EnhancedChat'));
+const EnhancedMessages = React.lazy(() => import('@/pages/EnhancedMessages'));
+
+// Content creation pages (grouped together)
+
+// New Features pages
+const LegalAssistant = React.lazy(() => import('@/pages/LegalAssistant'));
+const LifeWish = React.lazy(() => import('@/pages/LifeWish'));
+const VoiceControlDemo = React.lazy(() => import('@/pages/VoiceControlDemo'));
+const News = React.lazy(() => import('@/pages/News'));
+const Polls = React.lazy(() => import('@/pages/Polls').then(module => ({ default: module.default })));
+const LocalCommunities = React.lazy(() => import('@/pages/LocalCommunities'));
+const LocalBusinesses = React.lazy(() => import('@/pages/LocalBusinesses'));
+const PublicSquare = React.lazy(() => import('@/pages/PublicSquare'));
+const PublicSquareSubscription = React.lazy(() => import('@/pages/PublicSquareSubscription'));
+const FeatureShowcase = React.lazy(() => import('@/pages/FeatureShowcase'));
+
+// Civic Engagement
+const CivicEngagementDashboard = React.lazy(() => import('@/components/CivicEngagementDashboard').then(module => ({ default: module.CivicEngagementDashboard })));
+const CivicEngagementTest = React.lazy(() => import('@/pages/CivicEngagementTest').then(module => ({ default: module.CivicEngagementTest })));
+
+// Community Insights
+const CommunityInsights = React.lazy(() => import('@/pages/CommunityInsightsRealTime'));
+
+// Community Moderation
+const CommunityTransparency = React.lazy(() => import('@/pages/CommunityTransparency'));
+
+// Payment pages
+const Pricing = React.lazy(() => import('@/pages/Pricing'));
+const PaymentSuccess = React.lazy(() => import('@/pages/PaymentSuccess'));
+const PaymentCancel = React.lazy(() => import('@/pages/PaymentCancel'));
+
+// Subscription pages
+const SubscriptionPage = React.lazy(() => import('@/pages/SubscriptionPage'));
+const SubscriptionPlansPage = React.lazy(() => import('@/pages/SubscriptionPlansPage'));
+const SubscriptionSuccess = React.lazy(() => import('@/pages/SubscriptionSuccess'));
+const SubscriptionCancel = React.lazy(() => import('@/pages/SubscriptionCancel'));
+const SubscriptionTest = React.lazy(() => import('@/components/SubscriptionTest').then(module => ({ default: module.SubscriptionTest })));
+
+// Document type pages
+const RentalAgreement = React.lazy(() => import('@/pages/RentalAgreement'));
+const EmploymentContract = React.lazy(() => import('@/pages/EmploymentContract'));
+const NDA = React.lazy(() => import('@/pages/NDA'));
+const ServiceAgreement = React.lazy(() => import('@/pages/ServiceAgreement'));
+
+// Error pages
+const NotFound = React.lazy(() => import('@/pages/NotFound'));
+
+// Auth callback page
+const AuthCallback = React.lazy(() => import('@/pages/AuthCallback'));
+
+// Configuration status page
+const ConfigStatus = React.lazy(() => import('@/components/ConfigStatus'));
+
+// Admin pages
+const AdminLoginPage = React.lazy(() => import('@/pages/AdminLogin'));
+const AdminDashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
+const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
+const UserModeration = React.lazy(() => import('@/pages/admin/UserModeration'));
+const AdminManagement = React.lazy(() => import('@/pages/admin/AdminManagement'));
+const ContentModeration = React.lazy(() => import('@/pages/admin/ContentModeration'));
+const Analytics = React.lazy(() => import('@/pages/admin/AdminAnalytics'));
+const SystemSettings = React.lazy(() => import('@/pages/admin/SystemSettings'));
+const AdminSetup = React.lazy(() => import('@/pages/admin/AdminSetup'));
+
+// Admin testing components
+const TestDashboard = React.lazy(() => import('@/components/admin/TestDashboard'));
+const ComprehensiveTestingSuite = React.lazy(() => import('@/components/admin/ComprehensiveTestingSuite'));
+const RealTimeTestingDashboard = React.lazy(() => import('@/components/admin/RealTimeTestingDashboard'));
+const NewsSourceManager = React.lazy(() => import('@/components/admin/NewsSourceManager'));
+const AIConfiguration = React.lazy(() => import('@/components/admin/AIConfiguration'));
+
+// Admin Auth Guard component
+const AdminAuthGuard = React.lazy(() => import('@/components/admin/AdminAuthGuard').then(module => ({ default: module.AdminAuthGuard })));
+
+/**
+ * Main application routes configuration
+ */
+export const AppRoutes: React.FC = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/config-status" element={<ConfigStatus />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy-first-onboarding" element={<PrivacyFirstOnboarding />} />
+      <Route path="/location" element={<ProtectedRoute><LocationSetup /></ProtectedRoute>} />
+      <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+      <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+      <Route path="/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+      
+      {/* New Features routes */}
+      <Route path="/legal-assistant" element={<ProtectedRoute><LegalAssistant /></ProtectedRoute>} />
+      <Route path="/life-wish" element={<ProtectedRoute><LifeWish /></ProtectedRoute>} />
+      <Route path="/voice-demo" element={<VoiceControlDemo />} />
+      <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
+      <Route path="/news/:articleId" element={<ProtectedRoute><News /></ProtectedRoute>} />
+      <Route path="/polls" element={<ProtectedRoute><Polls /></ProtectedRoute>} />
+      <Route path="/communities" element={<ProtectedRoute><LocalCommunities /></ProtectedRoute>} />
+      <Route path="/businesses" element={<ProtectedRoute><LocalBusinesses /></ProtectedRoute>} />
+      <Route path="/public-square" element={<ProtectedRoute><PublicSquare /></ProtectedRoute>} />
+      <Route path="/public-square-subscription" element={<ProtectedRoute><PublicSquareSubscription /></ProtectedRoute>} />
+      <Route path="/civic-engagement" element={<ProtectedRoute><CivicEngagementDashboard /></ProtectedRoute>} />
+      <Route path="/civic-engagement-test" element={<CivicEngagementTest />} />
+      <Route path="/community-insights" element={<AdminRoute><CommunityInsights /></AdminRoute>} />
+      <Route path="/features" element={<FeatureShowcase />} />
+      
+      {/* Community Moderation routes */}
+      <Route path="/community-transparency" element={<CommunityTransparency />} />
+      
+      {/* Payment routes */}
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/cancel" element={<PaymentCancel />} />
+      
+      {/* Unified Subscription System */}
+      <Route path="/subscription" element={<ProtectedRoute><Navigate to="/profile?tab=subscription" replace /></ProtectedRoute>} />
+      <Route path="/subscription/plans" element={<ProtectedRoute><SubscriptionPlansPage /></ProtectedRoute>} />
+      <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+      <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
+      
+      {/* Document type routes */}
+      <Route path="/rental-agreement" element={<ProtectedRoute><RentalAgreement /></ProtectedRoute>} />
+      <Route path="/employment-contract" element={<ProtectedRoute><EmploymentContract /></ProtectedRoute>} />
+      <Route path="/nda" element={<ProtectedRoute><NDA /></ProtectedRoute>} />
+      <Route path="/service-agreement" element={<ProtectedRoute><ServiceAgreement /></ProtectedRoute>} />
+      
+      <Route path="/discover" element={<Discover />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/community" element={<Community />} />
+      <Route path="/community/:groupId" element={<CommunityDetail />} />
+      <Route path="/community/create-discussion" element={<ProtectedRoute><CreateDiscussion /></ProtectedRoute>} />
+      <Route path="/community/create-group" element={<ProtectedRoute><CreateGroup /></ProtectedRoute>} />
+      <Route path="/events" element={<Events />} />
+      <Route path="/event/:eventId" element={<EventDetails />} />
+      <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+      <Route path="/book-artist" element={<ProtectedRoute><BookArtist /></ProtectedRoute>} />
+      <Route path="/artist-onboarding" element={<ProtectedRoute><ArtistOnboarding /></ProtectedRoute>} />
+      
+      {/* Unified User Profile System */}
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/profile/:userId" element={<EnhancedProfile />} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+      
+      {/* Dashboard Routing */}
+      <Route path="/my-dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+      
+      {/* Artist routes */}
+      <Route path="/artist/:artistId" element={<ArtistProfile />} />
+      <Route path="/artist-dashboard" element={<ProtectedRoute><ArtistDashboard /></ProtectedRoute>} />
+      
+      {/* Unified Chat System */}
+      <Route path="/messages" element={<ProtectedRoute><EnhancedMessages /></ProtectedRoute>} />
+      <Route path="/messages/:conversationId" element={<ProtectedRoute><EnhancedChat /></ProtectedRoute>} />
+      
+      
+      {/* Admin routes */}
+      <Route path="/admin/setup" element={<AdminSetup />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin" element={
+        <AdminAuthGuard>
+          <AdminDashboard />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/users" element={
+        <AdminAuthGuard requiredPermission="user_management">
+          <UserManagement />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/user-moderation" element={
+        <AdminAuthGuard requiredPermission="user_moderation">
+          <UserModeration />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/admin-management" element={
+        <AdminAuthGuard requiredPermission="admin_management">
+          <AdminManagement />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/moderation" element={
+        <AdminAuthGuard requiredPermission="content_moderation">
+          <ContentModeration />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/analytics" element={
+        <AdminAuthGuard requiredPermission="analytics">
+          <Analytics />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/settings" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <SystemSettings />
+        </AdminAuthGuard>
+      } />
+      
+      {/* Admin Testing Routes */}
+      <Route path="/admin/testing" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <TestDashboard />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/testing/comprehensive" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <ComprehensiveTestingSuite />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/testing/realtime" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <RealTimeTestingDashboard />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/news-sources" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <NewsSourceManager />
+        </AdminAuthGuard>
+      } />
+      <Route path="/admin/ai-config" element={
+        <AdminAuthGuard requiredPermission="system_settings">
+          <AIConfiguration />
+        </AdminAuthGuard>
+      } />
+      
+      {/* Development/Testing routes - only available in development mode */}
+      {process.env.NODE_ENV === 'development' && (
+        <>
+          <Route path="/test-router" element={<TestRouter />} />
+          <Route path="/test-notifications" element={<ProtectedRoute><NotificationSystemTest /></ProtectedRoute>} />
+          <Route path="/test-booking" element={<ProtectedRoute><BookingSystemTest /></ProtectedRoute>} />
+          <Route path="/test-chat" element={<ProtectedRoute><ChatFlowTest /></ProtectedRoute>} />
+          <Route path="/debug-chat" element={<ProtectedRoute><ChatDebugTest /></ProtectedRoute>} />
+          <Route path="/simple-chat-test" element={<ProtectedRoute><SimpleChatTest /></ProtectedRoute>} />
+          <Route path="/monetization-test" element={<ProtectedRoute><MonetizationTest /></ProtectedRoute>} />
+          <Route path="/test-buttons" element={<ProtectedRoute><TestButtons /></ProtectedRoute>} />
+          <Route path="/test-profile" element={<ProtectedRoute><ProfileTest /></ProtectedRoute>} />
+          <Route path="/layout-demo" element={<ProtectedRoute><LayoutDemo /></ProtectedRoute>} />
+        </>
+      )}
+      
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};

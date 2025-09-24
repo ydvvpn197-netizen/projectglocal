@@ -1,0 +1,55 @@
+Implement a role-based access control system (RBAC) with Supabase RLS policies for my project.
+
+Requirements:
+
+Roles Table
+
+Create a new table public.roles with fields:
+
+id (uuid, pk, default gen_random_uuid())
+
+user_id (uuid, fk → auth.users.id)
+
+role (enum: super_admin, admin, moderator, user)
+
+created_at (timestamp, default now())
+
+Auto-assign role on signup
+
+Add a Postgres trigger so every new user in auth.users gets a default user role entry in public.roles.
+
+Enable RLS
+
+Enable RLS on events and roles tables.
+
+Policies for events table
+
+Anyone can select public events.
+
+Normal users (role = user) can insert events and only update/delete their own events.
+
+Admins and Super Admins can insert/update/delete any event.
+
+Only Admins and Super Admins can mark an event as featured.
+
+Policies for roles table
+
+Only Super Admins can update or delete roles.
+
+Admins can select all roles but cannot modify them.
+
+Users can only select their own role.
+
+Best practices
+
+Use service role key only in backend server (never frontend).
+
+Add an audit_logs table to record all admin actions (who did what, when).
+
+Output format
+
+Generate the full SQL migrations (for roles table, trigger, policies).
+
+Show how to query user roles from Supabase client (e.g., getRole() function).
+
+Add example TypeScript helper in my project for role-based checks (e.g., isAdmin(userId)).

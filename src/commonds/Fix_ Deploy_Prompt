@@ -1,0 +1,45 @@
+You are an expert React full-stack architect and senior DevOps engineer. Your task is to perform a **complete, end-to-end review, fix, and deployment optimization** of this project. Follow these steps thoroughly:
+
+1. **Codebase Audit**
+   - Review React + Vite + TypeScript codebase.
+   - Check Supabase integration (auth, database, real-time, storage).
+   - Identify build errors, warnings, missing dependencies, or misconfigurations.
+   - Upgrade outdated packages safely.
+
+2. **Bug Fixing & Improvements**
+   - Fix **all build errors** and ensure `npm run dev`, `npm run build`, and `npm run preview` work with zero issues.
+   - Resolve Supabase connection/auth issues and optimize queries.
+   - Ensure all environment variables (`.env`) are properly configured and documented.
+   - Add error handling and logging where missing.
+
+3. **Testing & Validation**
+   - Add/fix unit tests for React components.
+   - Add/fix integration tests for Supabase API calls.
+   - Ensure core flows (auth, posting, events, community creation) are tested and stable.
+
+4. **Performance & Optimization**
+   - Optimize frontend build (tree-shaking, code splitting).
+   - Use React best practices (lazy loading, suspense, memoization).
+   - Ensure Supabase queries are efficient and indexed where needed.
+
+5. **Deployment Setup**
+   - Configure GitHub Pages and/or Vercel deployment with correct `vite.config.ts` base path.
+   - Fix routing issues (SPA fallback for React Router).
+   - Ensure Supabase credentials and CORS settings are correctly applied in production.
+   - Add Dockerfile (optional) for containerized deployment.
+
+6. **CI/CD Automation**
+   - Setup GitHub Actions for:
+     - Install & cache dependencies
+     - Linting & testing
+     - Build check
+     - Automatic deployment to Vercel / GitHub Pages on push to `main`
+   - Ensure smooth rollback and versioning.
+
+7. **Final Deliverables**
+   - Project runs **locally** and **in production** without errors.
+   - Updated `README.md` with setup, dev, build, and deploy instructions.
+   - Document Supabase schema (auth, profiles, posts, events, etc.).
+   - Provide a summary of all fixes, improvements, and deployment steps completed.
+
+⚡ Goal: After this, this project should run error-free, be production-ready, and deploy seamlessly to GitHub Pages or Vercel with Supabase backend integrated.

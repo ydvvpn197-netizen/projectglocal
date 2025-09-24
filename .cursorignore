@@ -1,0 +1,13 @@
+# Cursor ignore file
+# Allow access to .env file
+!.env
+
+# Ignore other sensitive files
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+.env.local
+.env.production
+.env.staging

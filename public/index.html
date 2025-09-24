@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="The Glocal" />
+    <meta name="theme-color" content="#6D28D9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1F2937" media="(prefers-color-scheme: dark)" />
+    
+    <!-- SPA Routing Fix - MUST BE FIRST -->
+    <script type="text/javascript">
+      // Fix for SPA routing on custom domain hosting
+      // This ensures that direct URL access works properly
+      (function() {
+        // Check if we're accessing a route that should be handled by the SPA
+        var currentPath = window.location.pathname;
+        var isRoot = currentPath === '/' || currentPath === '/index.html';
+        
+        // If we're not at root and the path doesn't contain a file extension,
+        // this is likely a client-side route that should be handled by React Router
+        if (!isRoot && !currentPath.includes('.')) {
+          // Store the intended path for React Router to handle
+          window.__SPA_INITIAL_PATH__ = currentPath;
+          
+          // Optionally, you can redirect to root and let React Router handle it
+          // window.location.replace('/');
+        }
+      })();
+    </script>
+    
+    <!-- CSP for Vite + Supabase - allows connections to Supabase -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; worker-src 'self' blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://theglocal.in https://*.theglocal.in http://localhost:* http://127.0.0.1:*;">
+    
+    <title>Glocal</title>
+    <meta name="description" content="Discover local events, connect with your community, and book talented artists near you." />
+    <link rel="canonical" href="https://theglocal.in/" />
+    
+    <!-- Prevent favicon from loading -->
+    <link rel="icon" href="data:," />
+
+    <!-- Performance: Preconnect to Supabase -->
+    <link rel="preconnect" href="https://tepvzhbgobckybyhryuj.supabase.co" crossorigin />
+    <meta name="theme-color" content="#6D28D9" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Glocal" />
+    <meta property="og:description" content="Discover local events, connect with your community, and book talented artists near you." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Load main application script -->
+    <script type="module" src="/src/main.tsx"></script>
+  </head>
+
+  <body>
+    <div id="root">
+      <!-- Fallback content (replaced once JS loads) -->
+      <noscript>
+        <style>body{background:#fff;color:#111;font-family:system-ui,sans-serif}</style>
+        <div style="max-width:680px;margin:40px auto;padding:16px">
+          <h1>The Glocal</h1>
+          <p>JavaScript is required to run this app. Please enable JavaScript and reload.</p>
+        </div>
+      </noscript>
+    </div>
+  </body>
+</html>

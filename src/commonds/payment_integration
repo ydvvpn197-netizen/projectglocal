@@ -1,0 +1,68 @@
+You are an expert full-stack engineer helping me implement Stripe payments in my project (glocal.in). 
+My stack: Vite (frontend), Supabase (backend, auth, database, edge functions).  
+I want a complete end-to-end Stripe integration with one-time payments and subscriptions.  
+
+Please implement the following:
+
+1. **Environment Setup**
+   - Add `.env.example` entries =for:
+     VITE_STRIPE_PUBLISHABLE_KEY
+     STRIPE_SECRET_KEY
+     STRIPE_WEBHOOK_SECRET
+     SUPABASE_URL
+     SUPABASE_SERVICE_ROLE_KEY
+   - Ensure publishable key is only used in frontend (VITE_ prefix), secret keys remain server-side in Supabase Edge Functions.
+   - Add `.gitignore` rules for `.env`.
+
+2. **Database Changes (Supabase)**
+   - Extend `profiles` table with:
+     - `stripe_customer_id` (text)
+     - `is_authorized` (boolean, default false)
+     - `subscription_status` (text)
+   - Add migration SQL file for this.
+
+3. **Supabase Edge Functions**
+   - Function: `create-checkout-session`
+     - Input: `priceId`, `mode` ('payment' or 'subscription'), `userId`
+     - Creates Stripe customer if not existing
+     - Stores `stripe_customer_id` in `profiles`
+     - Creates Checkout Session and returns `session.url`
+   - Function: `stripe-webhook`
+     - Raw body endpoint
+     - Verify signature with `STRIPE_WEBHOOK_SECRET`
+     - Handle events:
+       - `checkout.session.completed`: mark user `is_authorized = true`
+       - `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`: update `subscription_status`
+     - Use `SUPABASE_SERVICE_ROLE_KEY` for secure updates.
+
+4. **Frontend (Vite + React)**
+   - Add a reusable `PaymentButton` component that:
+     - Takes `priceId`, `mode`
+     - Calls `/functions/create-checkout-session`
+     - Redirects to returned `session.url`
+   - Add a `PaymentSuccess` and `PaymentCancel` page to handle user redirection after checkout.
+   - Show verified/authorized status in user profile UI after successful payment.
+
+5. **Testing Setup**
+   - Add Stripe CLI usage instructions in README:
+     - `stripe listen --forward-to http://localhost:54321/functions/v1/stripe-webhook`
+     - Use test cards (4242...).
+   - Document how to switch from test to live keys.
+
+6. **Deployment**
+   - Ensure secrets are set via Supabase dashboard (`supabase secrets set ...`)
+   - Provide final checklist for production go-live (switch to live keys, enable webhooks, test with real card).
+
+Deliverables:
+- Updated `.env.example`
+- Migration SQL for Supabase
+- Supabase Edge Function code for `create-checkout-session` and `stripe-webhook`
+- Frontend React component `PaymentButton.jsx`
+- Pages for payment success/cancel
+- README updates for testing & deployment
+
+Goal: Full end-user payment gateway integration where:
+- Users can pay a subscription fee to become "authorised users"
+- Users can pay one-time fees to feature events
+- Stripe handles checkout & receipts
+- Supabase DB keeps user’s Stripe status synced via webhooks

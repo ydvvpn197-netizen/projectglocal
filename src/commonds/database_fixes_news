@@ -1,0 +1,72 @@
+You are my AI pair programmer. Analyze and fix the following missing or incomplete features in my project. Implement solutions directly in the codebase.
+
+Tasks to Complete:
+1. Database Schema Gaps
+
+Add the following missing tables:
+
+news_cache (for 15-min caching with SHA-256 article_id)
+
+news_likes (separate from interactions)
+
+news_shares (dedicated shares table)
+
+news_events (track user interactions for personalization)
+
+news_poll_votes (dedicated poll votes table)
+
+Ensure all tables use proper indexing and constraints.
+
+2. Backend Functionality
+
+AI Summaries:
+
+Add OpenAI integration (via Edge Functions / API call).
+
+Auto-generate 2–3 sentence summaries for each article.
+
+Caching Logic: Implement 15-minute cache check in news_cache.
+
+Trending Algorithm:
+
+Add time-decay formula (λ ≈ 0.08).
+
+Include locality boost (+20% city, +10% country).
+
+Create a proper trending scoring system.
+
+Personalization:
+
+Finish "For You" recommendation system.
+
+Add user preference learning.
+
+Track interaction history from news_events.
+
+clearNewsHistory Function: Implement endpoint to clear user news history.
+
+3. Advanced Features
+
+Implement SHA-256 hashing for article_id.
+
+Implement Web Share API for sharing.
+
+Improve infinite scroll (loading state + pagination).
+
+4. Real-time Features
+
+Supabase Subscriptions: Complete and verify.
+
+Live Vote Updates: Ensure real-time updates on polls.
+
+Real-time Counts: Verify live counts for likes, shares, and comments.
+
+Implementation Requirements
+
+Use TypeScript and Supabase for DB + subscriptions.
+
+Ensure Edge Functions handle AI summarization, caching, and trending.
+
+Add unit tests for trending, caching, and personalization logic.
+
+Write clean, production-ready code with comments.
