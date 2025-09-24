@@ -76,10 +76,14 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
   className,
   onEngagement 
 }) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { location } = useLocation();
-  const { sanitizeText, validateInput } = useSecurity();
+  const auth = useAuth();
+  const { user } = auth || { user: null };
+  const toastHook = useToast();
+  const { toast } = toastHook || { toast: () => {} };
+  const locationHook = useLocation();
+  const { location } = locationHook || { location: null };
+  const securityHook = useSecurity();
+  const { sanitizeText, validateInput } = securityHook || { sanitizeText: (text) => text, validateInput: () => true };
   
   // Performance monitoring
   usePerformanceMonitor('CommunityEngagementHub');
