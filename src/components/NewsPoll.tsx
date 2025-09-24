@@ -1,5 +1,5 @@
 // NewsPoll component for creating and voting on polls
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -35,16 +35,21 @@ export const NewsPoll: React.FC<NewsPollProps> = React.memo(({ articleId, onClos
 
   const { polls, loading, createPoll, votePoll, refetch } = useNewsPolls(articleId);
   
-  // Real-time subscriptions for live poll updates
+  // Real-time subscriptions for live poll updates - OPTIMIZED
   const realtimeUpdates = useNewsRealtime([articleId]);
   
-  // Handle real-time updates
+  // Handle real-time updates with proper memoization
+  const handleRealtimeUpdate = useCallback(() => {
+    refetch();
+  }, [refetch]);
+  
   React.useEffect(() => {
     if (realtimeUpdates.length > 0) {
-      // Refresh polls when real-time updates are received
-      refetch();
+      // Debounce real-time updates to prevent excessive refetching
+      const timeoutId = setTimeout(handleRealtimeUpdate, 100);
+      return () => clearTimeout(timeoutId);
     }
-  }, [realtimeUpdates, refetch]);
+  }, [realtimeUpdates.length, handleRealtimeUpdate]);
 
   const handleAddOption = () => {
     if (options.length < 6) {

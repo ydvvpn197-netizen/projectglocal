@@ -92,7 +92,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
     if (user) {
       loadPrivacySettings();
     }
-  }, [user]);
+  }, [user, loadPrivacySettings]);
 
   const loadPrivacySettings = async () => {
     try {
@@ -251,7 +251,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
                     ].map(({ value, label, icon: Icon, color }) => (
                       <button
                         key={value}
-                        onClick={() => updateSetting('profile_visibility', value as any)}
+                        onClick={() => updateSetting('profile_visibility', value as 'public' | 'friends' | 'private' | 'anonymous')}
                         className={`p-4 rounded-lg border-2 transition-all text-left ${
                           settings.profile_visibility === value
                             ? `border-${color}-500 bg-${color}-50`

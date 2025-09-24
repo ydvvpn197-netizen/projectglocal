@@ -4,11 +4,13 @@ import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { registerServiceWorker } from '@/utils/serviceWorker';
-import { EnhancedErrorBoundary } from '@/components/error/EnhancedErrorBoundary';
+import { ComprehensiveErrorBoundary } from '@/components/error/ComprehensiveErrorBoundary';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
 import { VoiceControlPanel } from '@/components/voice/VoiceControlPanel';
 import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
+import { initializePerformanceMonitoring } from '@/utils/performanceMonitor';
+import { initializeSecurityAudit } from '@/utils/securityAudit';
 
 // Import your existing components
 import { AuthProvider } from '@/components/auth/AuthProvider';
@@ -24,6 +26,15 @@ function App() {
 
   // Register voice commands
   useCommonVoiceCommands();
+
+  // Initialize monitoring and security systems
+  useEffect(() => {
+    // Initialize performance monitoring
+    initializePerformanceMonitoring();
+    
+    // Initialize security audit
+    initializeSecurityAudit();
+  }, []);
 
   // Service Worker registration
   useEffect(() => {
@@ -86,12 +97,12 @@ function App() {
   // Show onboarding for new users
   if (showOnboarding) {
     return (
-      <EnhancedErrorBoundary>
+      <ComprehensiveErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
         <OnboardingFlow 
           onComplete={handleOnboardingComplete}
           onSkip={handleOnboardingSkip}
         />
-      </EnhancedErrorBoundary>
+      </ComprehensiveErrorBoundary>
     );
   }
 
@@ -111,7 +122,7 @@ function App() {
   }
 
   return (
-    <EnhancedErrorBoundary>
+    <ComprehensiveErrorBoundary level="critical" showDetails={process.env.NODE_ENV === 'development'}>
       <AuthProvider>
         <Router>
           <div className="min-h-screen bg-gray-50">
@@ -139,9 +150,9 @@ function App() {
             {/* Toast Notifications */}
             <Toaster />
           </div>
-        </AuthProvider>
-      </EnhancedErrorBoundary>
-    );
+        </Router>
+      </AuthProvider>
+    </ComprehensiveErrorBoundary>
   );
 }
 

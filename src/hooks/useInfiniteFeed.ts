@@ -82,10 +82,11 @@ export const useInfiniteFeed = (options: UseInfiniteFeedOptions = {}) => {
 
       // Apply filters based on feed type
       switch (feedType) {
-        case 'trending':
+        case 'trending': {
           query = query.gte('likes_count', 5);
           break;
-        case 'following':
+        }
+        case 'following': {
           // Get posts from users the current user follows
           const { data: following } = await supabase
             .from('follows')
@@ -99,13 +100,16 @@ export const useInfiniteFeed = (options: UseInfiniteFeedOptions = {}) => {
             return { posts: [], nextCursor: null };
           }
           break;
-        case 'local':
+        }
+        case 'local': {
           // Get posts from users in the same area (simplified)
           query = query.not('location_city', 'is', null);
           break;
-        default:
+        }
+        default: {
           // 'latest' - no additional filters
           break;
+        }
       }
 
       const { data: postsData, error } = await query;
@@ -138,7 +142,7 @@ export const useInfiniteFeed = (options: UseInfiniteFeedOptions = {}) => {
       });
       throw error;
     }
-  }, [user, feedType, limit, toast]);
+  }, [user, feedType, limit, toast, CACHE_DURATION]);
 
   const {
     data,

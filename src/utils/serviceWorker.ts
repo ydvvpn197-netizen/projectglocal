@@ -158,7 +158,7 @@ export const getServiceWorkerStatus = async () => {
   }
 };
 
-export const sendMessageToServiceWorker = (message: any) => {
+export const sendMessageToServiceWorker = (message: Record<string, unknown>) => {
   if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
     console.warn('Service Worker not available');
     return;

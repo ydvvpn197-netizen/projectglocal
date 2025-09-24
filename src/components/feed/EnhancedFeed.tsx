@@ -147,7 +147,7 @@ export const EnhancedFeed: React.FC<EnhancedFeedProps> = ({
   }, [toast]);
 
   // Render post content based on type
-  const renderPostContent = (post: any) => {
+  const renderPostContent = (post: FeedPost) => {
     switch (post.type) {
       case "event":
         return (

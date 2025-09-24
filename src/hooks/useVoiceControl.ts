@@ -130,7 +130,7 @@ export const useVoiceControl = (options: VoiceControlOptions = {}) => {
     };
 
     return recognition;
-  }, [isSupported, continuous, interimResults, language, maxAlternatives, toast]);
+  }, [isSupported, continuous, interimResults, language, maxAlternatives, toast, processCommand]);
 
   // Process voice commands
   const processCommand = useCallback((transcript: string) => {
@@ -193,7 +193,7 @@ export const useVoiceControl = (options: VoiceControlOptions = {}) => {
       console.error('Error starting speech recognition:', error);
       setError('Failed to start voice recognition');
     }
-  }, [isSupported, isListening, initializeRecognition, timeout, toast]);
+  }, [isSupported, isListening, initializeRecognition, timeout, toast, stopListening]);
 
   // Stop listening
   const stopListening = useCallback(() => {

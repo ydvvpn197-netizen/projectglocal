@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -241,7 +241,8 @@ export const EnhancedIndex: React.FC = () => {
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
 
 
-  const handleGetStarted = () => {
+  // Memoized event handlers to prevent unnecessary re-renders
+  const handleGetStarted = useCallback(() => {
     try {
       if (user) {
         navigate('/feed');
@@ -256,9 +257,9 @@ export const EnhancedIndex: React.FC = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [user, navigate, toast]);
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = useCallback(() => {
     try {
       if (user) {
         navigate('/notifications');
@@ -273,23 +274,23 @@ export const EnhancedIndex: React.FC = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [user, navigate, toast]);
 
-  const nextEvent = () => {
+  const nextEvent = useCallback(() => {
     try {
       setCurrentEventIndex((prev) => (prev + 1) % trendingEvents.length);
     } catch (error) {
       console.error('Error navigating to next event:', error);
     }
-  };
+  }, [trendingEvents.length]);
 
-  const prevEvent = () => {
+  const prevEvent = useCallback(() => {
     try {
       setCurrentEventIndex((prev) => (prev - 1 + trendingEvents.length) % trendingEvents.length);
     } catch (error) {
       console.error('Error navigating to previous event:', error);
     }
-  };
+  }, [trendingEvents.length]);
 
   const handleEventNavigation = (eventId: number) => {
     try {
@@ -382,7 +383,8 @@ export const EnhancedIndex: React.FC = () => {
     }
   };
 
-  const containerVariants = {
+  // Memoized animation variants to prevent unnecessary recalculations
+  const containerVariants = useMemo(() => ({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -390,9 +392,9 @@ export const EnhancedIndex: React.FC = () => {
         staggerChildren: 0.1,
       },
     },
-  };
+  }), []);
 
-  const itemVariants = {
+  const itemVariants = useMemo(() => ({
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -401,7 +403,7 @@ export const EnhancedIndex: React.FC = () => {
         duration: 0.5,
       },
     },
-  };
+  }), []);
 
   return (
     <ResponsiveLayout showNewsFeed={false}>

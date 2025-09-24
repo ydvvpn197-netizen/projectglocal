@@ -31,7 +31,7 @@ interface NewsCommentsProps {
   onClose: () => void;
 }
 
-export const NewsComments: React.FC<NewsCommentsProps> = ({ 
+export const NewsComments: React.FC<NewsCommentsProps> = React.memo(({ 
   articleId, 
   isOpen, 
   onClose 
@@ -50,16 +50,21 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({
     refetch
   } = useNewsComments(articleId);
   
-  // Real-time subscriptions for live comment updates
+  // Real-time subscriptions for live comment updates - OPTIMIZED
   const realtimeUpdates = useNewsRealtime([articleId]);
   
-  // Handle real-time updates
+  // Handle real-time updates with proper memoization
+  const handleRealtimeUpdate = useCallback(() => {
+    refetch();
+  }, [refetch]);
+  
   React.useEffect(() => {
     if (realtimeUpdates.length > 0) {
-      // Refresh comments when real-time updates are received
-      refetch();
+      // Debounce real-time updates to prevent excessive refetching
+      const timeoutId = setTimeout(handleRealtimeUpdate, 100);
+      return () => clearTimeout(timeoutId);
     }
-  }, [realtimeUpdates, refetch]);
+  }, [realtimeUpdates.length, handleRealtimeUpdate]);
 
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -501,4 +506,4 @@ export const NewsComments: React.FC<NewsCommentsProps> = ({
       </motion.div>
     </motion.div>
   );
-};
+});

@@ -190,7 +190,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onSk
                 ].map(({ value, label, icon: Icon, desc }) => (
                   <button
                     key={value}
-                    onClick={() => setOnboardingData(prev => ({ ...prev, privacyLevel: value as any }))}
+                    onClick={() => setOnboardingData(prev => ({ ...prev, privacyLevel: value as 'public' | 'friends' | 'private' }))}
                     className={`p-4 rounded-lg border-2 transition-all text-left ${
                       onboardingData.privacyLevel === value
                         ? 'border-blue-500 bg-blue-50'

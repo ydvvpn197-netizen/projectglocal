@@ -62,7 +62,7 @@ export const EnhancedFeedPage: React.FC<EnhancedFeedPageProps> = ({ className })
     console.log('Searching for:', query);
   };
 
-  const handleFilterChange = (filter: string, value: any) => {
+  const handleFilterChange = (filter: string, value: string | number | boolean) => {
     console.log('Filter changed:', filter, value);
     // Implement filter functionality
   };

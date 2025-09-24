@@ -59,16 +59,27 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = React.memo(({
     const optimizedUrl = imageOptimizationService.optimizeImageUrl(src, optimizationOptions);
     
     if (lazy && imgRef.current) {
-      // Lazy load the image
-      imageOptimizationService.lazyLoadImage(imgRef.current, src, optimizationOptions)
+      // Lazy load the image with proper cleanup
+      const loadPromise = imageOptimizationService.lazyLoadImage(imgRef.current, src, optimizationOptions);
+      
+      loadPromise
         .then(() => {
-          setIsLoaded(true);
-          onLoad?.();
+          if (imgRef.current) { // Check if component is still mounted
+            setIsLoaded(true);
+            onLoad?.();
+          }
         })
         .catch(() => {
-          setHasError(true);
-          onError?.();
+          if (imgRef.current) { // Check if component is still mounted
+            setHasError(true);
+            onError?.();
+          }
         });
+        
+      return () => {
+        // Cancel loading if component unmounts
+        loadPromise.catch(() => {}); // Suppress unhandled promise rejection
+      };
     } else {
       // Load immediately
       setCurrentSrc(optimizedUrl);

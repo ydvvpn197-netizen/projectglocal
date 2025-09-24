@@ -248,14 +248,22 @@ export function useNewsRealtime({
     };
   }, [enabled, articleIds, fetchCounts, subscribe, unsubscribe]);
 
-  // Cleanup all subscriptions on unmount
+  // Cleanup all subscriptions on unmount - FIXED MEMORY LEAK
   useEffect(() => {
     return () => {
-      subscriptions.forEach((_, articleId) => {
-        unsubscribe(articleId);
+      // Clean up all active subscriptions
+      subscriptions.forEach((subscription, articleId) => {
+        try {
+          subscription.likes.unsubscribe();
+          subscription.shares.unsubscribe();
+          subscription.comments.unsubscribe();
+          subscription.pollVotes.unsubscribe();
+        } catch (error) {
+          console.warn(`Failed to unsubscribe from ${articleId}:`, error);
+        }
       });
     };
-  }, [subscriptions, unsubscribe]);
+  }, []); // Empty dependency array - only run on unmount
 
   return {
     data,

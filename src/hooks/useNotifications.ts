@@ -8,7 +8,7 @@ interface Notification {
   type: 'like' | 'comment' | 'follow' | 'event' | 'message' | 'system';
   title: string;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
   read: boolean;
   created_at: string;
   user_id: string;

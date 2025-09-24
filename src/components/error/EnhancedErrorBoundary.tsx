@@ -1,26 +1,15 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { 
-  AlertTriangle, 
-  RefreshCw, 
-  Home, 
-  Bug, 
-  Send,
-  Copy,
-  CheckCircle,
-  XCircle
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { RefreshCw, Bug, Home, Settings, AlertTriangle } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   showDetails?: boolean;
-  enableReporting?: boolean;
 }
 
 interface State {
@@ -28,13 +17,12 @@ interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   errorId: string;
-  userAction: string;
-  reportSent: boolean;
+  retryCount: number;
 }
 
 export class EnhancedErrorBoundary extends Component<Props, State> {
-  private retryCount = 0;
   private maxRetries = 3;
+  private retryTimeouts: NodeJS.Timeout[] = [];
 
   constructor(props: Props) {
     super(props);
@@ -43,8 +31,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null,
       errorId: '',
-      userAction: '',
-      reportSent: false
+      retryCount: 0,
     };
   }
 
@@ -52,258 +39,233 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     return {
       hasError: true,
       error,
-      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error('🚨 Enhanced Error Boundary caught an error:', error, errorInfo);
     
     this.setState({
       error,
       errorInfo,
-      userAction: this.getUserAction()
     });
 
-    // Call custom error handler
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
-    }
+    // Call custom error handler if provided
+    this.props.onError?.(error, errorInfo);
 
-    // Log error to monitoring service
+    // Log error to external service (if configured)
     this.logError(error, errorInfo);
   }
 
-  private getUserAction = (): string => {
-    // Try to determine what the user was doing when the error occurred
-    const path = window.location.pathname;
-    const search = window.location.search;
-    
-    if (path.includes('/feed')) return 'Viewing feed';
-    if (path.includes('/profile')) return 'Viewing profile';
-    if (path.includes('/create')) return 'Creating post';
-    if (path.includes('/events')) return 'Browsing events';
-    if (path.includes('/messages')) return 'Viewing messages';
-    if (search.includes('search=')) return 'Searching';
-    
-    return 'Unknown action';
-  };
+  componentWillUnmount() {
+    // Clear any pending retry timeouts
+    this.retryTimeouts.forEach(timeout => clearTimeout(timeout));
+  }
 
-  private logError = async (error: Error, errorInfo: ErrorInfo) => {
-    try {
-      // In a real app, you'd send this to your error monitoring service
-      console.log('Error logged:', {
-        errorId: this.state.errorId,
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        userAction: this.state.userAction,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      });
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+  private logError = (error: Error, errorInfo: ErrorInfo) => {
+    const errorData = {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorId: this.state.errorId,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      retryCount: this.state.retryCount,
+    };
+
+    // In production, send to error tracking service
+    if (process.env.NODE_ENV === 'production') {
+      // Example: Send to Sentry, LogRocket, etc.
+      console.log('📊 Error logged:', errorData);
     }
   };
 
   private handleRetry = () => {
-    if (this.retryCount < this.maxRetries) {
-      this.retryCount++;
-      this.setState({
-        hasError: false,
-        error: null,
-        errorInfo: null,
-        errorId: '',
-        userAction: '',
-        reportSent: false
-      });
+    if (this.state.retryCount >= this.maxRetries) {
+      console.warn('🚫 Max retry attempts reached');
+      return;
     }
-  };
 
-  private handleGoHome = () => {
-    window.location.href = '/';
+    this.setState(prevState => ({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      retryCount: prevState.retryCount + 1,
+    }));
   };
 
   private handleReload = () => {
     window.location.reload();
   };
 
-  private handleCopyError = async () => {
-    const errorDetails = {
-      errorId: this.state.errorId,
-      message: this.state.error?.message,
-      stack: this.state.error?.stack,
-      userAction: this.state.userAction,
-      timestamp: new Date().toISOString(),
-      url: window.location.href
-    };
+  private handleGoHome = () => {
+    window.location.href = '/';
+  };
 
+  private handleClearStorage = () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2));
-      // Show success feedback
+      localStorage.clear();
+      sessionStorage.clear();
+      this.handleReload();
     } catch (error) {
-      console.error('Failed to copy error details:', error);
+      console.error('Failed to clear storage:', error);
     }
   };
 
-  private handleReportError = async () => {
-    try {
-      // In a real app, you'd send this to your error reporting service
-      console.log('Error reported:', this.state.errorId);
-      this.setState({ reportSent: true });
-    } catch (error) {
-      console.error('Failed to report error:', error);
+  private getErrorType = (error: Error): string => {
+    if (error.name === 'ChunkLoadError') return 'Bundle Loading Error';
+    if (error.name === 'TypeError') return 'Type Error';
+    if (error.name === 'ReferenceError') return 'Reference Error';
+    if (error.message.includes('Network')) return 'Network Error';
+    if (error.message.includes('Authentication')) return 'Authentication Error';
+    if (error.message.includes('Permission')) return 'Permission Error';
+    return 'Unknown Error';
+  };
+
+  private getErrorSeverity = (error: Error): 'low' | 'medium' | 'high' | 'critical' => {
+    if (error.name === 'ChunkLoadError') return 'high';
+    if (error.message.includes('Network')) return 'medium';
+    if (error.message.includes('Authentication')) return 'high';
+    if (error.message.includes('Permission')) return 'critical';
+    return 'medium';
+  };
+
+  private getErrorSuggestions = (error: Error): string[] => {
+    const suggestions: string[] = [];
+
+    if (error.name === 'ChunkLoadError') {
+      suggestions.push('Try refreshing the page');
+      suggestions.push('Check your internet connection');
+      suggestions.push('Clear browser cache');
+    } else if (error.message.includes('Network')) {
+      suggestions.push('Check your internet connection');
+      suggestions.push('Try again in a few moments');
+    } else if (error.message.includes('Authentication')) {
+      suggestions.push('Try signing out and back in');
+      suggestions.push('Clear browser data');
+    } else if (error.message.includes('Permission')) {
+      suggestions.push('Contact support if this persists');
+    } else {
+      suggestions.push('Try refreshing the page');
+      suggestions.push('Clear browser cache');
     }
+
+    return suggestions;
   };
 
   render() {
     if (this.state.hasError) {
+      const { error, errorInfo, retryCount } = this.state;
+      const errorType = error ? this.getErrorType(error) : 'Unknown Error';
+      const severity = error ? this.getErrorSeverity(error) : 'medium';
+      const suggestions = error ? this.getErrorSuggestions(error) : [];
+
       // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      const { error, errorId, userAction, reportSent } = this.state;
-      const canRetry = this.retryCount < this.maxRetries;
-
       return (
-        <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-2xl"
-          >
-            <Card className="overflow-hidden shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-red-500 to-orange-500 text-white">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-8 w-8" />
-                  <div>
-                    <CardTitle className="text-xl">Something went wrong</CardTitle>
-                    <p className="text-red-100 mt-1">
-                      We encountered an unexpected error while you were {userAction.toLowerCase()}
-                    </p>
-                  </div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <Card className="w-full max-w-2xl">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className={`p-3 rounded-full ${
+                  severity === 'critical' ? 'bg-red-100 text-red-600' :
+                  severity === 'high' ? 'bg-orange-100 text-orange-600' :
+                  severity === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                  'bg-blue-100 text-blue-600'
+                }`}>
+                  {severity === 'critical' ? <AlertTriangle className="w-8 h-8" /> :
+                   severity === 'high' ? <Bug className="w-8 h-8" /> :
+                   <AlertTriangle className="w-8 h-8" />}
                 </div>
-                <Badge variant="secondary" className="bg-white/20 text-white w-fit">
-                  Error ID: {errorId}
+              </div>
+              <CardTitle className="text-2xl font-bold text-gray-900">
+                Oops! Something went wrong
+              </CardTitle>
+              <div className="flex justify-center gap-2 mt-2">
+                <Badge variant={severity === 'critical' ? 'destructive' : 'secondary'}>
+                  {errorType}
                 </Badge>
-              </CardHeader>
+                <Badge variant="outline">
+                  Retry {retryCount}/{this.maxRetries}
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>What happened?</AlertTitle>
+                <AlertDescription>
+                  {error?.message || 'An unexpected error occurred. This has been logged and we\'re working to fix it.'}
+                </AlertDescription>
+              </Alert>
 
-              <CardContent className="p-6 space-y-6">
-                {/* Error message */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-red-800 mb-1">Error Details</h4>
-                      <p className="text-red-700 text-sm">
-                        {error?.message || 'An unknown error occurred'}
-                      </p>
-                    </div>
-                  </div>
+              {suggestions.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Try these solutions:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                    {suggestions.map((suggestion, index) => (
+                      <li key={index}>{suggestion}</li>
+                    ))}
+                  </ul>
                 </div>
+              )}
 
-                {/* Action buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {canRetry && (
-                    <Button 
-                      onClick={this.handleRetry}
-                      className="bg-blue-500 hover:bg-blue-600"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Try Again ({this.maxRetries - this.retryCount} left)
-                    </Button>
-                  )}
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={this.handleGoHome}
-                  >
-                    <Home className="h-4 w-4 mr-2" />
-                    Go Home
+              <div className="flex flex-wrap gap-2">
+                {retryCount < this.maxRetries && (
+                  <Button onClick={this.handleRetry} className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4" />
+                    Try Again
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={this.handleReload}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Reload Page
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={this.handleCopyError}
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Error Details
-                  </Button>
-                </div>
+                )}
+                
+                <Button variant="outline" onClick={this.handleReload} className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  Reload Page
+                </Button>
+                
+                <Button variant="outline" onClick={this.handleGoHome} className="flex items-center gap-2">
+                  <Home className="w-4 h-4" />
+                  Go Home
+                </Button>
+                
+                <Button variant="outline" onClick={this.handleClearStorage} className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Clear Data
+                </Button>
+              </div>
 
-                {/* Error reporting */}
-                {this.props.enableReporting && (
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold">Help us improve</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Report this error to help us fix it faster
-                        </p>
+              {this.props.showDetails && error && (
+                <details className="mt-4">
+                  <summary className="cursor-pointer font-medium text-gray-700">
+                    Technical Details
+                  </summary>
+                  <div className="mt-2 p-4 bg-gray-100 rounded-md text-xs font-mono overflow-auto">
+                    <div><strong>Error:</strong> {error.name}</div>
+                    <div><strong>Message:</strong> {error.message}</div>
+                    <div><strong>Error ID:</strong> {this.state.errorId}</div>
+                    {error.stack && (
+                      <div className="mt-2">
+                        <strong>Stack Trace:</strong>
+                        <pre className="whitespace-pre-wrap">{error.stack}</pre>
                       </div>
-                      {reportSent ? (
-                        <div className="flex items-center gap-2 text-green-600">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Reported</span>
-                        </div>
-                      ) : (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={this.handleReportError}
-                        >
-                          <Send className="h-4 w-4 mr-2" />
-                          Report Error
-                        </Button>
-                      )}
-                    </div>
+                    )}
+                    {errorInfo?.componentStack && (
+                      <div className="mt-2">
+                        <strong>Component Stack:</strong>
+                        <pre className="whitespace-pre-wrap">{errorInfo.componentStack}</pre>
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {/* Technical details (collapsible) */}
-                {this.props.showDetails && error && (
-                  <details className="border rounded-lg">
-                    <summary className="p-3 cursor-pointer hover:bg-gray-50 flex items-center gap-2">
-                      <Bug className="h-4 w-4" />
-                      <span className="font-medium">Technical Details</span>
-                    </summary>
-                    <div className="p-3 bg-gray-50 border-t">
-                      <pre className="text-xs text-gray-700 whitespace-pre-wrap overflow-auto max-h-40">
-                        {error.stack}
-                      </pre>
-                    </div>
-                  </details>
-                )}
-
-                {/* Helpful links */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-800 mb-2">Need help?</h4>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-blue-700">
-                      If this error persists, try these steps:
-                    </p>
-                    <ul className="list-disc list-inside text-blue-700 space-y-1">
-                      <li>Clear your browser cache and cookies</li>
-                      <li>Check your internet connection</li>
-                      <li>Try using a different browser</li>
-                      <li>Contact support if the problem continues</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </details>
+              )}
+            </CardContent>
+          </Card>
         </div>
       );
     }
@@ -312,26 +274,5 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Hook for programmatic error handling
-export const useErrorHandler = () => {
-  const { toast } = useToast();
-
-  const handleError = (error: Error, context?: string) => {
-    console.error(`Error in ${context || 'unknown context'}:`, error);
-    
-    toast({
-      title: "Something went wrong",
-      description: error.message || "An unexpected error occurred",
-      variant: "destructive"
-    });
-  };
-
-  const handleAsyncError = (error: unknown, context?: string) => {
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-    handleError(new Error(errorMessage), context);
-  };
-
-  return { handleError, handleAsyncError };
-};
 
 export default EnhancedErrorBoundary;
