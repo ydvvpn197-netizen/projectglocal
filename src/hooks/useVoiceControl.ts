@@ -1,193 +1,384 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useToast } from './use-toast';
+import { useAuth } from './useAuth';
 
 interface VoiceCommand {
   command: string;
-  confidence: number;
-  timestamp: Date;
+  action: () => void;
+  description: string;
+  keywords: string[];
 }
 
-interface VoiceControlState {
-  isListening: boolean;
-  isSupported: boolean;
-  transcript: string;
-  commands: VoiceCommand[];
-  error: string | null;
+interface VoiceControlOptions {
+  language?: string;
+  continuous?: boolean;
+  interimResults?: boolean;
+  maxAlternatives?: number;
+  timeout?: number;
 }
 
-interface VoiceControlActions {
-  startListening: () => void;
-  stopListening: () => void;
-  clearTranscript: () => void;
-  clearCommands: () => void;
-}
+export const useVoiceControl = (options: VoiceControlOptions = {}) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const {
+    language = 'en-US',
+    continuous = false,
+    interimResults = true,
+    maxAlternatives = 1,
+    timeout = 10000
+  } = options;
 
-export const useVoiceControl = (): VoiceControlState & VoiceControlActions => {
-  const [state, setState] = useState<VoiceControlState>({
-    isListening: false,
-    isSupported: false,
-    transcript: '',
-    commands: [],
-    error: null,
-  });
+  const [isListening, setIsListening] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const [confidence, setConfidence] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const isInitializedRef = useRef(false);
+  const commandsRef = useRef<VoiceCommand[]>([]);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if speech recognition is supported
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof window.SpeechRecognition }).webkitSpeechRecognition;
-    const isSupported = !!SpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setIsSupported(!!SpeechRecognition);
+  }, []);
+
+  // Initialize speech recognition
+  const initializeRecognition = useCallback(() => {
+    if (!isSupported) return null;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = continuous;
+    recognition.interimResults = interimResults;
+    recognition.lang = language;
+    recognition.maxAlternatives = maxAlternatives;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setError(null);
+      setTranscript('');
+      setInterimTranscript('');
+    };
+
+    recognition.onresult = (event) => {
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+          setConfidence(result[0].confidence);
+        } else {
+          interimTranscript += result[0].transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        setTranscript(finalTranscript);
+        processCommand(finalTranscript);
+      }
+      setInterimTranscript(interimTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setError(event.error);
+      setIsListening(false);
+      
+      switch (event.error) {
+        case 'no-speech':
+          toast({
+            title: "No speech detected",
+            description: "Please try speaking again",
+            variant: "destructive"
+          });
+          break;
+        case 'audio-capture':
+          toast({
+            title: "Microphone not available",
+            description: "Please check your microphone permissions",
+            variant: "destructive"
+          });
+          break;
+        case 'not-allowed':
+          toast({
+            title: "Microphone access denied",
+            description: "Please allow microphone access to use voice control",
+            variant: "destructive"
+          });
+          break;
+        default:
+          toast({
+            title: "Voice recognition error",
+            description: "Please try again",
+            variant: "destructive"
+          });
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+
+    return recognition;
+  }, [isSupported, continuous, interimResults, language, maxAlternatives, toast]);
+
+  // Process voice commands
+  const processCommand = useCallback((transcript: string) => {
+    const normalizedTranscript = transcript.toLowerCase().trim();
     
-    setState(prev => ({ ...prev, isSupported }));
-
-    if (isSupported && !isInitializedRef.current) {
-      try {
-        recognitionRef.current = new SpeechRecognition();
-        const recognition = recognitionRef.current;
-
-        // Configure recognition settings
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        recognition.maxAlternatives = 1;
-
-        // Event handlers
-        recognition.onstart = () => {
-          setState(prev => ({ ...prev, isListening: true, error: null }));
-        };
-
-        recognition.onend = () => {
-          setState(prev => ({ ...prev, isListening: false }));
-        };
-
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
-          let finalTranscript = '';
-          let interimTranscript = '';
-
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript;
-            } else {
-              interimTranscript += transcript;
-            }
-          }
-
-          if (finalTranscript) {
-            const newCommand: VoiceCommand = {
-              command: finalTranscript.trim(),
-              confidence: event.results[event.results.length - 1][0].confidence || 0,
-              timestamp: new Date(),
-            };
-
-            setState(prev => ({
-              ...prev,
-              transcript: finalTranscript,
-              commands: [...prev.commands, newCommand],
-            }));
-          } else {
-            setState(prev => ({ ...prev, transcript: interimTranscript }));
-          }
-        };
-
-        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-          let errorMessage = 'Speech recognition error occurred';
-          
-          switch (event.error) {
-            case 'no-speech':
-              errorMessage = 'No speech was detected';
-              break;
-            case 'audio-capture':
-              errorMessage = 'Audio capture failed';
-              break;
-            case 'not-allowed':
-              errorMessage = 'Microphone access denied';
-              break;
-            case 'network':
-              errorMessage = 'Network error occurred';
-              break;
-            case 'aborted':
-              errorMessage = 'Speech recognition aborted';
-              break;
-            case 'service-not-allowed':
-              errorMessage = 'Speech recognition service not allowed';
-              break;
-            case 'bad-grammar':
-              errorMessage = 'Bad grammar in speech';
-              break;
-            case 'language-not-supported':
-              errorMessage = 'Language not supported';
-              break;
-            default:
-              errorMessage = `Speech recognition error: ${event.error}`;
-          }
-
-          setState(prev => ({
-            ...prev,
-            isListening: false,
-            error: errorMessage,
-          }));
-        };
-
-        isInitializedRef.current = true;
-      } catch (error) {
-        setState(prev => ({
-          ...prev,
-          isSupported: false,
-          error: 'Failed to initialize speech recognition',
-        }));
+    for (const command of commandsRef.current) {
+      const isMatch = command.keywords.some(keyword => 
+        normalizedTranscript.includes(keyword.toLowerCase())
+      );
+      
+      if (isMatch) {
+        try {
+          command.action();
+          toast({
+            title: "Voice command executed",
+            description: `Executed: ${command.description}`,
+            duration: 2000
+          });
+          return;
+        } catch (error) {
+          console.error('Error executing voice command:', error);
+          toast({
+            title: "Command failed",
+            description: "Failed to execute voice command",
+            variant: "destructive"
+          });
+        }
       }
     }
-  }, []);
+  }, [toast]);
 
+  // Start listening
   const startListening = useCallback(() => {
-    if (recognitionRef.current && state.isSupported && !state.isListening) {
-      try {
-        recognitionRef.current.start();
-      } catch (error) {
-        setState(prev => ({
-          ...prev,
-          error: 'Failed to start listening',
-        }));
-      }
+    if (!isSupported) {
+      toast({
+        title: "Voice control not supported",
+        description: "Your browser doesn't support speech recognition",
+        variant: "destructive"
+      });
+      return;
     }
-  }, [state.isSupported, state.isListening]);
 
+    if (isListening) return;
+
+    const recognition = initializeRecognition();
+    if (!recognition) return;
+
+    recognitionRef.current = recognition;
+    
+    try {
+      recognition.start();
+      
+      // Set timeout
+      timeoutRef.current = setTimeout(() => {
+        if (isListening) {
+          stopListening();
+        }
+      }, timeout);
+    } catch (error) {
+      console.error('Error starting speech recognition:', error);
+      setError('Failed to start voice recognition');
+    }
+  }, [isSupported, isListening, initializeRecognition, timeout, toast]);
+
+  // Stop listening
   const stopListening = useCallback(() => {
-    if (recognitionRef.current && state.isListening) {
-      try {
-        recognitionRef.current.stop();
-      } catch (error) {
-        setState(prev => ({
-          ...prev,
-          error: 'Failed to stop listening',
-        }));
-      }
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
     }
-  }, [state.isListening]);
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, [isListening]);
 
-  const clearTranscript = useCallback(() => {
-    setState(prev => ({ ...prev, transcript: '' }));
+  // Toggle listening
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
+  // Register voice commands
+  const registerCommand = useCallback((command: VoiceCommand) => {
+    commandsRef.current.push(command);
   }, []);
 
+  // Unregister voice commands
+  const unregisterCommand = useCallback((commandId: string) => {
+    commandsRef.current = commandsRef.current.filter(cmd => cmd.command !== commandId);
+  }, []);
+
+  // Clear all commands
   const clearCommands = useCallback(() => {
-    setState(prev => ({ ...prev, commands: [] }));
+    commandsRef.current = [];
+  }, []);
+
+  // Get available commands
+  const getCommands = useCallback(() => {
+    return commandsRef.current.map(cmd => ({
+      command: cmd.command,
+      description: cmd.description,
+      keywords: cmd.keywords
+    }));
   }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (recognitionRef.current && state.isListening) {
+      if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
-  }, [state.isListening]);
+  }, []);
 
   return {
-    ...state,
+    isListening,
+    isSupported,
+    transcript,
+    interimTranscript,
+    confidence,
+    error,
     startListening,
     stopListening,
-    clearTranscript,
+    toggleListening,
+    registerCommand,
+    unregisterCommand,
     clearCommands,
+    getCommands
   };
 };
+
+// Hook for common voice commands
+export const useCommonVoiceCommands = () => {
+  const { registerCommand, unregisterCommand } = useVoiceControl();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Navigation commands
+    registerCommand({
+      command: 'navigate-home',
+      description: 'Navigate to home page',
+      keywords: ['home', 'go home', 'main page'],
+      action: () => {
+        window.location.href = '/';
+      }
+    });
+
+    registerCommand({
+      command: 'navigate-feed',
+      description: 'Navigate to feed',
+      keywords: ['feed', 'posts', 'timeline'],
+      action: () => {
+        window.location.href = '/feed';
+      }
+    });
+
+    registerCommand({
+      command: 'navigate-events',
+      description: 'Navigate to events',
+      keywords: ['events', 'calendar', 'upcoming'],
+      action: () => {
+        window.location.href = '/events';
+      }
+    });
+
+    registerCommand({
+      command: 'navigate-profile',
+      description: 'Navigate to profile',
+      keywords: ['profile', 'my profile', 'account'],
+      action: () => {
+        window.location.href = '/profile';
+      }
+    });
+
+    // Action commands
+    registerCommand({
+      command: 'create-post',
+      description: 'Create a new post',
+      keywords: ['create post', 'new post', 'write post'],
+      action: () => {
+        window.location.href = '/create';
+      }
+    });
+
+    registerCommand({
+      command: 'search',
+      description: 'Open search',
+      keywords: ['search', 'find', 'look for'],
+      action: () => {
+        // Focus on search input or open search modal
+        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+    });
+
+    registerCommand({
+      command: 'refresh',
+      description: 'Refresh the page',
+      keywords: ['refresh', 'reload', 'update'],
+      action: () => {
+        window.location.reload();
+      }
+    });
+
+    // Utility commands
+    registerCommand({
+      command: 'help',
+      description: 'Show help information',
+      keywords: ['help', 'what can you do', 'commands'],
+      action: () => {
+        toast({
+          title: "Voice Commands Available",
+          description: "Say 'home', 'feed', 'events', 'profile', 'create post', 'search', or 'refresh'",
+          duration: 5000
+        });
+      }
+    });
+
+    registerCommand({
+      command: 'stop-listening',
+      description: 'Stop voice recognition',
+      keywords: ['stop', 'stop listening', 'quiet'],
+      action: () => {
+        // This will be handled by the voice control hook
+      }
+    });
+
+    return () => {
+      unregisterCommand('navigate-home');
+      unregisterCommand('navigate-feed');
+      unregisterCommand('navigate-events');
+      unregisterCommand('navigate-profile');
+      unregisterCommand('create-post');
+      unregisterCommand('search');
+      unregisterCommand('refresh');
+      unregisterCommand('help');
+      unregisterCommand('stop-listening');
+    };
+  }, [registerCommand, unregisterCommand, toast]);
+};
+
+export default useVoiceControl;
