@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import PerformanceOptimizer from '@/utils/PerformanceOptimizer';
+import { PerformanceOptimizer } from '@/utils/performanceOptimizer';
 
 describe('Performance Tests', () => {
   beforeEach(() => {
