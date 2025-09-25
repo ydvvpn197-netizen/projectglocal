@@ -3,7 +3,7 @@
  * Real implementation for Supabase client
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { Database } from './types';
 
 // Environment variables
@@ -15,12 +15,56 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn('Supabase environment variables not found. Using mock implementation.');
 }
 
+// Define proper types for mock client
+interface MockAuthClient {
+  getUser: () => Promise<{ data: { user: User | null }; error: Error | null }>;
+  getSession: () => Promise<{ data: { session: Session | null }; error: Error | null }>;
+  onAuthStateChange: (callback: (event: AuthChangeEvent, session: Session | null) => void) => { data: { subscription: { unsubscribe: () => void } } };
+  signUp: (data: { email: string; password: string }) => Promise<{ data: { user: User | null; session: Session | null }; error: Error | null }>;
+  signInWithPassword: (data: { email: string; password: string }) => Promise<{ data: { user: User | null; session: Session | null }; error: Error | null }>;
+  signInWithOAuth: (data: { provider: string }) => Promise<{ data: { url: string }; error: Error | null }>;
+  signOut: () => Promise<{ error: Error | null }>;
+  resetPasswordForEmail: (email: string, options?: { redirectTo?: string }) => Promise<{ error: Error | null }>;
+  updateUser: (data: { email?: string; password?: string }) => Promise<{ data: { user: User | null }; error: Error | null }>;
+}
+
+interface MockQueryBuilder {
+  select: (columns?: string) => {
+    eq: (column: string, value: unknown) => {
+      single: () => Promise<{ data: unknown; error: Error | null }>;
+      order: (column: string, options: { ascending?: boolean }) => Promise<{ data: unknown[]; error: Error | null }>;
+    };
+    is: (column: string, value: unknown) => {
+      order: (column: string, options: { ascending?: boolean }) => Promise<{ data: unknown[]; error: Error | null }>;
+    };
+    order: (column: string, options: { ascending?: boolean }) => Promise<{ data: unknown[]; error: Error | null }>;
+  };
+  insert: (data: unknown) => {
+    select: (columns?: string) => {
+      single: () => Promise<{ data: unknown; error: Error | null }>;
+    };
+  };
+  update: (data: unknown) => {
+    eq: (column: string, value: unknown) => Promise<{ error: Error | null }>;
+  };
+  delete: () => {
+    eq: (column: string, value: unknown) => Promise<{ error: Error | null }>;
+  };
+}
+
+interface MockSupabaseClient {
+  auth: MockAuthClient;
+  from: (table: string) => MockQueryBuilder;
+  rpc: (fn: string, params?: Record<string, unknown>) => Promise<{ data: unknown[]; error: Error | null }>;
+  raw: (sql: string, params?: unknown[]) => unknown[];
+}
+
 // Create Supabase client with proper error handling
-let supabase: any;
-let resilientSupabase: any;
+let supabase: SupabaseClient<Database> | MockSupabaseClient;
+let resilientSupabase: SupabaseClient<Database> | MockSupabaseClient;
 
 // Initialize with proper error handling
-const initializeSupabase = () => {
+const initializeSupabase = (): SupabaseClient<Database> | null => {
   try {
     if (supabaseUrl && supabaseKey) {
       const client = createClient<Database>(supabaseUrl, supabaseKey, {
@@ -41,56 +85,74 @@ const initializeSupabase = () => {
 };
 
 try {
-  supabase = initializeSupabase();
-  if (supabase) {
-    resilientSupabase = supabase;
+  const realSupabase = initializeSupabase();
+  if (realSupabase) {
+    supabase = realSupabase;
+    resilientSupabase = realSupabase;
   } else {
     throw new Error('Supabase initialization failed');
   }
 } catch (error) {
   console.warn('Supabase initialization failed, using mock implementation:', error);
   
-  // Fallback mock implementation
-  supabase = {
+  // Fallback mock implementation with proper types
+  const mockSupabase: MockSupabaseClient = {
     auth: {
       getUser: async () => ({ data: { user: null }, error: null }),
       getSession: async () => ({ data: { session: null }, error: null }),
-      onAuthStateChange: (callback: any) => ({ data: { subscription: { unsubscribe: () => {} } } }),
-      signUp: async (data: any) => ({ data: { user: null, session: null }, error: null }),
-      signInWithPassword: async (data: any) => ({ data: { user: null, session: null }, error: null }),
-      signInWithOAuth: async (data: any) => ({ data: { url: '' }, error: null }),
-      signOut: async () => ({ error: null }),
-      resetPasswordForEmail: async (email: string, options: any) => ({ error: null }),
-      updateUser: async (data: any) => ({ data: { user: null }, error: null })
-    },
-    from: (table: string) => ({
-      select: (columns?: string) => ({
-        eq: (column: string, value: any) => ({
-          single: () => ({ data: null, error: null }),
-          order: (column: string, options: any) => ({ data: [], error: null })
-        }),
-        is: (column: string, value: any) => ({
-          order: (column: string, options: any) => ({ data: [], error: null })
-        }),
-        order: (column: string, options: any) => ({ data: [], error: null })
+      onAuthStateChange: (callback: (event: AuthChangeEvent, session: Session | null) => void) => ({ 
+        data: { subscription: { unsubscribe: () => {} } } 
       }),
-      insert: (data: any) => ({
+      signUp: async (data: { email: string; password: string }) => ({ 
+        data: { user: null, session: null }, error: null 
+      }),
+      signInWithPassword: async (data: { email: string; password: string }) => ({ 
+        data: { user: null, session: null }, error: null 
+      }),
+      signInWithOAuth: async (data: { provider: string }) => ({ 
+        data: { url: '' }, error: null 
+      }),
+      signOut: async () => ({ error: null }),
+      resetPasswordForEmail: async (email: string, options?: { redirectTo?: string }) => ({ 
+        error: null 
+      }),
+      updateUser: async (data: { email?: string; password?: string }) => ({ 
+        data: { user: null }, error: null 
+      })
+    },
+    from: (table: string): MockQueryBuilder => ({
+      select: (columns?: string) => ({
+        eq: (column: string, value: unknown) => ({
+          single: () => Promise.resolve({ data: null, error: null }),
+          order: (column: string, options: { ascending?: boolean }) => 
+            Promise.resolve({ data: [], error: null })
+        }),
+        is: (column: string, value: unknown) => ({
+          order: (column: string, options: { ascending?: boolean }) => 
+            Promise.resolve({ data: [], error: null })
+        }),
+        order: (column: string, options: { ascending?: boolean }) => 
+          Promise.resolve({ data: [], error: null })
+      }),
+      insert: (data: unknown) => ({
         select: (columns?: string) => ({
-          single: () => ({ data: null, error: null })
+          single: () => Promise.resolve({ data: null, error: null })
         })
       }),
-      update: (data: any) => ({
-        eq: (column: string, value: any) => ({ error: null })
+      update: (data: unknown) => ({
+        eq: (column: string, value: unknown) => Promise.resolve({ error: null })
       }),
       delete: () => ({
-        eq: (column: string, value: any) => ({ error: null })
+        eq: (column: string, value: unknown) => Promise.resolve({ error: null })
       })
     }),
-    rpc: (fn: string, params?: any) => ({ data: [], error: null }),
-    raw: (sql: string, params?: any[]) => params
+    rpc: (fn: string, params?: Record<string, unknown>) => 
+      Promise.resolve({ data: [], error: null }),
+    raw: (sql: string, params?: unknown[]) => params || []
   };
   
-  resilientSupabase = supabase;
+  supabase = mockSupabase;
+  resilientSupabase = mockSupabase;
 }
 
 export { supabase, resilientSupabase };
