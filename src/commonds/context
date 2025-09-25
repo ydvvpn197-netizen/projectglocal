@@ -133,3 +133,5 @@ pnpm install && pnpm lint && pnpm test
 
 This is the canonical context block that must be loaded by Cursor/AI to run the full audit and incremental improvements. Maintain strict privacy defaults and non-destructive migration patterns.
 
+Finally push all the changes and improvements made into github and deploy the project successfully.
+
