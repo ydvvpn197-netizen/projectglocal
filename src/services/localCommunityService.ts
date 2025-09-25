@@ -336,7 +336,7 @@ export class LocalCommunityService {
         .from('community_posts')
         .select(`
           *,
-          profiles!community_posts_user_id_fkey(display_name, avatar_url),
+          profiles!user_id(display_name, avatar_url),
           community_post_likes!left(user_id)
         `)
         .eq('community_id', communityId)

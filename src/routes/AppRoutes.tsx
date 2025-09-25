@@ -7,6 +7,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { AdminRoute } from '@/components/AdminRoute';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
@@ -42,9 +43,11 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       <Route path="/event/:eventId" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading event...</div>}>
-          <EventDetails />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading event...</div>}>
+            <EventDetails />
+          </Suspense>
+        </ErrorBoundary>
       } />
       <Route path="/create-event" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
