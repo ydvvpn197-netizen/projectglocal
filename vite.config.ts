@@ -46,12 +46,14 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
+        pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
+        passes: 2,
       },
     },
     // Increase memory limit for build
     rollupOptions: {
       maxParallelFileOps: 2, // Reduce parallel operations
-      cache: false, // Disable cache to prevent memory buildup
+      cache: true, // Re-enable cache for better performance
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
@@ -67,12 +69,52 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       },
       output: {
-        // Simplified chunk splitting to reduce memory usage
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          libs: ['react-router-dom', '@tanstack/react-query', '@supabase/supabase-js'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover'],
-          utils: ['date-fns', 'clsx', 'tailwind-merge'],
+        // Optimized chunk splitting for better performance
+        manualChunks: (id) => {
+          // Core React
+          if (id.includes('react') && (id.includes('node_modules'))) {
+            if (id.includes('react-dom')) return 'react-dom';
+            return 'react';
+          }
+          
+          // Router and state management
+          if (id.includes('react-router-dom')) return 'router';
+          if (id.includes('@tanstack/react-query')) return 'query';
+          
+          // Supabase
+          if (id.includes('@supabase/supabase-js')) return 'supabase';
+          
+          // UI Components - group by usage frequency
+          if (id.includes('@radix-ui')) {
+            if (id.includes('dialog') || id.includes('dropdown-menu') || id.includes('popover')) {
+              return 'radix-core';
+            }
+            return 'radix-ui';
+          }
+          
+          // UI Utilities
+          if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
+            return 'ui-utils';
+          }
+          
+          // Forms and validation
+          if (id.includes('react-hook-form') || id.includes('zod')) {
+            return 'forms';
+          }
+          
+          // Animation (lazy load framer-motion)
+          if (id.includes('framer-motion')) return 'animation';
+          
+          // Stripe payments (lazy load)
+          if (id.includes('@stripe')) return 'payments';
+          
+          // Icons (lazy load)
+          if (id.includes('lucide-react')) return 'icons';
+          
+          // Large vendor chunks
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';

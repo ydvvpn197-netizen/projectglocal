@@ -228,3 +228,8 @@ export class PerformanceOptimizer {
 
 // Export singleton instance
 export default PerformanceOptimizer;
+
+// Export initialization function
+export const initializePerformanceMonitoring = () => {
+  PerformanceOptimizer.initialize();
+};
