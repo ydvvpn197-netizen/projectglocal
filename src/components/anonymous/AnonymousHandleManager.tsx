@@ -52,7 +52,7 @@ export const AnonymousHandleManager: React.FC<AnonymousHandleManagerProps> = ({
     if (user) {
       loadCurrentHandle();
     }
-  }, [user]);
+  }, [user, loadCurrentHandle]);
 
   const loadCurrentHandle = useCallback(async () => {
     if (!user) return;

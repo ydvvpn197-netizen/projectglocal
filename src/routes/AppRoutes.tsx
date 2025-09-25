@@ -9,22 +9,24 @@ import { Suspense, lazy } from 'react';
 import { AdminRoute } from '@/components/AdminRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-// Lazy load pages for better performance
-const Index = lazy(() => import('@/pages/Index'));
-const Events = lazy(() => import('@/pages/Events'));
+// Lazy load pages for better performance - Using consolidated versions
+const Index = lazy(() => import('@/pages/ConsolidatedIndex'));
+const Events = lazy(() => import('@/pages/ConsolidatedEvents'));
 const EventDetails = lazy(() => import('@/pages/EventDetails'));
 const CreateEvent = lazy(() => import('@/pages/CreateEvent'));
-const Community = lazy(() => import('@/pages/Community'));
-const Profile = lazy(() => import('@/pages/Profile'));
+const Community = lazy(() => import('@/pages/ConsolidatedCommunity'));
+const Profile = lazy(() => import('@/pages/ConsolidatedProfile'));
 const Messages = lazy(() => import('@/pages/Messages'));
 const Notifications = lazy(() => import('@/pages/NotificationsPage'));
-const Settings = lazy(() => import('@/pages/Settings'));
+const Settings = lazy(() => import('@/pages/ConsolidatedSettings'));
 const About = lazy(() => import('@/pages/About'));
 const Discover = lazy(() => import('@/pages/Discover'));
 const News = lazy(() => import('@/pages/News'));
+const Feed = lazy(() => import('@/pages/ConsolidatedFeed'));
+const Dashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
 const SignIn = lazy(() => import('@/pages/SignIn'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
-const CommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
+const CommunityInsights = lazy(() => import('@/pages/ConsolidatedCommunityInsights'));
 const LegalAssistant = lazy(() => import('@/pages/LegalAssistant'));
 const LifeWish = lazy(() => import('@/pages/LifeWish'));
 
@@ -35,6 +37,16 @@ export const AppRoutes: React.FC = () => {
       <Route path="/" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
           <Index />
+        </Suspense>
+      } />
+      <Route path="/feed" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading feed...</div>}>
+          <Feed />
+        </Suspense>
+      } />
+      <Route path="/dashboard" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+          <Dashboard />
         </Suspense>
       } />
       

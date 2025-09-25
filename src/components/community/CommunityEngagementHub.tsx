@@ -26,7 +26,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from '@/hooks/useLocation';
-import { usePerformanceMonitor } from '@/utils/performanceMonitor';
+import { usePerformanceMonitor } from '@/hooks/usePerformance';
 import { useSecurity } from '@/hooks/useSecurity';
 
 interface CommunityEngagementHubProps {

@@ -221,3 +221,11 @@ export function useAdmin() {
     logAction
   };
 }
+
+/**
+ * Simple hook for checking if user is admin
+ */
+export function useIsAdmin() {
+  const { isAdmin, loading } = useRBAC();
+  return { isAdmin, loading };
+}

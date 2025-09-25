@@ -1,10 +1,22 @@
-import { Button } from "@/components/ui/button";
-import { 
-  ArrowRight, 
-  MapPin, 
-  Users, 
-  Calendar, 
-  Zap, 
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { ResponsiveLayout } from '@/components/ResponsiveLayout';
+import { AnimatedCard } from '@/components/ui/AnimatedCard';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { DynamicStats } from '@/components/DynamicStats';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import {
+  ArrowRight,
+  MapPin,
+  Users,
+  Calendar,
+  Zap,
   Sparkles,
   TrendingUp,
   Flame,
@@ -18,530 +30,856 @@ import {
   Trophy,
   Globe,
   Home,
-  Search,
   Plus,
   Bell,
   Settings,
-  Ticket
-} from "lucide-react";
-import { Link, Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { useEvents } from "@/hooks/useEvents";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { EventCard } from "@/components/EventCard";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from '@/integrations/supabase/client';
+  Ticket,
+  Play,
+  Camera,
+  Mic,
+  BookOpen,
+  Music,
+  Palette,
+  Code,
+  Coffee,
+  Car,
+  Building,
+  Leaf,
+  Mountain,
+  Shield,
+  HeartHandshake,
+  Eye,
+  EyeOff,
+  Lock,
+  Lightbulb,
+  Rocket,
+  Target,
+  CheckCircle,
+  ArrowUpRight,
+  ChevronRight,
+  ChevronLeft,
+  Info,
+} from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
+import { AdvancedButton } from '@/components/ui/AdvancedButton';
 
-// Sample data for the enhanced homepage
-const trendingEvent = {
-  id: 1,
-  title: "Local Music Festival 2024",
-  description: "A three-day celebration of local music talent featuring over 50 artists across multiple stages.",
-  image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop",
-  date: "Dec 15-17, 2024",
-  location: "Central Park, Downtown",
-  attendees: 1250,
-  maxAttendees: 2000,
-  category: "Music",
-  featured: true,
-  organizer: {
-    name: "SoundWave Productions",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-  }
-};
+// Enhanced sample data
+const heroFeatures = [
+  {
+    icon: <Users className="h-6 w-6" />,
+    title: 'Connect Locally',
+    description: 'Build meaningful relationships with your neighbors',
+    color: 'from-orange-500 to-orange-600',
+    route: '/feed',
+  },
+  {
+    icon: <Calendar className="h-6 w-6" />,
+    title: 'Discover Events',
+    description: 'Find and create amazing local events',
+    color: 'from-orange-500 to-yellow-500',
+    route: '/events',
+  },
+  {
+    icon: <Star className="h-6 w-6" />,
+    title: 'Book Artists',
+    description: 'Support local talent and book amazing performances',
+    color: 'from-green-500 to-green-600',
+    route: '/book-artist',
+  },
+  {
+    icon: <Globe className="h-6 w-6" />,
+    title: 'Explore Community',
+    description: 'Join groups and discussions that matter to you',
+    color: 'from-green-500 to-emerald-500',
+    route: '/community',
+  },
+];
+
+const trendingEvents = [
+  {
+    id: 1,
+    title: 'Local Music Festival 2024',
+    description: 'A three-day celebration of local music talent featuring over 50 artists across multiple stages.',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop',
+    date: 'Dec 15-17, 2024',
+    location: 'Central Park, Downtown',
+    attendees: 1250,
+    maxAttendees: 2000,
+    category: 'Music',
+    featured: true,
+    price: '$25',
+    organizer: {
+      name: 'SoundWave Productions',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 2,
+    title: 'Community Garden Workshop',
+    description: 'Learn sustainable gardening techniques and help build our community garden.',
+    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=400&fit=crop',
+    date: 'Dec 20, 2024',
+    location: 'Community Center',
+    attendees: 45,
+    maxAttendees: 60,
+    category: 'Education',
+    featured: false,
+    price: 'Free',
+    organizer: {
+      name: 'Green Thumbs Collective',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 3,
+    title: 'Tech Meetup: AI in Local Business',
+    description: 'Discover how artificial intelligence is transforming local businesses and opportunities.',
+    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=400&fit=crop',
+    date: 'Dec 22, 2024',
+    location: 'Innovation Hub',
+    attendees: 89,
+    maxAttendees: 120,
+    category: 'Technology',
+    featured: true,
+    price: '$15',
+    organizer: {
+      name: 'Tech Enthusiasts',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+];
 
 const trendingDiscussions = [
   {
     id: 1,
-    title: "Best local coffee shops in the area?",
-    author: "CoffeeLover",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    category: "Food & Drink",
+    title: 'Best local coffee shops in the area?',
+    author: 'CoffeeLover',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    category: 'Food & Drink',
     replies: 47,
     views: 1234,
     trending: true,
-    tags: ["coffee", "local", "recommendations"]
+    tags: ['coffee', 'local', 'recommendations'],
+    lastActivity: '2 hours ago',
   },
   {
     id: 2,
-    title: "Weekend hiking trails near the city",
-    author: "NatureExplorer",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    category: "Outdoors",
+    title: 'Weekend hiking trails near the city',
+    author: 'NatureExplorer',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+    category: 'Outdoors',
     replies: 32,
     views: 856,
     trending: true,
-    tags: ["hiking", "outdoors", "weekend"]
-  }
+    tags: ['hiking', 'outdoors', 'weekend'],
+    lastActivity: '4 hours ago',
+  },
+  {
+    id: 3,
+    title: 'Local artist showcase this weekend',
+    author: 'ArtCollector',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+    category: 'Arts',
+    replies: 18,
+    views: 567,
+    trending: false,
+    tags: ['art', 'showcase', 'local'],
+    lastActivity: '6 hours ago',
+  },
 ];
 
 const communitySpotlight = [
   {
     id: 1,
-    name: "Local Artists Collective",
+    name: 'Local Artists Collective',
     members: 234,
-    description: "Supporting and promoting local artists in our community",
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&h=200&fit=crop",
-    category: "Arts",
-    featured: true
+    description: 'Supporting and promoting local artists in our community',
+    image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&h=200&fit=crop',
+    category: 'Arts',
+    featured: true,
+    recentActivity: 'New member joined',
   },
   {
     id: 2,
-    name: "Tech Enthusiasts",
+    name: 'Tech Enthusiasts',
     members: 189,
-    description: "Discussing the latest in technology and innovation",
-    image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=200&fit=crop",
-    category: "Technology",
-    featured: false
-  }
+    description: 'Discussing the latest in technology and innovation',
+    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=200&fit=crop',
+    category: 'Technology',
+    featured: false,
+    recentActivity: 'New discussion posted',
+  },
+  {
+    id: 3,
+    name: 'Sustainable Living',
+    members: 156,
+    description: 'Sharing tips and ideas for eco-friendly living',
+    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop',
+    category: 'Lifestyle',
+    featured: true,
+    recentActivity: 'Event created',
+  },
 ];
 
-const leaderboard = [
-  { rank: 1, name: "Sarah Chen", points: 2847, avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face", badge: "🏆" },
-  { rank: 2, name: "Mike Johnson", points: 2654, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face", badge: "🥈" },
-  { rank: 3, name: "Emma Wilson", points: 2432, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face", badge: "🥉" },
-  { rank: 4, name: "Alex Rodriguez", points: 2198, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face", badge: "⭐" },
-  { rank: 5, name: "Lisa Park", points: 1987, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face", badge: "⭐" }
+// Stats are now handled by DynamicStats component
+
+const categories = [
+  { name: 'Music', icon: <Music className="h-4 w-4" />, color: 'bg-purple-500' },
+  { name: 'Food', icon: <Coffee className="h-4 w-4" />, color: 'bg-orange-500' },
+  { name: 'Technology', icon: <Code className="h-4 w-4" />, color: 'bg-blue-500' },
+  { name: 'Arts', icon: <Palette className="h-4 w-4" />, color: 'bg-pink-500' },
+  { name: 'Outdoors', icon: <Leaf className="h-4 w-4" />, color: 'bg-green-500' },
+  { name: 'Business', icon: <Building className="h-4 w-4" />, color: 'bg-gray-500' },
 ];
 
-const quickActions = [
-  { icon: Plus, label: "Create Event", href: "/create-event", color: "btn-event" },
-  { icon: MessageCircle, label: "Start Discussion", href: "/community/create-discussion", color: "btn-community" },
-  { icon: Users, label: "Join Community", href: "/community", color: "btn-trending" },
-  { icon: Calendar, label: "Browse Events", href: "/events", color: "btn-community" }
-];
-
-const Index = () => {
+export default function Index() {
   const { user } = useAuth();
-  const { events, loading, toggleAttendance } = useEvents();
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const { counts } = useNotifications();
+  const [activeTab, setActiveTab] = useState('events');
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
 
-  if (!user) {
-    return <Navigate to="/signin" replace />;
-  }
 
-  // Filter upcoming events (events with future dates)
-  const upcomingEvents = events
-    .filter(event => {
-      try {
-        const eventDate = new Date(event.event_date);
-        const today = new Date();
-        return eventDate >= today;
-      } catch {
-        return false;
-      }
-    })
-    .sort((a, b) => {
-      try {
-        const dateA = new Date(a.event_date);
-        const dateB = new Date(b.event_date);
-        return dateA.getTime() - dateB.getTime();
-      } catch {
-        return 0;
-      }
-    })
-    .slice(0, 5); // Show only the next 5 events
-
-  const handleAttendEvent = async (eventId: string) => {
-    await toggleAttendance(eventId);
-  };
-
-  const handleLikeEvent = async (eventId: string) => {
+  // Memoized event handlers to prevent unnecessary re-renders
+  const handleGetStarted = useCallback(() => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Login required",
-          description: "Please login to like events",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Check if already liked
-      const { data: existingLike } = await supabase
-        .from('event_likes')
-        .select('id')
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingLike) {
-        // Unlike
-        await supabase
-          .from('event_likes')
-          .delete()
-          .eq('event_id', eventId)
-          .eq('user_id', user.id);
-        
-        toast({
-          title: "Event unliked",
-          description: "Removed from your liked events",
-        });
+      if (user) {
+        navigate('/feed');
       } else {
-        // Like
-        await supabase
-          .from('event_likes')
-          .insert({
-            event_id: eventId,
-            user_id: user.id
-          });
-        
-        toast({
-          title: "Event liked!",
-          description: "Added to your liked events",
-        });
+        navigate('/signin');
       }
-
-      // Refresh events to update like status
-      loadEvents();
     } catch (error) {
-      console.error('Error liking event:', error);
+      console.error('Navigation error during get started:', error);
       toast({
-        title: "Error",
-        description: "Failed to like event",
-        variant: "destructive"
+        title: "Navigation Error",
+        description: "Unable to navigate. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [user, navigate, toast]);
+
+  const handleNotificationClick = useCallback(() => {
+    try {
+      if (user) {
+        navigate('/notifications');
+      } else {
+        navigate('/signin');
+      }
+    } catch (error) {
+      console.error('Navigation error during notification click:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to notifications. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [user, navigate, toast]);
+
+  const nextEvent = useCallback(() => {
+    try {
+      setCurrentEventIndex((prev) => (prev + 1) % trendingEvents.length);
+    } catch (error) {
+      console.error('Error navigating to next event:', error);
+    }
+  }, []);
+
+  const prevEvent = useCallback(() => {
+    try {
+      setCurrentEventIndex((prev) => (prev - 1 + trendingEvents.length) % trendingEvents.length);
+    } catch (error) {
+      console.error('Error navigating to previous event:', error);
+    }
+  }, []);
+
+  const handleEventNavigation = (eventId: number) => {
+    try {
+      navigate(`/event/${eventId}`);
+    } catch (error) {
+      console.error('Navigation error to event:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to event. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleShareEvent = async (eventId: string) => {
+  const handleDiscussionNavigation = (discussionId: number) => {
     try {
-      const event = events.find(e => e.id === eventId);
-      if (!event) return;
-
-      const shareData = {
-        title: event.title,
-        text: `Join "${event.title}" on TheGlocal community platform!`,
-        url: `${window.location.origin}/events/${eventId}`
-      };
-
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        // Fallback: Copy to clipboard
-        const shareText = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
-        await navigator.clipboard.writeText(shareText);
-        toast({
-          title: "Event link copied!",
-          description: "Share link copied to clipboard",
-        });
-      }
+      navigate(`/community/discussion/${discussionId}`);
     } catch (error) {
-      console.error('Error sharing event:', error);
+      console.error('Navigation error to discussion:', error);
       toast({
-        title: "Share failed",
-        description: "Unable to share event",
-        variant: "destructive"
+        title: "Navigation Error",
+        description: "Unable to navigate to discussion. Please try again.",
+        variant: "destructive",
       });
     }
   };
+
+  const handleCommunityNavigation = (communityId: number) => {
+    try {
+      navigate(`/community/${communityId}`);
+    } catch (error) {
+      console.error('Navigation error to community:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to community. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCategoryNavigation = (category: string) => {
+    try {
+      navigate(`/discover?category=${category.toLowerCase()}`);
+    } catch (error) {
+      console.error('Navigation error to category:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to category. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAboutNavigation = () => {
+    try {
+      navigate('/about');
+    } catch (error) {
+      console.error('Navigation error to about page:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to about page. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTrendingNavigation = () => {
+    try {
+      navigate('/feed?tab=trending');
+    } catch (error) {
+      console.error('Navigation error to trending feed:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to trending feed. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAdminLogin = () => {
+    try {
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Navigation error to admin login:', error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate to admin login. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Memoized animation variants to prevent unnecessary recalculations
+  const containerVariants = useMemo(() => ({
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }), []);
+
+  const itemVariants = useMemo(() => ({
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  }), []);
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-8">
-        {/* Hero Banner - Featured Event */}
-        <section className="hero-section rounded-2xl overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30" />
-          <div className="relative p-8 md:p-12 text-white">
-            <div className="max-w-4xl">
-              <Badge className="mb-4 bg-orange-500 hover:bg-orange-600">
-                <Flame className="w-3 h-3 mr-1" />
-                Featured Event
-              </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-                {trendingEvent.title}
-              </h1>
-              <p className="text-xl md:text-2xl mb-6 text-white/90 max-w-2xl">
-                {trendingEvent.description}
-              </p>
-              <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>{trendingEvent.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  <span>{trendingEvent.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  <span>{trendingEvent.attendees} attending</span>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="btn-event">
-                  <Ticket className="w-5 h-5 mr-2" />
-                  Get Tickets
-                </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
-                  <Heart className="w-5 h-5 mr-2" />
-                  Save Event
-                </Button>
-              </div>
-            </div>
-          </div>
-          <img 
-            src={trendingEvent.image} 
-            alt={trendingEvent.title}
-            className="absolute inset-0 w-full h-full object-cover -z-10"
-          />
-        </section>
+    <ResponsiveLayout showNewsFeed={false}>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-20 px-4">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
+        <div className="container mx-auto relative z-10">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="text-center max-w-4xl mx-auto"
+          >
+            <motion.h1
+              variants={itemVariants}
+              className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent"
+            >
+              Connect Locally,
+              <br />
+              <span className="text-foreground">Grow Globally</span>
+            </motion.h1>
+            
+            <motion.p
+              variants={itemVariants}
+              className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+            >
+              Discover amazing events, connect with neighbors, and support local artists in your community.
+            </motion.p>
 
-        {/* Quick Actions Bar */}
-        <section className="bg-card rounded-xl p-6 border border-border">
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {quickActions.map((action) => (
-              <Link key={action.label} to={action.href}>
-                <Button className={`w-full h-20 flex flex-col gap-2 ${action.color}`}>
-                  <action.icon className="w-6 h-6" />
-                  <span className="text-sm">{action.label}</span>
-                </Button>
-              </Link>
-            ))}
-          </div>
-        </section>
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+            >
+              <UnifiedButton
+                onClick={handleGetStarted}
+                size="lg"
+                leftIcon={<Sparkles className="h-5 w-5" />}
+                rightIcon={<ArrowRight className="h-5 w-5" />}
+              >
+                {user ? 'Go to Feed' : 'Get Started'}
+              </UnifiedButton>
+              
+              {!user && (
+                <UnifiedButton
+                  onClick={() => navigate('/privacy-first-onboarding')}
+                  size="lg"
+                  variant="outline"
+                  leftIcon={<Shield className="h-5 w-5" />}
+                  rightIcon={<EyeOff className="h-5 w-5" />}
+                >
+                  Anonymous Mode
+                </UnifiedButton>
+              )}
+            </motion.div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Feed */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Trending vs Local Tabs */}
-            <Tabs defaultValue="trending" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="trending" className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Trending
+            {/* Hero Features */}
+            <motion.div
+              variants={itemVariants}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16"
+            >
+              {heroFeatures.map((feature, index) => (
+                <Link
+                  key={index}
+                  to={feature.route}
+                  className="block transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 rounded-xl"
+                >
+                  <AnimatedCard
+                    variant="glass"
+                    className="text-center p-6 cursor-pointer hover:shadow-lg transition-all duration-200"
+                    entranceAnimation="slide"
+                    delay={index * 100}
+                  >
+                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mx-auto mb-4`}>
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <div className="mt-4 flex items-center justify-center text-primary text-sm font-medium">
+                      <span>Explore</span>
+                      <ArrowUpRight className="h-4 w-4 ml-1" />
+                    </div>
+                  </AnimatedCard>
+                </Link>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="container mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <DynamicStats refreshInterval={30000} />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Content Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={itemVariants} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What's Happening</h2>
+              <p className="text-lg text-muted-foreground">Discover trending events and discussions in your area</p>
+            </motion.div>
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-8">
+                <TabsTrigger value="events" className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>Events</span>
                 </TabsTrigger>
-                <TabsTrigger value="local" className="flex items-center gap-2">
-                  <Flame className="w-4 h-4" />
-                  Local
+                <TabsTrigger value="discussions" className="flex items-center space-x-2">
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Discussions</span>
                 </TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="trending" className="space-y-4">
-                {/* Trending Discussions */}
-                <Card className="discussion-card">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={trendingDiscussions[0].avatar} />
-                          <AvatarFallback>{trendingDiscussions[0].author[0]}</AvatarFallback>
+
+              <TabsContent value="events" className="space-y-8">
+                {/* Featured Event Carousel */}
+                <div className="relative">
+                  <AnimatedCard
+                    variant="elevated"
+                    className="overflow-hidden"
+                    image={{
+                      src: trendingEvents[currentEventIndex].image,
+                      alt: trendingEvents[currentEventIndex].title,
+                      height: 300,
+                    }}
+                    overlay={
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    }
+                  >
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Badge variant="secondary" className="bg-white/20 text-white">
+                          {trendingEvents[currentEventIndex].category}
+                        </Badge>
+                        {trendingEvents[currentEventIndex].featured && (
+                          <Badge variant="destructive" className="bg-gradient-to-r from-yellow-400 to-orange-500">
+                            Featured
+                          </Badge>
+                        )}
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2">
+                        {trendingEvents[currentEventIndex].title}
+                      </h3>
+                      <p className="text-white/80 mb-4">
+                        {trendingEvents[currentEventIndex].description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{trendingEvents[currentEventIndex].date}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{trendingEvents[currentEventIndex].location}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Users className="h-4 w-4" />
+                            <span>{trendingEvents[currentEventIndex].attendees}/{trendingEvents[currentEventIndex].maxAttendees}</span>
+                          </div>
+                        </div>
+                        <UnifiedButton
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEventNavigation(trendingEvents[currentEventIndex].id)}
+                        >
+                          Learn More
+                        </UnifiedButton>
+                      </div>
+                    </div>
+                  </AnimatedCard>
+
+                  {/* Carousel Controls */}
+                  <div className="absolute top-1/2 transform -translate-y-1/2 left-4">
+                    <UnifiedButton
+                      variant="outline"
+                      size="icon"
+                      onClick={prevEvent}
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </UnifiedButton>
+                  </div>
+                  <div className="absolute top-1/2 transform -translate-y-1/2 right-4">
+                    <UnifiedButton
+                      variant="outline"
+                      size="icon"
+                      onClick={nextEvent}
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </UnifiedButton>
+                  </div>
+
+                  {/* Event Cards Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                    {trendingEvents.slice(1).map((event, index) => (
+                      <AnimatedCard
+                        key={event.id}
+                        variant="default"
+                        className="cursor-pointer"
+                        hoverEffect="lift"
+                        onClick={() => handleEventNavigation(event.id)}
+                        entranceAnimation="slide"
+                        delay={index * 100}
+                        image={{
+                          src: event.image,
+                          alt: event.title,
+                          height: 200,
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="outline">{event.category}</Badge>
+                          <span className="text-sm font-semibold text-primary">{event.price}</span>
+                        </div>
+                        <h3 className="font-semibold mb-2 line-clamp-2">{event.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {event.description}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{event.date}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Users className="h-3 w-3" />
+                            <span>{event.attendees}</span>
+                          </div>
+                        </div>
+                      </AnimatedCard>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="discussions" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold">Trending Discussions</h3>
+                  <AdvancedButton
+                    variant="outline"
+                    size="sm"
+                    onClick={handleTrendingNavigation}
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                  >
+                    View All Trending
+                  </AdvancedButton>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {trendingDiscussions.map((discussion, index) => (
+                    <AnimatedCard
+                      key={discussion.id}
+                      variant="default"
+                      className="cursor-pointer"
+                      hoverEffect="scale"
+                      onClick={() => handleDiscussionNavigation(discussion.id)}
+                      entranceAnimation="slide"
+                      delay={index * 100}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={discussion.avatar} />
+                          <AvatarFallback>{discussion.author[0]}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <CardTitle className="text-lg">{trendingDiscussions[0].title}</CardTitle>
-                          <CardDescription>
-                            by {trendingDiscussions[0].author} • {trendingDiscussions[0].replies} replies
-                          </CardDescription>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Badge variant="outline" className="text-xs">
+                              {discussion.category}
+                            </Badge>
+                            {discussion.trending && (
+                              <Badge 
+                                variant="destructive" 
+                                className="text-xs cursor-pointer hover:bg-red-600 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTrendingNavigation();
+                                }}
+                              >
+                                <Flame className="h-3 w-3 mr-1" />
+                                Trending
+                              </Badge>
+                            )}
+                          </div>
+                          <h3 className="font-semibold mb-2 line-clamp-2">{discussion.title}</h3>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>by {discussion.author}</span>
+                            <span>{discussion.lastActivity}</span>
+                          </div>
+                          <div className="flex items-center space-x-4 mt-3 text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <MessageCircle className="h-3 w-3" />
+                              <span>{discussion.replies}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Users className="h-3 w-3" />
+                              <span>{discussion.views}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <Badge className="badge-trending">
-                        <Flame className="w-3 h-3 mr-1" />
-                        Trending
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{trendingDiscussions[0].views} views</span>
-                      <span>•</span>
-                      <span>{trendingDiscussions[0].category}</span>
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      {trendingDiscussions[0].tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Upcoming Events */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Upcoming Events ({upcomingEvents.length})</h3>
-                    <Link to="/events">
-                      <Button variant="outline" size="sm">
-                        View All Events
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </Link>
-                  </div>
-                  
-                  {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {[...Array(3)].map((_, i) => (
-                        <Card key={i} className="animate-pulse">
-                          <div className="h-48 bg-muted rounded-t-lg"></div>
-                          <CardContent className="p-4">
-                            <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-muted rounded w-full mb-2"></div>
-                            <div className="h-3 bg-muted rounded w-2/3"></div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : upcomingEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {upcomingEvents.map((event) => (
-                        <EventCard
-                          key={event.id}
-                          event={event}
-                          onAttend={handleAttendEvent}
-                          onBook={(eventId) => {
-                            toast({
-                              title: "Feature Coming Soon",
-                              description: "Event booking functionality will be available soon!",
-                            });
-                          }}
-                          onLike={handleLikeEvent}
-                          onChat={(eventId, organizerId) => {
-                            toast({
-                              title: "Feature Coming Soon",
-                              description: "Chat functionality will be available soon!",
-                            });
-                          }}
-                          verified={Math.random() > 0.7} // Randomly show some as verified for demo
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card>
-                      <CardContent className="p-8 text-center">
-                        <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold mb-2">No Upcoming Events</h3>
-                        <p className="text-muted-foreground mb-4">
-                          There are no upcoming events in your area. Be the first to create one!
-                        </p>
-                        <Link to="/create-event">
-                          <Button className="btn-event">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create Event
-                          </Button>
-                        </Link>
-                      </CardContent>
-                    </Card>
-                  )}
+                    </AnimatedCard>
+                  ))}
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="local" className="space-y-4">
-                <Card className="community-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Flame className="w-5 h-5 text-orange-500" />
-                      Local Highlights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Discover what's happening in your local community. Connect with neighbors, 
-                      find local events, and stay updated with community news.
-                    </p>
-                    <Button className="mt-4 btn-community">
-                      Explore Local
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Community Spotlight */}
-            <Card className="community-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500" />
-                  Community Spotlight
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {communitySpotlight.map((community) => (
-                  <div key={community.id} className="flex gap-3 p-3 rounded-lg bg-muted/50">
-                    <img 
-                      src={community.image} 
-                      alt={community.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm">{community.name}</h4>
-                      <p className="text-xs text-muted-foreground mb-1">{community.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{community.members} members</span>
-                        <Badge className="badge-community text-xs">{community.category}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Leaderboard */}
-            <Card className="trending-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-500" />
-                  Community Leaderboard
-                </CardTitle>
-                <CardDescription>Top contributors this month</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {leaderboard.map((user) => (
-                  <div key={user.rank} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <span className="text-lg">{user.badge}</span>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback>{user.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.points} points</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Your Activity</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Events Attended</span>
-                  <span className="font-semibold">12</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Communities Joined</span>
-                  <span className="font-semibold">8</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Discussions Started</span>
-                  <span className="font-semibold">5</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Points Earned</span>
-                  <span className="font-semibold text-primary">1,247</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          </motion.div>
         </div>
+      </section>
+
+      {/* Community Spotlight */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="container mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={itemVariants} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Community Spotlight</h2>
+              <p className="text-lg text-muted-foreground">Join amazing communities and connect with like-minded people</p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {communitySpotlight.map((community, index) => (
+                <AnimatedCard
+                  key={community.id}
+                  variant="default"
+                  className="cursor-pointer"
+                  hoverEffect="lift"
+                  onClick={() => handleCommunityNavigation(community.id)}
+                  entranceAnimation="slide"
+                  delay={index * 100}
+                  image={{
+                    src: community.image,
+                    alt: community.name,
+                    height: 150,
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge variant="outline">{community.category}</Badge>
+                    {community.featured && (
+                      <Badge variant="destructive">
+                        <Star className="h-3 w-3 mr-1" />
+                        Featured
+                      </Badge>
+                    )}
+                  </div>
+                  <h3 className="font-semibold mb-2">{community.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    {community.description}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-1">
+                      <Users className="h-3 w-3" />
+                      <span>{community.members} members</span>
+                    </div>
+                    <span>{community.recentActivity}</span>
+                  </div>
+                </AnimatedCard>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={itemVariants} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Explore Categories</h2>
+              <p className="text-lg text-muted-foreground">Find events and communities that match your interests</p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {categories.map((category, index) => (
+                <AnimatedCard
+                  key={category.name}
+                  variant="outline"
+                  className="cursor-pointer text-center p-6"
+                  hoverEffect="scale"
+                  onClick={() => handleCategoryNavigation(category.name)}
+                  entranceAnimation="slide"
+                  delay={index * 100}
+                >
+                  <div className={`w-12 h-12 rounded-lg ${category.color} flex items-center justify-center mx-auto mb-3`}>
+                    {category.icon}
+                  </div>
+                  <span className="font-medium">{category.name}</span>
+                </AnimatedCard>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 bg-gradient-to-r from-primary/10 to-secondary/10">
+        <div className="container mx-auto text-center">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-4xl font-bold mb-4"
+            >
+              Ready to Connect?
+            </motion.h2>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
+            >
+              Join thousands of people who are already building stronger communities through Glocal.
+            </motion.p>
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            >
+              <AdvancedButton
+                onClick={handleGetStarted}
+                size="lg"
+                variant="default"
+                leftIcon={<Sparkles className="h-5 w-5" />}
+              >
+                {user ? 'Explore Feed' : 'Join Now'}
+              </AdvancedButton>
+              <AdvancedButton
+                onClick={handleAboutNavigation}
+                size="lg"
+                variant="outline"
+                leftIcon={<Info className="h-5 w-5" />}
+              >
+                Learn More
+              </AdvancedButton>
+              {/* Admin Login Button - Only show when user is not logged in */}
+              {!user && (
+                <AdvancedButton
+                  onClick={handleAdminLogin}
+                  size="lg"
+                  variant="outline"
+                  leftIcon={<Shield className="h-5 w-5" />}
+                  className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+                >
+                  Admin Login
+                </AdvancedButton>
+              )}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
       </div>
     </ResponsiveLayout>
   );
-};
-
-export default Index;
+}
