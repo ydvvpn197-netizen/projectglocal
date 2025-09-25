@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { clearAuthData, checkForStaleAuthData } from '@/utils/clearAuthData';
 import { AuthContext } from './AuthContext';
 import { UserService } from '@/services/userService';
+import { anonymousHandleService } from '@/services/anonymousHandleService';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -263,6 +264,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ chi
                 last_name: lastName,
               });
             } else {
+              // Create anonymous handle for new user automatically
+              console.log('Creating anonymous handle for new user...');
+              const handleResult = await anonymousHandleService.createAnonymousHandleForUser(
+                result.user.id,
+                {
+                  format: 'random',
+                  includeNumbers: true,
+                  maxLength: 20
+                }
+              );
+              
+              if (handleResult.success) {
+                console.log('Anonymous handle created:', handleResult.handle?.username);
+              } else {
+                console.warn('Failed to create anonymous handle:', handleResult.error);
+              }
               // Check if profile needs updates (e.g., user_type wasn't set correctly)
               const needsUpdate = 
                 profileResult.profile.user_type !== (userType || 'user') ||

@@ -25,6 +25,8 @@ const News = lazy(() => import('@/pages/News'));
 const SignIn = lazy(() => import('@/pages/SignIn'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
 const CommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
+const LegalAssistant = lazy(() => import('@/pages/LegalAssistant'));
+const LifeWish = lazy(() => import('@/pages/LifeWish'));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -112,6 +114,19 @@ export const AppRoutes: React.FC = () => {
       <Route path="/about" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading about...</div>}>
           <About />
+        </Suspense>
+      } />
+      
+      {/* Feature Routes */}
+      <Route path="/legal-assistant" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading legal assistant...</div>}>
+          <LegalAssistant />
+        </Suspense>
+      } />
+      
+      <Route path="/life-wish" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading life wishes...</div>}>
+          <LifeWish />
         </Suspense>
       } />
       
