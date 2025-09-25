@@ -7,6 +7,15 @@ import '@testing-library/jest-dom';
 import { vi, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
+// Mock useToast hook globally
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: vi.fn(),
+    dismiss: vi.fn(),
+    toasts: []
+  })
+}));
+
 // Basic window mocks
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

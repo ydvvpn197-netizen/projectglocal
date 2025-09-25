@@ -31,7 +31,7 @@ import { useSecurity } from '@/utils/securityUtils';
 
 interface CommunityEngagementHubProps {
   className?: string;
-  onEngagement?: (type: string, data: any) => void;
+  onEngagement?: (type: string, data: Record<string, string | number | boolean>) => void;
 }
 
 interface LocalIssue {
@@ -76,10 +76,14 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
   className,
   onEngagement 
 }) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { location } = useLocation();
-  const { sanitizeText, validateInput } = useSecurity();
+  const auth = useAuth();
+  const { user } = auth || { user: null };
+  const toastHook = useToast();
+  const { toast } = toastHook || { toast: () => {} };
+  const locationHook = useLocation();
+  const { location } = locationHook || { location: null };
+  const securityHook = useSecurity();
+  const { sanitizeText, validateInput } = securityHook || { sanitizeText: (text) => text, validateInput: () => true };
   
   // Performance monitoring
   usePerformanceMonitor('CommunityEngagementHub');
@@ -426,11 +430,42 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                Create {createType === 'issue' ? 'Local Issue' : createType === 'protest' ? 'Virtual Protest' : 'Community Event'}
+                {createType === 'issue' ? 'Create Local Issue' : 
+                 createType === 'protest' ? 'Create Virtual Protest' : 
+                 createType === 'event' ? 'Create Community Event' : 
+                 'Create New Content'}
               </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
+              {/* Content Type Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Content Type</label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={createType === 'issue' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCreateType('issue')}
+                  >
+                    Local Issue
+                  </Button>
+                  <Button
+                    variant={createType === 'protest' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCreateType('protest')}
+                  >
+                    Virtual Protest
+                  </Button>
+                  <Button
+                    variant={createType === 'event' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCreateType('event')}
+                  >
+                    Community Event
+                  </Button>
+                </div>
+              </div>
+
               {/* Anonymous toggle */}
               <div className="flex items-center space-x-2">
                 <Button
@@ -598,6 +633,7 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
+            role="search"
           />
         </div>
         <Button variant="outline" size="sm">

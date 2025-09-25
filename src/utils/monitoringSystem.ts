@@ -470,7 +470,7 @@ export const useSecurityMonitoring = (componentName: string) => {
       severity,
       userAgent: navigator.userAgent
     });
-  }, [componentName, trackSecurityEvent]);
+  }, [trackSecurityEvent]);
 
   return { trackSecurityIncident };
 };

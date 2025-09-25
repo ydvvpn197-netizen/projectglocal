@@ -1,9 +1,9 @@
-// News context for TheGlocal project
-import React, { createContext, useContext, ReactNode } from 'react';
-import type { NewsArticle, NewsTab, LocationData } from '@/types/news';
-import { NewsContextType } from './NewsContextTypes';
+/**
+ * News Context Definition
+ * Context for news functionality
+ */
 
-const NewsContext = createContext<NewsContextType | undefined>(undefined);
+import React, { createContext } from 'react';
+import type { NewsContextType } from './NewsContextTypes';
 
-
-export { NewsContext };
+export const NewsContext = createContext<NewsContextType | undefined>(undefined);

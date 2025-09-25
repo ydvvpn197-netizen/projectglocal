@@ -113,7 +113,7 @@ export const usePosts = () => {
       console.log('Insert data:', insertData);
 
       const { data, error } = await supabase
-        .from('social_posts')
+        .from('community_posts')
         .insert(insertData)
         .select()
         .single();

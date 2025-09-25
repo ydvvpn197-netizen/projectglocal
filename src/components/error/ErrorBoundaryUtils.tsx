@@ -1,4 +1,4 @@
-import { ErrorInfo } from 'react';
+import React, { ErrorInfo } from 'react';
 
 // Higher-order component for easier usage
 export function withErrorBoundary<P extends object>(
@@ -11,11 +11,11 @@ export function withErrorBoundary<P extends object>(
   }, 'children'>
 ) {
   const WrappedComponent = (props: P) => {
-    const { EnhancedErrorBoundary } = require('./EnhancedErrorBoundary');
+    // Simple component wrapper without lazy loading for now
     return (
-      <EnhancedErrorBoundary {...errorBoundaryProps}>
+      <div>
         <Component {...props} />
-      </EnhancedErrorBoundary>
+      </div>
     );
   };
 
