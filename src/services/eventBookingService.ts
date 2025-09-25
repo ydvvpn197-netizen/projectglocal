@@ -67,9 +67,10 @@ export class EventBookingService {
 
       // Check event capacity
       const { data: event } = await supabase
-        .from('events')
+        .from('posts')
         .select('max_attendees, attendees_count')
         .eq('id', bookingData.event_id)
+        .eq('type', 'event')
         .single();
 
       if (event && event.max_attendees) {
@@ -95,7 +96,7 @@ export class EventBookingService {
         })
         .select(`
           *,
-          event:events(id, title, event_date, event_time, location_name, price, image_url),
+          event:posts!event_bookings_event_id_fkey(id, title, event_date, event_time, location_name, price, image_url),
           user:profiles!event_bookings_user_id_fkey(id, display_name)
         `)
         .single();
@@ -104,11 +105,12 @@ export class EventBookingService {
 
       // Update event attendees count
       await supabase
-        .from('events')
+        .from('posts')
         .update({ 
           attendees_count: supabase.raw('attendees_count + ?', [bookingData.tickets_count])
         })
-        .eq('id', bookingData.event_id);
+        .eq('id', bookingData.event_id)
+        .eq('type', 'event');
 
       return { booking: data, error: null };
     } catch (error: unknown) {
@@ -131,7 +133,7 @@ export class EventBookingService {
         .from('event_bookings')
         .select(`
           *,
-          event:events(id, title, event_date, event_time, location_name, price, image_url)
+          event:posts!event_bookings_event_id_fkey(id, title, event_date, event_time, location_name, price, image_url)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -228,11 +230,12 @@ export class EventBookingService {
 
       // Update event attendees count
       await supabase
-        .from('events')
+        .from('posts')
         .update({ 
           attendees_count: supabase.raw('attendees_count - ?', [booking.tickets_count])
         })
-        .eq('id', booking.event_id);
+        .eq('id', booking.event_id)
+        .eq('type', 'event');
 
       return { success: true, error: null };
     } catch (error: unknown) {
@@ -283,7 +286,7 @@ export class EventBookingService {
         .from('event_bookings')
         .select(`
           *,
-          event:events(id, title, event_date, event_time, location_name, price, image_url)
+          event:posts!event_bookings_event_id_fkey(id, title, event_date, event_time, location_name, price, image_url)
         `)
         .eq('event_id', eventId)
         .eq('user_id', user.id)
