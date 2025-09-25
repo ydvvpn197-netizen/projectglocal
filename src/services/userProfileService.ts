@@ -126,11 +126,18 @@ class UserProfileService {
           const userEmail = authUser?.user?.email;
           const userName = authUser?.user?.user_metadata?.full_name || userEmail?.split('@')[0] || 'User';
           
+          // Parse first and last name from full name
+          const nameParts = userName.split(' ');
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
               user_id: userId,
               display_name: userName,
+              first_name: firstName,
+              last_name: lastName,
               bio: 'Welcome to TheGlocal!',
               user_type: 'user',
               created_at: new Date().toISOString(),
