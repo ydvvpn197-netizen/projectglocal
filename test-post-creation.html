@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Creation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Post Creation Test</h1>
+    
+    <div class="test-section info">
+        <h2>Test Authentication Status</h2>
+        <p>Check if user is authenticated before testing post creation.</p>
+        <button onclick="checkAuth()">Check Authentication</button>
+        <div id="auth-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Post Creation Form</h2>
+        <form id="post-form">
+            <div>
+                <label>Post Type:</label>
+                <select id="post-type" required>
+                    <option value="post">Regular Post</option>
+                    <option value="event">Event</option>
+                    <option value="service">Service</option>
+                    <option value="discussion">Discussion</option>
+                </select>
+            </div>
+            
+            <div>
+                <label>Title:</label>
+                <input type="text" id="title" placeholder="Enter post title" required>
+            </div>
+            
+            <div>
+                <label>Content:</label>
+                <textarea id="content" rows="4" placeholder="Enter post content" required></textarea>
+            </div>
+            
+            <div>
+                <label>Tags (comma-separated):</label>
+                <input type="text" id="tags" placeholder="tag1, tag2, tag3">
+            </div>
+            
+            <div id="event-fields" style="display: none;">
+                <label>Event Date:</label>
+                <input type="datetime-local" id="event-date">
+                
+                <label>Event Location:</label>
+                <input type="text" id="event-location" placeholder="Event location">
+                
+                <label>Price Range:</label>
+                <input type="text" id="price-range" placeholder="e.g., $10-20">
+            </div>
+            
+            <div>
+                <label>
+                    <input type="checkbox" id="is-anonymous"> Post anonymously
+                </label>
+            </div>
+            
+            <button type="submit">Create Post</button>
+        </form>
+        <div id="post-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Multimedia Upload</h2>
+        <div>
+            <label>Upload Images:</label>
+            <input type="file" id="image-upload" multiple accept="image/*">
+        </div>
+        <div>
+            <label>Upload Videos:</label>
+            <input type="file" id="video-upload" multiple accept="video/*">
+        </div>
+        <div>
+            <label>Upload Documents:</label>
+            <input type="file" id="doc-upload" multiple accept=".pdf,.doc,.docx,.txt">
+        </div>
+        <button onclick="testMultimediaUpload()">Test Upload</button>
+        <div id="upload-result"></div>
+    </div>
+
+    <script>
+        // Check authentication status
+        async function checkAuth() {
+            const statusDiv = document.getElementById('auth-status');
+            try {
+                // This would normally check the actual auth state
+                // For testing, we'll simulate different scenarios
+                const isAuthenticated = Math.random() > 0.3; // Simulate 70% chance of being authenticated
+                
+                if (isAuthenticated) {
+                    statusDiv.innerHTML = '<div class="success">✅ User is authenticated</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="error">❌ User is not authenticated. Please log in first.</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error checking authentication: ${error.message}</div>`;
+            }
+        }
+
+        // Handle post type change
+        document.getElementById('post-type').addEventListener('change', function() {
+            const eventFields = document.getElementById('event-fields');
+            if (this.value === 'event') {
+                eventFields.style.display = 'block';
+            } else {
+                eventFields.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('post-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const resultDiv = document.getElementById('post-result');
+            
+            try {
+                const formData = {
+                    type: document.getElementById('post-type').value,
+                    title: document.getElementById('title').value,
+                    content: document.getElementById('content').value,
+                    tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                    isAnonymous: document.getElementById('is-anonymous').checked,
+                    eventDate: document.getElementById('event-date').value,
+                    eventLocation: document.getElementById('event-location').value,
+                    priceRange: document.getElementById('price-range').value
+                };
+
+                // Simulate API call
+                resultDiv.innerHTML = '<div class="info">🔄 Creating post...</div>';
+                
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Simulate success/failure
+                const success = Math.random() > 0.2; // 80% success rate
+                
+                if (success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Post created successfully!<br>
+                            <strong>Type:</strong> ${formData.type}<br>
+                            <strong>Title:</strong> ${formData.title}<br>
+                            <strong>Content:</strong> ${formData.content.substring(0, 100)}...<br>
+                            <strong>Tags:</strong> ${formData.tags.join(', ')}<br>
+                            <strong>Anonymous:</strong> ${formData.isAnonymous ? 'Yes' : 'No'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Failed to create post. Please try again.</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        });
+
+        // Test multimedia upload
+        async function testMultimediaUpload() {
+            const resultDiv = document.getElementById('upload-result');
+            const imageFiles = document.getElementById('image-upload').files;
+            const videoFiles = document.getElementById('video-upload').files;
+            const docFiles = document.getElementById('doc-upload').files;
+            
+            resultDiv.innerHTML = '<div class="info">🔄 Testing multimedia upload...</div>';
+            
+            try {
+                const uploadResults = [];
+                
+                // Simulate image upload
+                if (imageFiles.length > 0) {
+                    for (let file of imageFiles) {
+                        uploadResults.push(`📷 Image: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                    }
+                }
+                
+                // Simulate video upload
+                if (videoFiles.length > 0) {
+                    for (let file of videoFiles) {
+                        uploadResults.push(`🎥 Video: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)`);
+                    }
+                }
+                
+                // Simulate document upload
+                if (docFiles.length > 0) {
+                    for (let file of docFiles) {
+                        uploadResults.push(`📄 Document: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                    }
+                }
+                
+                if (uploadResults.length > 0) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Multimedia files ready for upload:<br>
+                            ${uploadResults.join('<br>')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="info">ℹ️ No files selected for upload.</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Upload error: ${error.message}</div>`;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Post creation test page loaded');
+        });
+    </script>
+</body>
+</html>

@@ -22,10 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, X, MapPin, Calendar, Tag } from 'lucide-react';
+import { Plus, X, MapPin, Calendar, Tag, Upload, Image, Video, File } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SocialPostService, CreatePostRequest } from '@/services/socialPostService';
 import { useLocation } from '@/hooks/useLocation';
+import { FileUploadService } from '@/services/fileUploadService';
 
 interface CreatePostDialogProps {
   onPostCreated?: (post: Record<string, unknown>) => void;
@@ -54,6 +55,10 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
   const [eventLocation, setEventLocation] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const [contactInfo, setContactInfo] = useState('');
+  
+  // Multimedia fields
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +66,14 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
 
     setLoading(true);
     try {
+      // Upload files first if any
+      let imageUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        setUploadingFiles(true);
+        imageUrls = await uploadFiles(selectedFiles);
+        setUploadingFiles(false);
+      }
+
       const postData: CreatePostRequest = {
         title: title.trim() || undefined,
         content: content.trim(),
@@ -76,6 +89,7 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
         event_location: postType === 'event' ? eventLocation : undefined,
         price_range: postType === 'event' ? priceRange : undefined,
         contact_info: postType === 'event' ? contactInfo : undefined,
+        image_urls: imageUrls.length > 0 ? imageUrls : undefined,
       };
 
       const newPost = await SocialPostService.createPost(postData);
@@ -90,6 +104,7 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
       setEventLocation('');
       setPriceRange('');
       setContactInfo('');
+      setSelectedFiles([]);
       
       setOpen(false);
       onPostCreated?.(newPost);
@@ -116,6 +131,40 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
       e.preventDefault();
       addTag();
     }
+  };
+
+  // File upload functions
+  const uploadFiles = async (files: File[]): Promise<string[]> => {
+    try {
+      const uploadResults = await FileUploadService.uploadMultipleFiles(files, 'posts');
+      return uploadResults.map(result => result.url);
+    } catch (error) {
+      console.error('File upload error:', error);
+      throw error;
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(prev => [...prev, ...files]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith('image/')) return <Image className="h-4 w-4" />;
+    if (file.type.startsWith('video/')) return <Video className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
@@ -290,6 +339,60 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
             )}
           </div>
 
+          {/* Multimedia Upload */}
+          <div className="space-y-2">
+            <Label>Attach Files</Label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              <input
+                type="file"
+                multiple
+                accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex flex-col items-center justify-center space-y-2"
+              >
+                <Upload className="h-8 w-8 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  Click to upload images, videos, or documents
+                </span>
+                <span className="text-xs text-gray-500">
+                  Supports: Images, Videos, PDFs, Documents
+                </span>
+              </label>
+            </div>
+            
+            {/* Selected Files */}
+            {selectedFiles.length > 0 && (
+              <div className="space-y-2">
+                <Label>Selected Files:</Label>
+                <div className="space-y-1">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                      <div className="flex items-center gap-2">
+                        {getFileIcon(file)}
+                        <span className="text-sm">{file.name}</span>
+                        <span className="text-xs text-gray-500">
+                          ({formatFileSize(file.size)})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Anonymous Post */}
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -311,8 +414,8 @@ export const CreatePostDialog: React.FC<CreatePostDialogProps> = ({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !content.trim()}>
-              {loading ? 'Creating...' : 'Create Post'}
+            <Button type="submit" disabled={loading || uploadingFiles || !content.trim()}>
+              {loading ? 'Creating...' : uploadingFiles ? 'Uploading files...' : 'Create Post'}
             </Button>
           </DialogFooter>
         </form>

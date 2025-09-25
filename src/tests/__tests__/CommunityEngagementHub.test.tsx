@@ -341,6 +341,9 @@ describe('CommunityEngagementHub', () => {
       fireEvent.change(screen.getByPlaceholderText('Brief description of the issue'), {
         target: { value: 'Test Issue' }
       });
+      fireEvent.change(screen.getByPlaceholderText('Detailed description of the issue'), {
+        target: { value: 'Test description' }
+      });
       
       fireEvent.click(screen.getByText('Create Issue'));
       
