@@ -37,7 +37,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { CommunityService } from "@/services/communityService";
+import { communityService } from "@/services/communityService";
 
 const categories = [
   "All Categories",

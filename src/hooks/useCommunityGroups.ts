@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CommunityService } from '@/services/communityService';
+import { communityService } from '@/services/communityService';
 import { CommunityGroup, CreateGroupRequest } from '@/types/community';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,7 @@ export const useCommunityGroups = () => {
   }) => {
     try {
       setLoading(true);
-      const data = await CommunityService.getGroups(filters);
+      const data = await communityService.getGroups(filters);
       setGroups(data);
     } catch (error) {
       console.error('Error fetching groups:', error);
@@ -45,7 +45,7 @@ export const useCommunityGroups = () => {
 
     try {
       console.log('Fetching user groups for user:', user.id);
-      const data = await CommunityService.getUserGroups(user.id);
+      const data = await communityService.getUserGroups(user.id);
       setUserGroups(data);
     } catch (error) {
       console.error('Error fetching user groups:', error);
@@ -57,7 +57,7 @@ export const useCommunityGroups = () => {
   // Fetch trending groups
   const fetchTrendingGroups = useCallback(async (limit: number = 10) => {
     try {
-      const data = await CommunityService.getTrendingGroups(limit);
+      const data = await communityService.getTrendingGroups(limit);
       setTrendingGroups(data);
     } catch (error) {
       console.error('Error fetching trending groups:', error);
@@ -77,7 +77,7 @@ export const useCommunityGroups = () => {
 
     try {
       setCreating(true);
-      const newGroup = await CommunityService.createGroup(groupData);
+      const newGroup = await communityService.createGroup(groupData);
       
       if (newGroup) {
         toast({
@@ -119,7 +119,7 @@ export const useCommunityGroups = () => {
 
     try {
       console.log('Attempting to join group:', groupId, 'for user:', user.id);
-      const success = await CommunityService.addGroupMember(groupId, user.id);
+      const success = await communityService.addGroupMember(groupId, user.id);
       
       if (success) {
         toast({
@@ -167,7 +167,7 @@ export const useCommunityGroups = () => {
     }
 
     try {
-      const success = await CommunityService.removeGroupMember(groupId, user.id);
+      const success = await communityService.removeGroupMember(groupId, user.id);
       
       if (success) {
         toast({
@@ -199,7 +199,7 @@ export const useCommunityGroups = () => {
     if (!user) return false;
 
     try {
-      return await CommunityService.isGroupMember(groupId, user.id);
+      return await communityService.isGroupMember(groupId, user.id);
     } catch (error) {
       console.error('Error checking group membership:', error);
       return false;
@@ -211,7 +211,7 @@ export const useCommunityGroups = () => {
     if (!user) return null;
 
     try {
-      return await CommunityService.getUserRole(groupId, user.id);
+      return await communityService.getUserRole(groupId, user.id);
     } catch (error) {
       console.error('Error getting user role:', error);
       return null;
@@ -224,7 +224,7 @@ export const useCommunityGroups = () => {
     location_city?: string;
   }): Promise<CommunityGroup[]> => {
     try {
-      return await CommunityService.searchGroups(query, filters);
+      return await communityService.searchGroups(query, filters);
     } catch (error) {
       console.error('Error searching groups:', error);
       toast({

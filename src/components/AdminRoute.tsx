@@ -6,7 +6,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useIsAdmin } from '../hooks/useRBAC';
+import { useIsAdmin } from '../hooks/useRBACConsolidated';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Shield, Lock, Loader2 } from 'lucide-react';
 

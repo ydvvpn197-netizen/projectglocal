@@ -5,6 +5,16 @@
 
 import { useNewsConsolidated } from './useNewsConsolidated';
 
-export const useNewsData = (filters: any = {}) => {
+interface NewsDataFilters {
+  category?: string;
+  location?: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  tags?: string[];
+}
+
+export const useNewsData = (filters: NewsDataFilters = {}) => {
   return useNewsConsolidated(filters);
 };

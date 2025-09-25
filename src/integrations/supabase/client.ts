@@ -3,24 +3,59 @@
  * Mock implementation for Supabase client
  */
 
+interface AuthCallback {
+  (event: string, session: unknown): void;
+}
+
+interface SignUpData {
+  email: string;
+  password: string;
+}
+
+interface SignInData {
+  email: string;
+  password: string;
+}
+
+interface OAuthData {
+  provider: string;
+}
+
+interface ResetPasswordOptions {
+  redirectTo?: string;
+}
+
+interface UpdateUserData {
+  email?: string;
+  password?: string;
+}
+
+interface InsertData {
+  [key: string]: unknown;
+}
+
+interface UpdateData {
+  [key: string]: unknown;
+}
+
 export const supabase = {
   auth: {
     getSession: async () => ({ data: { session: null }, error: null }),
-    onAuthStateChange: (callback: any) => ({ data: { subscription: { unsubscribe: () => {} } } }),
-    signUp: async (data: any) => ({ data: { user: null, session: null }, error: null }),
-    signInWithPassword: async (data: any) => ({ data: { user: null, session: null }, error: null }),
-    signInWithOAuth: async (data: any) => ({ data: { url: '' }, error: null }),
+    onAuthStateChange: (callback: AuthCallback) => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    signUp: async (data: SignUpData) => ({ data: { user: null, session: null }, error: null }),
+    signInWithPassword: async (data: SignInData) => ({ data: { user: null, session: null }, error: null }),
+    signInWithOAuth: async (data: OAuthData) => ({ data: { url: '' }, error: null }),
     signOut: async () => ({ error: null }),
-    resetPasswordForEmail: async (email: string, options: any) => ({ error: null }),
-    updateUser: async (data: any) => ({ data: { user: null }, error: null })
+    resetPasswordForEmail: async (email: string, options: ResetPasswordOptions) => ({ error: null }),
+    updateUser: async (data: UpdateUserData) => ({ data: { user: null }, error: null })
   },
   from: (table: string) => ({
-    insert: (data: any) => ({ error: null }),
-    update: (data: any) => ({ eq: (column: string, value: any) => ({ error: null }) })
+    insert: (data: InsertData) => ({ error: null }),
+    update: (data: UpdateData) => ({ eq: (column: string, value: unknown) => ({ error: null }) })
   })
 };
 
-export const withErrorHandling = async (fn: () => Promise<any>, fallback: any, errorMessage: string) => {
+export const withErrorHandling = async <T>(fn: () => Promise<T>, fallback: T, errorMessage: string) => {
   try {
     const result = await fn();
     return { data: result, error: null };

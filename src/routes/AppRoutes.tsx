@@ -6,6 +6,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { AdminRoute } from '@/components/AdminRoute';
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
@@ -22,6 +23,7 @@ const Discover = lazy(() => import('@/pages/Discover'));
 const News = lazy(() => import('@/pages/News'));
 const SignIn = lazy(() => import('@/pages/SignIn'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
+const CommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -108,6 +110,15 @@ export const AppRoutes: React.FC = () => {
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading about...</div>}>
           <About />
         </Suspense>
+      } />
+      
+      {/* Admin Routes */}
+      <Route path="/community-insights" element={
+        <AdminRoute>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading community insights...</div>}>
+            <CommunityInsights />
+          </Suspense>
+        </AdminRoute>
       } />
       
       {/* Fallback */}

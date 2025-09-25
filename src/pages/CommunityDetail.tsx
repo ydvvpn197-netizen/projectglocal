@@ -34,7 +34,7 @@ import { CommunityGroup } from "@/types/community";
 import { useCommunityGroups } from "@/hooks/useCommunityGroups";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { CommunityService } from "@/services/communityService";
+import { communityService } from "@/services/communityService";
 import { CommunityPostCard } from "@/components/CommunityPostCard";
 import { CommunityGroupCard } from "@/components/CommunityGroupCard";
 import { supabase } from "@/integrations/supabase/client";
