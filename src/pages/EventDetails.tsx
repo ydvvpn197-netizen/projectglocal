@@ -31,7 +31,14 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Building2
+  Building2,
+  ThumbsUp,
+  MessageSquare,
+  Copy,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Mail as MailIcon
 } from "lucide-react";
 import { useEvents, Event } from "@/hooks/useEvents";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,6 +59,7 @@ const EventDetails = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isOrganizerChatOpen, setIsOrganizerChatOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [tickets, setTickets] = useState(1);
   const [message, setMessage] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -65,6 +73,12 @@ const EventDetails = () => {
     created_at: string;
   } | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
+  
+  // Interaction states
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0);
+  const [shareCount, setShareCount] = useState(0);
 
   const checkUserBooking = async (eventId: string) => {
     try {
@@ -184,6 +198,90 @@ const EventDetails = () => {
     }
   };
 
+  // Interaction handlers
+  const handleLike = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to like this event",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Toggle like state
+      const newLikedState = !isLiked;
+      setIsLiked(newLikedState);
+      setLikeCount(prev => newLikedState ? prev + 1 : prev - 1);
+      
+      // Here you would make an API call to save the like
+      toast({
+        title: newLikedState ? "Event Liked!" : "Like Removed",
+        description: newLikedState ? "You liked this event" : "You removed your like",
+      });
+    } catch (error) {
+      // Revert on error
+      setIsLiked(!isLiked);
+      setLikeCount(prev => isLiked ? prev + 1 : prev - 1);
+      toast({
+        title: "Error",
+        description: "Failed to update like status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShare = () => {
+    setIsShareModalOpen(true);
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link Copied!",
+        description: "Event link has been copied to clipboard",
+      });
+      setIsShareModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy link to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSocialShare = (platform: string) => {
+    const url = window.location.href;
+    const title = selectedEvent?.title || "Check out this event!";
+    const text = selectedEvent?.description || "Join me at this amazing event!";
+
+    let shareUrl = "";
+    
+    switch (platform) {
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+        break;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+        break;
+      case "email":
+        shareUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + "\n\n" + url)}`;
+        break;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, "_blank", "width=600,height=400");
+      setIsShareModalOpen(false);
+      setShareCount(prev => prev + 1);
+    }
+  };
+
   if (loading) {
     return (
       <ResponsiveLayout>
@@ -276,11 +374,23 @@ const EventDetails = () => {
             className="w-full h-96 object-cover rounded-lg"
           />
           <div className="absolute top-4 right-4 flex gap-2">
-            <Button variant="ghost" size="sm" className="bg-white/20 hover:bg-white/30 text-white">
-              <Heart className="w-4 h-4" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`bg-white/20 hover:bg-white/30 text-white ${isLiked ? 'text-red-400' : ''}`}
+              onClick={handleLike}
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              {likeCount > 0 && <span className="ml-1 text-xs">{likeCount}</span>}
             </Button>
-            <Button variant="ghost" size="sm" className="bg-white/20 hover:bg-white/30 text-white">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="bg-white/20 hover:bg-white/30 text-white"
+              onClick={handleShare}
+            >
               <Share2 className="w-4 h-4" />
+              {shareCount > 0 && <span className="ml-1 text-xs">{shareCount}</span>}
             </Button>
           </div>
         </div>
@@ -439,6 +549,27 @@ const EventDetails = () => {
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Chat with Organizer
                   </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex-1"
+                      onClick={handleLike}
+                    >
+                      <Heart className={`w-4 h-4 mr-1 ${isLiked ? 'fill-current text-red-500' : ''}`} />
+                      {isLiked ? 'Liked' : 'Like'} ({likeCount})
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex-1"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="w-4 h-4 mr-1" />
+                      Share ({shareCount})
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -637,6 +768,66 @@ const EventDetails = () => {
             <EventDiscussion eventId={selectedEvent.id} />
           </div>
         )}
+
+        {/* Share Modal */}
+        <Dialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Share This Event</DialogTitle>
+              <DialogDescription>
+                Share this amazing event with your friends and family
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Copy Link */}
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleCopyLink}
+              >
+                <Copy className="w-4 h-4 mr-3" />
+                Copy Link
+              </Button>
+              
+              {/* Social Media Sharing */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => handleSocialShare('facebook')}
+                >
+                  <Facebook className="w-4 h-4 mr-2 text-blue-600" />
+                  Facebook
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => handleSocialShare('twitter')}
+                >
+                  <Twitter className="w-4 h-4 mr-2 text-blue-400" />
+                  Twitter
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => handleSocialShare('linkedin')}
+                >
+                  <Linkedin className="w-4 h-4 mr-2 text-blue-700" />
+                  LinkedIn
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="justify-start"
+                  onClick={() => handleSocialShare('email')}
+                >
+                  <MailIcon className="w-4 h-4 mr-2" />
+                  Email
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Event Organizer Chat */}
         {selectedEvent && (
