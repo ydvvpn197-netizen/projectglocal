@@ -1,4 +1,4 @@
-import { SecurityManager } from '@/utils/securityUtils';
+import { SecurityManager } from '@/utils/securityUtils.tsx';
 
 // React hooks for security
 export function useSecurity() {
@@ -11,6 +11,7 @@ export function useSecurity() {
   const validateFile = (file: File) => securityManager.validateFile(file);
   const checkRateLimit = (identifier: string, limit?: number, windowMs?: number) => 
     securityManager.checkRateLimit(identifier, limit, windowMs);
+  const generateSecureToken = () => securityManager.generateSecureToken();
 
   return {
     sanitizeHTML,
@@ -18,5 +19,6 @@ export function useSecurity() {
     validateInput,
     validateFile,
     checkRateLimit,
+    generateSecureToken,
   };
 }

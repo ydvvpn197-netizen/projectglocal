@@ -243,6 +243,11 @@ class SecurityManager {
     }
   }
 
+  // Generate secure token
+  generateSecureToken(length: number = 32): string {
+    return this.generateSecureRandom(length);
+  }
+
   // Clear sensitive data
   clearSensitiveData(): void {
     this.rateLimitMap.clear();

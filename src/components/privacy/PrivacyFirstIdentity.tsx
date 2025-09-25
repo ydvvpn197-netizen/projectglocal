@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useSecurity } from '@/utils/securityUtils';
+import { useSecurity } from '@/hooks/useSecurity';
 
 interface PrivacyFirstIdentityProps {
   className?: string;
