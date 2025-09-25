@@ -3,7 +3,7 @@
  * Mock implementation for Supabase client
  */
 
-export const resilientSupabase = {
+export const supabase = {
   auth: {
     getSession: async () => ({ data: { session: null }, error: null }),
     onAuthStateChange: (callback: any) => ({ data: { subscription: { unsubscribe: () => {} } } }),
@@ -37,3 +37,6 @@ export const getConnectionStatus = (): 'connected' | 'connecting' | 'failed' | '
 export const forceReconnection = async (): Promise<boolean> => {
   return navigator.onLine;
 };
+
+// Backward compatibility
+export const resilientSupabase = supabase;

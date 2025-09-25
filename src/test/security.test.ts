@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SecurityUtils, SECURITY_CONFIG } from '@/config/security';
+import { SecurityUtils, SECURITY_CONFIG, email, password } from '@/config/security';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { SecurityAuditor } from '@/utils/securityAudit';
 
@@ -105,8 +105,8 @@ describe('Security Tests', () => {
       const validInput = 'test@example.com';
       const invalidInput = 'invalid-email';
       
-      const validResult = SecurityUtils.validateInput(SECURITY_CONFIG.email, validInput);
-      const invalidResult = SecurityUtils.validateInput(SECURITY_CONFIG.email, invalidInput);
+      const validResult = SecurityUtils.validateInput(email, validInput);
+      const invalidResult = SecurityUtils.validateInput(email, invalidInput);
       
       expect(validResult.success).toBe(true);
       expect(invalidResult.success).toBe(false);
@@ -165,8 +165,8 @@ describe('Security Tests', () => {
       const weakPassword = 'password123';
       const strongPassword = 'StrongP@ssw0rd123!';
       
-      const weakResult = SecurityUtils.validateInput(SECURITY_CONFIG.password, weakPassword);
-      const strongResult = SecurityUtils.validateInput(SECURITY_CONFIG.password, strongPassword);
+      const weakResult = SecurityUtils.validateInput(password, weakPassword);
+      const strongResult = SecurityUtils.validateInput(password, strongPassword);
       
       expect(weakResult.success).toBe(false);
       expect(strongResult.success).toBe(true);
@@ -182,8 +182,8 @@ describe('Security Tests', () => {
         'ValidP@ssw0rd123!' // Valid
       ];
       
-      passwords.forEach((password, index) => {
-        const result = SecurityUtils.validateInput(SECURITY_CONFIG.password, password);
+      passwords.forEach((pwd, index) => {
+        const result = password.safeParse(pwd);
         if (index === passwords.length - 1) {
           expect(result.success).toBe(true);
         } else {
