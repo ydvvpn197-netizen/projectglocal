@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { OptimizedImage } from './OptimizedImage';
+import { OptimizedImage } from './optimization/OptimizedImage';
 import { useRealTimeNews, NewsFilters } from '../hooks/useRealTimeNews';
 import { NewsArticle } from '../types/news';
 import { NewsSummary } from '../services/newsSummarizationService';

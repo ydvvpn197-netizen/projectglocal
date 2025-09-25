@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { OptimizedImage } from './OptimizedImage';
+import { OptimizedImage } from './optimization/OptimizedImage';
 import { useNewsData, type NewsArticle } from '@/hooks/useNewsData';
 
 

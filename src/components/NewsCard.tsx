@@ -15,7 +15,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { OptimizedImage } from './OptimizedImage';
+import { OptimizedImage } from './optimization/OptimizedImage';
 import { useNewsRealtime } from '@/hooks/useNews';
 import type { NewsCardProps } from '@/types/news';
 
