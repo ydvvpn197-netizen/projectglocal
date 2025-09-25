@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { rbacService, UserRole } from '@/services/rbacService';
+import { UserWithRole, AuditLog } from '../types/extended';
 
 export interface RBACState {
   role: UserRole | null;
@@ -189,14 +190,14 @@ export function useAdmin() {
     await rbac.refresh();
   };
 
-  const getAllUsers = async (): Promise<any[]> => {
+  const getAllUsers = async (): Promise<UserWithRole[]> => {
     if (!rbac.isAdmin) {
       throw new Error('Only admins can view all users');
     }
     return await rbacService.getAllUsersWithRoles();
   };
 
-  const getAuditLogs = async (limit?: number, offset?: number): Promise<any[]> => {
+  const getAuditLogs = async (limit?: number, offset?: number): Promise<AuditLog[]> => {
     if (!rbac.isAdmin) {
       throw new Error('Only admins can view audit logs');
     }
@@ -207,7 +208,7 @@ export function useAdmin() {
     action: string,
     targetType: string,
     targetId?: string,
-    details?: any
+    details?: Record<string, unknown>
   ): Promise<void> => {
     await rbacService.logAdminAction(action, targetType, targetId, details);
   };

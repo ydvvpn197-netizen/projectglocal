@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { LifeWishStats, LifeWishVisibility, MemorialProfile } from '../../types/extended';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +28,7 @@ export function LifeWish({ className }: LifeWishProps) {
   const [loading, setLoading] = useState(false);
   const [wishes, setWishes] = useState<LifeWish[]>([]);
   const [memorialProfile, setMemorialProfile] = useState<MemorialProfile | null>(null);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<LifeWishStats | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -187,7 +188,7 @@ function MyWishes({ wishes, onRefresh }: { wishes: LifeWish[]; onRefresh: () => 
         await lifeWishService.createLifeWish(
           formData.title,
           formData.content,
-          formData.visibility as any,
+          formData.visibility as LifeWishVisibility,
           formData.category,
           tags
         );
@@ -563,7 +564,7 @@ function MemorialProfile({ profile, onUpdate }: { profile: MemorialProfile | nul
 
 // Community Memorials Component
 function CommunityMemorials() {
-  const [memorials, setMemorials] = useState<any[]>([]);
+  const [memorials, setMemorials] = useState<MemorialProfile[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

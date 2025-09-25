@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Community } from '../types/extended';
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -268,7 +269,7 @@ const ConsolidatedCommunity = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("members");
-  const [selectedCommunity, setSelectedCommunity] = useState<any>(null);
+  const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("discover");
   const [showFilters, setShowFilters] = useState(false);
@@ -375,13 +376,13 @@ const ConsolidatedCommunity = () => {
     }
   }, [leaveCommunity, toast]);
 
-  const handleJoinModal = (community: any) => {
+  const handleJoinModal = (community: Community) => {
     setSelectedCommunity(community);
     setIsJoinModalOpen(true);
   };
 
   // Enhanced join modal
-  const JoinCommunityModal = ({ community, isOpen, onClose }: { community: any; isOpen: boolean; onClose: () => void }) => {
+  const JoinCommunityModal = ({ community, isOpen, onClose }: { community: Community; isOpen: boolean; onClose: () => void }) => {
     const [joinReason, setJoinReason] = useState("");
 
     return (
