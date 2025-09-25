@@ -444,7 +444,18 @@ export class LifeWishService {
   /**
    * Get pending family access requests
    */
-  async getPendingFamilyRequests(): Promise<any[]> {
+  async getPendingFamilyRequests(): Promise<Array<{
+    id: string;
+    user_id: string;
+    profile_id: string;
+    relationship: string;
+    status: string;
+    created_at: string;
+    requester: {
+      display_name: string;
+      avatar_url: string;
+    };
+  }>> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 

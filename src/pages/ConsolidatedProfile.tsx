@@ -137,7 +137,7 @@ const ConsolidatedProfile = () => {
   }, [user, posts, events, communities, profile]);
 
   // Enhanced profile update
-  const handleProfileUpdate = useCallback(async (updatedData: any) => {
+  const handleProfileUpdate = useCallback(async (updatedData: Partial<typeof profileData>) => {
     try {
       await updateProfile(updatedData);
       setProfileData(prev => ({ ...prev, ...updatedData }));

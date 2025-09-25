@@ -427,7 +427,7 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
               Create
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl" aria-describedby="create-dialog-description">
             <DialogHeader>
               <DialogTitle>
                 {createType === 'issue' ? 'Create Local Issue' : 
@@ -435,6 +435,12 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
                  createType === 'event' ? 'Create Community Event' : 
                  'Create New Content'}
               </DialogTitle>
+              <div id="create-dialog-description" className="sr-only">
+                {createType === 'issue' ? 'Create a new local issue to bring attention to community problems' : 
+                 createType === 'protest' ? 'Create a virtual protest to organize community action' : 
+                 createType === 'event' ? 'Create a community event to bring people together' : 
+                 'Create new community content to engage with your neighbors'}
+              </div>
             </DialogHeader>
             
             <div className="space-y-4">

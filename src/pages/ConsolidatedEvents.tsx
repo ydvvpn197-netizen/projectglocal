@@ -252,7 +252,7 @@ const ConsolidatedEvents = () => {
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
     switch (sortBy) {
-      case "date":
+      case "date": {
         try {
           const dateA = new Date(a.event_date || a.date);
           const dateB = new Date(b.event_date || b.date);
@@ -260,12 +260,15 @@ const ConsolidatedEvents = () => {
         } catch {
           return 0;
         }
-      case "popularity":
+      }
+      case "popularity": {
         return (b.attendees_count || b.attendees || 0) - (a.attendees_count || a.attendees || 0);
-      case "price":
+      }
+      case "price": {
         const priceA = a.price === "Free" ? 0 : (typeof a.price === 'string' ? parseInt(a.price.replace("$", "")) : a.price);
         const priceB = b.price === "Free" ? 0 : (typeof b.price === 'string' ? parseInt(b.price.replace("$", "")) : b.price);
         return priceA - priceB;
+      }
       default:
         return 0;
     }
@@ -303,7 +306,7 @@ const ConsolidatedEvents = () => {
         description: `Searching for: ${searchTerm}`,
       });
     } else if (lowerCommand.includes("filter")) {
-      setShowFilters(!showFilters);
+      setShowFilters(prev => !prev);
       toast({
         title: "Voice Filter",
         description: "Opening filters panel",

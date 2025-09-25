@@ -21,7 +21,7 @@ export interface AuditLog {
   action: string;
   targetType: string;
   targetId?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
   createdAt: string;
@@ -102,7 +102,15 @@ export class RBACService {
   /**
    * Get all users with their roles (admin only)
    */
-  async getAllUsersWithRoles(): Promise<any[]> {
+  async getAllUsersWithRoles(): Promise<Array<{
+    id: string;
+    email: string;
+    role: UserRole;
+    created_at: string;
+    role_created_at: string;
+    display_name?: string;
+    avatar_url?: string;
+  }>> {
     const { data, error } = await supabase
       .from('admin_dashboard')
       .select('*')
@@ -165,7 +173,7 @@ export class RBACService {
     action: string,
     targetType: string,
     targetId?: string,
-    details?: any
+    details?: Record<string, unknown>
   ): Promise<void> {
     const { error } = await supabase.rpc('log_admin_action', {
       action_type: action,

@@ -6,7 +6,7 @@
 import { lazy, ComponentType } from 'react';
 
 // Lazy load with error boundary
-export const createLazyComponent = <T extends ComponentType<any>>(
+export const createLazyComponent = <T extends ComponentType<unknown>>(
   importFunc: () => Promise<{ default: T }>,
   fallback?: ComponentType
 ) => {
@@ -18,7 +18,7 @@ export const createLazyComponent = <T extends ComponentType<any>>(
 };
 
 // Preload components for better UX
-export const preloadComponent = (importFunc: () => Promise<any>) => {
+export const preloadComponent = (importFunc: () => Promise<unknown>) => {
   const promise = importFunc();
   return promise;
 };

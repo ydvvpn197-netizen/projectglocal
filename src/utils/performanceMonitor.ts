@@ -106,7 +106,7 @@ class PerformanceMonitor {
   private trackInitialMetrics(): void {
     // Track memory usage if available
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
       this.metrics.memoryUsage = memory.usedJSHeapSize / 1024 / 1024; // MB
     }
 

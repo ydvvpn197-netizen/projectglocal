@@ -380,7 +380,7 @@ const ConsolidatedDashboard = () => {
       // Create recent activity from posts
       const activities: UserActivity[] = [];
       if (postsResult.data) {
-        postsResult.data.forEach((post: any) => {
+        postsResult.data.forEach((post: { id: string; title?: string; created_at: string }) => {
           activities.push({
             id: post.id,
             type: 'post',
