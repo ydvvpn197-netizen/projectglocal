@@ -29,7 +29,7 @@ interface PostHeaderProps {
   post: SocialPost;
   author: SocialPost['author'];
   postConfig: {
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
     label: string;
   };

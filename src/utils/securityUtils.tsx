@@ -253,48 +253,4 @@ class SecurityManager {
 // Global security manager instance
 export const securityManager = new SecurityManager();
 
-// React hooks for security
-export function useSecurity() {
-  const sanitizeHTML = (html: string) => securityManager.sanitizeHTML(html);
-  const sanitizeText = (text: string) => securityManager.sanitizeText(text);
-  const validateInput = (input: string, type: 'text' | 'email' | 'url' | 'number') => 
-    securityManager.validateInput(input, type);
-  const validateFile = (file: File) => securityManager.validateFile(file);
-  const checkRateLimit = (identifier: string, limit?: number, windowMs?: number) => 
-    securityManager.checkRateLimit(identifier, limit, windowMs);
-
-  return {
-    sanitizeHTML,
-    sanitizeText,
-    validateInput,
-    validateFile,
-    checkRateLimit,
-  };
-}
-
-// Security context for React components
-export const SecurityContext = React.createContext<{
-  securityManager: SecurityManager;
-}>({
-  securityManager,
-});
-
-// Security provider component
-export function SecurityProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <SecurityContext.Provider value={{ securityManager }}>
-      {children}
-    </SecurityContext.Provider>
-  );
-}
-
-// Hook to use security context
-export function useSecurityContext() {
-  const context = React.useContext(SecurityContext);
-  if (!context) {
-    throw new Error('useSecurityContext must be used within a SecurityProvider');
-  }
-  return context;
-}
-
 export default securityManager;

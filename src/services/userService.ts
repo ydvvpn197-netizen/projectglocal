@@ -4,7 +4,7 @@
  */
 
 export class UserService {
-  static async getUserProfile(userId: string): Promise<{ profile: any; artistProfile?: any }> {
+  static async getUserProfile(userId: string): Promise<{ profile: Record<string, unknown>; artistProfile?: Record<string, unknown> }> {
     // Mock implementation
     return {
       profile: {

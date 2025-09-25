@@ -35,7 +35,7 @@ interface ErrorEvent {
 
 interface UserEvent {
   eventType: string;
-  eventData: any;
+  eventData: Record<string, unknown>;
   userId?: string;
   sessionId: string;
   timestamp: number;
@@ -45,7 +45,7 @@ interface UserEvent {
 
 interface SecurityEvent {
   eventType: 'xss_attempt' | 'csrf_attempt' | 'rate_limit_exceeded' | 'suspicious_activity';
-  details: any;
+  details: Record<string, unknown>;
   userId?: string;
   sessionId: string;
   timestamp: number;
@@ -217,7 +217,7 @@ class MonitoringSystem {
   }
 
   // Send data to server
-  private async sendToServer(type: string, data: any): Promise<void> {
+  private async sendToServer(type: string, data: Record<string, unknown>): Promise<void> {
     if (!this.isOnline) {
       this.storeOfflineData(type, data);
       return;
@@ -243,7 +243,7 @@ class MonitoringSystem {
   }
 
   // Store data for offline sync
-  private storeOfflineData(type: string, data: any): void {
+  private storeOfflineData(type: string, data: Record<string, unknown>): void {
     const offlineData = JSON.parse(localStorage.getItem('monitoring_offline') || '[]');
     offlineData.push({ type, data, timestamp: Date.now() });
     localStorage.setItem('monitoring_offline', JSON.stringify(offlineData));
@@ -410,11 +410,11 @@ export const usePerformanceMonitor = (componentName: string) => {
 
   useEffect(() => {
     const startTime = performance.now();
-    const startMemory = (performance as any).memory?.usedJSHeapSize || 0;
+    const startMemory = (performance as Record<string, unknown>).memory?.usedJSHeapSize || 0;
 
     return () => {
       const endTime = performance.now();
-      const endMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const endMemory = (performance as Record<string, unknown>).memory?.usedJSHeapSize || 0;
       
       trackPerformance({
         renderTime: endTime - startTime,
@@ -429,7 +429,7 @@ export const usePerformanceMonitor = (componentName: string) => {
 export const useErrorTracking = (componentName: string) => {
   const { trackError } = useMonitoring();
 
-  const trackComponentError = useCallback((error: Error, errorInfo?: any) => {
+  const trackComponentError = useCallback((error: Error, errorInfo?: Record<string, unknown>) => {
     trackError({
       message: error.message,
       stack: error.stack,
@@ -447,7 +447,7 @@ export const useErrorTracking = (componentName: string) => {
 export const useUserAnalytics = (componentName: string) => {
   const { trackUserEvent } = useMonitoring();
 
-  const trackEvent = useCallback((eventType: string, eventData: any, privacyLevel: 'anonymous' | 'pseudonymous' | 'identified' = 'anonymous') => {
+  const trackEvent = useCallback((eventType: string, eventData: Record<string, unknown>, privacyLevel: 'anonymous' | 'pseudonymous' | 'identified' = 'anonymous') => {
     trackUserEvent({
       eventType,
       eventData,
@@ -463,7 +463,7 @@ export const useUserAnalytics = (componentName: string) => {
 export const useSecurityMonitoring = (componentName: string) => {
   const { trackSecurityEvent } = useMonitoring();
 
-  const trackSecurityIncident = useCallback((eventType: SecurityEvent['eventType'], details: any, severity: SecurityEvent['severity'] = 'medium') => {
+  const trackSecurityIncident = useCallback((eventType: SecurityEvent['eventType'], details: Record<string, unknown>, severity: SecurityEvent['severity'] = 'medium') => {
     trackSecurityEvent({
       eventType,
       details,

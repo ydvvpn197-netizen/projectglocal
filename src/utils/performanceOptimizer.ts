@@ -94,11 +94,12 @@ export function useOptimizedMemo<T>(factory: () => T, deps: React.DependencyList
     }
     
     return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 
 // Hook for optimized callbacks
-export function useOptimizedCallback<T extends (...args: any[]) => any>(
+export function useOptimizedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   deps: React.DependencyList
 ): T {
@@ -112,12 +113,13 @@ export function useOptimizedCallback<T extends (...args: any[]) => any>(
     }
     
     return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 
 // Performance utilities
 export const performanceUtils = {
-  throttle<T extends (...args: any[]) => any>(func: T, limit: number): T {
+  throttle<T extends (...args: unknown[]) => unknown>(func: T, limit: number): T {
     let inThrottle: boolean;
     return ((...args: Parameters<T>) => {
       if (!inThrottle) {
@@ -128,7 +130,7 @@ export const performanceUtils = {
     }) as T;
   },
 
-  debounce<T extends (...args: any[]) => any>(func: T, delay: number): T {
+  debounce<T extends (...args: unknown[]) => unknown>(func: T, delay: number): T {
     let timeoutId: NodeJS.Timeout;
     return ((...args: Parameters<T>) => {
       clearTimeout(timeoutId);

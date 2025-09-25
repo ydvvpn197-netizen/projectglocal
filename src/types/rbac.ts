@@ -28,7 +28,7 @@ export interface AuditLog {
   action: string;
   resource: string;
   timestamp: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export function getRolePermissions(role: UserRole): RolePermissions {

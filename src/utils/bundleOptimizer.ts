@@ -25,7 +25,7 @@ class BundleOptimizer {
   }
 
   // Create optimized lazy component with retry logic
-  createLazyComponent<T extends ComponentType<any>>(
+  createLazyComponent<T extends ComponentType<Record<string, unknown>>>(
     importFn: () => Promise<{ default: T }>,
     componentName: string,
     fallback?: React.ComponentType
@@ -54,7 +54,7 @@ class BundleOptimizer {
   }
 
   // Preload components based on user behavior
-  preloadComponent(componentName: string, importFn: () => Promise<any>): void {
+  preloadComponent(componentName: string, importFn: () => Promise<Record<string, unknown>>): void {
     if (this.preloadedComponents.has(componentName)) return;
     if (this.loadingQueue.size >= this.config.maxConcurrentLoads) return;
 
@@ -95,7 +95,7 @@ class BundleOptimizer {
 
   // Preload specific route
   private preloadRoute(route: string): void {
-    const routeComponentMap: Record<string, () => Promise<any>> = {
+    const routeComponentMap: Record<string, () => Promise<Record<string, unknown>>> = {
       '/feed': () => import('@/pages/Feed'),
       '/discover': () => import('@/pages/Discover'),
       '/profile': () => import('@/pages/Profile'),
@@ -144,14 +144,14 @@ export function useRoutePreloading(currentRoute: string) {
 }
 
 // Hook for component preloading
-export function useComponentPreloading(componentName: string, importFn: () => Promise<any>) {
+export function useComponentPreloading(componentName: string, importFn: () => Promise<Record<string, unknown>>) {
   React.useEffect(() => {
     bundleOptimizer.preloadComponent(componentName, importFn);
   }, [componentName, importFn]);
 }
 
 // Utility for creating optimized route components
-export function createOptimizedRoute<T extends ComponentType<any>>(
+export function createOptimizedRoute<T extends ComponentType<Record<string, unknown>>>(
   importFn: () => Promise<{ default: T }>,
   componentName: string
 ): LazyExoticComponent<T> {

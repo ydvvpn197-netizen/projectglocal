@@ -144,7 +144,7 @@ class PerformanceMonitor {
 
   private getMemoryUsage(): number {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as Record<string, unknown>).memory;
       return memory ? memory.usedJSHeapSize : 0;
     }
     return 0;
@@ -202,7 +202,7 @@ class PerformanceMonitor {
     }
   }
 
-  private sendToMonitoringService(data: any): void {
+  private sendToMonitoringService(data: Record<string, unknown>): void {
     // Example: Send to monitoring service
     fetch('/api/metrics', {
       method: 'POST',

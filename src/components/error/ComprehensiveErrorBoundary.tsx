@@ -78,7 +78,7 @@ export class ComprehensiveErrorBoundary extends Component<ErrorBoundaryProps, Er
     this.sendToMonitoringService(errorContext);
   };
 
-  private sendToMonitoringService = (errorContext: any) => {
+  private sendToMonitoringService = (errorContext: Record<string, unknown>) => {
     // Implement your monitoring service integration here
     // Examples: Sentry, LogRocket, Bugsnag, etc.
     try {

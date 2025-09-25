@@ -63,5 +63,5 @@ export interface NewsPoll {
 export interface NewsError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
