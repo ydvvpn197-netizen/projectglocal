@@ -1,5 +1,4 @@
 // Comprehensive test suite for CommunityEngagementHub
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CommunityEngagementHub } from '@/components/community/CommunityEngagementHub';

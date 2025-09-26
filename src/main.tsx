@@ -7,7 +7,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 // Ensure React is properly loaded before anything else
 if (typeof window !== 'undefined') {
   // Make React available globally
-  (window as any).React = React;
+  (window as Window & { React?: typeof React }).React = React;
   
   // Ensure React.Children is properly initialized
   if (!React.Children) {

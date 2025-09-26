@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   MapPin, 
   Users, 
@@ -427,7 +427,7 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
               Create
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl" aria-describedby="create-dialog-description">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {createType === 'issue' ? 'Create Local Issue' : 
@@ -435,12 +435,12 @@ export const CommunityEngagementHub: React.FC<CommunityEngagementHubProps> = Rea
                  createType === 'event' ? 'Create Community Event' : 
                  'Create New Content'}
               </DialogTitle>
-              <div id="create-dialog-description" className="sr-only">
+              <DialogDescription>
                 {createType === 'issue' ? 'Create a new local issue to bring attention to community problems' : 
                  createType === 'protest' ? 'Create a virtual protest to organize community action' : 
                  createType === 'event' ? 'Create a community event to bring people together' : 
                  'Create new community content to engage with your neighbors'}
-              </div>
+              </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4">
