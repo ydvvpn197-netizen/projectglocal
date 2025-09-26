@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Offline | TheGlocal</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .offline-container {
+            max-width: 400px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        p {
+            margin: 0 0 30px 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .cached-events {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .event-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #fbbf24;
+        }
+        .event-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .event-details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .event-date {
+            color: #fbbf24;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">🎉</div>
+        <h1>Events Offline</h1>
+        <p>You're currently offline, but we've saved some events for you to view.</p>
+        
+        <a href="/" class="retry-btn" onclick="window.location.reload()">
+            Try Again
+        </a>
+        
+        <div class="cached-events" id="cachedEvents">
+            <h3>Recently Cached Events</h3>
+            <div id="eventsList">
+                <p>Loading cached events...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load cached events from IndexedDB
+        async function loadCachedEvents() {
+            try {
+                const db = await openDB();
+                const events = await db.getAll('events');
+                
+                const eventsList = document.getElementById('eventsList');
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<p>No cached events available.</p>';
+                    return;
+                }
+                
+                eventsList.innerHTML = events.slice(0, 5).map(event => `
+                    <div class="event-item">
+                        <div class="event-title">${event.title || 'Event'}</div>
+                        <div class="event-details">
+                            <div class="event-date">${event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD'}</div>
+                            <div>${event.description || 'Description not available'}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load cached events:', error);
+                document.getElementById('eventsList').innerHTML = '<p>Unable to load cached events.</p>';
+            }
+        }
+        
+        // Simple IndexedDB helper
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('TheGlocalOffline', 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('events')) {
+                        db.createObjectStore('events', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+        
+        // Load cached events on page load
+        loadCachedEvents();
+        
+        // Check for online status
+        window.addEventListener('online', () => {
+            window.location.href = '/events';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+import{j as r}from"./chunk-COTa-BBv.js";import"./chunk-DvlvDbdf.js";import"./chunk-BlluHz2J.js";import"./chunk-DJzzOJWe.js";import"./chunk-BA32w1ww.js";const p=({children:o})=>r.jsx("div",{className:"min-h-screen",children:o});export{p as MobileLayout};
