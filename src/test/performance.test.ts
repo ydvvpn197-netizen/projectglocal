@@ -231,7 +231,7 @@ describe('Performance Monitoring Integration', () => {
       disconnect: vi.fn(),
     };
     
-    vi.spyOn(window, 'PerformanceObserver').mockImplementation(() => mockObserver as any);
+    vi.spyOn(window, 'PerformanceObserver').mockImplementation(() => mockObserver as unknown as PerformanceObserver);
     
     // Performance monitoring should track resources
     expect(mockObserver.observe).toHaveBeenCalled();

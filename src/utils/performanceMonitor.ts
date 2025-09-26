@@ -138,7 +138,7 @@ class PerformanceMonitor {
     observer.observe({ entryTypes: ['resource'] });
   }
 
-  private logMetric(name: string, metric: any): void {
+  private logMetric(name: string, metric: { value: number; name: string }): void {
     if (this.config.enableLogging) {
       console.log(`${name}: ${metric.value.toFixed(2)}${metric.name.includes('CLS') ? '' : 'ms'}`);
     }
@@ -153,7 +153,7 @@ class PerformanceMonitor {
     return Math.random() < this.config.sampleRate;
   }
 
-  private reportMetric(name: string, metric: any): void {
+  private reportMetric(name: string, metric: { value: number; name: string }): void {
     if (!this.config.reportEndpoint) return;
 
     fetch(this.config.reportEndpoint, {
@@ -280,5 +280,6 @@ export const usePerformanceMetrics = () => {
 
 // Initialize performance monitoring
 if (typeof window !== 'undefined') {
-  performanceMonitor;
+  // Performance monitoring is initialized automatically
+  console.log('Performance monitoring initialized');
 }
