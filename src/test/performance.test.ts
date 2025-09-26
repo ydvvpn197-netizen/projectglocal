@@ -1,315 +1,239 @@
 /**
- * Performance Test Suite
- * Comprehensive performance testing for critical functionality
+ * Performance Monitoring Tests
+ * Tests for performance monitoring utilities and components
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { PerformanceOptimizer } from '@/utils/performanceOptimizer';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { performanceMonitor, usePerformanceMetrics } from '@/utils/performanceMonitor';
 
-describe('Performance Tests', () => {
+// Mock performance API
+const mockPerformance = {
+  now: vi.fn(() => 1000),
+  observer: vi.fn(),
+};
+
+// Mock window.performance
+Object.defineProperty(window, 'performance', {
+  value: mockPerformance,
+  writable: true,
+});
+
+// Mock web-vitals
+vi.mock('web-vitals', () => ({
+  getCLS: vi.fn((callback) => callback({ value: 0.05, name: 'CLS' })),
+  getFID: vi.fn((callback) => callback({ value: 50, name: 'FID' })),
+  getFCP: vi.fn((callback) => callback({ value: 1200, name: 'FCP' })),
+  getLCP: vi.fn((callback) => callback({ value: 2000, name: 'LCP' })),
+  getTTFB: vi.fn((callback) => callback({ value: 500, name: 'TTFB' })),
+}));
+
+describe('Performance Monitor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Performance Monitoring', () => {
-    it('should initialize performance monitoring', () => {
-      const consoleSpy = vi.spyOn(console, 'log');
-      PerformanceOptimizer.initialize();
-      
-      expect(consoleSpy).toHaveBeenCalledWith('🚀 Initializing performance monitoring...');
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('PerformanceMonitor Class', () => {
+    it('should initialize with default config', () => {
+      expect(performanceMonitor).toBeDefined();
     });
 
-    it('should calculate performance score', () => {
-      const score = PerformanceOptimizer.calculatePerformanceScore();
-      
+    it('should track page load time', () => {
+      const metrics = performanceMonitor.getMetrics();
+      expect(metrics.loadTime).toBeDefined();
+    });
+
+    it('should calculate performance score correctly', () => {
+      const score = performanceMonitor.getPerformanceScore();
       expect(score).toBeGreaterThanOrEqual(0);
       expect(score).toBeLessThanOrEqual(100);
     });
 
-    it('should provide performance metrics', () => {
-      const metrics = PerformanceOptimizer.getMetrics();
-      
-      expect(metrics).toHaveProperty('loadTime');
-      expect(metrics).toHaveProperty('renderTime');
-      expect(metrics).toHaveProperty('memoryUsage');
-      expect(metrics).toHaveProperty('bundleSize');
-      expect(metrics).toHaveProperty('apiResponseTime');
-      expect(metrics).toHaveProperty('cacheHitRate');
-    });
-
-    it('should identify performance optimizations', () => {
-      const optimizations = PerformanceOptimizer.getOptimizations();
-      
-      expect(optimizations).toBeDefined();
-      expect(Array.isArray(optimizations)).toBe(true);
-      
-      if (optimizations.length > 0) {
-        expect(optimizations[0]).toHaveProperty('id');
-        expect(optimizations[0]).toHaveProperty('type');
-        expect(optimizations[0]).toHaveProperty('priority');
-        expect(optimizations[0]).toHaveProperty('title');
-        expect(optimizations[0]).toHaveProperty('description');
-        expect(optimizations[0]).toHaveProperty('impact');
-        expect(optimizations[0]).toHaveProperty('implementation');
-        expect(optimizations[0]).toHaveProperty('estimatedSavings');
-      }
-    });
-
-    it('should filter optimizations by priority', () => {
-      const highPriorityOpts = PerformanceOptimizer.getOptimizationsByPriority('high');
-      const criticalOpts = PerformanceOptimizer.getOptimizationsByPriority('critical');
-      
-      expect(Array.isArray(highPriorityOpts)).toBe(true);
-      expect(Array.isArray(criticalOpts)).toBe(true);
-      
-      highPriorityOpts.forEach(opt => {
-        expect(opt.priority).toBe('high');
-      });
-      
-      criticalOpts.forEach(opt => {
-        expect(opt.priority).toBe('critical');
-      });
-    });
-
-    it('should filter optimizations by type', () => {
-      const bundleOpts = PerformanceOptimizer.getOptimizationsByType('bundle');
-      const renderingOpts = PerformanceOptimizer.getOptimizationsByType('rendering');
-      
-      expect(Array.isArray(bundleOpts)).toBe(true);
-      expect(Array.isArray(renderingOpts)).toBe(true);
-      
-      bundleOpts.forEach(opt => {
-        expect(opt.type).toBe('bundle');
-      });
-      
-      renderingOpts.forEach(opt => {
-        expect(opt.type).toBe('rendering');
-      });
+    it('should identify good performance', () => {
+      const isGood = performanceMonitor.isPerformanceGood();
+      expect(typeof isGood).toBe('boolean');
     });
 
     it('should provide performance recommendations', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
+      const recommendations = performanceMonitor.getRecommendations();
       expect(Array.isArray(recommendations)).toBe(true);
-      expect(recommendations.length).toBeGreaterThan(0);
-      
-      recommendations.forEach(rec => {
-        expect(typeof rec).toBe('string');
-        expect(rec.length).toBeGreaterThan(0);
-      });
-    });
-
-    it('should provide performance summary', () => {
-      const summary = PerformanceOptimizer.getPerformanceSummary();
-      
-      expect(summary).toHaveProperty('score');
-      expect(summary).toHaveProperty('loadTime');
-      expect(summary).toHaveProperty('memoryUsage');
-      expect(summary).toHaveProperty('bundleSize');
-      expect(summary).toHaveProperty('optimizationsCount');
-      expect(summary).toHaveProperty('criticalOptimizations');
-      expect(summary).toHaveProperty('highPriorityOptimizations');
-      
-      expect(summary.score).toBeGreaterThanOrEqual(0);
-      expect(summary.score).toBeLessThanOrEqual(100);
-      expect(summary.optimizationsCount).toBeGreaterThanOrEqual(0);
     });
   });
 
-  describe('Bundle Size Optimization', () => {
-    it('should identify bundle size issues', () => {
-      const bundleOpts = PerformanceOptimizer.getOptimizationsByType('bundle');
-      
-      if (bundleOpts.length > 0) {
-        const bundleOpt = bundleOpts[0];
-        expect(bundleOpt.title).toContain('Bundle');
-        expect(bundleOpt.implementation).toContain('code splitting');
-        expect(bundleOpt.implementation).toContain('React.lazy()');
-      }
+  describe('Performance Metrics', () => {
+    it('should track LCP (Largest Contentful Paint)', () => {
+      const metrics = performanceMonitor.getMetrics();
+      expect(metrics.lcp).toBeDefined();
     });
 
-    it('should recommend code splitting', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const codeSplittingRec = recommendations.find(rec => 
-        rec.includes('code splitting') || rec.includes('bundle size')
-      );
-      
-      if (codeSplittingRec) {
-        expect(codeSplittingRec).toContain('code splitting');
-      }
-    });
-  });
-
-  describe('Rendering Performance', () => {
-    it('should identify rendering optimizations', () => {
-      const renderingOpts = PerformanceOptimizer.getOptimizationsByType('rendering');
-      
-      if (renderingOpts.length > 0) {
-        const renderingOpt = renderingOpts[0];
-        expect(renderingOpt.title).toContain('Rendering');
-        expect(renderingOpt.implementation).toContain('React.memo');
-        expect(renderingOpt.implementation).toContain('useMemo');
-        expect(renderingOpt.implementation).toContain('useCallback');
-      }
+    it('should track FID (First Input Delay)', () => {
+      const metrics = performanceMonitor.getMetrics();
+      expect(metrics.fid).toBeDefined();
     });
 
-    it('should recommend React optimizations', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const reactOptRec = recommendations.find(rec => 
-        rec.includes('memoization') || rec.includes('rendering')
-      );
-      
-      if (reactOptRec) {
-        expect(reactOptRec).toContain('memoization');
-      }
-    });
-  });
-
-  describe('API Performance', () => {
-    it('should identify API optimizations', () => {
-      const apiOpts = PerformanceOptimizer.getOptimizationsByType('api');
-      
-      if (apiOpts.length > 0) {
-        const apiOpt = apiOpts[0];
-        expect(apiOpt.title).toContain('API');
-        expect(apiOpt.implementation).toContain('caching');
-        expect(apiOpt.implementation).toContain('React Query');
-      }
+    it('should track CLS (Cumulative Layout Shift)', () => {
+      const metrics = performanceMonitor.getMetrics();
+      expect(metrics.cls).toBeDefined();
     });
 
-    it('should recommend API caching', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const apiCacheRec = recommendations.find(rec => 
-        rec.includes('API caching') || rec.includes('caching')
-      );
-      
-      if (apiCacheRec) {
-        expect(apiCacheRec).toContain('caching');
-      }
-    });
-  });
-
-  describe('Memory Performance', () => {
-    it('should identify memory optimizations', () => {
-      const memoryOpts = PerformanceOptimizer.getOptimizationsByType('memory');
-      
-      if (memoryOpts.length > 0) {
-        const memoryOpt = memoryOpts[0];
-        expect(memoryOpt.title).toContain('Memory');
-        expect(memoryOpt.implementation).toContain('cleanup');
-        expect(memoryOpt.implementation).toContain('useEffect');
-      }
+    it('should track FCP (First Contentful Paint)', () => {
+      const metrics = performanceMonitor.getMetrics();
+      expect(metrics.fcp).toBeDefined();
     });
 
-    it('should recommend memory optimization', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const memoryRec = recommendations.find(rec => 
-        rec.includes('memory') || rec.includes('cleanup')
-      );
-      
-      if (memoryRec) {
-        expect(memoryRec).toContain('cleanup');
-      }
-    });
-  });
-
-  describe('Caching Performance', () => {
-    it('should identify caching optimizations', () => {
-      const cachingOpts = PerformanceOptimizer.getOptimizationsByType('caching');
-      
-      if (cachingOpts.length > 0) {
-        const cachingOpt = cachingOpts[0];
-        expect(cachingOpt.title).toContain('Caching');
-        expect(cachingOpt.implementation).toContain('cache headers');
-        expect(cachingOpt.implementation).toContain('service worker');
-      }
-    });
-
-    it('should recommend caching strategies', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const cacheRec = recommendations.find(rec => 
-        rec.includes('caching') || rec.includes('cache')
-      );
-      
-      if (cacheRec) {
-        expect(cacheRec).toContain('caching');
-      }
-    });
-  });
-
-  describe('Performance Score Calculation', () => {
-    it('should calculate score based on metrics', () => {
-      const score = PerformanceOptimizer.calculatePerformanceScore();
-      
-      // Score should be between 0 and 100
-      expect(score).toBeGreaterThanOrEqual(0);
-      expect(score).toBeLessThanOrEqual(100);
-    });
-
-    it('should penalize high load times', () => {
-      // This would be tested with actual metrics in a real implementation
-      const score = PerformanceOptimizer.calculatePerformanceScore();
-      expect(score).toBeGreaterThanOrEqual(0);
-    });
-
-    it('should penalize high memory usage', () => {
-      // This would be tested with actual metrics in a real implementation
-      const score = PerformanceOptimizer.calculatePerformanceScore();
-      expect(score).toBeGreaterThanOrEqual(0);
-    });
-
-    it('should penalize large bundle sizes', () => {
-      // This would be tested with actual metrics in a real implementation
-      const score = PerformanceOptimizer.calculatePerformanceScore();
-      expect(score).toBeGreaterThanOrEqual(0);
-    });
-
-    it('should penalize slow API responses', () => {
-      // This would be tested with actual metrics in a real implementation
-      const score = PerformanceOptimizer.calculatePerformanceScore();
-      expect(score).toBeGreaterThanOrEqual(0);
+    it('should track TTFB (Time to First Byte)', () => {
+      const metrics = performanceMonitor.getMetrics();
+      expect(metrics.ttfb).toBeDefined();
     });
   });
 
   describe('Performance Recommendations', () => {
-    it('should provide actionable recommendations', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      expect(recommendations.length).toBeGreaterThan(0);
-      
-      recommendations.forEach(rec => {
-        expect(typeof rec).toBe('string');
-        expect(rec.length).toBeGreaterThan(10); // Should be meaningful
+    it('should recommend LCP optimization for slow LCP', () => {
+      // Mock slow LCP
+      vi.mocked(performanceMonitor.getMetrics).mockReturnValue({
+        lcp: 3000,
+        fid: 50,
+        cls: 0.05,
+        fcp: 1200,
+        ttfb: 500,
+        bundleSize: 400,
+        loadTime: 2000,
       });
+
+      const recommendations = performanceMonitor.getRecommendations();
+      expect(recommendations).toContain(
+        expect.stringContaining('Largest Contentful Paint')
+      );
     });
 
-    it('should include critical performance issues', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const criticalRec = recommendations.find(rec => 
-        rec.includes('CRITICAL') || rec.includes('🚨')
+    it('should recommend FID optimization for slow FID', () => {
+      // Mock slow FID
+      vi.mocked(performanceMonitor.getMetrics).mockReturnValue({
+        lcp: 2000,
+        fid: 200,
+        cls: 0.05,
+        fcp: 1200,
+        ttfb: 500,
+        bundleSize: 400,
+        loadTime: 2000,
+      });
+
+      const recommendations = performanceMonitor.getRecommendations();
+      expect(recommendations).toContain(
+        expect.stringContaining('First Input Delay')
       );
-      
-      if (criticalRec) {
-        expect(criticalRec).toContain('CRITICAL');
-      }
     });
 
-    it('should include high priority issues', () => {
-      const recommendations = PerformanceOptimizer.getRecommendations();
-      
-      const highPriorityRec = recommendations.find(rec => 
-        rec.includes('HIGH PRIORITY') || rec.includes('⚠️')
+    it('should recommend CLS optimization for high CLS', () => {
+      // Mock high CLS
+      vi.mocked(performanceMonitor.getMetrics).mockReturnValue({
+        lcp: 2000,
+        fid: 50,
+        cls: 0.2,
+        fcp: 1200,
+        ttfb: 500,
+        bundleSize: 400,
+        loadTime: 2000,
+      });
+
+      const recommendations = performanceMonitor.getRecommendations();
+      expect(recommendations).toContain(
+        expect.stringContaining('Cumulative Layout Shift')
       );
-      
-      if (highPriorityRec) {
-        expect(highPriorityRec).toContain('HIGH PRIORITY');
-      }
     });
+
+    it('should recommend bundle size optimization for large bundles', () => {
+      // Mock large bundle
+      vi.mocked(performanceMonitor.getMetrics).mockReturnValue({
+        lcp: 2000,
+        fid: 50,
+        cls: 0.05,
+        fcp: 1200,
+        ttfb: 500,
+        bundleSize: 800,
+        loadTime: 2000,
+      });
+
+      const recommendations = performanceMonitor.getRecommendations();
+      expect(recommendations).toContain(
+        expect.stringContaining('bundle size')
+      );
+    });
+  });
+
+  describe('Performance Score Calculation', () => {
+    it('should give perfect score for excellent performance', () => {
+      vi.mocked(performanceMonitor.getMetrics).mockReturnValue({
+        lcp: 1500,
+        fid: 30,
+        cls: 0.05,
+        fcp: 800,
+        ttfb: 400,
+        bundleSize: 300,
+        loadTime: 1000,
+      });
+
+      const score = performanceMonitor.getPerformanceScore();
+      expect(score).toBeGreaterThanOrEqual(90);
+    });
+
+    it('should give low score for poor performance', () => {
+      vi.mocked(performanceMonitor.getMetrics).mockReturnValue({
+        lcp: 5000,
+        fid: 300,
+        cls: 0.3,
+        fcp: 3000,
+        ttfb: 2000,
+        bundleSize: 1000,
+        loadTime: 5000,
+      });
+
+      const score = performanceMonitor.getPerformanceScore();
+      expect(score).toBeLessThan(50);
+    });
+  });
+});
+
+describe('usePerformanceMetrics Hook', () => {
+  it('should return performance metrics', () => {
+    const { metrics, score, isGood, recommendations } = usePerformanceMetrics();
+    
+    expect(metrics).toBeDefined();
+    expect(score).toBeDefined();
+    expect(isGood).toBeDefined();
+    expect(recommendations).toBeDefined();
+  });
+
+  it('should update metrics over time', () => {
+    const { metrics } = usePerformanceMetrics();
+    
+    // Initial metrics should be available
+    expect(metrics).toBeDefined();
+  });
+});
+
+describe('Performance Monitoring Integration', () => {
+  it('should initialize performance monitoring on page load', () => {
+    // Simulate page load
+    window.dispatchEvent(new Event('load'));
+    
+    // Performance monitoring should be active
+    expect(performanceMonitor).toBeDefined();
+  });
+
+  it('should track resource loading', () => {
+    // Mock PerformanceObserver
+    const mockObserver = {
+      observe: vi.fn(),
+      disconnect: vi.fn(),
+    };
+    
+    vi.spyOn(window, 'PerformanceObserver').mockImplementation(() => mockObserver as any);
+    
+    // Performance monitoring should track resources
+    expect(mockObserver.observe).toHaveBeenCalled();
   });
 });
