@@ -31,6 +31,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
     dedupe: ['react', 'react-dom'], // Prevent duplicate React instances
   },
@@ -188,6 +190,8 @@ export default defineConfig(({ mode }) => ({
     force: true,
     esbuildOptions: {
       jsx: 'automatic',
+      jsxFactory: 'React.createElement',
+      jsxFragment: 'React.Fragment',
     }
   },
   // Add better error handling for build failures
