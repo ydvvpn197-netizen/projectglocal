@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Type check
+      run: npm run type-check
+      
+    - name: Lint
+      run: npm run lint
+      
+    - name: Test
+      run: npm run test:fast
+      
+    - name: Build
+      run: npm run build
+      
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        dotfiles: true
+        enable_jekyll: false
+        cname: theglocal.in
+        
+    - name: Verify deployment
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "Waiting for deployment to propagate..."
+        sleep 30
+        curl -f -s https://theglocal.in > /dev/null && echo "✅ Deployment verified" || echo "⚠️ Deployment verification failed"

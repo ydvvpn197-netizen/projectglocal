@@ -30,16 +30,39 @@ rootElement.innerHTML = '';
 
 const root = createRoot(rootElement);
 
-// Wrap in try-catch for better error handling
-try {
-  root.render(
-    <React.StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </React.StrictMode>
-  );
-} catch (error) {
-  console.error('Failed to render app:', error);
-  rootElement.innerHTML = '<div style="padding: 20px; color: red;">Failed to load application. Please refresh the page.</div>';
-}
+// Enhanced error handling with retry mechanism
+let renderAttempts = 0;
+const maxRenderAttempts = 3;
+
+const renderApp = () => {
+  try {
+    root.render(
+      <React.StrictMode>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </React.StrictMode>
+    );
+  } catch (error) {
+    console.error(`Render attempt ${renderAttempts + 1} failed:`, error);
+    
+    if (renderAttempts < maxRenderAttempts) {
+      renderAttempts++;
+      console.log(`Retrying render (attempt ${renderAttempts}/${maxRenderAttempts})...`);
+      setTimeout(renderApp, 1000 * renderAttempts); // Exponential backoff
+    } else {
+      console.error('All render attempts failed');
+      rootElement.innerHTML = `
+        <div style="padding: 20px; color: red; text-align: center; font-family: system-ui, sans-serif;">
+          <h2>Application Failed to Load</h2>
+          <p>Please refresh the page or try again later.</p>
+          <button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 10px; cursor: pointer;">
+            Refresh Page
+          </button>
+        </div>
+      `;
+    }
+  }
+};
+
+renderApp();
