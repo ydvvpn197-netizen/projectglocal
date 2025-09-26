@@ -15,9 +15,9 @@ export default defineConfig({
         singleFork: true, // Use single fork to prevent memory issues
       }
     },
-    testTimeout: 30000, // Increased timeout for async operations
-    hookTimeout: 30000,
-    teardownTimeout: 10000,
+    testTimeout: 10000, // Reduced timeout for faster test execution
+    hookTimeout: 5000,
+    teardownTimeout: 5000,
     isolate: false, // Disable isolation for faster tests
     // Force garbage collection after each test
     sequence: {
@@ -25,6 +25,25 @@ export default defineConfig({
     },
     // Limit concurrent tests to prevent memory issues
     maxConcurrency: 1, // Reduce concurrency to prevent race conditions
+    // Exclude problematic test files
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+      '**/*.jest.test.*',
+      '**/*.jest.spec.*'
+    ],
+    // Updated reporter configuration to fix deprecated 'basic' reporter
+    reporters: [
+      [
+        "default",
+        {
+          "summary": false
+        }
+      ]
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

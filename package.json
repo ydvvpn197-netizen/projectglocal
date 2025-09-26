@@ -20,7 +20,7 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:fast": "vitest run --reporter=basic --no-coverage --run",
+    "test:fast": "vitest run --reporter=default --no-coverage --run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest --watch",
     "test:debug": "vitest --inspect-brk",
