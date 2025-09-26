@@ -59,6 +59,7 @@
     "deploy:vercel": "vercel --prod",
     "deploy:netlify": "netlify deploy --prod --dir=dist",
     "deploy:prod": "node scripts/deploy-production.js",
+    "deploy:consolidated": "node scripts/deploy-with-consolidated-migrations.js",
     "monitor": "node scripts/monitor-production.js",
     "monitor:deploy": "node scripts/monitor-deployment.js",
     "setup:env": "node scripts/create-env.js",

@@ -16,7 +16,7 @@ const EventDetails = lazy(() => import('@/pages/EventDetails'));
 const CreateEvent = lazy(() => import('@/pages/CreateEvent'));
 const Community = lazy(() => import('@/pages/ConsolidatedCommunity'));
 const Profile = lazy(() => import('@/pages/ConsolidatedProfile'));
-const Messages = lazy(() => import('@/pages/Messages'));
+const Messages = lazy(() => import('@/pages/EnhancedMessages'));
 const Notifications = lazy(() => import('@/pages/NotificationsPage'));
 const Settings = lazy(() => import('@/pages/ConsolidatedSettings'));
 const About = lazy(() => import('@/pages/About'));
