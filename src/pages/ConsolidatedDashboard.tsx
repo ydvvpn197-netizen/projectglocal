@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { ResponsiveLayout } from "@/components/ResponsiveLayout";
-import { PageLayout } from "@/components/layout/PageLayout";
+import { MainLayout } from "@/components/layout/MainLayout";
 import { ClientBookingsPanel } from "@/components/ClientBookingsPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -435,7 +435,7 @@ const ConsolidatedDashboard = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <MainLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -443,7 +443,7 @@ const ConsolidatedDashboard = () => {
             <p className="text-muted-foreground">Getting your latest data</p>
           </div>
         </div>
-      </PageLayout>
+      </MainLayout>
     );
   }
 

@@ -52,7 +52,7 @@ export const FollowSystem = () => {
   }
 
   return (
-    <PageLayout layout="main" showSidebar={true} showHeader={true} showFooter={false}>
+    <MainLayout layout="main" showSidebar={true} showHeader={true} showFooter={false}>
       <div className="container max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
@@ -235,7 +235,7 @@ export const FollowSystem = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </PageLayout>
+    </MainLayout>
   );
 };
 

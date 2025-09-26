@@ -92,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { toggleSidebar } = useLayout();
   const { user } = useAuth();
-  const { unreadCount } = useNotifications();
+  const { counts } = useNotifications();
   const { isAdmin } = useIsAdmin();
 
   const sidebarContent = customContent || (
@@ -101,12 +101,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 border-b border-border">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
-            {user?.username?.charAt(0).toUpperCase() || 'U'}
+            {(user?.user_metadata?.username || user?.email?.charAt(0) || 'U').toUpperCase()}
           </div>
           {isOpen && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">
-                {user?.username || 'User'}
+                {user?.user_metadata?.username || user?.email || 'User'}
               </p>
               <p className="text-xs text-muted-foreground truncate">
                 {user?.email}
@@ -128,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })
           .map((item) => {
             const Icon = item.icon;
-            const showBadge = item.badge === 'unread' && unreadCount > 0;
+            const showBadge = item.badge === 'unread' && counts.total > 0;
           
           return (
             <Button
@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <span className="ml-3 flex-1 text-left">{item.name}</span>
                     {showBadge && (
                       <Badge variant="destructive" className="ml-2">
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {counts.total > 99 ? '99+' : counts.total}
                       </Badge>
                     )}
                   </>

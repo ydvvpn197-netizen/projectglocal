@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageLayout } from '@/components/layout/PageLayout';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -233,14 +233,14 @@ const LayoutDemo = () => {
   );
 
   return (
-    <PageLayout
+    <MainLayout
       layout={activeLayout}
       showSidebar={showSidebar}
       showHeader={showHeader}
       showFooter={showFooter}
     >
       {demoContent}
-    </PageLayout>
+    </MainLayout>
   );
 };
 
