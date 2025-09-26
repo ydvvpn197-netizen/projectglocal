@@ -4,17 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### 🔴 CRITICAL SECURITY FIXES
-- **Environment Variable Security**: Fixed `process.env` exposure in client-side code (App.tsx) - replaced with `import.meta.env.DEV`
+### 🔴 CRITICAL SECURITY FIXES (2025-01-28)
+- **SECRETS EXPOSURE FIXED**: Removed `.env` file from repository containing exposed API keys
+- **Environment Variable Security**: Fixed `process.env` exposure in client-side code - replaced with `import.meta.env.DEV`
 - **Anonymous Handle System**: Implemented complete privacy-first anonymous handle system with automatic generation
 - **RLS Baseline Security**: Added comprehensive Row Level Security policies for all database tables
 - **Moderation Functions**: Created secure moderation and audit logging functions
 
 ### 🟡 ARCHITECTURE IMPROVEMENTS
 - **Anonymous Handle Hook**: Created `useAnonymousHandle` hook for privacy management
-- **Anonymity Settings Component**: Built `AnonymitySettings` component for user privacy controls
+- **Privacy Settings Component**: Built `PrivacySettings` component for user privacy controls
 - **Database Functions**: Added functions for anonymous handle generation and display name management
 - **Security Helper Functions**: Created `is_moderator_or_admin()` and `can_moderate_content()` functions
+- **Creator Model Consolidation**: Unified artists and service_providers into single creators table
 
 ### Added
 - **Anonymous Handle System**: Complete implementation with automatic generation and privacy controls
@@ -22,27 +24,36 @@ All notable changes to this project will be documented in this file.
 - **Database Security**: Comprehensive RLS policies for all tables with proper permissions
 - **Audit Logging**: Moderation action logging for platform safety
 - **Privacy-First Design**: Anonymous by default with opt-in identity reveal
+- **Creator Marketplace**: Unified system for artists, service providers, and businesses
+- **Anonymous Sessions**: System for tracking anonymous user interactions
+- **Security Audit Table**: Comprehensive security event logging
 
 ### Changed
 - **Environment Variables**: Migrated from `process.env` to `import.meta.env` for Vite compatibility
 - **Database Schema**: Enhanced profiles table with anonymity fields and constraints
 - **Security Model**: Implemented proper role-based access control with moderation bypass
+- **Creator System**: Consolidated overlapping models into unified creators table
+- **Privacy Controls**: Enhanced privacy settings with granular control options
 
 ### Fixed
+- **SECRETS EXPOSURE**: Removed exposed API keys from repository
 - **Security Vulnerabilities**: Fixed client-side environment variable exposure
 - **RLS Policies**: Completed and fixed all Row Level Security policies
 - **Database Constraints**: Added proper indexes and constraints for anonymous handles
 - **Privacy Implementation**: Ensured anonymous by default with proper privacy controls
+- **Model Duplication**: Eliminated duplicate artist/service_provider models
 
 ### Security
-- **Critical Fix**: Environment variable exposure resolved
+- **CRITICAL**: Secrets exposure resolved - removed .env from repository
 - **Privacy Enhancement**: Anonymous handle system with automatic generation
 - **Access Control**: Comprehensive RLS policies with moderation capabilities
-- **Audit Trail**: Complete moderation action logging
+- **Audit Trail**: Complete moderation action and security event logging
+- **GitIgnore**: Enhanced .gitignore to prevent future secrets exposure
 
 ### Database Migrations
-- `20250128000000_anonymous_handle_system.sql`: Anonymous handle implementation
-- `20250128000001_rls_baseline_security.sql`: Complete RLS policy implementation
+- `20250128000001_rls_baseline_comprehensive.sql`: Complete RLS policy implementation
+- `20250128000002_anonymous_handle_system.sql`: Anonymous handle implementation with privacy controls
+- `20250128000003_consolidate_creator_models.sql`: Unified creator model implementation
 
 ### Previous Navigation Improvements
 - **UnifiedNavigation Component**: Consolidated AppSidebar, EnhancedNavigation, and MobileNavigation into a single, maintainable component

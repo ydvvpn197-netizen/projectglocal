@@ -4,9 +4,15 @@ import App from './App'
 import './index.css'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
-// Ensure React is available globally and properly initialized
+// Ensure React is properly loaded before anything else
 if (typeof window !== 'undefined') {
-  (window as Window & { React: typeof React }).React = React;
+  // Make React available globally
+  (window as any).React = React;
+  
+  // Ensure React.Children is properly initialized
+  if (!React.Children) {
+    console.warn('React.Children not found, this may cause issues');
+  }
 }
 
 // Enhanced React availability check
@@ -14,9 +20,9 @@ if (!React || typeof React.createContext !== 'function' || typeof React.createEl
   throw new Error('React is not properly loaded - missing core functions');
 }
 
-// Ensure React.Children is available
+// Verify React.Children is available
 if (!React.Children) {
-  throw new Error('React.Children is not available');
+  console.error('React.Children is not available - this will cause runtime errors');
 }
 
 // Simple app initialization with error handling

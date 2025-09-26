@@ -22,7 +22,10 @@ export default defineConfig(({ mode }) => ({
     }
   },
   plugins: [
-    react(),
+    react({
+      jsxImportSource: 'react',
+      jsxRuntime: 'automatic',
+    }),
   ],
   css: {
     postcss: './postcss.config.js',
@@ -31,8 +34,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "react": path.resolve(__dirname, "./node_modules/react"),
-      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
     dedupe: ['react', 'react-dom'], // Prevent duplicate React instances
   },
@@ -59,6 +60,7 @@ export default defineConfig(({ mode }) => ({
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
+      external: [], // Ensure React is not externalized
       onwarn(warning, warn) {
         // Suppress warnings about circular dependencies in production
         if (mode === 'production' && warning.code === 'CIRCULAR_DEPENDENCY') {
@@ -73,10 +75,12 @@ export default defineConfig(({ mode }) => ({
       output: {
         // Optimized chunk splitting for better performance
         manualChunks: (id) => {
-          // Core React
-          if (id.includes('react') && (id.includes('node_modules'))) {
-            if (id.includes('react-dom')) return 'react-dom';
+          // Core React - ensure single instance
+          if (id.includes('node_modules/react/')) {
             return 'react';
+          }
+          if (id.includes('node_modules/react-dom/')) {
+            return 'react-dom';
           }
           
           // Router and state management
@@ -190,8 +194,6 @@ export default defineConfig(({ mode }) => ({
     force: true,
     esbuildOptions: {
       jsx: 'automatic',
-      jsxFactory: 'React.createElement',
-      jsxFragment: 'React.Fragment',
     }
   },
   // Add better error handling for build failures
