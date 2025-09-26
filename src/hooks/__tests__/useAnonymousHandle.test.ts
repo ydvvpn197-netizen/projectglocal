@@ -31,7 +31,7 @@ describe('useAnonymousHandle', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSupabase.from.mockReturnValue(mockFrom as any);
+    mockSupabase.from.mockReturnValue(mockFrom as jest.MockedFunction<typeof mockFrom>);
     mockFrom.mockReturnValue({
       select: mockSelect,
       update: mockUpdate,

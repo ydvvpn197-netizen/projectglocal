@@ -363,7 +363,7 @@ function extractLocation(title: string, content: string): { city?: string; count
   return {};
 }
 
-async function storeNewsArticles(supabase: any, articles: NewsArticle[]): Promise<number> {
+async function storeNewsArticles(supabase: ReturnType<typeof createClient>, articles: NewsArticle[]): Promise<number> {
   let storedCount = 0;
   
   for (const article of articles) {
