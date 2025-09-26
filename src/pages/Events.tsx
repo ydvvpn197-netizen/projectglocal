@@ -54,7 +54,7 @@ const sampleEvents = [
     location: "Central Park, Downtown",
     organizer: {
       name: "SoundWave Productions",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&",
       verified: true
     },
     category: "Music",
@@ -80,7 +80,7 @@ const sampleEvents = [
     location: "Downtown Gallery",
     organizer: {
       name: "Contemporary Arts Collective",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&",
       verified: false
     },
     category: "Art",
@@ -106,7 +106,7 @@ const sampleEvents = [
     location: "Community Center",
     organizer: {
       name: "Green Thumbs Collective",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&",
       verified: true
     },
     category: "Community",
@@ -132,7 +132,7 @@ const sampleEvents = [
     location: "Farmers Market Square",
     organizer: {
       name: "Farm Fresh Collective",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&",
       verified: true
     },
     category: "Food",
@@ -158,7 +158,7 @@ const sampleEvents = [
     location: "Innovation Hub",
     organizer: {
       name: "Tech Entrepreneurs Network",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&",
       verified: true
     },
     category: "Technology",
@@ -184,7 +184,7 @@ const sampleEvents = [
     location: "Riverside Park",
     organizer: {
       name: "Wellness Collective",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&",
       verified: false
     },
     category: "Health & Wellness",

@@ -110,7 +110,7 @@ const trendingEvents = [
     price: '$25',
     organizer: {
       name: 'SoundWave Productions',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&'
     }
   },
   {
@@ -127,7 +127,7 @@ const trendingEvents = [
     price: 'Free',
     organizer: {
       name: 'Green Thumbs Collective',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&'
     }
   },
   {
@@ -144,7 +144,7 @@ const trendingEvents = [
     price: '$15',
     organizer: {
       name: 'Tech Enthusiasts',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&'
     }
   },
 ];
@@ -154,7 +154,7 @@ const trendingDiscussions = [
     id: 1,
     title: 'Best local coffee shops in the area?',
     author: 'CoffeeLover',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&',
     category: 'Food & Drink',
     replies: 47,
     views: 1234,
@@ -166,7 +166,7 @@ const trendingDiscussions = [
     id: 2,
     title: 'Weekend hiking trails near the city',
     author: 'NatureExplorer',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&',
     category: 'Outdoors',
     replies: 32,
     views: 856,
@@ -178,7 +178,7 @@ const trendingDiscussions = [
     id: 3,
     title: 'Local artist showcase this weekend',
     author: 'ArtCollector',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&',
     category: 'Arts',
     replies: 18,
     views: 567,

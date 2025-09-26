@@ -229,16 +229,16 @@ const ConsolidatedEvents = () => {
   // Enhanced categories with icons and colors
   const categories: EventCategory[] = [
     { id: "all", name: "All Categories", icon: Grid3X3, color: "bg-gray-500", count: events.length },
-    { id: "music", name: "Music", icon: Music, color: "bg-purple-500", count: events.filter(e => e.category === "Music").length },
-    { id: "art", name: "Art", icon: Palette, color: "bg-pink-500", count: events.filter(e => e.category === "Art").length },
+    { id: "music", name: "Music", icon: MusicIcon, color: "bg-purple-500", count: events.filter(e => e.category === "Music").length },
+    { id: "art", name: "Art", icon: PaletteIcon, color: "bg-pink-500", count: events.filter(e => e.category === "Art").length },
     { id: "community", name: "Community", icon: Users, color: "bg-blue-500", count: events.filter(e => e.category === "Community").length },
-    { id: "food", name: "Food", icon: Utensils, color: "bg-orange-500", count: events.filter(e => e.category === "Food").length },
-    { id: "tech", name: "Technology", icon: Laptop, color: "bg-indigo-500", count: events.filter(e => e.category === "Technology").length },
-    { id: "wellness", name: "Health & Wellness", icon: Dumbbell, color: "bg-green-500", count: events.filter(e => e.category === "Health & Wellness").length },
-    { id: "sports", name: "Sports", icon: Target, color: "bg-red-500", count: events.filter(e => e.category === "Sports").length },
-    { id: "education", name: "Education", icon: GraduationCap, color: "bg-yellow-500", count: events.filter(e => e.category === "Education").length },
-    { id: "business", name: "Business", icon: Briefcase, color: "bg-gray-600", count: events.filter(e => e.category === "Business").length },
-    { id: "entertainment", name: "Entertainment", icon: PartyPopper, color: "bg-pink-600", count: events.filter(e => e.category === "Entertainment").length }
+    { id: "food", name: "Food", icon: UtensilsIcon, color: "bg-orange-500", count: events.filter(e => e.category === "Food").length },
+    { id: "tech", name: "Technology", icon: LaptopIcon, color: "bg-indigo-500", count: events.filter(e => e.category === "Technology").length },
+    { id: "wellness", name: "Health & Wellness", icon: DumbbellIcon, color: "bg-green-500", count: events.filter(e => e.category === "Health & Wellness").length },
+    { id: "sports", name: "Sports", icon: TargetIcon, color: "bg-red-500", count: events.filter(e => e.category === "Sports").length },
+    { id: "education", name: "Education", icon: GraduationCapIcon, color: "bg-yellow-500", count: events.filter(e => e.category === "Education").length },
+    { id: "business", name: "Business", icon: BriefcaseIcon, color: "bg-gray-600", count: events.filter(e => e.category === "Business").length },
+    { id: "entertainment", name: "Entertainment", icon: PartyPopperIcon, color: "bg-pink-600", count: events.filter(e => e.category === "Entertainment").length }
   ];
 
   // Enhanced data processing

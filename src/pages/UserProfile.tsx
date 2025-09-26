@@ -63,7 +63,7 @@ const UserProfile = () => {
         id: userId,
         username: "eventorganizer",
         full_name: "Event Organizer",
-        avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
+        avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&",
         bio: "Passionate event organizer with 5+ years of experience creating memorable community events. I love bringing people together through music, art, and cultural experiences.",
         location: "New York, NY",
         website: "www.eventorganizer.com",

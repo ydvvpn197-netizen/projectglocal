@@ -51,10 +51,10 @@ export const useCommunities = () => {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from('communities')
+        .from('community_groups')
         .select(`
           *,
-          creator:profiles!communities_creator_id_fkey(
+          creator:profiles!profiles_user_id_fkey(
             display_name,
             avatar_url
           )
@@ -70,30 +70,30 @@ export const useCommunities = () => {
         id: community.id,
         name: community.name,
         description: community.description,
-        image_url: community.image_url,
-        image: community.image_url,
-        category: community.category || 'Community',
-        location: community.location,
+        image_url: null,
+        image: null,
+        category: 'Community',
+        location: community.location_city,
         member_count: community.member_count || 0,
         members: community.member_count || 0,
-        creator_id: community.creator_id,
+        creator_id: community.created_by,
         creator_name: community.creator?.display_name || 'Community Creator',
         creator_avatar: community.creator?.avatar_url,
         creator: {
           name: community.creator?.display_name || 'Community Creator',
           avatar: community.creator?.avatar_url || ''
         },
-        is_verified: community.is_verified || false,
-        activity_level: community.activity_level || 'Active',
-        activity_score: community.activity_score || 0,
+        is_verified: false,
+        activity_level: 'Active',
+        activity_score: 0,
         created_at: community.created_at,
         createdAt: community.created_at,
-        tags: community.tags || [],
-        is_private: community.is_private || false,
-        is_featured: community.is_featured || false,
-        rules: community.rules || [],
-        guidelines: community.guidelines || [],
-        contact_info: community.contact_info || {}
+        tags: [],
+        is_private: false,
+        is_featured: false,
+        rules: [],
+        guidelines: [],
+        contact_info: {}
       })) || [];
 
       setCommunities(transformedCommunities);
@@ -107,12 +107,12 @@ export const useCommunities = () => {
           id: '1',
           name: 'Local Music Enthusiasts',
           description: 'A community for music lovers to discover local artists, share recommendations, and attend concerts together.',
-          image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop',
+          image_url: null,
           category: 'Music',
           location: 'Downtown',
           member_count: 1250,
           creator_name: 'Music Lover',
-          creator_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+          creator_avatar: null,
           is_verified: true,
           activity_level: 'Very Active',
           activity_score: 95,
@@ -125,12 +125,12 @@ export const useCommunities = () => {
           id: '2',
           name: 'Art & Culture Collective',
           description: 'Connecting artists, art lovers, and cultural enthusiasts to explore local galleries, exhibitions, and creative events.',
-          image_url: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=400&fit=crop',
+          image_url: null,
           category: 'Art',
           location: 'Arts District',
           member_count: 890,
           creator_name: 'Art Curator',
-          creator_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+          creator_avatar: null,
           is_verified: true,
           activity_level: 'Active',
           activity_score: 78,
@@ -143,12 +143,12 @@ export const useCommunities = () => {
           id: '3',
           name: 'Tech Entrepreneurs Network',
           description: 'A professional network for tech entrepreneurs, startup founders, and innovators to share ideas and collaborate.',
-          image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=400&fit=crop',
+          image_url: null,
           category: 'Technology',
           location: 'Innovation Hub',
           member_count: 567,
           creator_name: 'Tech Founder',
-          creator_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
+          creator_avatar: null,
           is_verified: true,
           activity_level: 'Active',
           activity_score: 82,
@@ -161,12 +161,12 @@ export const useCommunities = () => {
           id: '4',
           name: 'Wellness & Mindfulness',
           description: 'A supportive community focused on mental health, wellness practices, and mindful living.',
-          image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop',
+          image_url: null,
           category: 'Health & Wellness',
           location: 'Wellness Center',
           member_count: 432,
           creator_name: 'Wellness Coach',
-          creator_avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+          creator_avatar: null,
           is_verified: false,
           activity_level: 'Moderate',
           activity_score: 65,
@@ -179,12 +179,12 @@ export const useCommunities = () => {
           id: '5',
           name: 'Local Food Enthusiasts',
           description: 'Food lovers sharing recipes, restaurant recommendations, and organizing culinary events.',
-          image_url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=400&fit=crop',
+          image_url: null,
           category: 'Food',
           location: 'Food District',
           member_count: 789,
           creator_name: 'Food Blogger',
-          creator_avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+          creator_avatar: null,
           is_verified: true,
           activity_level: 'Very Active',
           activity_score: 88,
@@ -306,16 +306,12 @@ export const useCommunities = () => {
 
     try {
       const { data, error: createError } = await supabase
-        .from('communities')
+        .from('community_groups')
         .insert({
           name: communityData.name,
           description: communityData.description,
-          image_url: communityData.image_url,
-          category: communityData.category,
-          location: communityData.location,
-          creator_id: user.id,
-          is_private: communityData.is_private || false,
-          tags: communityData.tags || []
+          location_city: communityData.location,
+          created_by: user.id
         })
         .select()
         .single();
@@ -329,9 +325,9 @@ export const useCommunities = () => {
         id: data.id,
         name: data.name,
         description: data.description,
-        image_url: data.image_url,
-        category: data.category,
-        location: data.location,
+        image_url: null,
+        category: 'Community',
+        location: data.location_city,
         member_count: 1,
         creator_id: user.id,
         creator_name: user.email?.split('@')[0] || 'Community Creator',
@@ -339,8 +335,8 @@ export const useCommunities = () => {
         activity_level: 'New',
         activity_score: 0,
         created_at: data.created_at,
-        tags: data.tags || [],
-        is_private: data.is_private || false,
+        tags: [],
+        is_private: false,
         is_featured: false
       };
 

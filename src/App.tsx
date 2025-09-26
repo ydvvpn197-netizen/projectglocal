@@ -8,6 +8,7 @@ import { ComprehensiveErrorBoundary } from '@/components/error/ComprehensiveErro
 import { initializePerformanceMonitoring } from '@/utils/performanceOptimizer';
 import { initializeSecurityAudit } from '@/utils/securityAudit';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 // Lazy load components for better performance
 const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
@@ -169,12 +170,14 @@ function AppContent() {
   );
 }
 
-// Main App component with AuthProvider
+// Main App component with providers
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <QueryProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </QueryProvider>
   );
 }
 

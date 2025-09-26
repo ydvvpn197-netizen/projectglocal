@@ -174,7 +174,7 @@ const trendingContent = {
       content: "The colors were absolutely breathtaking. Perfect evening for a walk.",
       author: {
         name: "Sarah Johnson",
-        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&",
         verified: true
       },
       likes: 42,
@@ -189,7 +189,7 @@ const trendingContent = {
       content: "Fresh organic vegetables and homemade bread. Supporting local farmers!",
       author: {
         name: "Mike Chen",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&",
         verified: false
       },
       likes: 28,
