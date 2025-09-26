@@ -1,9 +1,25 @@
-# TheGlocal.in (projectglocal) — Cursor-ready Project Summary & Instructions
+## TheGlocal.in (projectglocal) — Cursor-ready Project Summary & Instructions.
+## You are the senior full stack developer/designer/researcher who needs to improve/implement the existing project. You also have access to all the existing implemented features/codebase/builds. Your task is to improve/implement the features so the project reflects the plan/vision/mission of the project.
+The codebase is always the source of truth if there is any ambiguity or discrepencies.
 
 ## Purpose:
 This document is the single-source contextual prompt for Cursor/AI to **improve, audit, and incrementally rebuild** the existing TheGlocal.in project. It gives the AI full context about product vision, stack, core principles, priority work, and exact tasks to run automatically across the codebase.
 
----
+## Vision/Mission:
+The “theglocal.in” is a digital public town square where your local 
+neighbourhood comes alive, a place where Users can find friends and events around them, where another user (a local artist) books gigs and builds his audience,
+and where another user (community/event organizer) turns a simple idea into
+a neighbourhood tradition. Unlike global platforms that feel distant or 
+fragmented apps that solve only one piece, TheGlocal unites connection, 
+culture, and commerce in one seamless, secure experience. With a local 
+feed for news, real stories, tools for event creation and artist bookings,
+authentic business reviews, and democratic community polls. The Glocal 
+empowers people to connect meaningfully, support local economies, 
+and shape their neighbourhoods together. Built with modern, scalable 
+technology (Cursor, Supabase, Github) and designed with privacy-first/anonymous
+principles. its more than an app, its a movement to reimagine how communities
+thrive in the digital age."
+
 
 ## Project Snapshot:
 - Name: **TheGlocal.in (projectglocal)** — a privacy-first digital public square for local communities.
@@ -14,7 +30,7 @@ This document is the single-source contextual prompt for Cursor/AI to **improve,
 ---
 
 ## Vision & Product Goals (short)
-Build a privacy-first, local-first social platform where users can discover local issues, discuss news, create/join,follow communities and events, vote in polls, and engage with creators — all while defaulting to anonymity and transparent moderation.
+Build a privacy-first, local-first social platform where users can discover local issues, read/discuss news, create/join,follow communities and events, vote in polls, and engage with creators — all while defaulting to anonymity and transparent moderation.
 
 ---
 
@@ -43,13 +59,6 @@ Build a privacy-first, local-first social platform where users can discover loca
 
 ## Required DB schema highlights (essentials)
 Ensure these tables exist or are created with migrations: `profiles`, `communities`, `community_members`, `posts`, `events`, `polls`, `creators`, `services`, `news_summaries`, `news_discussions`, `subscriptions`, `reports`, `moderation_actions`, `chats`, `messages`.
-
-Key constraints:
-- Use `auth.uid()` in RLS policies.  
-- Use `uuid` primary keys (gen_random_uuid()).  
-- Index `created_at`, `community_id`, and geo columns for feed performance.
-
----
 
 ## RLS & RBAC Requirements (baseline)
 - Enable RLS on all custom tables.  
