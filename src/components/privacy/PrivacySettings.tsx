@@ -1,350 +1,236 @@
 /**
  * Privacy Settings Component
- * Allows users to control their privacy settings and anonymous handle display
+ * Manages user privacy and anonymity controls
  */
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Shield, 
-  Eye, 
-  EyeOff, 
-  User, 
-  Mail, 
-  MapPin, 
-  Camera,
-  RefreshCw,
-  Info,
-  Lock,
-  Unlock,
-  Users
-} from 'lucide-react';
-import { useAnonymousHandle, PrivacySettings } from '@/hooks/useAnonymousHandle';
+import { useAnonymousHandle } from '@/hooks/useAnonymousHandle';
 import { useToast } from '@/hooks/use-toast';
+import { Shield, Eye, EyeOff, User, AlertTriangle } from 'lucide-react';
 
-interface PrivacySettingsProps {
-  className?: string;
-}
-
-export const PrivacySettingsComponent: React.FC<PrivacySettingsProps> = ({ className }) => {
-  const {
-    privacySettings,
-    loading,
-    error,
-    updatePrivacySettings,
-    generateNewHandle
+export const PrivacySettings: React.FC = () => {
+  const { 
+    anonymousHandle, 
+    isLoading, 
+    error, 
+    toggleAnonymity, 
+    updateDisplayName, 
+    revealIdentity 
   } = useAnonymousHandle();
   
   const { toast } = useToast();
-  
-  const [localSettings, setLocalSettings] = useState<Partial<PrivacySettings>>({});
+  const [displayName, setDisplayName] = useState('');
+  const [isRevealing, setIsRevealing] = useState(false);
 
-  // Initialize local settings when privacy settings load
-  React.useEffect(() => {
-    if (privacySettings) {
-      setLocalSettings({
-        show_real_name: privacySettings.show_real_name,
-        show_real_avatar: privacySettings.show_real_avatar,
-        show_real_email: privacySettings.show_real_email,
-        show_real_location: privacySettings.show_real_location,
-        privacy_level: privacySettings.privacy_level
-      });
-    }
-  }, [privacySettings]);
-
-  const handleSettingChange = (key: keyof PrivacySettings, value: boolean | string) => {
-    setLocalSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
-  const handleSaveSettings = async () => {
-    if (!localSettings) return;
-
-    const success = await updatePrivacySettings(localSettings);
-    if (success) {
+  const handleToggleAnonymity = async (isAnonymous: boolean) => {
+    try {
+      await toggleAnonymity(isAnonymous);
       toast({
-        title: "Privacy Settings Updated",
-        description: "Your privacy preferences have been saved successfully",
+        title: isAnonymous ? "Identity Hidden" : "Identity Revealed",
+        description: isAnonymous 
+          ? "Your real identity is now hidden from other users." 
+          : "Your real identity is now visible to other users.",
       });
-    }
-  };
-
-  const handleGenerateNewHandle = async () => {
-    const newHandle = await generateNewHandle();
-    if (newHandle) {
+    } catch (err) {
       toast({
-        title: "New Handle Generated",
-        description: `Your new anonymous handle is: ${newHandle}`,
+        title: "Error",
+        description: "Failed to update privacy settings.",
+        variant: "destructive"
       });
     }
   };
 
-  const getPrivacyLevelDescription = (level: string) => {
-    switch (level) {
-      case 'anonymous':
-        return 'Maximum privacy - only anonymous handle visible';
-      case 'pseudonymous':
-        return 'Balanced privacy - some real information may be shown';
-      case 'public':
-        return 'Minimum privacy - real information may be visible';
-      default:
-        return 'Privacy level not set';
+  const handleUpdateDisplayName = async () => {
+    if (!displayName.trim()) return;
+    
+    try {
+      await updateDisplayName(displayName.trim());
+      setDisplayName('');
+      toast({
+        title: "Display Name Updated",
+        description: "Your anonymous display name has been updated.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update display name.",
+        variant: "destructive"
+      });
     }
   };
 
-  const getPrivacyLevelIcon = (level: string) => {
-    switch (level) {
-      case 'anonymous':
-        return <Lock className="h-4 w-4" />;
-      case 'pseudonymous':
-        return <Shield className="h-4 w-4" />;
-      case 'public':
-        return <Unlock className="h-4 w-4" />;
-      default:
-        return <Info className="h-4 w-4" />;
+  const handleRevealIdentity = async () => {
+    setIsRevealing(true);
+    try {
+      await revealIdentity();
+      toast({
+        title: "Identity Revealed",
+        description: "Your real identity is now visible. This action cannot be undone.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to reveal identity.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRevealing(false);
     }
   };
 
-  if (loading && !privacySettings) {
+  if (isLoading) {
     return (
-      <Card className={className}>
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load privacy settings: {error}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!anonymousHandle) {
+    return (
+      <Alert>
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          No anonymous handle found. Please contact support.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
             Privacy Settings
           </CardTitle>
+          <CardDescription>
+            Control your visibility and anonymity on the platform
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="h-6 w-6 animate-spin" />
-            <span className="ml-2">Loading privacy settings...</span>
+        <CardContent className="space-y-6">
+          {/* Anonymous Status */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="text-base font-medium">Anonymous Mode</Label>
+              <p className="text-sm text-muted-foreground">
+                {anonymousHandle.isAnonymous 
+                  ? "Your identity is hidden from other users" 
+                  : "Your real identity is visible to other users"
+                }
+              </p>
+            </div>
+            <Switch
+              checked={anonymousHandle.isAnonymous}
+              onCheckedChange={handleToggleAnonymity}
+              disabled={anonymousHandle.canRevealIdentity}
+            />
+          </div>
+
+          {/* Current Handle */}
+          <div className="space-y-2">
+            <Label className="text-base font-medium">Current Handle</Label>
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="font-mono text-sm">{anonymousHandle.handle}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This is your anonymous identifier on the platform
+            </p>
+          </div>
+
+          {/* Display Name */}
+          <div className="space-y-2">
+            <Label className="text-base font-medium">Display Name</Label>
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <span className="text-sm">{anonymousHandle.displayName}</span>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="New display name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleUpdateDisplayName}
+                disabled={!displayName.trim()}
+                size="sm"
+              >
+                Update
+              </Button>
+            </div>
+          </div>
+
+          {/* Identity Reveal Warning */}
+          {!anonymousHandle.canRevealIdentity && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Warning:</strong> Revealing your identity is a permanent action. 
+                Once revealed, you cannot return to full anonymity.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Reveal Identity Button */}
+          {!anonymousHandle.canRevealIdentity && (
+            <div className="space-y-2">
+              <Button
+                onClick={handleRevealIdentity}
+                disabled={isRevealing}
+                variant="outline"
+                className="w-full"
+              >
+                {isRevealing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+                    Revealing Identity...
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Reveal My Identity
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                This action cannot be undone
+              </p>
+            </div>
+          )}
+
+          {/* Privacy Information */}
+          <div className="pt-4 border-t">
+            <h4 className="font-medium mb-2">Privacy Information</h4>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Your anonymous handle is automatically generated and unique</li>
+              <li>• You can change your display name at any time</li>
+              <li>• Anonymous mode hides your real identity from other users</li>
+              <li>• Revealing your identity is a permanent action</li>
+              <li>• Your privacy settings are respected across all platform features</li>
+            </ul>
           </div>
         </CardContent>
       </Card>
-    );
-  }
-
-  return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Privacy Settings
-        </CardTitle>
-        <CardDescription>
-          Control how your information is displayed to other users. Default is maximum privacy.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Current Anonymous Handle */}
-        {privacySettings?.anonymous_handle && (
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Current Anonymous Handle</Label>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-mono">
-                {privacySettings.anonymous_handle}
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateNewHandle}
-                disabled={loading}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Generate New
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              This is how you appear to other users by default
-            </p>
-          </div>
-        )}
-
-        <Separator />
-
-        {/* Privacy Level */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Privacy Level</Label>
-          <Select
-            value={localSettings.privacy_level || 'anonymous'}
-            onValueChange={(value) => handleSettingChange('privacy_level', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select privacy level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="anonymous">
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4" />
-                  <div>
-                    <div className="font-medium">Anonymous</div>
-                    <div className="text-xs text-muted-foreground">
-                      Maximum privacy
-                    </div>
-                  </div>
-                </div>
-              </SelectItem>
-              <SelectItem value="pseudonymous">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  <div>
-                    <div className="font-medium">Pseudonymous</div>
-                    <div className="text-xs text-muted-foreground">
-                      Balanced privacy
-                    </div>
-                  </div>
-                </div>
-              </SelectItem>
-              <SelectItem value="public">
-                <div className="flex items-center gap-2">
-                  <Unlock className="h-4 w-4" />
-                  <div>
-                    <div className="font-medium">Public</div>
-                    <div className="text-xs text-muted-foreground">
-                      Minimum privacy
-                    </div>
-                  </div>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            {getPrivacyLevelDescription(localSettings.privacy_level || 'anonymous')}
-          </p>
-        </div>
-
-        <Separator />
-
-        {/* Individual Privacy Controls */}
-        <div className="space-y-4">
-          <Label className="text-sm font-medium">What Others Can See</Label>
-          
-          {/* Real Name */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <User className="h-4 w-4" />
-              <div>
-                <Label htmlFor="show-real-name" className="text-sm">
-                  Show Real Name
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Display your real name instead of anonymous handle
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="show-real-name"
-              checked={localSettings.show_real_name || false}
-              onCheckedChange={(checked) => handleSettingChange('show_real_name', checked)}
-            />
-          </div>
-
-          {/* Real Avatar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Camera className="h-4 w-4" />
-              <div>
-                <Label htmlFor="show-real-avatar" className="text-sm">
-                  Show Real Avatar
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Display your real profile picture
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="show-real-avatar"
-              checked={localSettings.show_real_avatar || false}
-              onCheckedChange={(checked) => handleSettingChange('show_real_avatar', checked)}
-            />
-          </div>
-
-          {/* Real Email */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4" />
-              <div>
-                <Label htmlFor="show-real-email" className="text-sm">
-                  Show Real Email
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Allow others to see your email address
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="show-real-email"
-              checked={localSettings.show_real_email || false}
-              onCheckedChange={(checked) => handleSettingChange('show_real_email', checked)}
-            />
-          </div>
-
-          {/* Real Location */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-4 w-4" />
-              <div>
-                <Label htmlFor="show-real-location" className="text-sm">
-                  Show Real Location
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Display your location information
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="show-real-location"
-              checked={localSettings.show_real_location || false}
-              onCheckedChange={(checked) => handleSettingChange('show_real_location', checked)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button 
-            onClick={handleSaveSettings}
-            disabled={loading}
-            className="min-w-[120px]"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Settings'
-            )}
-          </Button>
-        </div>
-
-        {/* Privacy Notice */}
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Privacy First:</strong> Your information is private by default. 
-            Only enable these options if you want to share more information with other users.
-            You can change these settings at any time.
-          </AlertDescription>
-        </Alert>
-      </CardContent>
-    </Card>
+    </div>
   );
 };
