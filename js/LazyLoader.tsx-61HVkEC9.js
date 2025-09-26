@@ -1,1 +1,0 @@
-import{j as e}from"./chunk-COTa-BBv.js";import"./chunk-DvlvDbdf.js";import"./chunk-BlluHz2J.js";import"./chunk-DJzzOJWe.js";import"./chunk-BA32w1ww.js";const m=()=>e.jsx("div",{className:"min-h-screen flex items-center justify-center",children:e.jsx("div",{className:"animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"})});export{m as LazyLoader};
