@@ -537,7 +537,7 @@ const ConsolidatedCommunityManagement: React.FC = () => {
                     <Label htmlFor="privacy">Privacy Level</Label>
                     <Select 
                       value={communitySettings.privacy} 
-                      onValueChange={(value) => setCommunitySettings({...communitySettings, privacy: value as any})}
+                      onValueChange={(value) => setCommunitySettings({...communitySettings, privacy: value as 'public' | 'private' | 'invite-only'})}
                     >
                       <SelectTrigger>
                         <SelectValue />

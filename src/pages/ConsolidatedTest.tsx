@@ -762,7 +762,7 @@ const ConsolidatedTest: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as string)}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="buttons">Buttons</TabsTrigger>
             <TabsTrigger value="voice">Voice</TabsTrigger>

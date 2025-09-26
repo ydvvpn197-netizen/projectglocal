@@ -217,9 +217,9 @@ const ConsolidatedDashboard: React.FC = () => {
     };
 
     loadDashboardData();
-  }, [user, userType]);
+  }, [user, userType, loadArtistDashboard, loadUserDashboard]);
 
-  const loadArtistDashboard = async () => {
+  const loadArtistDashboard = useCallback(async () => {
     try {
       // Load artist-specific stats
       const { data: bookings } = await supabase
@@ -257,9 +257,9 @@ const ConsolidatedDashboard: React.FC = () => {
     } catch (err) {
       console.error('Error loading artist dashboard:', err);
     }
-  };
+  }, [user]);
 
-  const loadUserDashboard = async () => {
+  const loadUserDashboard = useCallback(async () => {
     try {
       // Load user-specific stats
       const { data: bookings } = await supabase
@@ -287,7 +287,7 @@ const ConsolidatedDashboard: React.FC = () => {
     } catch (err) {
       console.error('Error loading user dashboard:', err);
     }
-  };
+  }, [user]);
 
   const loadRecentActivity = async () => {
     try {
@@ -637,7 +637,7 @@ const ConsolidatedDashboard: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as string)}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>

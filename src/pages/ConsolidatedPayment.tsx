@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -108,7 +108,8 @@ import {
   Sparkles as SparklesIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
-  Activity as ActivityIcon3
+  Activity as ActivityIcon3,
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -161,9 +162,9 @@ const ConsolidatedPayment: React.FC = () => {
       setActiveTab('history');
       fetchPaymentHistory();
     }
-  }, [isSuccess, isCancel, sessionId]);
+  }, [isSuccess, isCancel, sessionId, verifyPayment, fetchPaymentHistory]);
 
-  const verifyPayment = async () => {
+  const verifyPayment = useCallback(async () => {
     if (!sessionId || !user) {
       setLoading(false);
       return;
@@ -196,9 +197,9 @@ const ConsolidatedPayment: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId, user]);
 
-  const fetchPaymentHistory = async () => {
+  const fetchPaymentHistory = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -247,7 +248,7 @@ const ConsolidatedPayment: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const handleRetryPayment = () => {
     navigate('/pricing');

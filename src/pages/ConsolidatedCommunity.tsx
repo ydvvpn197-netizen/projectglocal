@@ -899,7 +899,7 @@ const ConsolidatedCommunity: React.FC = () => {
               <SelectItem value="Education">Education</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
+          <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'recent' | 'popular' | 'trending')}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -924,7 +924,7 @@ const ConsolidatedCommunity: React.FC = () => {
             </Button>
 
             {/* Community Tabs */}
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'posts' | 'events' | 'members' | 'settings')}>
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="posts">Posts</TabsTrigger>

@@ -66,6 +66,21 @@ import { ChatService } from "@/services/chatService";
 import { format } from "date-fns";
 import { UserProfile } from "@/types/common";
 
+// Extended profile interface for the consolidated profile component
+interface ExtendedUserProfile extends UserProfile {
+  display_name?: string;
+  location_city?: string;
+  location_state?: string;
+  cover_image_url?: string;
+  is_pro?: boolean;
+  anonymous_mode?: boolean;
+  followers_count?: number;
+  following_count?: number;
+  full_name?: string;
+  verified?: boolean;
+  joined_date?: string;
+}
+
 // Enhanced interfaces for consolidated profile
 interface ArtistProfile {
   id: string;
@@ -240,8 +255,11 @@ const ConsolidatedProfile = () => {
         });
       } else {
         // Fetch user profile
-        const mockProfile = {
+        const mockProfile: ExtendedUserProfile = {
           id: profileId,
+          email: "organizer@eventorganizer.com",
+          is_verified: true,
+          is_active: true,
           username: "eventorganizer",
           full_name: "Event Organizer",
           avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&",
@@ -249,18 +267,38 @@ const ConsolidatedProfile = () => {
           location: "New York, NY",
           website: "www.eventorganizer.com",
           phone: "+1 (555) 123-4567",
-          email: "organizer@eventorganizer.com",
           verified: true,
           followers_count: 1247,
           following_count: 89,
-          events_count: 23,
           joined_date: "2022-03-15",
-          interests: ["Music", "Art", "Community", "Technology", "Food"],
           social_links: {
             twitter: "@eventorganizer",
             instagram: "@eventorganizer",
             linkedin: "linkedin.com/in/eventorganizer"
-          }
+          },
+          preferences: {
+            email_notifications: true,
+            push_notifications: true,
+            sms_notifications: false,
+            privacy_level: 'public',
+            language: 'en',
+            timezone: 'UTC',
+            theme: 'auto'
+          },
+          stats: {
+            total_posts: 0,
+            total_comments: 0,
+            total_likes_received: 0,
+            total_shares: 0,
+            followers_count: 1247,
+            following_count: 89,
+            posts_this_month: 0,
+            engagement_rate: 0
+          },
+          badges: [],
+          subscription_tier: 'free',
+          points: 0,
+          reputation_score: 0
         };
         setProfileUser(mockProfile);
       }
@@ -348,15 +386,15 @@ const ConsolidatedProfile = () => {
   useEffect(() => {
     if (profile) {
       setProfileData({
-        display_name: (profile as any).display_name || "",
-        bio: (profile as any).bio || "",
-        location_city: (profile as any).location_city || "",
-        location_state: (profile as any).location_state || "",
-        avatar_url: (profile as any).avatar_url || "",
-        cover_image_url: (profile as any).cover_image_url || "",
-        is_verified: (profile as any).is_verified || false,
-        is_pro: (profile as any).is_pro || false,
-        anonymous_mode: (profile as any).anonymous_mode || false
+        display_name: (profile as ExtendedUserProfile)?.display_name || "",
+        bio: (profile as ExtendedUserProfile)?.bio || "",
+        location_city: (profile as ExtendedUserProfile)?.location_city || "",
+        location_state: (profile as ExtendedUserProfile)?.location_state || "",
+        avatar_url: (profile as ExtendedUserProfile)?.avatar_url || "",
+        cover_image_url: (profile as ExtendedUserProfile)?.cover_image_url || "",
+        is_verified: (profile as ExtendedUserProfile)?.is_verified || false,
+        is_pro: (profile as ExtendedUserProfile)?.is_pro || false,
+        anonymous_mode: (profile as ExtendedUserProfile)?.anonymous_mode || false
       });
     }
   }, [profile]);
@@ -365,9 +403,9 @@ const ConsolidatedProfile = () => {
   useEffect(() => {
     if (currentUser) {
       const userPosts = posts.filter(post => post.user_id === currentUser.id);
-      const userEvents = events.filter(event => (event as any).organizer_id === currentUser.id);
+      const userEvents = events.filter(event => (event as Event & { organizer_id?: string }).organizer_id === currentUser.id);
       const userCommunities = communities.filter(community => 
-        (community as any).members?.some((member: any) => member.user_id === currentUser.id)
+        (community as { members?: Array<{ user_id: string }> }).members?.some((member: { user_id: string }) => member.user_id === currentUser.id)
       );
 
       const totalLikes = userPosts.reduce((sum, post) => sum + (post.likes_count || 0), 0);
@@ -379,8 +417,8 @@ const ConsolidatedProfile = () => {
         totalPosts: userPosts.length,
         totalEvents: userEvents.length,
         totalCommunities: userCommunities.length,
-        totalFollowers: (profile as any)?.followers_count || 0,
-        totalFollowing: (profile as any)?.following_count || 0,
+        totalFollowers: (profile as ExtendedUserProfile)?.followers_count || 0,
+        totalFollowing: (profile as ExtendedUserProfile)?.following_count || 0,
         totalLikes,
         totalComments,
         engagementRate: Math.round(engagementRate * 10) / 10
@@ -423,7 +461,6 @@ const ConsolidatedProfile = () => {
         const { data: created, error: createErr } = await supabase
           .from('chat_conversations')
           .insert({
-            booking_id: null,
             client_id: currentUser.id,
             artist_id: profileId,
             status: 'active'
@@ -474,14 +511,7 @@ const ConsolidatedProfile = () => {
     setShowConnectionModal(false);
   };
 
-  // Follow handling
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    toast({
-      title: isFollowing ? "Unfollowed" : "Following",
-      description: isFollowing ? "You've unfollowed this user" : "You're now following this user",
-    });
-  };
+  // Follow handling - removed duplicate declaration
 
   // Artist booking handling
   const handleBookArtist = async () => {
@@ -558,7 +588,7 @@ const ConsolidatedProfile = () => {
       setBudgetMin("");
       setBudgetMax("");
       setContactInfo("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating booking:', error);
       toast({
         title: "Error",
@@ -616,7 +646,7 @@ const ConsolidatedProfile = () => {
       if (discussionError) throw discussionError;
 
       try {
-        await notificationService.createDiscussionRequestNotification(artistId!, discussionData);
+        await notificationService.createDiscussionRequestNotification(artistId!, discussionData, currentUser.id);
       } catch (notificationError) {
         console.error('Error creating discussion request notification:', notificationError);
       }
@@ -628,7 +658,7 @@ const ConsolidatedProfile = () => {
 
       setDiscussionTitle("");
       setDiscussionContent("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting discussion:', error);
       toast({
         title: "Error",
@@ -677,10 +707,11 @@ const ConsolidatedProfile = () => {
   // Enhanced follow functionality
   const handleFollow = useCallback(async () => {
     try {
+      setIsFollowing(!isFollowing);
       // Implement follow logic
       toast({
-        title: "Followed!",
-        description: "You are now following this user.",
+        title: isFollowing ? "Unfollowed" : "Following",
+        description: isFollowing ? "You've unfollowed this user" : "You're now following this user",
       });
     } catch (error) {
       toast({
@@ -689,7 +720,7 @@ const ConsolidatedProfile = () => {
         variant: "destructive"
       });
     }
-  }, [toast]);
+  }, [toast, isFollowing]);
 
   // Enhanced message functionality
   const handleMessage = useCallback(() => {
@@ -708,10 +739,10 @@ const ConsolidatedProfile = () => {
     let completed = 0;
     const total = 6;
     
-    if ((profile as any).display_name) completed++;
-    if ((profile as any).bio) completed++;
-    if ((profile as any).avatar_url) completed++;
-    if ((profile as any).location_city) completed++;
+    if ((profile as ExtendedUserProfile)?.display_name) completed++;
+    if ((profile as ExtendedUserProfile)?.bio) completed++;
+    if ((profile as ExtendedUserProfile)?.avatar_url) completed++;
+    if ((profile as ExtendedUserProfile)?.location_city) completed++;
     if (currentUser?.email) completed++;
     if (currentUser?.created_at) completed++;
     
@@ -889,7 +920,7 @@ const ConsolidatedProfile = () => {
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                           {profileUser?.full_name || profileData.display_name || currentUser?.email?.split('@')[0]}
                         </h2>
-                        {(profileUser as any)?.verified && (
+                        {(profileUser as ExtendedUserProfile)?.verified && (
                           <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Verified
@@ -906,7 +937,7 @@ const ConsolidatedProfile = () => {
                       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
                           <Calendar className="h-3 w-3" />
-                          Joined {new Date((profileUser as any)?.joined_date || currentUser?.created_at || '').toLocaleDateString()}
+                          Joined {new Date((profileUser as ExtendedUserProfile)?.joined_date || currentUser?.created_at || '').toLocaleDateString()}
                         </span>
                         <span className="flex items-center gap-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
                           <Activity className="h-3 w-3" />
@@ -1232,11 +1263,12 @@ const ConsolidatedProfile = () => {
                   <PostCard
                     post={{
                       ...post,
+                      title: post.title || 'Untitled Post',
                       author: {
                         id: post.user_id,
-                        name: (profileUser as any)?.full_name || currentUser?.email?.split('@')[0] || 'User',
-                        avatar: (profileUser as any)?.avatar_url,
-                        verified: (profileUser as any)?.verified
+                        name: (profileUser as ExtendedUserProfile)?.full_name || currentUser?.email?.split('@')[0] || 'User',
+                        avatar: (profileUser as ExtendedUserProfile)?.avatar_url,
+                        verified: (profileUser as ExtendedUserProfile)?.verified
                       }
                     }}
                     onLike={(postId: string) => {
@@ -1272,7 +1304,7 @@ const ConsolidatedProfile = () => {
           {/* Events Tab */}
           <TabsContent value="events" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {events.filter(event => (event as any).organizer_id === currentUser?.id).map((event, index) => (
+              {events.filter(event => (event as Event & { organizer_id?: string }).organizer_id === currentUser?.id).map((event, index) => (
                 <motion.div
                   key={event.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -1303,7 +1335,7 @@ const ConsolidatedProfile = () => {
           <TabsContent value="communities" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {communities.filter(community => 
-                (community as any).members?.some((member: any) => member.user_id === currentUser?.id)
+                (community as { members?: Array<{ user_id: string }> }).members?.some((member: { user_id: string }) => member.user_id === currentUser?.id)
               ).map((community, index) => (
                 <motion.div
                   key={community.id}

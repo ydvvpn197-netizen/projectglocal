@@ -279,7 +279,7 @@ const ConsolidatedLegal: React.FC = () => {
     }
   };
 
-  const handleGenerateDocument = async (data: any) => {
+  const handleGenerateDocument = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
       // Simulate document generation
@@ -298,7 +298,7 @@ const ConsolidatedLegal: React.FC = () => {
     }
   };
 
-  const generateDocumentContent = (data: any, type: string) => {
+  const generateDocumentContent = (data: Record<string, unknown>, type: string) => {
     const template = getDocumentTemplate(type);
     return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
       return data[key] || match;

@@ -79,7 +79,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFollows } from "@/hooks/useFollows";
 import { useToast } from "@/hooks/use-toast";
 import { notificationService } from "@/services/notificationService";
-import { ChatService } from "@/services/chatService";
+import { ChatService, ChatConversationDetails } from "@/services/chatService";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { sanitizeText, sanitizeEmail } from "@/lib/sanitize";
@@ -175,7 +175,7 @@ const ConsolidatedArtist: React.FC = () => {
   // Booking states
   const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
   const [acceptedBookings, setAcceptedBookings] = useState<BookingRequest[]>([]);
-  const [activeChats, setActiveChats] = useState<any[]>([]);
+  const [activeChats, setActiveChats] = useState<ChatConversationDetails[]>([]);
   
   // Form states
   const [showBookingDialog, setShowBookingDialog] = useState(false);
@@ -196,6 +196,55 @@ const ConsolidatedArtist: React.FC = () => {
       setInitialData(location.state.artistData);
     }
   }, [location.state]);
+
+  // Fetch discussions
+  const fetchDiscussions = useCallback(async () => {
+    if (!artistId) return;
+    
+    try {
+      const { data: artistRecord, error: artistError } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('user_id', artistId)
+        .single();
+
+      if (artistError) throw artistError;
+
+      const { data, error } = await supabase
+        .from('artist_discussions')
+        .select('*')
+        .eq('artist_id', artistRecord.id)
+        .eq('status', 'approved')
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const userIds = (data || []).map((d: { user_id: string }) => d.user_id);
+      let profilesMap: Record<string, { user_id: string; display_name?: string; avatar_url?: string }> = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .in('user_id', userIds);
+
+        profilesMap = Object.fromEntries(
+          (profilesData || []).map((p: { user_id: string; display_name?: string; avatar_url?: string }) => [p.user_id, p])
+        );
+      }
+
+      const discussionsWithUserData = (data || []).map((discussion: { user_id: string; [key: string]: unknown }) => ({
+        ...discussion,
+        user_display_name: profilesMap[discussion.user_id]?.display_name || 'Anonymous',
+        user_avatar_url: profilesMap[discussion.user_id]?.avatar_url || ''
+      }));
+
+      setDiscussions(discussionsWithUserData);
+    } catch (error) {
+      console.error('Error fetching discussions:', error);
+    }
+  }, [artistId]);
 
   // Fetch artist profile data
   const fetchArtistData = useCallback(async () => {
@@ -225,20 +274,20 @@ const ConsolidatedArtist: React.FC = () => {
           .from('artists')
           .insert({
             user_id: artistId,
-            specialty: (profileData as any).artist_skills || [],
+            specialty: (profileData as ArtistProfile).artist_skills || [],
             experience_years: 0,
-            hourly_rate_min: (profileData as any).hourly_rate_min || 0,
-            hourly_rate_max: (profileData as any).hourly_rate_max || 0,
-            bio: (profileData as any).bio || '',
+            hourly_rate_min: (profileData as ArtistProfile).hourly_rate_min || 0,
+            hourly_rate_max: (profileData as ArtistProfile).hourly_rate_max || 0,
+            bio: (profileData as ArtistProfile).bio || '',
             is_available: true
           })
           .select()
           .single();
 
         if (createError) throw createError;
-        setArtist({ ...(profileData as any), ...(newArtistData as any) });
+        setArtist({ ...(profileData as ArtistProfile), ...(newArtistData as ArtistProfile) });
       } else {
-        setArtist({ ...(profileData as any), ...(artistData as any) });
+        setArtist({ ...(profileData as ArtistProfile), ...(artistData as ArtistProfile) });
       }
 
       // Fetch discussions
@@ -253,56 +302,7 @@ const ConsolidatedArtist: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [artistId, isProfile, toast]);
-
-  // Fetch discussions
-  const fetchDiscussions = useCallback(async () => {
-    if (!artistId) return;
-    
-    try {
-      const { data: artistRecord, error: artistError } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('user_id', artistId)
-        .single();
-
-      if (artistError) throw artistError;
-
-      const { data, error } = await supabase
-        .from('artist_discussions')
-        .select('*')
-        .eq('artist_id', (artistRecord as any).id)
-        .eq('status', 'approved')
-        .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const userIds = (data || []).map((d: any) => d.user_id);
-      let profilesMap: Record<string, { user_id: string; display_name?: string; avatar_url?: string }> = {};
-      
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url')
-          .in('user_id', userIds);
-
-        profilesMap = Object.fromEntries(
-          (profilesData || []).map((p: any) => [p.user_id, p])
-        );
-      }
-
-      const discussionsWithUserData = (data || []).map((discussion: any) => ({
-        ...discussion,
-        user_display_name: profilesMap[discussion.user_id]?.display_name || 'Anonymous',
-        user_avatar_url: profilesMap[discussion.user_id]?.avatar_url || ''
-      }));
-
-      setDiscussions(discussionsWithUserData);
-    } catch (error) {
-      console.error('Error fetching discussions:', error);
-    }
-  }, [artistId]);
+  }, [artistId, isProfile, toast, fetchDiscussions]);
 
   // Fetch dashboard data
   const fetchDashboardData = useCallback(async () => {
@@ -320,17 +320,17 @@ const ConsolidatedArtist: React.FC = () => {
 
       if (bookingsError) throw bookingsError;
 
-      const pendingRequests = (bookings || []).filter((b: any) => b.status === 'pending');
-      const acceptedBookings = (bookings || []).filter((b: any) => b.status === 'accepted');
+      const pendingRequests = (bookings || []).filter((b: { status: string }) => b.status === 'pending');
+      const acceptedBookings = (bookings || []).filter((b: { status: string }) => b.status === 'accepted');
 
       setBookingRequests(pendingRequests);
       setAcceptedBookings(acceptedBookings);
 
       // Calculate stats
       const totalBookings = (bookings || []).length;
-      const totalEarnings = (bookings || []).reduce((sum: number, b: any) => sum + (b.budget_min || 0), 0);
-      const completedBookings = (bookings || []).filter((b: any) => b.status === 'completed').length;
-      const cancelledBookings = (bookings || []).filter((b: any) => b.status === 'cancelled').length;
+      const totalEarnings = (bookings || []).reduce((sum: number, b: { budget_min?: number }) => sum + (b.budget_min || 0), 0);
+      const completedBookings = (bookings || []).filter((b: { status: string }) => b.status === 'completed').length;
+      const cancelledBookings = (bookings || []).filter((b: { status: string }) => b.status === 'cancelled').length;
 
       setStats({
         totalBookings,
@@ -475,7 +475,7 @@ const ConsolidatedArtist: React.FC = () => {
         .from('artist_discussions')
         .insert({
           user_id: user.id,
-          artist_id: (artistRecord as any).id,
+          artist_id: artistRecord.id,
           title: discussionTitle,
           content: discussionContent,
           status: 'approved'

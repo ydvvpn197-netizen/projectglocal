@@ -238,7 +238,29 @@ const ConsolidatedBooking: React.FC = () => {
 
       if (error) throw error;
 
-      const formattedArtists = (data || []).map((artist: any) => ({
+      const formattedArtists = (data || []).map((artist: {
+        id: string;
+        user_id: string;
+        bio: string;
+        rating?: number;
+        specialty?: string[];
+        hourly_rate_min?: number;
+        hourly_rate_max?: number;
+        is_available: boolean;
+        experience_years?: number;
+        profiles?: {
+          display_name?: string;
+          avatar_url?: string;
+          location_city?: string;
+          location_state?: string;
+          is_verified?: boolean;
+        };
+        display_name?: string;
+        avatar_url?: string;
+        location_city?: string;
+        location_state?: string;
+        is_verified?: boolean;
+      }) => ({
         id: artist.id,
         user_id: artist.user_id,
         display_name: artist.profiles?.display_name || artist.display_name,
@@ -296,7 +318,30 @@ const ConsolidatedBooking: React.FC = () => {
 
       if (error) throw error;
 
-      const formattedBookings = (data || []).map((booking: any) => ({
+      const formattedBookings = (data || []).map((booking: {
+        id: string;
+        user_id: string;
+        artist_id: string;
+        event_date: string;
+        event_location: string;
+        event_description: string;
+        budget_min: number;
+        budget_max?: number;
+        contact_info: string;
+        status: string;
+        created_at: string;
+        updated_at?: string;
+        profiles?: {
+          display_name?: string;
+          avatar_url?: string;
+        };
+        artists?: {
+          profiles?: {
+            display_name?: string;
+            avatar_url?: string;
+          };
+        };
+      }) => ({
         id: booking.id,
         user_id: booking.user_id,
         artist_id: booking.artist_id,
@@ -319,13 +364,13 @@ const ConsolidatedBooking: React.FC = () => {
 
       // Calculate stats
       const totalBookings = formattedBookings.length;
-      const pendingBookings = formattedBookings.filter((b: any) => b.status === 'pending').length;
-      const acceptedBookings = formattedBookings.filter((b: any) => b.status === 'accepted').length;
-      const completedBookings = formattedBookings.filter((b: any) => b.status === 'completed').length;
-      const cancelledBookings = formattedBookings.filter((b: any) => b.status === 'cancelled').length;
+      const pendingBookings = formattedBookings.filter((b: { status: string }) => b.status === 'pending').length;
+      const acceptedBookings = formattedBookings.filter((b: { status: string }) => b.status === 'accepted').length;
+      const completedBookings = formattedBookings.filter((b: { status: string }) => b.status === 'completed').length;
+      const cancelledBookings = formattedBookings.filter((b: { status: string }) => b.status === 'cancelled').length;
       const totalSpent = formattedBookings
-        .filter((b: any) => b.status === 'completed')
-        .reduce((sum: number, b: any) => sum + (b.budget_min || 0), 0);
+        .filter((b: { status: string }) => b.status === 'completed')
+        .reduce((sum: number, b: { budget_min?: number }) => sum + (b.budget_min || 0), 0);
 
       setStats({
         totalBookings,
@@ -339,7 +384,7 @@ const ConsolidatedBooking: React.FC = () => {
     } catch (error) {
       console.error('Error fetching bookings:', error);
     }
-  }, [user, toast]);
+  }, [user]);
 
   useEffect(() => {
     fetchArtists();
