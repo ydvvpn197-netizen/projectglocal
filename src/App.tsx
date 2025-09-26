@@ -10,12 +10,12 @@ import { initializeSecurityAudit } from '@/utils/securityAudit';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 
 // Lazy load components for better performance
-const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
-const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation'));
-const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel'));
-const AppRoutes = lazy(() => import('@/routes/AppRoutes'));
-const ResponsiveLayout = lazy(() => import('@/components/ResponsiveLayout'));
-const LazyLoader = lazy(() => import('@/components/LazyLoader'));
+const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
+const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation').then(module => ({ default: module.MobileLayout })));
+const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel').then(module => ({ default: module.VoiceControlPanel })));
+const AppRoutes = lazy(() => import('@/routes/AppRoutes').then(module => ({ default: module.AppRoutes })));
+const ResponsiveLayout = lazy(() => import('@/components/ResponsiveLayout').then(module => ({ default: module.ResponsiveLayout })));
+const LazyLoader = lazy(() => import('@/components/LazyLoader').then(module => ({ default: module.LazyLoader })));
 
 // Import hooks normally (hooks can't be lazy loaded)
 import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
