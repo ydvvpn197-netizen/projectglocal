@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ResponsiveLayout } from '@/components/ResponsiveLayout';
-import { MainLayout } from '@/components/MainLayout';
+import { StandardPageLayout, StandardContentSection } from '@/components/layout';
 import { ClientBookingsPanel } from '@/components/ClientBookingsPanel';
 import { BookingRequestsPanel } from '@/components/BookingRequestsPanel';
 import { AcceptedBookingsPanel } from '@/components/AcceptedBookingsPanel';
@@ -591,46 +590,63 @@ const ConsolidatedDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <ResponsiveLayout>
+      <StandardPageLayout
+        title="Loading Dashboard"
+        subtitle="Please wait"
+        description="Loading your dashboard data..."
+        variant="dashboard"
+        maxWidth="xl"
+      >
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
-      </ResponsiveLayout>
+      </StandardPageLayout>
     );
   }
 
   if (error) {
     return (
-      <ResponsiveLayout>
+      <StandardPageLayout
+        title="Error Loading Dashboard"
+        subtitle="Something went wrong"
+        description="We encountered an error while loading your dashboard."
+        variant="dashboard"
+        maxWidth="xl"
+        badges={[
+          { label: "Error", variant: "destructive", icon: <AlertTriangle className="w-3 h-3" /> }
+        ]}
+      >
         <div className="text-center py-12">
           <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Dashboard</h3>
           <p className="text-gray-600">{error}</p>
         </div>
-      </ResponsiveLayout>
+      </StandardPageLayout>
     );
   }
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {userType === 'artist' ? 'Artist Dashboard' : 'User Dashboard'}
-            </h1>
-            <p className="text-gray-600">
-              {userType === 'artist' 
-                ? 'Manage your bookings, earnings, and client interactions'
-                : 'Explore communities, book artists, and stay connected'
-              }
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={userType === 'artist' ? 'default' : 'secondary'}>
-              {userType === 'artist' ? 'Artist' : 'User'}
-            </Badge>
+    <StandardPageLayout
+      title={userType === 'artist' ? 'Artist Dashboard' : 'User Dashboard'}
+      subtitle={userType === 'artist' ? 'Manage your bookings and earnings' : 'Track your bookings and account'}
+      description={userType === 'artist' 
+        ? 'Manage your bookings, earnings, and client interactions'
+        : 'Explore communities, book artists, and stay connected'}
+      variant="dashboard"
+      maxWidth="xl"
+      badges={[
+        { label: userType === 'artist' ? 'Artist' : 'User', variant: userType === 'artist' ? 'default' : 'secondary', icon: <User className="w-3 h-3" /> },
+        { label: "Dashboard", variant: "outline", icon: <TrendingUp className="w-3 h-3" /> }
+      ]}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
+          </Button>
+        </div>
+      }
+    >
             <Button variant="outline" size="sm">
               <Settings className="w-4 h-4 mr-2" />
               Settings
@@ -668,8 +684,7 @@ const ConsolidatedDashboard: React.FC = () => {
             {renderAnalytics()}
           </TabsContent>
         </Tabs>
-      </div>
-    </ResponsiveLayout>
+    </StandardPageLayout>
   );
 };
 

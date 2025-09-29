@@ -1,6 +1,8 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
+import { StandardPageLayout } from "@/components/layout";
+import { Button } from "@/components/ui/button";
+import { Home, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -13,22 +15,46 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <ResponsiveLayout 
-      showHeader={true}
-      showFooter={true}
-      showSidebar={false}
-      showNewsFeed={false}
-    >
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">404</h1>
-          <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-          <a href="/" className="text-blue-500 hover:text-blue-700 underline">
+    <StandardPageLayout
+      title="404 - Page Not Found"
+      subtitle="Oops! Something went wrong"
+      description="The page you're looking for doesn't exist or has been moved."
+      variant="hero"
+      background="gradient"
+      maxWidth="lg"
+      badges={[
+        { label: "Error", variant: "destructive", icon: <div className="w-2 h-2 bg-red-500 rounded-full" /> },
+        { label: "404", variant: "secondary" }
+      ]}
+      actions={
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            size="lg"
+            className="text-base px-6 py-3"
+            onClick={() => window.location.href = '/'}
+          >
+            <Home className="w-4 h-4 mr-2" />
             Return to Home
-          </a>
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="text-base px-6 py-3"
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go Back
+          </Button>
         </div>
+      }
+    >
+      <div className="text-center py-16">
+        <div className="text-8xl font-bold text-muted-foreground mb-4">404</div>
+        <p className="text-xl text-muted-foreground mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
       </div>
-    </ResponsiveLayout>
+    </StandardPageLayout>
   );
 };
 

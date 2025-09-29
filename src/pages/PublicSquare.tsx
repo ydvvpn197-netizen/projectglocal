@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ResponsiveLayout } from '../components/ResponsiveLayout';
+import { StandardPageLayout, StandardContentSection } from '@/components/layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -358,8 +358,30 @@ const PublicSquare: React.FC = () => {
   );
 
   return (
-    <ResponsiveLayout showNewsFeed={false}>
-      <div className="space-y-6">
+    <StandardPageLayout
+      title="Public Square"
+      subtitle="Community Hub"
+      description="Engage with your community through news, events, polls, and civic participation."
+      variant="dashboard"
+      maxWidth="xl"
+      badges={[
+        { label: "Public", variant: "secondary", icon: <Globe className="w-3 h-3" /> },
+        { label: "Community", variant: "default", icon: <Users className="w-3 h-3" /> },
+        { label: "Civic", variant: "outline", icon: <Vote className="w-3 h-3" /> }
+      ]}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Newspaper className="w-4 h-4 mr-2" />
+            News
+          </Button>
+          <Button variant="outline" size="sm">
+            <Calendar className="w-4 h-4 mr-2" />
+            Events
+          </Button>
+        </div>
+      }
+    >
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'news' | 'events' | 'polls' | 'protests' | 'providers')}>
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -412,8 +434,7 @@ const PublicSquare: React.FC = () => {
             <ServiceProviders />
           </TabsContent>
         </Tabs>
-      </div>
-    </ResponsiveLayout>
+    </StandardPageLayout>
   );
 };
 

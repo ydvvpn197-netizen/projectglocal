@@ -16,17 +16,34 @@ import {
 } from 'lucide-react';
 import CommunityTransparencyDashboard from '@/components/CommunityTransparencyDashboard';
 import CommunityFeedbackForm from '@/components/CommunityFeedbackForm';
-import { ResponsiveLayout } from '@/components/ResponsiveLayout';
+import { StandardPageLayout, StandardContentSection } from '@/components/layout';
 
 const CommunityTransparency: React.FC = () => {
   return (
-    <ResponsiveLayout 
-      showHeader={true}
-      showFooter={true}
-      showSidebar={false}
-      showNewsFeed={false}
+    <StandardPageLayout
+      title="Community Transparency"
+      subtitle="Open Governance & Accountability"
+      description="Transparent community governance, decision-making processes, and accountability measures."
+      variant="dashboard"
+      maxWidth="xl"
+      badges={[
+        { label: "Transparency", variant: "secondary", icon: <Eye className="w-3 h-3" /> },
+        { label: "Governance", variant: "outline", icon: <Shield className="w-3 h-3" /> },
+        { label: "Community", variant: "default", icon: <Users className="w-3 h-3" /> }
+      ]}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </Button>
+          <Button variant="outline" size="sm">
+            <Activity className="w-4 h-4 mr-2" />
+            Activity
+          </Button>
+        </div>
+      }
     >
-      <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -206,7 +223,7 @@ const CommunityTransparency: React.FC = () => {
         </Card>
         </div>
       </div>
-    </ResponsiveLayout>
+    </StandardPageLayout>
   );
 };
 
