@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { useLayout } from '@/hooks/useLayout';
+import { useLayout } from '@/contexts/LayoutContext';
 import { cn } from '@/lib/utils';
 
 interface SidebarLayoutProps {

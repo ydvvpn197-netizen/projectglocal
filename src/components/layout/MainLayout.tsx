@@ -8,7 +8,7 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { cn } from '@/lib/utils';
-import { useLayout } from '@/hooks/useLayout';
+import { useLayout } from '@/contexts/LayoutContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 

@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useLayout } from '@/hooks/useLayout';
+import { useLayout } from '@/contexts/LayoutContext';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
