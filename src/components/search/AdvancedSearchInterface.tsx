@@ -142,7 +142,7 @@ export const AdvancedSearchInterface: React.FC<AdvancedSearchInterfaceProps> = (
 
   // Handle sort change
   const handleSortChange = (field: string, order: 'asc' | 'desc') => {
-    setSort({ field: field as any, order });
+    setSort({ field: field as keyof SearchFilters, order });
   };
 
   // Clear filters
@@ -351,7 +351,7 @@ export const AdvancedSearchInterface: React.FC<AdvancedSearchInterfaceProps> = (
                 <label className="text-sm font-medium mb-2 block">Visibility</label>
                 <Select
                   value={filters.visibility || 'all'}
-                  onValueChange={(value) => handleFilterChange('visibility', value === 'all' ? undefined : value as any)}
+                  onValueChange={(value) => handleFilterChange('visibility', value === 'all' ? undefined : value as string)}
                 >
                   <SelectTrigger>
                     <SelectValue />

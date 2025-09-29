@@ -1,14 +1,9 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react({
-    jsxImportSource: 'react',
-    jsxRuntime: 'classic', // Use classic JSX transform for tests
-    jsxDev: false, // Disable jsxDev to avoid runtime issues
-    jsx: 'classic'
-  })],
+  plugins: [react()],
   define: {
     __DEV__: true, // Set to true for tests to enable jsxDEV
     'process.env.NODE_ENV': '"test"',

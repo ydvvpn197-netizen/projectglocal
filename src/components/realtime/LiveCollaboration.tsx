@@ -20,6 +20,13 @@ interface CollaborationUpdate {
   isTyping?: boolean;
 }
 
+interface DocumentChange {
+  type: 'insert' | 'delete' | 'replace';
+  position: number;
+  content?: string;
+  length?: number;
+}
+
 interface LiveCollaborationProps {
   sessionId: string;
   documentId?: string;
@@ -156,7 +163,7 @@ export const LiveCollaboration: React.FC<LiveCollaborationProps> = ({
   }, [documentId, onDocumentChange]);
 
   // Apply document changes
-  const applyDocumentChange = (content: string, change: any): string => {
+  const applyDocumentChange = (content: string, change: DocumentChange): string => {
     switch (change.type) {
       case 'insert':
         return content.slice(0, change.position) + change.content + content.slice(change.position);
