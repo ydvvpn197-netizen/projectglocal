@@ -1,5 +1,27 @@
-import React, { useContext, useState, useEffect, ReactNode } from 'react';
-import { LayoutContext, LayoutContextType } from './LayoutContext';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+interface LayoutContextType {
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+  headerHeight: number;
+  footerHeight: number;
+  setHeaderHeight: (height: number) => void;
+  setFooterHeight: (height: number) => void;
+}
+
+const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
+
+export const useLayout = () => {
+  const context = useContext(LayoutContext);
+  if (context === undefined) {
+    throw new Error('useLayout must be used within a LayoutProvider');
+  }
+  return context;
+};
 
 interface LayoutProviderProps {
   children: ReactNode;
@@ -10,6 +32,8 @@ const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(64);
+  const [footerHeight, setFooterHeight] = useState(200);
 
   // Handle responsive breakpoints
   useEffect(() => {
@@ -18,6 +42,11 @@ const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
       setIsMobile(width < 768);
       setIsTablet(width >= 768 && width < 1024);
       setIsDesktop(width >= 1024);
+      
+      // Auto-close sidebar on mobile
+      if (width < 768 && sidebarOpen) {
+        setSidebarOpen(false);
+      }
     };
 
     // Initial check
@@ -28,7 +57,7 @@ const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
 
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [sidebarOpen]);
 
   // Auto-close sidebar on mobile when route changes
   useEffect(() => {
@@ -48,6 +77,10 @@ const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
     isMobile,
     isTablet,
     isDesktop,
+    headerHeight,
+    footerHeight,
+    setHeaderHeight,
+    setFooterHeight,
   };
 
   return (

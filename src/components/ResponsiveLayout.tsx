@@ -1,11 +1,14 @@
 /**
  * Responsive Layout Component
  * Enhanced responsive layout wrapper with mobile-first design
+ * Now uses the new MainLayout system for better structure
  */
 
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useAuth } from '@/hooks/useAuth';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
 
 interface ResponsiveLayoutProps {
@@ -15,6 +18,10 @@ interface ResponsiveLayoutProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   useMobileLayout?: boolean;
+  showHeader?: boolean;
+  showSidebar?: boolean;
+  showFooter?: boolean;
+  headerVariant?: 'default' | 'minimal' | 'glass';
 }
 
 export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ 
@@ -23,28 +30,18 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   showNewsFeed = false,
   maxWidth = 'xl',
   padding = 'md',
-  useMobileLayout = true
+  useMobileLayout = true,
+  showHeader = true,
+  showSidebar = true,
+  showFooter = true,
+  headerVariant = 'default'
 }) => {
   const isMobile = useMediaQuery('(max-width: 1024px)');
+  const isTablet = useMediaQuery('(max-width: 768px)');
+  const { user } = useAuth();
   
-  const maxWidthClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    full: 'max-w-full'
-  };
-
-  const paddingClasses = {
-    none: '',
-    sm: 'px-2 sm:px-4',
-    md: 'px-4 sm:px-6 lg:px-8',
-    lg: 'px-6 sm:px-8 lg:px-12'
-  };
-
   // Use mobile layout for mobile devices
-  if (isMobile && useMobileLayout) {
+  if (isMobile && useMobileLayout && user) {
     return (
       <MobileLayout>
         <div className={cn(
@@ -53,11 +50,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
           'mobile-safe-area',
           className
         )}>
-          <div className={cn(
-            'mx-auto w-full',
-            maxWidthClasses[maxWidth],
-            paddingClasses[padding]
-          )}>
+          <div className="px-4 py-6">
             {children}
           </div>
         </div>
@@ -65,21 +58,18 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     );
   }
 
-  // Desktop layout
+  // Use the new MainLayout for desktop and tablet
   return (
-    <div className={cn(
-      'min-h-screen w-full',
-      'bg-background text-foreground',
-      'mobile-safe-area',
-      className
-    )}>
-      <div className={cn(
-        'mx-auto w-full',
-        maxWidthClasses[maxWidth],
-        paddingClasses[padding]
-      )}>
-        {children}
-      </div>
-    </div>
+    <MainLayout
+      className={className}
+      showHeader={showHeader}
+      showSidebar={showSidebar && !!user}
+      showFooter={showFooter}
+      headerVariant={headerVariant}
+      sidebarCollapsible={true}
+      maxContentWidth={maxWidth}
+    >
+      {children}
+    </MainLayout>
   );
 };

@@ -176,4 +176,4 @@ const UnifiedButton = React.forwardRef<HTMLButtonElement, UnifiedButtonProps>(
 
 UnifiedButton.displayName = 'UnifiedButton';
 
-export { UnifiedButton, unifiedButtonVariants };
+export { UnifiedButton };

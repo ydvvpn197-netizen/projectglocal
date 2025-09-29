@@ -17,7 +17,7 @@ export interface RealtimeConnection {
 export interface RealtimeMessage {
   id: string;
   type: 'message' | 'notification' | 'update' | 'presence' | 'typing';
-  payload: any;
+  payload: Record<string, unknown>;
   timestamp: Date;
   sender?: string;
   target?: string;
@@ -103,8 +103,8 @@ export class EnhancedRealtimeService {
         channel.on('presence', { event: 'sync' }, () => {
           const state = channel.presenceState();
           this.presenceUsers.clear();
-          Object.values(state).forEach((presences: any) => {
-            presences.forEach((presence: any) => {
+          Object.values(state).forEach((presences: Record<string, unknown>[]) => {
+            presences.forEach((presence: Record<string, unknown>) => {
               this.presenceUsers.add(presence.user_id);
             });
           });
@@ -145,7 +145,7 @@ export class EnhancedRealtimeService {
    */
   async subscribeToNotifications(
     userId: string,
-    onNotification: (notification: any) => void
+    onNotification: (notification: Record<string, unknown>) => void
   ): Promise<RealtimeConnection> {
     const connection = await this.createConnection(
       `notifications_${userId}`,
@@ -171,7 +171,7 @@ export class EnhancedRealtimeService {
    */
   async subscribeToChat(
     chatId: string,
-    onMessage: (message: any) => void,
+    onMessage: (message: Record<string, unknown>) => void,
     onTyping?: (typing: TypingIndicator) => void
   ): Promise<RealtimeConnection> {
     const connection = await this.createConnection(
@@ -213,7 +213,7 @@ export class EnhancedRealtimeService {
   async subscribeToCollaboration(
     sessionId: string,
     userId: string,
-    onCollaborationUpdate: (update: any) => void
+    onCollaborationUpdate: (update: Record<string, unknown>) => void
   ): Promise<RealtimeConnection> {
     const connection = await this.createConnection(
       `collaboration_${sessionId}`,
@@ -264,7 +264,7 @@ export class EnhancedRealtimeService {
    */
   async subscribeToAnalytics(
     analyticsType: 'community' | 'business' | 'events' | 'news',
-    onAnalyticsUpdate: (analytics: any) => void
+    onAnalyticsUpdate: (analytics: Record<string, unknown>) => void
   ): Promise<RealtimeConnection> {
     const connection = await this.createConnection(
       `analytics_${analyticsType}`,
@@ -315,7 +315,7 @@ export class EnhancedRealtimeService {
     sessionId: string,
     update: {
       type: 'cursor' | 'document' | 'selection';
-      data: any;
+      data: Record<string, unknown>;
       userId: string;
     }
   ): Promise<void> {

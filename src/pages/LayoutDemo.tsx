@@ -1,245 +1,246 @@
-import React, { useState } from 'react';
+/**
+ * Layout Demo Page
+ * Showcases the new responsive layout system
+ */
+
+import React from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { CardLayout } from '@/components/layout/CardLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  Layout, 
-  Sidebar as SidebarIcon, 
-  Monitor, 
-  Smartphone, 
-  Tablet,
+  Home, 
+  Users, 
+  Calendar, 
+  Music, 
+  MessageSquare, 
+  Newspaper,
   Settings,
-  Users,
-  Calendar,
-  MessageSquare
+  Star,
+  Heart,
+  Share2,
+  Eye
 } from 'lucide-react';
 
-const LayoutDemo = () => {
-  const [activeLayout, setActiveLayout] = useState<'main' | 'sidebar' | 'full' | 'minimal'>('main');
-  const [showSidebar, setShowSidebar] = useState(true);
-  const [showHeader, setShowHeader] = useState(true);
-  const [showFooter, setShowFooter] = useState(true);
-
-  const layoutOptions = [
-    { value: 'main', label: 'Main Layout', description: 'Full layout with header, sidebar, and footer' },
-    { value: 'sidebar', label: 'Sidebar Layout', description: 'Layout with collapsible sidebar' },
-    { value: 'full', label: 'Full Layout', description: 'Full-width layout without sidebar' },
-    { value: 'minimal', label: 'Minimal Layout', description: 'Minimal layout for auth pages' },
-  ];
-
-  const demoContent = (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Layout System Demo</h1>
-          <p className="text-muted-foreground">
-            Explore different layout configurations and responsive behavior
-          </p>
-        </div>
-        <Badge variant="outline" className="text-sm">
-          <Layout className="w-4 h-4 mr-2" />
-          {activeLayout.charAt(0).toUpperCase() + activeLayout.slice(1)} Layout
-        </Badge>
-      </div>
-
-      <Tabs defaultValue="controls" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="controls">Controls</TabsTrigger>
-          <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="responsive">Responsive</TabsTrigger>
-          <TabsTrigger value="examples">Examples</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="controls" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Layout Configuration</CardTitle>
-              <CardDescription>
-                Adjust layout settings to see real-time changes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {layoutOptions.map((option) => (
-                  <Button
-                    key={option.value}
-                    variant={activeLayout === option.value ? "default" : "outline"}
-                    onClick={() => setActiveLayout(option.value as 'main' | 'sidebar' | 'mobile')}
-                    className="h-auto p-4 flex flex-col items-start"
-                  >
-                    <div className="font-semibold">{option.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {option.description}
-                    </div>
-                  </Button>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="sidebar"
-                    checked={showSidebar}
-                    onChange={(e) => setShowSidebar(e.target.checked)}
-                  />
-                  <label htmlFor="sidebar" className="text-sm">Show Sidebar</label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="header"
-                    checked={showHeader}
-                    onChange={(e) => setShowHeader(e.target.checked)}
-                  />
-                  <label htmlFor="header" className="text-sm">Show Header</label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="footer"
-                    checked={showFooter}
-                    onChange={(e) => setShowFooter(e.target.checked)}
-                  />
-                  <label htmlFor="footer" className="text-sm">Show Footer</label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="content" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Community
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Connect with local communities and discover events happening in your area.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Events
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Create and manage local events, from community gatherings to cultural festivals.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
-                  Messaging
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Real-time messaging with community members and event organizers.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="responsive" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Responsive Breakpoints</CardTitle>
-              <CardDescription>
-                The layout system adapts to different screen sizes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-4 border rounded-lg">
-                  <Smartphone className="w-8 h-8 text-blue-500" />
-                  <div>
-                    <div className="font-semibold">Mobile</div>
-                    <div className="text-sm text-muted-foreground">&lt; 768px</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 border rounded-lg">
-                  <Tablet className="w-8 h-8 text-green-500" />
-                  <div>
-                    <div className="font-semibold">Tablet</div>
-                    <div className="text-sm text-muted-foreground">768px - 1024px</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 border rounded-lg">
-                  <Monitor className="w-8 h-8 text-purple-500" />
-                  <div>
-                    <div className="font-semibold">Desktop</div>
-                    <div className="text-sm text-muted-foreground">&gt; 1024px</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="examples" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Layout Examples</CardTitle>
-              <CardDescription>
-                Common layout patterns used throughout the application
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="font-semibold">Dashboard Pages</h4>
-                <p className="text-sm text-muted-foreground">
-                  Use <code className="bg-muted px-1 rounded">layout="main"</code> for dashboard and content pages
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold">Chat Pages</h4>
-                <p className="text-sm text-muted-foreground">
-                  Use <code className="bg-muted px-1 rounded">layout="sidebar"</code> for chat and messaging interfaces
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold">Auth Pages</h4>
-                <p className="text-sm text-muted-foreground">
-                  Use <code className="bg-muted px-1 rounded">layout="minimal"</code> for sign-in and registration pages
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold">Landing Pages</h4>
-                <p className="text-sm text-muted-foreground">
-                  Use <code className="bg-muted px-1 rounded">layout="full"</code> for marketing and landing pages
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-
+const LayoutDemo: React.FC = () => {
   return (
-    <MainLayout
-      layout={activeLayout}
-      showSidebar={showSidebar}
-      showHeader={showHeader}
-      showFooter={showFooter}
-    >
-      {demoContent}
+    <MainLayout>
+      <PageLayout
+        title="Layout System Demo"
+        description="Professional responsive layout with header, sidebar, and footer"
+        actions={
+          <Button>
+            <Star className="h-4 w-4 mr-2" />
+            Get Started
+          </Button>
+        }
+      >
+        {/* Layout Overview */}
+        <div className="space-y-8">
+          <CardLayout
+            title="Layout Components"
+            description="Professional layout system with responsive design"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="p-4 border border-border rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Home className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Header</h3>
+                    <p className="text-sm text-muted-foreground">Top navigation</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Responsive header with search, notifications, and user menu
+                </p>
+              </div>
+
+              <div className="p-4 border border-border rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                    <Users className="h-5 w-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Sidebar</h3>
+                    <p className="text-sm text-muted-foreground">Collapsible navigation</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Collapsible sidebar with navigation items and user info
+                </p>
+              </div>
+
+              <div className="p-4 border border-border rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <Newspaper className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Footer</h3>
+                    <p className="text-sm text-muted-foreground">Bottom content</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Comprehensive footer with links and information
+                </p>
+              </div>
+            </div>
+          </CardLayout>
+
+          {/* Features Grid */}
+          <CardLayout
+            title="Features"
+            description="Key features of the layout system"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg">Responsive Design</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Mobile-first approach
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Tablet and desktop optimized
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Touch-friendly interactions
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Adaptive breakpoints
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg">Professional UI</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Clean, modern design
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Consistent spacing
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Smooth animations
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    Accessibility focused
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </CardLayout>
+
+          {/* Sample Content */}
+          <CardLayout
+            title="Sample Content"
+            description="Example of how content looks in the layout"
+          >
+            <div className="space-y-6">
+              {/* Sample Post */}
+              <div className="border border-border rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">John Doe</h4>
+                      <Badge variant="secondary">Verified</Badge>
+                      <span className="text-sm text-muted-foreground">2h ago</span>
+                    </div>
+                    <p className="text-sm">
+                      This is a sample post showing how content looks in our new layout system. 
+                      The design is clean, responsive, and professional.
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <Heart className="h-4 w-4" />
+                        <span>24</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>8</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <Share2 className="h-4 w-4" />
+                        <span>Share</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <Eye className="h-4 w-4" />
+                        <span>142</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sample Event */}
+              <div className="border border-border rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">Community Music Night</h4>
+                      <Badge variant="outline">Event</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Join us for an evening of local music and community bonding. 
+                      Featuring local artists and food vendors.
+                    </p>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-muted-foreground">📅 Dec 15, 2024</span>
+                      <span className="text-muted-foreground">📍 Community Center</span>
+                      <span className="text-muted-foreground">🎵 Music</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardLayout>
+
+          {/* Navigation Demo */}
+          <CardLayout
+            title="Navigation Items"
+            description="Available navigation options in the sidebar"
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: Home, label: 'Home', href: '/feed' },
+                { icon: Users, label: 'Communities', href: '/communities' },
+                { icon: Calendar, label: 'Events', href: '/events' },
+                { icon: Music, label: 'Artists', href: '/book-artist' },
+                { icon: MessageSquare, label: 'Messages', href: '/messages' },
+                { icon: Newspaper, label: 'News', href: '/news' },
+                { icon: Settings, label: 'Settings', href: '/settings' },
+                { icon: Star, label: 'Analytics', href: '/analytics' }
+              ].map((item) => (
+                <div key={item.label} className="flex flex-col items-center gap-2 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                  <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
+                    <item.icon className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </CardLayout>
+        </div>
+      </PageLayout>
     </MainLayout>
   );
 };

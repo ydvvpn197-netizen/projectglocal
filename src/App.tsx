@@ -10,6 +10,7 @@ import { initializeSecurityAudit } from '@/utils/securityAudit';
 import { performanceMonitor } from '@/utils/performance';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { LayoutProvider } from '@/contexts/LayoutContext';
 
 // Lazy load components for better performance
 const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
@@ -178,9 +179,11 @@ function AppContent() {
 function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <LayoutProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LayoutProvider>
     </QueryProvider>
   );
 }

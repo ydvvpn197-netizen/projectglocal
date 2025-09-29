@@ -496,11 +496,11 @@ export function createAccessibleFormValidation() {
           }
           break;
         case 'tel':
-          if (!/^[\+]?[1-9][\d]{0,15}$/.test(value.replace(/\s/g, ''))) {
+          if (!/^[+]?[1-9][\d]{0,15}$/.test(value.replace(/\s/g, ''))) {
             errors.push('Please enter a valid phone number');
           }
           break;
-        case 'number':
+        case 'number': {
           const num = parseFloat(value);
           if (isNaN(num)) {
             errors.push('Please enter a valid number');
@@ -515,6 +515,7 @@ export function createAccessibleFormValidation() {
             }
           }
           break;
+        }
       }
     }
 

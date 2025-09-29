@@ -8,7 +8,7 @@ export interface RetryOptions {
   backoffMultiplier?: number;
   jitter?: boolean;
   onRetry?: (attempt: number, error: Error) => void;
-  onSuccess?: (result: any) => void;
+  onSuccess?: (result: unknown) => void;
   onFailure?: (error: Error, attempts: number) => void;
 }
 

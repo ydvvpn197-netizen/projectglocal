@@ -119,7 +119,7 @@ export const LiveCollaboration: React.FC<LiveCollaborationProps> = ({
     };
 
     initializeCollaboration();
-  }, [user, sessionId, toast]);
+  }, [user, sessionId, toast, handleCollaborationUpdate]);
 
   // Handle collaboration updates
   const handleCollaborationUpdate = useCallback((update: any) => {

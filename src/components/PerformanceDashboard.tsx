@@ -8,7 +8,7 @@ import { RefreshCw, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
 
 export const PerformanceDashboard: React.FC = () => {
   const { metrics, alerts, score, report } = usePerformanceMonitoring();
-  const [bundleAnalysis, setBundleAnalysis] = useState<any>(null);
+  const [bundleAnalysis, setBundleAnalysis] = useState<Record<string, unknown> | null>(null);
   const [recommendations, setRecommendations] = useState<string[]>([]);
 
   useEffect(() => {
@@ -179,7 +179,7 @@ export const PerformanceDashboard: React.FC = () => {
               <div>
                 <h4 className="font-medium mb-2">Scripts ({bundleAnalysis.totalScripts})</h4>
                 <div className="space-y-1">
-                  {bundleAnalysis.scripts.slice(0, 5).map((script: any, index: number) => (
+                  {bundleAnalysis.scripts.slice(0, 5).map((script: Record<string, unknown>, index: number) => (
                     <div key={index} className="text-sm text-gray-600 truncate">
                       {script.src?.split('/').pop() || 'Unknown'}
                     </div>
@@ -195,7 +195,7 @@ export const PerformanceDashboard: React.FC = () => {
               <div>
                 <h4 className="font-medium mb-2">Stylesheets ({bundleAnalysis.totalStylesheets})</h4>
                 <div className="space-y-1">
-                  {bundleAnalysis.stylesheets.map((stylesheet: any, index: number) => (
+                  {bundleAnalysis.stylesheets.map((stylesheet: Record<string, unknown>, index: number) => (
                     <div key={index} className="text-sm text-gray-600 truncate">
                       {stylesheet.href?.split('/').pop() || 'Unknown'}
                     </div>

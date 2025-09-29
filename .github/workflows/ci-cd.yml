@@ -50,16 +50,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify package files
+        run: |
+          echo "📦 Checking package files..."
+          if [ -f "package-lock.json" ]; then
+            echo "✅ package-lock.json found"
+          else
+            echo "⚠️ package-lock.json not found, will use npm install"
+          fi
+          if [ -f "package.json" ]; then
+            echo "✅ package.json found"
+          else
+            echo "❌ package.json not found"
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: |
-          npm ci --prefer-offline --no-audit --progress=false
+          # Try npm ci first, fallback to npm install if cache issues
+          npm ci --prefer-offline --no-audit --progress=false || npm install --no-audit --progress=false
           npm cache clean --force
 
       - name: Code Quality Check
@@ -109,11 +124,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: |
-          npm ci --prefer-offline --no-audit --progress=false
+          # Try npm ci first, fallback to npm install if cache issues
+          npm ci --prefer-offline --no-audit --progress=false || npm install --no-audit --progress=false
           npm cache clean --force
 
       - name: Run Unit Tests
@@ -165,11 +180,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
 
       - name: Install dependencies
         run: |
-          npm ci --prefer-offline --no-audit --progress=false
+          # Try npm ci first, fallback to npm install if cache issues
+          npm ci --prefer-offline --no-audit --progress=false || npm install --no-audit --progress=false
           npm cache clean --force
 
       - name: Build Application
@@ -269,7 +284,7 @@ jobs:
       (needs.test.outputs.tests-passed == 'true' || inputs.skip_tests == true) &&
       needs.build.outputs.build-success == 'true' &&
       (github.ref == 'refs/heads/develop' || inputs.deploy_target == 'staging')
-    environment: staging
+    environment: github-pages
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

@@ -1,0 +1,284 @@
+/**
+ * Layout-specific CSS utilities
+ * Professional responsive layout styles
+ */
+
+/* Mobile-first responsive utilities */
+@layer utilities {
+  /* Safe area utilities for mobile devices */
+  .mobile-safe-area {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Layout container utilities */
+  .layout-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .layout-container-sm {
+    @apply mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .layout-container-lg {
+    @apply mx-auto w-full max-w-8xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Sidebar layout utilities */
+  .sidebar-layout {
+    @apply flex min-h-screen;
+  }
+
+  .sidebar-main {
+    @apply flex-1 flex flex-col min-w-0;
+  }
+
+  .sidebar-content {
+    @apply flex-1 px-4 sm:px-6 lg:px-8 py-6;
+  }
+
+  /* Header utilities */
+  .header-sticky {
+    @apply sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80;
+  }
+
+  .header-scrolled {
+    @apply shadow-sm border-b border-border/50;
+  }
+
+  /* Footer utilities */
+  .footer-sticky {
+    @apply mt-auto;
+  }
+
+  /* Content spacing utilities */
+  .content-spacing {
+    @apply space-y-6;
+  }
+
+  .content-spacing-sm {
+    @apply space-y-4;
+  }
+
+  .content-spacing-lg {
+    @apply space-y-8;
+  }
+
+  /* Responsive grid utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 gap-6 lg:grid-cols-2;
+  }
+
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* Card layout utilities */
+  .card-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .card-grid-sm {
+    @apply grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4;
+  }
+
+  .card-grid-lg {
+    @apply grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3;
+  }
+
+  /* Animation utilities */
+  .animate-slide-in {
+    @apply animate-in slide-in-from-left-4 duration-300;
+  }
+
+  .animate-fade-in {
+    @apply animate-in fade-in duration-200;
+  }
+
+  .animate-slide-up {
+    @apply animate-in slide-in-from-bottom-4 duration-300;
+  }
+
+  /* Layout transitions */
+  .layout-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .sidebar-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Mobile navigation utilities */
+  .mobile-nav-height {
+    height: calc(100vh - 4rem); /* Account for header height */
+  }
+
+  .mobile-content-padding {
+    @apply pb-20; /* Account for bottom navigation */
+  }
+
+  /* Desktop navigation utilities */
+  .desktop-sidebar-width {
+    @apply w-64;
+  }
+
+  .desktop-sidebar-collapsed {
+    @apply w-16;
+  }
+
+  .desktop-content-offset {
+    @apply ml-64;
+  }
+
+  .desktop-content-offset-collapsed {
+    @apply ml-16;
+  }
+
+  /* Focus and accessibility utilities */
+  .focus-visible {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  .focus-visible-inset {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset;
+  }
+
+  /* Print utilities */
+  .print-hidden {
+    @apply print:hidden;
+  }
+
+  .print-only {
+    @apply hidden print:block;
+  }
+}
+
+/* Custom scrollbar styles */
+@layer components {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--foreground));
+  }
+
+  /* Layout-specific component styles */
+  .layout-header {
+    @apply sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80;
+  }
+
+  .layout-sidebar {
+    @apply fixed inset-y-0 left-0 z-40 w-64 border-r border-border bg-background transition-transform duration-300 ease-in-out;
+  }
+
+  .layout-sidebar-collapsed {
+    @apply w-16;
+  }
+
+  .layout-sidebar-mobile {
+    @apply -translate-x-full;
+  }
+
+  .layout-sidebar-mobile-open {
+    @apply translate-x-0;
+  }
+
+  .layout-main {
+    @apply flex-1 flex flex-col min-w-0;
+  }
+
+  .layout-content {
+    @apply flex-1 px-4 sm:px-6 lg:px-8 py-6;
+  }
+
+  .layout-footer {
+    @apply mt-auto border-t border-border bg-background;
+  }
+
+  .layout-mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background;
+  }
+}
+
+/* Responsive breakpoint utilities */
+@layer utilities {
+  @media (max-width: 767px) {
+    .mobile-only {
+      @apply block;
+    }
+    
+    .desktop-only {
+      @apply hidden;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .mobile-only {
+      @apply hidden;
+    }
+    
+    .desktop-only {
+      @apply block;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .tablet-down {
+      @apply block;
+    }
+    
+    .desktop-up {
+      @apply hidden;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .tablet-down {
+      @apply hidden;
+    }
+    
+    .desktop-up {
+      @apply block;
+    }
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  .scrollbar-thin {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.5) transparent;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .layout-transition,
+  .sidebar-transition,
+  .animate-slide-in,
+  .animate-fade-in,
+  .animate-slide-up {
+    @apply transition-none animate-none;
+  }
+}

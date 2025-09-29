@@ -1,143 +1,106 @@
+/**
+ * Main Layout Component
+ * Professional responsive layout with header, sidebar, and footer
+ */
+
 import React, { ReactNode } from 'react';
 import { Header } from './Header';
-import { Footer } from './Footer';
 import { Sidebar } from './Sidebar';
-import { useLayout } from '@/hooks/useLayout';
+import { Footer } from './Footer';
 import { cn } from '@/lib/utils';
-
-export type LayoutType = 'main' | 'sidebar' | 'full' | 'minimal';
+import { useLayout } from '@/hooks/useLayout';
+import { useAuth } from '@/hooks/useAuth';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface MainLayoutProps {
   children: ReactNode;
-  layout?: LayoutType;
-  showSidebar?: boolean;
+  className?: string;
   showHeader?: boolean;
+  showSidebar?: boolean;
   showFooter?: boolean;
   headerVariant?: 'default' | 'minimal' | 'glass';
-  showSearch?: boolean;
-  showCreateButton?: boolean;
-  showNotifications?: boolean;
-  showUserMenu?: boolean;
-  showNavigation?: boolean;
-  sidebarContent?: ReactNode;
-  className?: string;
+  sidebarCollapsible?: boolean;
+  maxContentWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
-  layout = 'main',
-  showSidebar = true,
+  className = '',
   showHeader = true,
+  showSidebar = true,
   showFooter = true,
   headerVariant = 'default',
-  showSearch = true,
-  showCreateButton = true,
-  showNotifications = true,
-  showUserMenu = true,
-  showNavigation = true,
-  sidebarContent,
-  className
+  sidebarCollapsible = true,
+  maxContentWidth = 'xl'
 }) => {
-  const { sidebarOpen, isMobile } = useLayout();
+  const { user } = useAuth();
+  const { sidebarOpen } = useLayout();
+  const isMobile = useMediaQuery('(max-width: 1024px)');
+  const isTablet = useMediaQuery('(max-width: 768px)');
 
-  // Handle different layout types
-  switch (layout) {
-    case 'full':
-      return (
-        <div className={cn("min-h-screen bg-background", className)}>
-          {children}
-        </div>
-      );
-    
-    case 'minimal':
-      return (
-        <div className={cn("min-h-screen bg-background flex flex-col", className)}>
-          {showHeader && (
-            <Header 
-              variant={headerVariant}
-              showSearch={showSearch}
-              showCreateButton={showCreateButton}
-              showNotifications={showNotifications}
-              showUserMenu={showUserMenu}
-              showNavigation={showNavigation}
-            />
-          )}
-          <div className="flex-1 overflow-auto">
-            {children}
-          </div>
-          {showFooter && <Footer />}
-        </div>
-      );
-    
-    case 'sidebar':
-      return (
-        <div className="flex h-screen overflow-hidden">
-          {/* Sidebar */}
+  const maxWidthClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-7xl',
+    '2xl': 'max-w-8xl',
+    full: 'max-w-full'
+  };
+
+  // Don't show sidebar on mobile if user is not authenticated
+  const shouldShowSidebar = showSidebar && user && !isTablet;
+
+  return (
+    <div className={cn(
+      'min-h-screen bg-background',
+      'flex flex-col',
+      className
+    )}>
+      {/* Header */}
+      {showHeader && (
+        <Header 
+          variant={headerVariant}
+          showNavigation={!shouldShowSidebar}
+        />
+      )}
+
+      {/* Main Content Area */}
+      <div className={cn(
+        'flex flex-1',
+        'transition-all duration-300',
+        shouldShowSidebar && !isMobile && (sidebarOpen ? 'lg:ml-64' : 'lg:ml-16')
+      )}>
+        {/* Sidebar */}
+        {shouldShowSidebar && (
           <Sidebar 
             isOpen={sidebarOpen}
             isMobile={isMobile}
-            customContent={sidebarContent}
           />
-          
-          {/* Main Content */}
-          <main 
-            className={cn(
-              "flex-1 flex flex-col overflow-hidden transition-all duration-300",
-              !isMobile && sidebarOpen && "ml-64",
-              !isMobile && !sidebarOpen && "ml-16",
-              className
-            )}
-          >
-            {children}
-          </main>
-        </div>
-      );
-    
-    case 'main':
-    default:
-      return (
-        <div className="min-h-screen bg-background flex flex-col">
-          {/* Header */}
-          {showHeader && (
-            <Header 
-              variant={headerVariant}
-              showSearch={showSearch}
-              showCreateButton={showCreateButton}
-              showNotifications={showNotifications}
-              showUserMenu={showUserMenu}
-              showNavigation={showNavigation}
-            />
-          )}
-          
-          {/* Main Content Area */}
-          <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar */}
-            {showSidebar && (
-              <Sidebar 
-                isOpen={sidebarOpen}
-                isMobile={isMobile}
-                customContent={sidebarContent}
-              />
-            )}
-            
-            {/* Main Content */}
-            <main 
-              className={cn(
-                "flex-1 flex flex-col overflow-hidden transition-all duration-300",
-                showSidebar && !isMobile && sidebarOpen && "ml-64",
-                showSidebar && !isMobile && !sidebarOpen && "ml-16",
-                className
-              )}
-            >
-              <div className="flex-1 overflow-auto px-1 py-1">
-                {children}
-              </div>
-              
-              {/* Footer */}
-              {showFooter && <Footer />}
-            </main>
+        )}
+
+        {/* Content Area */}
+        <main className={cn(
+          'flex-1 flex flex-col',
+          'w-full min-w-0', // Prevents flex item from overflowing
+          'bg-background'
+        )}>
+          {/* Page Content */}
+          <div className={cn(
+            'flex-1',
+            'mx-auto w-full px-4 sm:px-6 lg:px-8',
+            maxWidthClasses[maxContentWidth]
+          )}>
+            <div className="py-6">
+              {children}
+            </div>
           </div>
-        </div>
-      );
-  }
+
+          {/* Footer */}
+          {showFooter && (
+            <Footer />
+          )}
+        </main>
+      </div>
+    </div>
+  );
 };

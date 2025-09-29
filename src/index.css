@@ -169,6 +169,9 @@ input, textarea, select {
 @tailwind components;
 @tailwind utilities;
 
+/* Import layout-specific styles */
+@import './styles/layout.css';
+
 /* Line clamp utilities for text truncation */
 @layer utilities {
   .line-clamp-1 {

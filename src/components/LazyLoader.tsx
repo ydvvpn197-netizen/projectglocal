@@ -1,5 +1,6 @@
-import React, { Suspense, lazy, ComponentType } from 'react';
+import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { useLazyLoading, useIntersectionObserver } from './LazyLoader.utils';
 
 interface LazyLoaderProps {
   fallback?: React.ReactNode;
@@ -14,35 +15,6 @@ const DefaultFallback = () => (
   </div>
 );
 
-// Higher-order component for lazy loading
-export const withLazyLoading = <P extends object>(
-  importFunc: () => Promise<{ default: ComponentType<P> }>,
-  fallback?: React.ReactNode
-) => {
-  const LazyComponent = lazy(importFunc);
-  
-  return (props: P) => (
-    <Suspense fallback={fallback || <DefaultFallback />}>
-      <LazyComponent {...props} />
-    </Suspense>
-  );
-};
-
-// Hook for lazy loading with delay
-export const useLazyLoading = (delay: number = 200) => {
-  const [shouldLoad, setShouldLoad] = React.useState(false);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldLoad(true);
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [delay]);
-
-  return shouldLoad;
-};
-
 // Lazy loader component
 export const LazyLoader: React.FC<LazyLoaderProps & { children: React.ReactNode }> = ({
   children,
@@ -56,58 +28,6 @@ export const LazyLoader: React.FC<LazyLoaderProps & { children: React.ReactNode 
   }
 
   return <>{children}</>;
-};
-
-// Route-based lazy loading
-export const createLazyRoute = (importFunc: () => Promise<{ default: ComponentType<any> }>) => {
-  const LazyComponent = lazy(importFunc);
-  
-  return (props: any) => (
-    <Suspense fallback={<DefaultFallback />}>
-      <LazyComponent {...props} />
-    </Suspense>
-  );
-};
-
-// Preload function for critical components
-export const preloadComponent = (importFunc: () => Promise<any>) => {
-  return () => {
-    importFunc().catch((error) => {
-      console.warn('Failed to preload component:', error);
-    });
-  };
-};
-
-// Intersection Observer hook for lazy loading on scroll
-export const useIntersectionObserver = (
-  ref: React.RefObject<Element>,
-  options: IntersectionObserverInit = {}
-) => {
-  const [isIntersecting, setIsIntersecting] = React.useState(false);
-
-  React.useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '50px',
-        ...options,
-      }
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.unobserve(element);
-    };
-  }, [ref, options]);
-
-  return isIntersecting;
 };
 
 // Lazy loading with intersection observer

@@ -84,7 +84,7 @@ export class TestingFramework {
     const startTime = performance.now();
     let status: 'passed' | 'failed' | 'skipped' = 'passed';
     let error: string | undefined;
-    let assertions = 0;
+    const assertions = 0;
 
     try {
       // Run test with timeout
@@ -128,7 +128,7 @@ export class TestingFramework {
   /**
    * Skip a test
    */
-  it.skip(name: string, fn: () => void): void {
+  itSkip(name: string, fn: () => void): void {
     this.it(name, () => {
       throw new Error('Test skipped');
     });
@@ -137,7 +137,7 @@ export class TestingFramework {
   /**
    * Test that should fail
    */
-  it.todo(name: string, fn: () => void): void {
+  itTodo(name: string, fn: () => void): void {
     this.it(name, () => {
       throw new Error('Test not implemented');
     });

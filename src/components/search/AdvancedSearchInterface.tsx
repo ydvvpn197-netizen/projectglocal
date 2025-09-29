@@ -169,7 +169,7 @@ export const AdvancedSearchInterface: React.FC<AdvancedSearchInterfaceProps> = (
       setQuery(initialQuery);
       performSearch();
     }
-  }, [initialQuery]);
+  }, [initialQuery, performSearch]);
 
   return (
     <div className={`space-y-4 ${className}`}>

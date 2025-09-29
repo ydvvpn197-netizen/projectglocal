@@ -353,7 +353,7 @@ export class MobileOptimizer {
    */
   private optimizeNetworkRequests(): void {
     // Implement request batching
-    let requestQueue: Array<() => Promise<any>> = [];
+    const requestQueue: Array<() => Promise<any>> = [];
     let isProcessing = false;
 
     const processQueue = async () => {
@@ -392,7 +392,7 @@ export class MobileOptimizer {
     };
 
     // Implement request caching
-    const cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+    const cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
     
     const cachedFetch = async (url: string, options: RequestInit = {}) => {
       const cacheKey = `${url}-${JSON.stringify(options)}`;
