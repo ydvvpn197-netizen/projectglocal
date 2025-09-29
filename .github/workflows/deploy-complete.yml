@@ -104,6 +104,8 @@ jobs:
         run: |
           # Set Node.js memory limit
           export NODE_OPTIONS="--max-old-space-size=4096"
+          # Clean problematic rollup dependencies
+          npm uninstall @rollup/rollup-linux-x64-gnu || true
           # Try npm ci first, fallback to npm install if cache issues
           npm ci --prefer-offline --no-audit --progress=false || npm install --no-audit --progress=false
           # Clear npm cache to free up memory
@@ -114,6 +116,12 @@ jobs:
           # Set memory limits and optimize build
           export NODE_OPTIONS="--max-old-space-size=6144 --max-semi-space-size=512"
           export VITE_BUILD_TARGET="production"
+          # Clean and reinstall if rollup issues persist
+          if npm run build 2>&1 | grep -q "Cannot find module @rollup/rollup-linux-x64-gnu"; then
+            echo "⚠️ Rollup dependency issue detected, cleaning and reinstalling..."
+            rm -rf node_modules package-lock.json
+            npm install --no-audit --progress=false
+          fi
           # Run build with memory monitoring
           npm run build
           echo "✅ Build completed successfully"
