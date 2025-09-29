@@ -1,6 +1,6 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import { useLazyLoading, useIntersectionObserver } from './LazyLoader.utils';
+import { useLazyLoading, useIntersectionObserver } from './LazyLoader.hooks';
 
 interface LazyLoaderProps {
   fallback?: React.ReactNode;

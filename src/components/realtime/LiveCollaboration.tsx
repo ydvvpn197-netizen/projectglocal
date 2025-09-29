@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Users, MessageSquare, Eye, Cursor, FileText, Wifi, WifiOff } from 'lucide-react';
+import { Users, MessageSquare, Eye, MousePointer, FileText, Wifi, WifiOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -336,7 +336,7 @@ export const LiveCollaboration: React.FC<LiveCollaborationProps> = ({
                     </div>
                     {collaborator.cursorPosition && (
                       <div className="flex items-center space-x-1">
-                        <Cursor className="h-3 w-3 text-primary" />
+                        <MousePointer className="h-3 w-3 text-primary" />
                         <span className="text-xs text-muted-foreground">
                           {Math.round(collaborator.cursorPosition.x)}, {Math.round(collaborator.cursorPosition.y)}
                         </span>
