@@ -145,12 +145,16 @@ describe('Memory Management', () => {
     };
     
     // Add listener
-    addEventListener('click', () => {});
+    const handler = () => {};
+    addEventListener('click', handler);
     expect(eventListeners.length).toBe(1);
     
     // Remove listener
-    removeEventListener('click', () => {});
+    removeEventListener('click', handler);
     expect(eventListeners.length).toBe(0);
+    
+    // Clean up
+    eventListeners.length = 0;
   });
 });
 
@@ -288,7 +292,7 @@ describe('Error Handling Performance', () => {
     }
   });
 
-  it('should implement retry mechanisms', () => {
+  it('should implement retry mechanisms', async () => {
     // Test retry mechanism
     const retry = async (fn, maxRetries = 3) => {
       for (let i = 0; i < maxRetries; i++) {
@@ -302,7 +306,7 @@ describe('Error Handling Performance', () => {
     
     const failingFunction = () => Promise.reject(new Error('Failed'));
     
-    expect(() => retry(failingFunction, 1)).toThrow();
+    await expect(retry(failingFunction, 1)).rejects.toThrow('Failed');
   });
 
   it('should implement circuit breaker pattern', () => {

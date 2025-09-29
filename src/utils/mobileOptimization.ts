@@ -160,7 +160,7 @@ export class MobileOptimizer {
 
     try {
       // Dynamic import based on component name
-      const module = await import(`@/components/${componentName}`);
+      const module = await import(`@/components/${componentName}.tsx`);
       const Component = module.default || module[componentName];
       
       if (Component) {
