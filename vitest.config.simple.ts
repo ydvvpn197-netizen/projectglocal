@@ -1,46 +1,15 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react({
-    jsxImportSource: 'react',
-    jsxRuntime: 'automatic'
-  })],
-  define: {
-    'process.env.NODE_ENV': '"test"',
-    'import.meta.env.VITEST': 'true',
-    'import.meta.env.DEV': 'true',
-    'import.meta.env.MODE': '"test"',
-  },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/minimal-setup.ts'],
-    environmentOptions: {
-      jsdom: {
-        resources: 'usable',
-        pretendToBeVisual: true
-      }
-    },
-    css: true,
-    pool: 'forks', // Use forks pool to avoid cloning issues
-    poolOptions: {
-      forks: {
-        singleFork: true, // Use single fork to prevent memory issues
-      }
-    },
-    testTimeout: 10000, // Reduced timeout for faster test execution
+    testTimeout: 10000,
     hookTimeout: 5000,
     teardownTimeout: 5000,
-    isolate: false, // Disable isolation for faster tests
-    // Force garbage collection after each test
-    sequence: {
-      hooks: 'parallel'
-    },
-    // Limit concurrent tests to prevent memory issues
-    maxConcurrency: 1, // Reduce concurrency to prevent race conditions
-    // Exclude problematic test files
+    maxConcurrency: 1,
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -50,7 +19,6 @@ export default defineConfig({
       '**/*.jest.test.*',
       '**/*.jest.spec.*'
     ],
-    // Updated reporter configuration to fix deprecated 'basic' reporter
     reporters: [
       [
         "default",
@@ -82,7 +50,6 @@ export default defineConfig({
     },
     dedupe: ['react', 'react-dom'],
   },
-  // Ensure proper JSX handling in tests
   server: {
     fs: {
       allow: ['..']
