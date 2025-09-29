@@ -267,22 +267,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ chi
               // Enforce anonymous-by-default: Create anonymous handle and set privacy settings
               console.log('Enforcing anonymous-by-default for new user...');
               
-              // Update profile to be anonymous by default
-              const { error: privacyError } = await resilientSupabase
-                .from('profiles')
-                .update({
-                  is_anonymous: true,
-                  privacy_level: 'anonymous',
-                  real_name_visibility: false,
-                  anonymous_handle: `Anonymous_${Math.random().toString(36).substr(2, 8)}`
-                })
-                .eq('user_id', result.user.id);
-                
-              if (privacyError) {
-                console.error('Error setting anonymous defaults:', privacyError);
-              }
-              
-              // Create anonymous handle for new user automatically
+              // Generate proper anonymous handle using the service
               const handleResult = await anonymousHandleService.createAnonymousHandleForUser(
                 result.user.id,
                 {
@@ -291,6 +276,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ chi
                   maxLength: 20
                 }
               );
+              
+              const anonymousHandle = handleResult.success ? 
+                handleResult.handle?.username : 
+                `Anonymous_${Math.random().toString(36).substr(2, 8)}`;
+              
+              // Update profile to be anonymous by default
+              const { error: privacyError } = await resilientSupabase
+                .from('profiles')
+                .update({
+                  is_anonymous: true,
+                  privacy_level: 'anonymous',
+                  real_name_visibility: false,
+                  anonymous_handle: anonymousHandle,
+                  anonymous_display_name: `Anonymous ${anonymousHandle}`
+                })
+                .eq('user_id', result.user.id);
+                
+              if (privacyError) {
+                console.error('Error setting anonymous defaults:', privacyError);
+              }
               
               if (handleResult.success) {
                 console.log('Anonymous handle created:', handleResult.handle?.username);

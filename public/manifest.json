@@ -1,77 +1,158 @@
 {
-  "name": "TheGlocal - Community Platform",
+  "name": "TheGlocal - Local Community Platform",
   "short_name": "TheGlocal",
-  "description": "A comprehensive community platform for local news, events, services, and connections",
+  "description": "A privacy-first local community platform for events, protests, news, and social connections",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
+  "theme_color": "#6366f1",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["social", "news", "community", "lifestyle"],
-  "display_override": ["window-controls-overlay", "standalone"],
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
+  "categories": ["social", "community", "local", "news", "events"],
   "icons": [
     {
-      "src": "/logo.png",
-      "sizes": "192x192",
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/logo.png",
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/placeholder.svg",
+      "src": "/screenshots/desktop-home.png",
       "sizes": "1280x720",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "form_factor": "wide",
-      "label": "TheGlocal Community Platform"
+      "label": "TheGlocal Desktop Home Page"
+    },
+    {
+      "src": "/screenshots/mobile-home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "TheGlocal Mobile Home Page"
+    },
+    {
+      "src": "/screenshots/mobile-events.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Events Page"
+    },
+    {
+      "src": "/screenshots/mobile-protest.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Virtual Protest System"
     }
   ],
   "shortcuts": [
     {
-      "name": "Latest News",
+      "name": "Create Event",
+      "short_name": "New Event",
+      "description": "Create a new community event",
+      "url": "/events/create",
+      "icons": [
+        {
+          "src": "/icons/shortcut-event.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Join Protest",
+      "short_name": "Protest",
+      "description": "Join or create a virtual protest",
+      "url": "/protests",
+      "icons": [
+        {
+          "src": "/icons/shortcut-protest.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Local News",
       "short_name": "News",
-      "description": "View the latest local news",
+      "description": "Read local news and updates",
       "url": "/news",
       "icons": [
         {
-          "src": "/logo.png",
-          "sizes": "96x96"
+          "src": "/icons/shortcut-news.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Events",
-      "short_name": "Events",
-      "description": "Browse local events",
-      "url": "/events",
+      "name": "Community Polls",
+      "short_name": "Polls",
+      "description": "Participate in community polls",
+      "url": "/polls",
       "icons": [
         {
-          "src": "/logo.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Services",
-      "short_name": "Services",
-      "description": "Find local services",
-      "url": "/services",
-      "icons": [
-        {
-          "src": "/logo.png",
-          "sizes": "96x96"
+          "src": "/icons/shortcut-polls.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     }
@@ -82,20 +163,21 @@
     "preferred_width": 400
   },
   "launch_handler": {
-    "client_mode": "navigate-existing"
+    "client_mode": "focus-existing"
   },
   "protocol_handlers": [
     {
-      "protocol": "web+theglocal",
-      "url": "/?action=%s"
+      "protocol": "web+glocal",
+      "url": "/handle-protocol?url=%s"
     }
   ],
   "file_handlers": [
     {
-      "action": "/upload",
+      "action": "/handle-file",
       "accept": {
         "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
-        "application/pdf": [".pdf"]
+        "text/plain": [".txt"],
+        "application/json": [".json"]
       }
     }
   ],
@@ -109,10 +191,12 @@
       "url": "url",
       "files": [
         {
-          "name": "file",
-          "accept": ["image/*", "application/pdf"]
+          "name": "image",
+          "accept": ["image/*"]
         }
       ]
     }
-  }
+  },
+  "handle_links": "preferred",
+  "capture_links": "existing-client-navigate"
 }

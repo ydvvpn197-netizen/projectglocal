@@ -3,153 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Events - Offline | TheGlocal</title>
+    <title>Events - Offline - TheGlocal</title>
+    <meta name="description" content="View cached events while offline">
+    <link rel="icon" href="/icons/icon-192x192.png">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            min-height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 20px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            text-align: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .offline-container {
-            max-width: 400px;
-            padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
         }
-        .offline-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-        h1 {
-            margin: 0 0 10px 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        p {
-            margin: 0 0 30px 0;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-        .retry-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
+
+        .offline-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: 500;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
-        .retry-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .offline-notice {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .offline-notice .icon {
+            font-size: 20px;
+        }
+
+        .offline-notice p {
+            color: #92400e;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .event-card:hover {
             transform: translateY(-2px);
         }
-        .cached-events {
-            margin-top: 30px;
-            text-align: left;
+
+        .event-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
         }
-        .event-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px;
-            border-left: 4px solid #fbbf24;
+
+        .event-content {
+            padding: 20px;
         }
+
         .event-title {
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            color: #1f2937;
         }
-        .event-details {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
+
         .event-date {
-            color: #fbbf24;
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .event-description {
+            color: #4b5563;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .event-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .event-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .event-attendees {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        .retry-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .retry-btn:hover {
+            background: #5b5bd6;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-status.online {
+            background: #10b981;
+        }
+
+        .connection-status::before {
+            content: "●";
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="offline-container">
-        <div class="offline-icon">🎉</div>
-        <h1>Events Offline</h1>
-        <p>You're currently offline, but we've saved some events for you to view.</p>
-        
-        <a href="/" class="retry-btn" onclick="window.location.reload()">
-            Try Again
-        </a>
-        
-        <div class="cached-events" id="cachedEvents">
-            <h3>Recently Cached Events</h3>
-            <div id="eventsList">
-                <p>Loading cached events...</p>
+    <div class="connection-status" id="connectionStatus">
+        Offline
+    </div>
+
+    <div class="header">
+        <h1>Events</h1>
+        <div class="offline-badge">Offline Mode</div>
+    </div>
+
+    <div class="container">
+        <div class="offline-notice">
+            <span class="icon">📱</span>
+            <p>You're viewing cached events. Some features may not be available while offline.</p>
+        </div>
+
+        <div id="eventsContainer">
+            <div class="empty-state">
+                <div class="icon">📅</div>
+                <h3>No Cached Events</h3>
+                <p>No events are available offline. Connect to the internet to view events.</p>
+                <button class="retry-btn" onclick="retryConnection()">
+                    Try Again
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Load cached events from IndexedDB
-        async function loadCachedEvents() {
-            try {
-                const db = await openDB();
-                const events = await db.getAll('events');
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            if (navigator.onLine) {
+                statusEl.textContent = 'Online';
+                statusEl.classList.add('online');
                 
-                const eventsList = document.getElementById('eventsList');
-                if (events.length === 0) {
-                    eventsList.innerHTML = '<p>No cached events available.</p>';
-                    return;
-                }
-                
-                eventsList.innerHTML = events.slice(0, 5).map(event => `
-                    <div class="event-item">
-                        <div class="event-title">${event.title || 'Event'}</div>
-                        <div class="event-details">
-                            <div class="event-date">${event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD'}</div>
-                            <div>${event.description || 'Description not available'}</div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Failed to load cached events:', error);
-                document.getElementById('eventsList').innerHTML = '<p>Unable to load cached events.</p>';
+                // Auto-redirect when back online
+                setTimeout(() => {
+                    window.location.href = '/events';
+                }, 2000);
+            } else {
+                statusEl.textContent = 'Offline';
+                statusEl.classList.remove('online');
             }
         }
-        
-        // Simple IndexedDB helper
-        async function openDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open('TheGlocalOffline', 1);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve(request.result);
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    if (!db.objectStoreNames.contains('events')) {
-                        db.createObjectStore('events', { keyPath: 'id' });
-                    }
-                };
-            });
+
+        // Retry connection
+        function retryConnection() {
+            if (navigator.onLine) {
+                window.location.href = '/events';
+            } else {
+                // Show retry animation
+                const btn = event.target;
+                btn.textContent = 'Retrying...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    btn.textContent = 'Try Again';
+                    btn.disabled = false;
+                }, 2000);
+            }
         }
-        
-        // Load cached events on page load
+
+        // Load cached events
+        async function loadCachedEvents() {
+            try {
+                // Try to get cached events from IndexedDB or localStorage
+                const cachedEvents = await getCachedEvents();
+                
+                if (cachedEvents && cachedEvents.length > 0) {
+                    displayEvents(cachedEvents);
+                }
+            } catch (error) {
+                console.error('Failed to load cached events:', error);
+            }
+        }
+
+        // Get cached events
+        async function getCachedEvents() {
+            // This would typically come from IndexedDB or localStorage
+            // For demo purposes, we'll return some mock data
+            return [
+                {
+                    id: 1,
+                    title: "Community Cleanup Day",
+                    description: "Join us for a community cleanup day at the local park. We'll provide gloves and trash bags.",
+                    date: "2024-02-15T10:00:00Z",
+                    location: "Central Park",
+                    attendees: 25,
+                    image: "🌱"
+                },
+                {
+                    id: 2,
+                    title: "Local Art Exhibition",
+                    description: "Showcase of local artists' work at the community center. Free admission for all.",
+                    date: "2024-02-20T14:00:00Z",
+                    location: "Community Center",
+                    attendees: 45,
+                    image: "🎨"
+                }
+            ];
+        }
+
+        // Display events
+        function displayEvents(events) {
+            const container = document.getElementById('eventsContainer');
+            
+            if (events.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📅</div>
+                        <h3>No Cached Events</h3>
+                        <p>No events are available offline. Connect to the internet to view events.</p>
+                        <button class="retry-btn" onclick="retryConnection()">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const eventsHTML = events.map(event => `
+                <div class="event-card">
+                    <div class="event-image">
+                        ${event.image}
+                    </div>
+                    <div class="event-content">
+                        <h3 class="event-title">${event.title}</h3>
+                        <div class="event-date">${new Date(event.date).toLocaleDateString()}</div>
+                        <p class="event-description">${event.description}</p>
+                        <div class="event-meta">
+                            <div class="event-location">
+                                📍 ${event.location}
+                            </div>
+                            <div class="event-attendees">
+                                👥 ${event.attendees}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="events-grid">
+                    ${eventsHTML}
+                </div>
+            `;
+        }
+
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Initial setup
+        updateConnectionStatus();
         loadCachedEvents();
-        
-        // Check for online status
-        window.addEventListener('online', () => {
-            window.location.href = '/events';
-        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+        }
     </script>
 </body>
 </html>
