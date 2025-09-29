@@ -32,6 +32,7 @@ export class TestingFramework {
   private config: TestConfig;
   private suites: TestSuite[] = [];
   private currentSuite?: TestSuite;
+  private static instance: TestingFramework;
 
   constructor(config: Partial<TestConfig> = {}) {
     this.config = {
@@ -42,6 +43,13 @@ export class TestingFramework {
       verbose: false,
       ...config
     };
+  }
+
+  static getInstance(): TestingFramework {
+    if (!TestingFramework.instance) {
+      TestingFramework.instance = new TestingFramework();
+    }
+    return TestingFramework.instance;
   }
 
   /**
@@ -447,14 +455,20 @@ ${this.suites.flatMap(suite =>
 }
 
 // Export testing utilities
-export const test = new TestingFramework();
+const testInstance = TestingFramework.getInstance();
 
-// Export individual functions for convenience
-export const { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } = test;
+// Export individual functions for convenience with proper binding
+export const describe = testInstance.describe.bind(testInstance);
+export const it = testInstance.it.bind(testInstance);
+export const expect = testInstance.expect.bind(testInstance);
+export const beforeEach = testInstance.beforeEach.bind(testInstance);
+export const afterEach = testInstance.afterEach.bind(testInstance);
+export const beforeAll = testInstance.beforeAll.bind(testInstance);
+export const afterAll = testInstance.afterAll.bind(testInstance);
 
 // Auto-run tests in development
 if (process.env.NODE_ENV === 'development') {
-  test.runTests().then(() => {
+  testInstance.runTests().then(() => {
     console.log('✅ All tests completed');
   });
 }
