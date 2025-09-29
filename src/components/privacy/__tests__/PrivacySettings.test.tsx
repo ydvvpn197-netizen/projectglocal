@@ -16,8 +16,8 @@ import { AuthProvider } from '@/components/auth/AuthProvider';
 vi.mock('@/hooks/useAnonymousHandle');
 vi.mock('@/hooks/use-toast');
 
-const mockUseAnonymousHandle = useAnonymousHandle as any;
-const mockUseToast = useToast as any;
+const mockUseAnonymousHandle = useAnonymousHandle as jest.MockedFunction<typeof useAnonymousHandle>;
+const mockUseToast = useToast as jest.MockedFunction<typeof useToast>;
 
 describe('PrivacySettings', () => {
   const mockToast = vi.fn();

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 
 export const lazyRoutes = {
   Home: lazy(() => import('../pages/Home')),
@@ -16,11 +16,3 @@ export const lazyComponents = {
   VoiceControl: lazy(() => import('../components/VoiceControlPanel')),
   Onboarding: lazy(() => import('../components/OnboardingFlow'))
 };
-
-interface LazyWrapperProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}
-
-export const LazyWrapper: React.FC<LazyWrapperProps> = ({ children, fallback }) => 
-  React.createElement(Suspense, { fallback: fallback || React.createElement('div', null, 'Loading...') }, children);

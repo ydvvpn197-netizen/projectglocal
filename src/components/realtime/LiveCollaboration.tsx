@@ -12,6 +12,14 @@ import { enhancedRealtimeService, CollaborationSession, TypingIndicator } from '
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface CollaborationUpdate {
+  type: 'cursor' | 'typing' | 'selection' | 'presence';
+  userId: string;
+  position?: { x: number; y: number };
+  selection?: { start: number; end: number };
+  isTyping?: boolean;
+}
+
 interface LiveCollaborationProps {
   sessionId: string;
   documentId?: string;
@@ -122,7 +130,7 @@ export const LiveCollaboration: React.FC<LiveCollaborationProps> = ({
   }, [user, sessionId, toast, handleCollaborationUpdate]);
 
   // Handle collaboration updates
-  const handleCollaborationUpdate = useCallback((update: any) => {
+  const handleCollaborationUpdate = useCallback((update: CollaborationUpdate) => {
     switch (update.type) {
       case 'cursor':
         setCollaborators(prev => prev.map(collab => 
