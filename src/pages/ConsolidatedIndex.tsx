@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { AnimatedCard } from '@/components/ui/AnimatedCard';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { DynamicStats } from '@/components/DynamicStats';
@@ -330,34 +329,22 @@ const ConsolidatedIndex = () => {
   // Enhanced loading component
   if (isLoading) {
     return (
-      <ResponsiveLayout 
-        showHeader={true}
-        showFooter={true}
-        showSidebar={false}
-      >
-        <div className="min-h-screen flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-4"
-          >
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <h2 className="text-2xl font-bold">Loading TheGlocal</h2>
-            <p className="text-muted-foreground">Connecting you to your community...</p>
-          </motion.div>
-        </div>
-      </ResponsiveLayout>
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center space-y-4"
+        >
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <h2 className="text-2xl font-bold">Loading TheGlocal</h2>
+          <p className="text-muted-foreground">Connecting you to your community...</p>
+        </motion.div>
+      </div>
     );
   }
 
   return (
-    <ResponsiveLayout 
-      showHeader={true}
-      showFooter={true}
-      showSidebar={false}
-      useMobileLayout={false}
-    >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30">
         {/* Enhanced Hero Section - Mobile Optimized */}
         <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-4">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5"></div>
@@ -912,7 +899,6 @@ const ConsolidatedIndex = () => {
           </div>
         </section>
       </div>
-    </ResponsiveLayout>
   );
 };
 

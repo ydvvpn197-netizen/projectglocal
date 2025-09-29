@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
-import { MobileLayout } from "@/components/MobileLayout";
 import { VoiceControlPanel } from "@/components/VoiceControlPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -174,15 +172,13 @@ const ConsolidatedFeed = () => {
   // Enhanced loading state
   if (postsLoading && eventsLoading && communitiesLoading) {
     return (
-      <ResponsiveLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <h2 className="text-lg font-semibold mb-2">Loading Feed...</h2>
-            <p className="text-muted-foreground">Getting the latest content for you</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold mb-2">Loading Feed...</h2>
+          <p className="text-muted-foreground">Getting the latest content for you</p>
         </div>
-      </ResponsiveLayout>
+      </div>
     );
   }
 
@@ -505,15 +501,7 @@ const ConsolidatedFeed = () => {
 
   return (
     <>
-      {isMobile ? (
-        <MobileLayout>
-          <FeedContent />
-        </MobileLayout>
-      ) : (
-        <ResponsiveLayout>
-          <FeedContent />
-        </ResponsiveLayout>
-      )}
+      <FeedContent />
       
       {/* Voice Control Panel */}
       {showVoiceControl && (

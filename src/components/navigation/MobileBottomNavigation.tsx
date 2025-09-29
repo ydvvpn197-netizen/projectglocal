@@ -14,8 +14,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { NotificationBell } from '@/components/NotificationBell';
 import { NotificationButton } from '@/components/NotificationButton';
 import { TestNotificationButton } from '@/components/TestNotificationButton';
-import { NetworkStatus } from '@/components/NetworkStatus';
-import { PromotionalBanner } from '@/components/marketing/PromotionalBanner';
 import { MobileSearch } from '@/components/MobileSearch';
 import {
   Home,
@@ -112,17 +110,6 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Network Status Alert */}
-      <NetworkStatus />
-      
-      {/* Promotional Banner */}
-      <PromotionalBanner 
-        position="top" 
-        variant="default" 
-        maxCampaigns={1}
-        className="z-40"
-      />
-      
       {/* Mobile Header */}
       <header className={`sticky top-0 z-50 transition-all duration-200 ${
         isScrolled 
