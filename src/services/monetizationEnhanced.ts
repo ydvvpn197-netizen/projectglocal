@@ -52,7 +52,7 @@ export interface PaymentHistory {
   description: string;
   payment_method: string;
   created_at: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface RevenueAnalytics {
@@ -598,7 +598,7 @@ export class MonetizationEnhanced {
   /**
    * Get user's payment methods
    */
-  async getPaymentMethods(userId?: string): Promise<any[]> {
+  async getPaymentMethods(userId?: string): Promise<PaymentMethod[]> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const currentUserId = userId || user?.id;

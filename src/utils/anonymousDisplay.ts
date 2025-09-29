@@ -302,7 +302,7 @@ export function useMultipleUsersDisplayInfo(
         setDisplayInfoMap(defaultMap);
         setLoading(false);
       });
-  }, [userIds.join(','), viewerUserId, forceAnonymous]);
+  }, [userIds, viewerUserId, forceAnonymous]);
   
   return { displayInfoMap, loading, error };
 }
@@ -310,7 +310,7 @@ export function useMultipleUsersDisplayInfo(
 /**
  * Get display name for a user object (for backward compatibility)
  */
-export function getUserDisplayName(user: any, viewerUserId?: string): string {
+export function getUserDisplayName(user: Record<string, unknown> | null, viewerUserId?: string): string {
   if (!user) return 'Anonymous User';
   
   // If user object has display info already
@@ -336,7 +336,7 @@ export function getUserDisplayName(user: any, viewerUserId?: string): string {
 /**
  * Check if a user should be displayed anonymously
  */
-export function shouldDisplayAnonymously(user: any, viewerUserId?: string): boolean {
+export function shouldDisplayAnonymously(user: Record<string, unknown> | null, viewerUserId?: string): boolean {
   if (!user) return true;
   
   const isOwnProfile = viewerUserId === user.id || viewerUserId === user.user_id;
@@ -351,7 +351,7 @@ export function shouldDisplayAnonymously(user: any, viewerUserId?: string): bool
 /**
  * Get avatar URL for a user (respects privacy settings)
  */
-export function getUserAvatarUrl(user: any, viewerUserId?: string): string | undefined {
+export function getUserAvatarUrl(user: Record<string, unknown> | null, viewerUserId?: string): string | undefined {
   if (!user) return undefined;
   
   const isOwnProfile = viewerUserId === user.id || viewerUserId === user.user_id;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,12 +48,7 @@ export const CoreFeaturesIntegration: React.FC<CoreFeaturesIntegrationProps> = (
   });
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Load all data on component mount
-  useEffect(() => {
-    loadAllData();
-  }, []);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     setLoading({ authorities: true, protests: true, polls: true });
     
     try {
@@ -77,7 +72,12 @@ export const CoreFeaturesIntegration: React.FC<CoreFeaturesIntegrationProps> = (
     } finally {
       setLoading({ authorities: false, protests: false, polls: false });
     }
-  };
+  }, [toast]);
+
+  // Load all data on component mount
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
 
   const handleCreateProtest = async () => {
     try {

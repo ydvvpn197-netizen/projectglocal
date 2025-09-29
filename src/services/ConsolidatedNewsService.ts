@@ -45,7 +45,7 @@ export interface NewsArticle {
   category?: string;
   tags: string[];
   ai_generated?: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   likes_count?: number;
   comments_count?: number;
   shares_count?: number;

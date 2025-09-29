@@ -377,6 +377,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
             />
           )}
         </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );

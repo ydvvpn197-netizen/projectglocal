@@ -316,7 +316,7 @@ export class GovernmentAuthorityService {
     responseText?: string
   ): Promise<GovernmentTag> {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status,
         updated_at: new Date().toISOString()
       };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -72,13 +72,13 @@ export const PWAIntegration: React.FC<PWAIntegrationProps> = ({ className }) => 
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [checkPWAStatus]);
 
-  const checkPWAStatus = async () => {
+  const checkPWAStatus = useCallback(async () => {
     setInstallPrompt(pwaService.getInstallPrompt());
     setOfflineCapabilities(pwaService.getOfflineCapabilities());
     await checkForUpdates();
-  };
+  }, []);
 
   const checkForUpdates = async () => {
     try {

@@ -273,7 +273,7 @@ export class PerformanceMonitoringEnhanced {
    */
   private initializeMemoryMonitoring(): void {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
       
       const updateMemoryUsage = () => {
         this.metrics.memoryUsage = memory.usedJSHeapSize / 1024 / 1024; // Convert to MB
@@ -372,7 +372,7 @@ export class PerformanceMonitoringEnhanced {
    */
   private trackFontLoadTimes(): void {
     if ('fonts' in document) {
-      (document as any).fonts.ready.then(() => {
+      (document as Document & { fonts?: { ready: Promise<void> } }).fonts?.ready.then(() => {
         this.metrics.fontLoadTime = performance.now();
       });
     }

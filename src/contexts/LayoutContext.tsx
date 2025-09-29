@@ -94,3 +94,7 @@ export const useLayout = () => {
   }
   return context;
 };
+
+// Default export to satisfy Fast Refresh
+const LayoutContextModule = () => null;
+export default LayoutContextModule;

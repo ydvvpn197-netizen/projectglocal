@@ -35,7 +35,7 @@ export interface PushNotificationData {
   badge?: string;
   image?: string;
   tag?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   actions?: Array<{
     action: string;
     title: string;
@@ -59,7 +59,7 @@ export interface OfflineCapability {
 }
 
 export interface PWAInstallPrompt {
-  deferredPrompt: any;
+  deferredPrompt: Event | null;
   isInstallable: boolean;
   isInstalled: boolean;
 }
@@ -76,7 +76,7 @@ export class PWAService {
   private config: PWAConfig;
   private registration: ServiceWorkerRegistration | null = null;
   private pushSubscription: PushSubscription | null = null;
-  private deferredPrompt: any = null;
+  private deferredPrompt: Event | null = null;
   private installListeners: Array<(prompt: PWAInstallPrompt) => void> = [];
 
   constructor() {
@@ -238,7 +238,7 @@ export class PWAService {
    */
   isInstalled(): boolean {
     return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone ||
+           (window.navigator as Navigator & { standalone?: boolean }).standalone ||
            document.referrer.includes('android-app://');
   }
 

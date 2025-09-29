@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -139,7 +139,7 @@ serve(async (req) => {
   }
 });
 
-async function handlePerformanceReport(req: Request, supabaseClient: any) {
+async function handlePerformanceReport(req: Request, supabaseClient: SupabaseClient) {
   try {
     const report: PerformanceReport = await req.json();
 
@@ -193,7 +193,7 @@ async function handlePerformanceReport(req: Request, supabaseClient: any) {
   }
 }
 
-async function handlePerformanceAlert(req: Request, supabaseClient: any) {
+async function handlePerformanceAlert(req: Request, supabaseClient: SupabaseClient) {
   try {
     const alert: PerformanceAlert = await req.json();
 
@@ -242,7 +242,7 @@ async function handlePerformanceAlert(req: Request, supabaseClient: any) {
   }
 }
 
-async function handlePerformanceSession(req: Request, supabaseClient: any) {
+async function handlePerformanceSession(req: Request, supabaseClient: SupabaseClient) {
   try {
     const session = await req.json();
 
@@ -292,7 +292,7 @@ async function handlePerformanceSession(req: Request, supabaseClient: any) {
   }
 }
 
-async function getPerformanceMetrics(req: Request, supabaseClient: any) {
+async function getPerformanceMetrics(req: Request, supabaseClient: SupabaseClient) {
   try {
     const url = new URL(req.url);
     const startDate = url.searchParams.get('start_date') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -325,7 +325,7 @@ async function getPerformanceMetrics(req: Request, supabaseClient: any) {
   }
 }
 
-async function getPerformanceAlerts(req: Request, supabaseClient: any) {
+async function getPerformanceAlerts(req: Request, supabaseClient: SupabaseClient) {
   try {
     const url = new URL(req.url);
     const startDate = url.searchParams.get('start_date') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -365,7 +365,7 @@ async function getPerformanceAlerts(req: Request, supabaseClient: any) {
   }
 }
 
-async function getPerformanceSummary(req: Request, supabaseClient: any) {
+async function getPerformanceSummary(req: Request, supabaseClient: SupabaseClient) {
   try {
     const url = new URL(req.url);
     const startDate = url.searchParams.get('start_date') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -410,7 +410,7 @@ async function getPerformanceSummary(req: Request, supabaseClient: any) {
   }
 }
 
-async function getPerformanceThresholds(req: Request, supabaseClient: any) {
+async function getPerformanceThresholds(req: Request, supabaseClient: SupabaseClient) {
   try {
     const { data, error } = await supabaseClient
       .from('performance_thresholds')
@@ -438,7 +438,7 @@ async function getPerformanceThresholds(req: Request, supabaseClient: any) {
   }
 }
 
-async function getPerformanceRecommendations(req: Request, supabaseClient: any) {
+async function getPerformanceRecommendations(req: Request, supabaseClient: SupabaseClient) {
   try {
     const url = new URL(req.url);
     const metricName = url.searchParams.get('metric_name');
@@ -477,7 +477,7 @@ async function getPerformanceRecommendations(req: Request, supabaseClient: any) 
   }
 }
 
-async function updatePerformanceThresholds(req: Request, supabaseClient: any) {
+async function updatePerformanceThresholds(req: Request, supabaseClient: SupabaseClient) {
   try {
     const { metricName, warningThreshold, errorThreshold, criticalThreshold, description } = await req.json();
 
@@ -517,7 +517,7 @@ async function updatePerformanceThresholds(req: Request, supabaseClient: any) {
   }
 }
 
-async function resolvePerformanceAlert(req: Request, supabaseClient: any) {
+async function resolvePerformanceAlert(req: Request, supabaseClient: SupabaseClient) {
   try {
     const { alertId, userId, notes } = await req.json();
 
@@ -555,7 +555,7 @@ async function resolvePerformanceAlert(req: Request, supabaseClient: any) {
   }
 }
 
-async function dismissPerformanceAlert(req: Request, supabaseClient: any) {
+async function dismissPerformanceAlert(req: Request, supabaseClient: SupabaseClient) {
   try {
     const { alertId, userId, notes } = await req.json();
 
@@ -593,7 +593,7 @@ async function dismissPerformanceAlert(req: Request, supabaseClient: any) {
   }
 }
 
-async function cleanupPerformanceData(req: Request, supabaseClient: any) {
+async function cleanupPerformanceData(req: Request, supabaseClient: SupabaseClient) {
   try {
     const url = new URL(req.url);
     const daysToKeep = parseInt(url.searchParams.get('days_to_keep') || '30');
@@ -623,7 +623,7 @@ async function cleanupPerformanceData(req: Request, supabaseClient: any) {
   }
 }
 
-async function processPerformanceAlerts(alerts: PerformanceAlert[], supabaseClient: any) {
+async function processPerformanceAlerts(alerts: PerformanceAlert[], supabaseClient: SupabaseClient) {
   for (const alert of alerts) {
     try {
       await supabaseClient

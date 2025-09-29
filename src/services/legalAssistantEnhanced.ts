@@ -40,7 +40,7 @@ export interface LegalDocument {
   title: string;
   document_type: 'contract' | 'agreement' | 'notice' | 'petition' | 'affidavit' | 'will' | 'power_of_attorney' | 'nda' | 'employment_contract' | 'lease_agreement';
   content: string;
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
   is_anonymous: boolean;
   is_public: boolean;
   status: 'draft' | 'review' | 'final' | 'archived';
@@ -54,7 +54,7 @@ export interface LegalChatMessage {
   user_id?: string;
   message_type: 'user' | 'assistant' | 'system';
   content: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   is_anonymous: boolean;
   created_at: string;
 }
@@ -96,7 +96,7 @@ export class LegalAssistantEnhanced {
   private static instance: LegalAssistantEnhanced;
   private openaiApiKey: string;
   private readonly CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
-  private responseCache = new Map<string, { data: any; timestamp: number }>();
+  private responseCache = new Map<string, { data: unknown; timestamp: number }>();
 
   constructor() {
     this.openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
@@ -191,7 +191,7 @@ export class LegalAssistantEnhanced {
   async generateLegalDocument(
     documentType: LegalDocument['document_type'],
     title: string,
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
     options: {
       isAnonymous?: boolean;
       isPublic?: boolean;
@@ -379,7 +379,7 @@ export class LegalAssistantEnhanced {
   async sendChatMessage(
     sessionId: string,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     isAnonymous: boolean = true
   ): Promise<LegalChatMessage> {
     try {
@@ -600,7 +600,7 @@ export class LegalAssistantEnhanced {
    */
   private async generateDocumentContent(
     documentType: LegalDocument['document_type'],
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
     jurisdiction?: string
   ): Promise<string> {
     const prompt = `
@@ -664,7 +664,7 @@ export class LegalAssistantEnhanced {
   private async generateContextualResponse(
     message: string,
     history: LegalChatMessage[],
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<string> {
     const conversationContext = history
       .slice(-5) // Last 5 messages for context

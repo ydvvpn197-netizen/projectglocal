@@ -10,7 +10,7 @@ export interface VirtualProtest {
   organizer_anonymous_id?: string;
   cause: string;
   target_authority_id?: string;
-  target_authority?: any;
+  target_authority?: Record<string, unknown>;
   protest_type: 'petition' | 'boycott' | 'awareness' | 'digital_assembly' | 'symbolic_action';
   status: 'planning' | 'active' | 'paused' | 'completed' | 'cancelled';
   start_date: string;
@@ -53,7 +53,7 @@ export interface VirtualProtestAction {
   action_type: 'sign_petition' | 'share_content' | 'join_meeting' | 'donate' | 'contact_authority' | 'other';
   title: string;
   description?: string;
-  action_data?: Record<string, any>;
+  action_data?: Record<string, unknown>;
   is_required: boolean;
   order_index: number;
   is_active: boolean;
