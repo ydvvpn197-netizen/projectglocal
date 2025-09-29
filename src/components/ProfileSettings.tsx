@@ -212,25 +212,44 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
         )}
 
         {/* Profile Completion Progress */}
-        {localProfile && (
-          <div className="bg-muted/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Profile Completion</span>
-              <span className="text-sm text-muted-foreground">
-                {Math.round((Object.values(localProfile).filter(v => v && v.toString().trim()).length / 5) * 100)}%
-              </span>
+        {localProfile && (() => {
+          // Define the key fields that matter for profile completion
+          const keyFields = [
+            localSettings?.first_name,
+            localSettings?.last_name,
+            localProfile?.display_name,
+            localProfile?.bio,
+            localSettings?.phone_number,
+            localSettings?.website_url,
+            localSettings?.location_city,
+            localSettings?.location_state,
+            localSettings?.location_country,
+            localSettings?.education
+          ];
+          
+          const completedFields = keyFields.filter(field => field && field.toString().trim());
+          const completionPercentage = Math.min(Math.round((completedFields.length / keyFields.length) * 100), 100);
+          
+          return (
+            <div className="bg-muted/50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Profile Completion</span>
+                <span className="text-sm text-muted-foreground">
+                  {completionPercentage}%
+                </span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Complete your profile to help others connect with you
+              </p>
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(Object.values(localProfile).filter(v => v && v.toString().trim()).length / 5) * 100}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Complete your profile to help others connect with you
-            </p>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Basic Information */}
         <div className="space-y-4">
@@ -241,10 +260,10 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="first_name">First Name *</Label>
               <Input
                 id="first_name"
-                value={localProfile?.first_name || ""}
-                onChange={(e) => handleProfileChange('first_name', e.target.value)}
+                value={localSettings?.first_name || ""}
+                onChange={(e) => handleInputChange('first_name', e.target.value)}
                 placeholder="Enter your first name"
-                className={!localProfile?.first_name ? 'border-orange-200' : ''}
+                className={!localSettings?.first_name ? 'border-orange-200' : ''}
               />
             </div>
             
@@ -252,10 +271,10 @@ export const ProfileSettings = ({ onClose, showAvatar = true, compact = false }:
               <Label htmlFor="last_name">Last Name *</Label>
               <Input
                 id="last_name"
-                value={localProfile?.last_name || ""}
-                onChange={(e) => handleProfileChange('last_name', e.target.value)}
+                value={localSettings?.last_name || ""}
+                onChange={(e) => handleInputChange('last_name', e.target.value)}
                 placeholder="Enter your last name"
-                className={!localProfile?.last_name ? 'border-orange-200' : ''}
+                className={!localSettings?.last_name ? 'border-orange-200' : ''}
               />
             </div>
           </div>

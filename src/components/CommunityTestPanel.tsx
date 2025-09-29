@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { CommunityService } from '@/services/communityService';
+import { communityService } from '@/services/communityService';
 import { PointsService } from '@/services/pointsService';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -50,7 +50,7 @@ export const CommunityTestPanel: React.FC = () => {
       // Test 3: Test community groups fetching
       addResult('Community Groups Fetch', 'pending', 'Fetching community groups...');
       try {
-        const groups = await CommunityService.getGroups();
+        const groups = await communityService.getGroups();
         addResult('Community Groups Fetch', 'success', `Fetched ${groups.length} community groups`, groups);
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -60,7 +60,7 @@ export const CommunityTestPanel: React.FC = () => {
       // Test 4: Test user groups fetching
       addResult('User Groups Fetch', 'pending', 'Fetching user groups...');
       try {
-        const userGroups = await CommunityService.getUserGroups(user.id);
+        const userGroups = await communityService.getUserGroups(user.id);
         addResult('User Groups Fetch', 'success', `User is member of ${userGroups.length} groups`, userGroups);
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);

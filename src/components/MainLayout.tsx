@@ -1,8 +1,7 @@
-import { AppSidebar } from "@/components/AppSidebar";
+import { UnifiedNavigation } from "@/components/navigation/UnifiedNavigation";
 import { PromotionalBanner } from "@/components/marketing/PromotionalBanner";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { SimpleNews } from "@/components/SimpleNews";
-import { MobileNavigation } from "@/components/ui/MobileNavigation";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebarExports";
 
 interface MainLayoutProps {
@@ -14,10 +13,10 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
   return (
     <>
       {/* Mobile Navigation - Only show on mobile */}
-      <MobileNavigation />
+      <UnifiedNavigation variant="mobile" />
       
       <SidebarProvider>
-        <div className="min-h-screen bg-background flex">
+<div className="min-h-screen bg-background flex">
           {/* Network Status Alert */}
           <NetworkStatus />
           
@@ -31,7 +30,7 @@ export function MainLayout({ children, showNewsFeed = true }: MainLayoutProps) {
           
           {/* Desktop Sidebar - Hidden on mobile */}
           <div className="hidden lg:block">
-            <AppSidebar />
+            <UnifiedNavigation variant="sidebar" />
           </div>
 
           {/* Main Content Area */}

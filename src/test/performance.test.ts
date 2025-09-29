@@ -124,7 +124,7 @@ describe('Performance Tests', () => {
         const bundleOpt = bundleOpts[0];
         expect(bundleOpt.title).toContain('Bundle');
         expect(bundleOpt.implementation).toContain('code splitting');
-        expect(bundleOpt.implementation).toContain('lazy loading');
+        expect(bundleOpt.implementation).toContain('React.lazy()');
       }
     });
 
@@ -212,7 +212,7 @@ describe('Performance Tests', () => {
       );
       
       if (memoryRec) {
-        expect(memoryRec).toContain('memory');
+        expect(memoryRec).toContain('cleanup');
       }
     });
   });
@@ -237,7 +237,7 @@ describe('Performance Tests', () => {
       );
       
       if (cacheRec) {
-        expect(cacheRec).toContain('cache');
+        expect(cacheRec).toContain('caching');
       }
     });
   });

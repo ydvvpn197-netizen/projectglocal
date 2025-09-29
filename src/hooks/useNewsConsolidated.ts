@@ -5,8 +5,9 @@
 
 import { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// Note: These services would need to be implemented
-// For now, we'll create mock implementations
+import { realTimeNewsService } from '@/services/realTimeNewsService';
+import { newsSummarizationService, type NewsSummary } from '@/services/newsSummarizationService';
+import { NewsContext, type NewsContextType } from '@/contexts/NewsContextDefinition';
 import type { 
   NewsArticle, 
   NewsTab, 
@@ -16,7 +17,6 @@ import type {
   NewsPoll,
   NewsError
 } from '@/types/news';
-import type { NewsSummary } from '@/services/newsSummarizationService';
 
 export interface NewsFilters {
   category?: string;

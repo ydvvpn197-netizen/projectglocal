@@ -210,7 +210,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     type: Notification['type'],
     title: string,
     message: string,
-    data?: any
+    data?: Record<string, unknown>
   ) => {
     try {
       const { error } = await supabase

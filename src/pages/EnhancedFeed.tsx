@@ -121,7 +121,7 @@ export const EnhancedFeedPage: React.FC<EnhancedFeedPageProps> = ({ className })
 
           {/* Feed Type Tabs */}
           <div className="px-4 pb-4">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as string)}>
               <TabsList className="grid w-full grid-cols-4">
                 {feedTypes.map(({ id, label, icon: Icon, color }) => (
                   <TabsTrigger key={id} value={id} className="flex items-center gap-2">

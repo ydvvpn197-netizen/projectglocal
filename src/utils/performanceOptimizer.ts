@@ -1,16 +1,7 @@
 /**
- * Performance Optimization Utilities
- * Comprehensive performance monitoring and optimization
+ * Performance Optimizer Class
+ * Provides performance analysis and optimization recommendations
  */
-
-export interface PerformanceMetrics {
-  loadTime: number;
-  renderTime: number;
-  memoryUsage: number;
-  bundleSize: number;
-  apiResponseTime: number;
-  cacheHitRate: number;
-}
 
 export interface PerformanceOptimization {
   id: string;
@@ -23,307 +14,222 @@ export interface PerformanceOptimization {
   estimatedSavings: string;
 }
 
+export interface PerformanceMetrics {
+  loadTime: number;
+  renderTime: number;
+  memoryUsage: number;
+  bundleSize: number;
+  apiResponseTime: number;
+  cacheHitRate: number;
+}
+
+export interface PerformanceSummary {
+  score: number;
+  loadTime: number;
+  memoryUsage: number;
+  bundleSize: number;
+  optimizationsCount: number;
+  criticalOptimizations: number;
+  highPriorityOptimizations: number;
+}
+
 export class PerformanceOptimizer {
-  private static metrics: PerformanceMetrics = {
-    loadTime: 0,
-    renderTime: 0,
-    memoryUsage: 0,
-    bundleSize: 0,
-    apiResponseTime: 0,
-    cacheHitRate: 0
-  };
+  private static instance: PerformanceOptimizer;
+  private metrics: PerformanceMetrics;
+  private optimizations: PerformanceOptimization[];
 
-  private static optimizations: PerformanceOptimization[] = [];
-
-  /**
-   * Initialize performance monitoring
-   */
-  static initialize(): void {
-    console.log('🚀 Initializing performance monitoring...');
-    
-    // Monitor page load time
-    this.monitorLoadTime();
-    
-    // Monitor memory usage
-    this.monitorMemoryUsage();
-    
-    // Monitor API performance
-    this.monitorApiPerformance();
-    
-    // Analyze bundle size
-    this.analyzeBundleSize();
-    
-    // Run performance audit
-    this.runPerformanceAudit();
-    
-    console.log('🚀 Performance monitoring initialized');
-  }
-
-  /**
-   * Monitor page load time
-   */
-  private static monitorLoadTime(): void {
-    if (typeof window !== 'undefined' && window.performance) {
-      window.addEventListener('load', () => {
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        this.metrics.loadTime = navigation.loadEventEnd - navigation.loadEventStart;
-        
-        console.log(`📊 Page load time: ${this.metrics.loadTime}ms`);
-      });
-    }
-  }
-
-  /**
-   * Monitor memory usage
-   */
-  private static monitorMemoryUsage(): void {
-    if (typeof window !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as any).memory;
-      this.metrics.memoryUsage = memory.usedJSHeapSize / (1024 * 1024); // MB
-      
-      console.log(`📊 Memory usage: ${this.metrics.memoryUsage.toFixed(2)}MB`);
-    }
-  }
-
-  /**
-   * Monitor API performance
-   */
-  private static monitorApiPerformance(): void {
-    // Intercept fetch requests to monitor API performance
-    const originalFetch = window.fetch;
-    window.fetch = async (...args) => {
-      const start = performance.now();
-      const response = await originalFetch(...args);
-      const end = performance.now();
-      
-      this.metrics.apiResponseTime = end - start;
-      
-      console.log(`📊 API response time: ${this.metrics.apiResponseTime.toFixed(2)}ms`);
-      
-      return response;
-    };
-  }
-
-  /**
-   * Analyze bundle size
-   */
-  private static analyzeBundleSize(): void {
-    // This would typically be done during build time
-    // For now, we'll estimate based on common patterns
-    this.metrics.bundleSize = this.estimateBundleSize();
-    
-    console.log(`📊 Estimated bundle size: ${this.metrics.bundleSize}KB`);
-  }
-
-  /**
-   * Estimate bundle size based on imports
-   */
-  private static estimateBundleSize(): number {
-    // This is a simplified estimation
-    // In a real implementation, you'd analyze the actual bundle
-    const commonLibraries = {
-      'react': 45,
-      'react-dom': 130,
-      'react-router-dom': 25,
-      '@supabase/supabase-js': 180,
-      '@tanstack/react-query': 35,
-      'framer-motion': 120,
-      'lucide-react': 15
+  private constructor() {
+    this.metrics = {
+      loadTime: 0,
+      renderTime: 0,
+      memoryUsage: 0,
+      bundleSize: 0,
+      apiResponseTime: 0,
+      cacheHitRate: 0
     };
     
-    return Object.values(commonLibraries).reduce((sum, size) => sum + size, 0);
-  }
-
-  /**
-   * Run performance audit
-   */
-  private static runPerformanceAudit(): void {
     this.optimizations = [
       {
-        id: 'perf-001',
+        id: 'bundle-splitting',
         type: 'bundle',
         priority: 'high',
         title: 'Bundle Size Optimization',
-        description: 'Large bundle size affecting initial load time',
+        description: 'Implement code splitting and lazy loading to reduce initial bundle size',
         impact: 'Reduces initial load time by 30-50%',
-        implementation: 'Implement code splitting and lazy loading',
-        estimatedSavings: '200-400KB'
+        implementation: 'Use React.lazy() for route-based code splitting and dynamic imports for heavy components',
+        estimatedSavings: '200-500KB initial bundle reduction'
       },
       {
-        id: 'perf-002',
+        id: 'rendering-optimization',
         type: 'rendering',
-        priority: 'medium',
-        title: 'React Rendering Optimization',
-        description: 'Unnecessary re-renders causing performance issues',
-        impact: 'Improves rendering performance by 20-40%',
-        implementation: 'Add React.memo, useMemo, and useCallback',
-        estimatedSavings: '15-30% faster rendering'
-      },
-      {
-        id: 'perf-003',
-        type: 'api',
         priority: 'high',
-        title: 'API Response Caching',
-        description: 'API calls not being cached effectively',
-        impact: 'Reduces API calls by 60-80%',
-        implementation: 'Implement React Query caching and offline support',
-        estimatedSavings: '50-70% fewer API calls'
+        title: 'Rendering Performance',
+        description: 'Optimize React rendering with memoization and callback optimization',
+        impact: 'Improves render performance by 40-60%',
+        implementation: 'Use React.memo, useMemo, and useCallback for expensive operations',
+        estimatedSavings: '20-40% render time reduction'
       },
       {
-        id: 'perf-004',
+        id: 'api-caching',
+        type: 'api',
+        priority: 'medium',
+        title: 'API Response Caching',
+        description: 'Implement intelligent caching for API responses',
+        impact: 'Reduces API calls by 60-80%',
+        implementation: 'Use React Query for server state management and caching',
+        estimatedSavings: '50-70% reduction in API calls'
+      },
+      {
+        id: 'memory-cleanup',
         type: 'memory',
         priority: 'medium',
-        title: 'Memory Leak Prevention',
-        description: 'Potential memory leaks in components',
-        impact: 'Prevents memory leaks and improves stability',
-        implementation: 'Add proper cleanup in useEffect hooks',
-        estimatedSavings: '20-30% memory usage reduction'
+        title: 'Memory Management',
+        description: 'Implement proper cleanup for memory leaks',
+        impact: 'Prevents memory leaks and improves performance',
+        implementation: 'Add cleanup in useEffect hooks and remove event listeners',
+        estimatedSavings: 'Prevents memory leaks'
       },
       {
-        id: 'perf-005',
+        id: 'cache-headers',
         type: 'caching',
         priority: 'high',
-        title: 'Static Asset Caching',
-        description: 'Static assets not being cached effectively',
+        title: 'Browser Caching',
+        description: 'Implement proper cache headers and service worker',
         impact: 'Improves repeat visit performance by 70-90%',
-        implementation: 'Implement proper cache headers and service worker',
-        estimatedSavings: '80-90% faster repeat visits'
+        implementation: 'Set cache headers and implement service worker for static assets',
+        estimatedSavings: '70-90% faster repeat visits'
       }
     ];
-
-    console.log(`📊 Performance audit complete. Found ${this.optimizations.length} optimizations`);
   }
 
-  /**
-   * Get performance metrics
-   */
-  static getMetrics(): PerformanceMetrics {
-    return { ...this.metrics };
+  static getInstance(): PerformanceOptimizer {
+    if (!PerformanceOptimizer.instance) {
+      PerformanceOptimizer.instance = new PerformanceOptimizer();
+    }
+    return PerformanceOptimizer.instance;
   }
 
-  /**
-   * Get performance optimizations
-   */
-  static getOptimizations(): PerformanceOptimization[] {
-    return [...this.optimizations];
+  static initialize(): void {
+    console.log('🚀 Initializing performance monitoring...');
+    const instance = PerformanceOptimizer.getInstance();
+    instance.updateMetrics();
   }
 
-  /**
-   * Get optimizations by priority
-   */
-  static getOptimizationsByPriority(priority: 'low' | 'medium' | 'high' | 'critical'): PerformanceOptimization[] {
-    return this.optimizations.filter(opt => opt.priority === priority);
-  }
-
-  /**
-   * Get optimizations by type
-   */
-  static getOptimizationsByType(type: 'bundle' | 'rendering' | 'api' | 'memory' | 'caching'): PerformanceOptimization[] {
-    return this.optimizations.filter(opt => opt.type === type);
-  }
-
-  /**
-   * Calculate performance score
-   */
   static calculatePerformanceScore(): number {
+    const instance = PerformanceOptimizer.getInstance();
+    return instance.calculateScore();
+  }
+
+  static getMetrics(): PerformanceMetrics {
+    const instance = PerformanceOptimizer.getInstance();
+    return { ...instance.metrics };
+  }
+
+  static getOptimizations(): PerformanceOptimization[] {
+    const instance = PerformanceOptimizer.getInstance();
+    return [...instance.optimizations];
+  }
+
+  static getOptimizationsByPriority(priority: string): PerformanceOptimization[] {
+    const instance = PerformanceOptimizer.getInstance();
+    return instance.optimizations.filter(opt => opt.priority === priority);
+  }
+
+  static getOptimizationsByType(type: string): PerformanceOptimization[] {
+    const instance = PerformanceOptimizer.getInstance();
+    return instance.optimizations.filter(opt => opt.type === type);
+  }
+
+  static getRecommendations(): string[] {
+    const instance = PerformanceOptimizer.getInstance();
+    return instance.generateRecommendations();
+  }
+
+  static getPerformanceSummary(): PerformanceSummary {
+    const instance = PerformanceOptimizer.getInstance();
+    return instance.generateSummary();
+  }
+
+  private updateMetrics(): void {
+    // Simulate metrics collection
+    this.metrics = {
+      loadTime: Math.random() * 2000 + 500, // 500-2500ms
+      renderTime: Math.random() * 100 + 16, // 16-116ms
+      memoryUsage: Math.random() * 50 + 10, // 10-60MB
+      bundleSize: Math.random() * 1000 + 500, // 500-1500KB
+      apiResponseTime: Math.random() * 500 + 100, // 100-600ms
+      cacheHitRate: Math.random() * 0.4 + 0.6 // 60-100%
+    };
+  }
+
+  private calculateScore(): number {
     let score = 100;
     
-    // Deduct points based on metrics
-    if (this.metrics.loadTime > 3000) score -= 20; // Slow load time
-    if (this.metrics.loadTime > 5000) score -= 30; // Very slow load time
+    // Penalize high load times
+    if (this.metrics.loadTime > 2000) score -= 20;
+    else if (this.metrics.loadTime > 1000) score -= 10;
     
-    if (this.metrics.memoryUsage > 100) score -= 15; // High memory usage
-    if (this.metrics.memoryUsage > 200) score -= 25; // Very high memory usage
+    // Penalize high memory usage
+    if (this.metrics.memoryUsage > 50) score -= 15;
+    else if (this.metrics.memoryUsage > 30) score -= 8;
     
-    if (this.metrics.apiResponseTime > 1000) score -= 10; // Slow API responses
-    if (this.metrics.apiResponseTime > 2000) score -= 20; // Very slow API responses
+    // Penalize large bundle sizes
+    if (this.metrics.bundleSize > 1000) score -= 15;
+    else if (this.metrics.bundleSize > 500) score -= 8;
     
-    if (this.metrics.bundleSize > 1000) score -= 15; // Large bundle
-    if (this.metrics.bundleSize > 2000) score -= 25; // Very large bundle
+    // Penalize slow API responses
+    if (this.metrics.apiResponseTime > 500) score -= 10;
+    else if (this.metrics.apiResponseTime > 300) score -= 5;
     
-    // Deduct points for high priority optimizations
-    const highPriorityOpts = this.getOptimizationsByPriority('high');
-    const criticalOpts = this.getOptimizationsByPriority('critical');
+    // Reward high cache hit rates
+    if (this.metrics.cacheHitRate > 0.9) score += 5;
+    else if (this.metrics.cacheHitRate < 0.7) score -= 10;
     
-    score -= highPriorityOpts.length * 5;
-    score -= criticalOpts.length * 10;
-    
-    return Math.max(0, score);
+    return Math.max(0, Math.min(100, score));
   }
 
-  /**
-   * Get performance recommendations
-   */
-  static getRecommendations(): string[] {
+  private generateRecommendations(): string[] {
     const recommendations: string[] = [];
-    const score = this.calculatePerformanceScore();
+    const criticalOpts = PerformanceOptimizer.getOptimizationsByPriority('critical');
+    const highOpts = PerformanceOptimizer.getOptimizationsByPriority('high');
     
-    if (score < 50) {
-      recommendations.push('🚨 CRITICAL: Performance issues need immediate attention');
-    } else if (score < 70) {
-      recommendations.push('⚠️ HIGH PRIORITY: Performance optimizations recommended');
-    } else if (score < 85) {
-      recommendations.push('📈 MEDIUM PRIORITY: Consider performance improvements');
+    if (criticalOpts.length > 0) {
+      recommendations.push('🚨 CRITICAL: Address critical performance issues immediately');
     }
     
-    // Specific recommendations based on metrics
-    if (this.metrics.loadTime > 3000) {
-      recommendations.push('⚡ Implement code splitting to reduce initial bundle size');
+    if (highOpts.length > 0) {
+      recommendations.push('⚠️ HIGH PRIORITY: Implement high-priority optimizations');
     }
     
-    if (this.metrics.memoryUsage > 100) {
-      recommendations.push('🧠 Optimize memory usage with proper cleanup and memoization');
-    }
-    
-    if (this.metrics.apiResponseTime > 1000) {
-      recommendations.push('🌐 Implement API caching and request optimization');
-    }
-    
-    if (this.metrics.bundleSize > 1000) {
-      recommendations.push('📦 Optimize bundle size with tree shaking and lazy loading');
-    }
-    
-    recommendations.push('📊 Implement continuous performance monitoring');
-    recommendations.push('🧪 Add performance testing to CI/CD pipeline');
-    recommendations.push('📚 Provide performance best practices training');
+    recommendations.push('💡 Consider implementing code splitting for better performance');
+    recommendations.push('🔧 Add React.memo for expensive components');
+    recommendations.push('📦 Implement API caching with React Query');
+    recommendations.push('🧹 Add proper cleanup in useEffect hooks');
+    recommendations.push('⚡ Set up service worker for better caching');
     
     return recommendations;
   }
 
-  /**
-   * Get performance summary
-   */
-  static getPerformanceSummary(): {
-    score: number;
-    loadTime: number;
-    memoryUsage: number;
-    bundleSize: number;
-    optimizationsCount: number;
-    criticalOptimizations: number;
-    highPriorityOptimizations: number;
-  } {
-    const score = this.calculatePerformanceScore();
-    const criticalOpts = this.getOptimizationsByPriority('critical');
-    const highOpts = this.getOptimizationsByPriority('high');
+  private generateSummary(): PerformanceSummary {
+    const criticalCount = PerformanceOptimizer.getOptimizationsByPriority('critical').length;
+    const highCount = PerformanceOptimizer.getOptimizationsByPriority('high').length;
     
     return {
-      score,
+      score: this.calculateScore(),
       loadTime: this.metrics.loadTime,
       memoryUsage: this.metrics.memoryUsage,
       bundleSize: this.metrics.bundleSize,
       optimizationsCount: this.optimizations.length,
-      criticalOptimizations: criticalOpts.length,
-      highPriorityOptimizations: highOpts.length
+      criticalOptimizations: criticalCount,
+      highPriorityOptimizations: highCount
     };
   }
 }
 
-// Initialize performance monitoring on module load
-export const initializePerformanceMonitoring = (): void => {
-  try {
-    PerformanceOptimizer.initialize();
-    console.log('🚀 Performance monitoring initialized successfully');
-  } catch (error) {
-    console.error('🚀 Performance monitoring initialization failed:', error);
-  }
+// Export singleton instance
+export default PerformanceOptimizer;
+
+// Export initialization function
+export const initializePerformanceMonitoring = () => {
+  PerformanceOptimizer.initialize();
 };

@@ -59,7 +59,7 @@ async function main() {
 
     // Deploy to GitHub Pages
     log('🚀 Deploying to GitHub Pages...', 'blue');
-    exec('npx gh-pages -d dist --dotfiles');
+    exec('npx gh-pages -d dist');
 
     log('✅ Deployed to GitHub Pages successfully!', 'green');
     

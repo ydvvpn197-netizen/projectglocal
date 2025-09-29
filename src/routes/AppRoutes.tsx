@@ -6,6 +6,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { AdminRoute } from '@/components/AdminRoute';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
@@ -22,6 +24,9 @@ const Discover = lazy(() => import('@/pages/Discover'));
 const News = lazy(() => import('@/pages/News'));
 const SignIn = lazy(() => import('@/pages/SignIn'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
+const CommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
+const LegalAssistant = lazy(() => import('@/pages/LegalAssistant'));
+const LifeWish = lazy(() => import('@/pages/LifeWish'));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -40,9 +45,11 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       <Route path="/event/:eventId" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading event...</div>}>
-          <EventDetails />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading event...</div>}>
+            <EventDetails />
+          </Suspense>
+        </ErrorBoundary>
       } />
       <Route path="/create-event" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
@@ -108,6 +115,28 @@ export const AppRoutes: React.FC = () => {
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading about...</div>}>
           <About />
         </Suspense>
+      } />
+      
+      {/* Feature Routes */}
+      <Route path="/legal-assistant" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading legal assistant...</div>}>
+          <LegalAssistant />
+        </Suspense>
+      } />
+      
+      <Route path="/life-wish" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading life wishes...</div>}>
+          <LifeWish />
+        </Suspense>
+      } />
+      
+      {/* Admin Routes */}
+      <Route path="/community-insights" element={
+        <AdminRoute>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading community insights...</div>}>
+            <CommunityInsights />
+          </Suspense>
+        </AdminRoute>
       } />
       
       {/* Fallback */}

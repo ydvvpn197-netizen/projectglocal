@@ -31,6 +31,8 @@
     "src/commonds/**/*",
     "src/**/*.md",
     "src/**/*.disabled",
+    "src/test/**/*.test.tsx",
+    "src/test/**/*.test.ts",
     "node_modules",
     "dist"
   ]

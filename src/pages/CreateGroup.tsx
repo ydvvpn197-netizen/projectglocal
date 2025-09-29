@@ -12,7 +12,7 @@ import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "@/hooks/useLocation";
-import { CommunityService } from "@/services/communityService";
+import { communityService } from "@/services/communityService";
 import { CreateGroupRequest } from "@/types/community";
 
 const CreateGroup = () => {
@@ -76,7 +76,7 @@ const CreateGroup = () => {
       };
 
       // Create the group using CommunityService
-      const newGroup = await CommunityService.createGroup(groupData);
+      const newGroup = await communityService.createGroup(groupData);
 
       if (newGroup) {
         toast({

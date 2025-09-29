@@ -115,7 +115,7 @@ const Feed = () => {
         .from('community_posts')
         .select(`
           *,
-          profiles!community_posts_user_id_fkey (
+          profiles!user_id (
             display_name,
             avatar_url,
             username

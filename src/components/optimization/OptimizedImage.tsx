@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useIntersectionObserver } from '@/utils/lazyLoad';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -152,6 +152,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = React.memo(({
   const [hasError, setHasError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState<string>('');
   const imgRef = useRef<HTMLImageElement>(null);
+  const isIntersecting = useIntersectionObserver(imgRef, { threshold: 0.1 });
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   const optimizationOptions = useMemo(() => ({
@@ -245,7 +246,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = React.memo(({
         />
       )}
       
-      <motion.img
+      <img
         ref={imgRef}
         src={lazy ? placeholder || imageOptimizationService.generateBlurPlaceholder(width, height) : currentSrc}
         alt={alt}

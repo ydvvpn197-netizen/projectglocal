@@ -1,48 +1,49 @@
+/**
+ * Life Wish Service
+ * Manages user's legacy wishes and memorial content
+ */
+
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 export interface LifeWish {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
   content: string;
-  visibility: 'private' | 'public' | 'family';
-  is_encrypted: boolean;
-  encrypted_content?: string;
-  metadata?: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-  // User profile information (populated separately)
-  user_profile?: {
-    display_name?: string;
-    avatar_url?: string;
-  };
+  visibility: 'public' | 'private' | 'family';
+  category: 'legacy' | 'values' | 'memories' | 'advice' | 'other';
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
 }
 
-export interface LifeWishShare {
+export interface LifeWishTimeline {
   id: string;
-  wish_id: string;
-  shared_by: string;
-  shared_with?: string;
-  shared_email?: string;
-  share_type: 'user' | 'email';
-  permissions: Record<string, unknown>;
-  created_at: string;
-  expires_at?: string;
+  userId: string;
+  wishId: string;
+  content: string;
+  timestamp: string;
+  isPublic: boolean;
 }
 
-export interface LifeWishFormData {
-  title: string;
-  content: string;
-  visibility: 'private' | 'public' | 'family';
-  is_encrypted?: boolean;
+export interface MemorialProfile {
+  id: string;
+  userId: string;
+  displayName: string;
+  bio: string;
+  avatar?: string;
+  isMemorial: boolean;
+  memorialDate?: string;
+  wishes: LifeWish[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export class LifeWishService {
   private static instance: LifeWishService;
-  private encryptionKey: string = 'your-encryption-key'; // In production, use environment variables
 
-  public static getInstance(): LifeWishService {
+  static getInstance(): LifeWishService {
     if (!LifeWishService.instance) {
       LifeWishService.instance = new LifeWishService();
     }
@@ -50,468 +51,433 @@ export class LifeWishService {
   }
 
   /**
-   * Simple encryption function (replace with proper encryption in production)
-   */
-  private encryptText(text: string): string {
-    // This is a simple base64 encoding - replace with proper encryption
-    return btoa(text);
-  }
-
-  /**
-   * Simple decryption function (replace with proper decryption in production)
-   */
-  private decryptText(encryptedText: string): string {
-    // This is a simple base64 decoding - replace with proper decryption
-    return atob(encryptedText);
-  }
-
-  /**
    * Create a new life wish
    */
-  async createLifeWish(wishData: LifeWishFormData): Promise<LifeWish> {
-    try {
-      const { title, content, visibility, is_encrypted = true } = wishData;
-      
-      const processedData: Partial<LifeWish> = {
+  async createLifeWish(
+    title: string,
+    content: string,
+    visibility: 'public' | 'private' | 'family',
+    category: string,
+    tags: string[] = []
+  ): Promise<LifeWish> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('life_wishes')
+      .insert({
+        user_id: user.id,
         title,
+        content,
         visibility,
-        is_encrypted
-      };
+        category,
+        tags,
+        is_active: true
+      })
+      .select()
+      .single();
 
-      if (is_encrypted) {
-        processedData.encrypted_content = this.encryptText(content);
-        processedData.content = ''; // Don't store plain text
-      } else {
-        processedData.content = content;
-      }
-
-      const { data, error } = await supabase
-        .from('life_wishes')
-        .insert({
-          ...processedData,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Decrypt content for return if encrypted
-      if (data.is_encrypted && data.encrypted_content) {
-        data.content = this.decryptText(data.encrypted_content);
-      }
-
-      toast.success('Life wish created successfully');
-      return data;
-    } catch (error) {
-      console.error('Error creating life wish:', error);
-      toast.error('Failed to create life wish');
-      throw error;
-    }
+    if (error) throw error;
+    return data;
   }
 
   /**
-   * Get all life wishes for the current user
+   * Get user's life wishes
    */
-  async getMyLifeWishes(): Promise<LifeWish[]> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wishes')
-        .select('*')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .order('updated_at', { ascending: false });
+  async getUserWishes(): Promise<LifeWish[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-      if (error) throw error;
+    const { data, error } = await supabase
+      .from('life_wishes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
 
-      // Decrypt content for encrypted wishes
-      const decryptedWishes = (data || []).map(wish => {
-        if (wish.is_encrypted && wish.encrypted_content) {
-          wish.content = this.decryptText(wish.encrypted_content);
-        }
-        return wish;
-      });
-
-      return decryptedWishes;
-    } catch (error) {
-      console.error('Error fetching life wishes:', error);
-      toast.error('Failed to fetch life wishes');
-      throw error;
-    }
-  }
-
-  /**
-   * Get only private life wishes for the current user
-   */
-  async getMyPrivateLifeWishes(): Promise<LifeWish[]> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wishes')
-        .select('*')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .eq('visibility', 'private')
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Decrypt content for encrypted wishes
-      const decryptedWishes = (data || []).map(wish => {
-        if (wish.is_encrypted && wish.encrypted_content) {
-          wish.content = this.decryptText(wish.encrypted_content);
-        }
-        return wish;
-      });
-
-      return decryptedWishes;
-    } catch (error) {
-      console.error('Error fetching private life wishes:', error);
-      toast.error('Failed to fetch private life wishes');
-      throw error;
-    }
-  }
-
-  /**
-   * Get public life wishes (for community memorial space)
-   * This includes all public wishes from all users, including the current user's public wishes
-   */
-  async getPublicLifeWishes(): Promise<LifeWish[]> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wishes')
-        .select('*')
-        .eq('visibility', 'public')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Decrypt content for encrypted wishes and fetch user profiles
-      const decryptedWishes = await Promise.all((data || []).map(async (wish) => {
-        if (wish.is_encrypted && wish.encrypted_content) {
-          wish.content = this.decryptText(wish.encrypted_content);
-        }
-
-        // Fetch user profile information
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('user_id', wish.user_id)
-            .single();
-
-          wish.user_profile = profileData || {};
-        } catch (profileError) {
-          console.warn('Could not fetch profile for user:', wish.user_id);
-          wish.user_profile = {};
-        }
-
-        return wish;
-      }));
-
-      return decryptedWishes;
-    } catch (error) {
-      console.error('Error fetching public life wishes:', error);
-      toast.error('Failed to fetch public life wishes');
-      throw error;
-    }
-  }
-
-  /**
-   * Get life wishes shared with the current user
-   */
-  async getSharedLifeWishes(): Promise<LifeWish[]> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wishes')
-        .select(`
-          *,
-          life_wish_shares!inner(shared_with)
-        `)
-        .eq('life_wish_shares.shared_with', (await supabase.auth.getUser()).data.user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Decrypt content for encrypted wishes
-      const decryptedWishes = (data || []).map(wish => {
-        if (wish.is_encrypted && wish.encrypted_content) {
-          wish.content = this.decryptText(wish.encrypted_content);
-        }
-        return wish;
-      });
-
-      return decryptedWishes;
-    } catch (error) {
-      console.error('Error fetching shared life wishes:', error);
-      toast.error('Failed to fetch shared life wishes');
-      throw error;
-    }
-  }
-
-  /**
-   * Get a specific life wish by ID
-   */
-  async getLifeWish(wishId: string): Promise<LifeWish | null> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wishes')
-        .select('*')
-        .eq('id', wishId)
-        .single();
-
-      if (error) throw error;
-
-      if (!data) return null;
-
-      // Decrypt content if encrypted
-      if (data.is_encrypted && data.encrypted_content) {
-        data.content = this.decryptText(data.encrypted_content);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error fetching life wish:', error);
-      toast.error('Failed to fetch life wish');
-      throw error;
-    }
+    if (error) throw error;
+    return data || [];
   }
 
   /**
    * Update a life wish
    */
-  async updateLifeWish(wishId: string, updates: Partial<LifeWishFormData>): Promise<LifeWish> {
-    try {
-      const processedUpdates: Partial<LifeWish> = {};
+  async updateLifeWish(
+    wishId: string,
+    updates: Partial<Pick<LifeWish, 'title' | 'content' | 'visibility' | 'category' | 'tags'>>
+  ): Promise<LifeWish> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-      if (updates.title) processedUpdates.title = updates.title;
-      if (updates.visibility) processedUpdates.visibility = updates.visibility;
-      if (updates.is_encrypted !== undefined) processedUpdates.is_encrypted = updates.is_encrypted;
+    const { data, error } = await supabase
+      .from('life_wishes')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', wishId)
+      .eq('user_id', user.id)
+      .select()
+      .single();
 
-      if (updates.content) {
-        if (updates.is_encrypted !== false) {
-          processedUpdates.encrypted_content = this.encryptText(updates.content);
-          processedUpdates.content = ''; // Don't store plain text
-        } else {
-          processedUpdates.content = updates.content;
-          processedUpdates.encrypted_content = null;
-        }
-      }
+    if (error) throw error;
+    return data;
+  }
 
+  /**
+   * Delete a life wish (soft delete)
+   */
+  async deleteLifeWish(wishId: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('life_wishes')
+      .update({ is_active: false })
+      .eq('id', wishId)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Get public life wishes for community memorial
+   */
+  async getPublicWishes(limit: number = 20, offset: number = 0): Promise<LifeWish[]> {
+    const { data, error } = await supabase
+      .from('life_wishes')
+      .select(`
+        *,
+        profiles:user_id (
+          display_name,
+          avatar_url,
+          is_anonymous
+        )
+      `)
+      .eq('visibility', 'public')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Get family wishes (for designated family members)
+   */
+  async getFamilyWishes(): Promise<LifeWish[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Check if user has family access to any profiles
+    const { data: familyAccess, error: accessError } = await supabase
+      .from('family_access')
+      .select('profile_id')
+      .eq('user_id', user.id)
+      .eq('status', 'approved');
+
+    if (accessError) throw accessError;
+
+    if (familyAccess && familyAccess.length > 0) {
+      const profileIds = familyAccess.map(access => access.profile_id);
+      
       const { data, error } = await supabase
         .from('life_wishes')
-        .update(processedUpdates)
-        .eq('id', wishId)
+        .select(`
+          *,
+          profiles:user_id (
+            display_name,
+            avatar_url
+          )
+        `)
+        .in('user_id', profileIds)
+        .eq('visibility', 'family')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    return [];
+  }
+
+  /**
+   * Add entry to life wish timeline
+   */
+  async addTimelineEntry(
+    wishId: string,
+    content: string,
+    isPublic: boolean = false
+  ): Promise<LifeWishTimeline> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Verify user owns the wish
+    const { data: wish, error: wishError } = await supabase
+      .from('life_wishes')
+      .select('user_id')
+      .eq('id', wishId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (wishError || !wish) throw new Error('Wish not found or access denied');
+
+    const { data, error } = await supabase
+      .from('life_wish_timeline')
+      .insert({
+        user_id: user.id,
+        wish_id: wishId,
+        content,
+        is_public: isPublic
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Get timeline entries for a wish
+   */
+  async getWishTimeline(wishId: string): Promise<LifeWishTimeline[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('life_wish_timeline')
+      .select('*')
+      .eq('wish_id', wishId)
+      .order('timestamp', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Create or update memorial profile
+   */
+  async updateMemorialProfile(
+    displayName: string,
+    bio: string,
+    avatar?: string,
+    isMemorial: boolean = false,
+    memorialDate?: string
+  ): Promise<MemorialProfile> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Check if memorial profile exists
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('memorial_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') throw checkError;
+
+    if (existingProfile) {
+      // Update existing profile
+      const { data, error } = await supabase
+        .from('memorial_profiles')
+        .update({
+          display_name: displayName,
+          bio,
+          avatar_url: avatar,
+          is_memorial: isMemorial,
+          memorial_date: memorialDate,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
         .select()
         .single();
 
       if (error) throw error;
-
-      // Decrypt content for return if encrypted
-      if (data.is_encrypted && data.encrypted_content) {
-        data.content = this.decryptText(data.encrypted_content);
-      }
-
-      toast.success('Life wish updated successfully');
       return data;
-    } catch (error) {
-      console.error('Error updating life wish:', error);
-      toast.error('Failed to update life wish');
-      throw error;
-    }
-  }
-
-  /**
-   * Delete a life wish
-   */
-  async deleteLifeWish(wishId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('life_wishes')
-        .delete()
-        .eq('id', wishId);
-
-      if (error) throw error;
-
-      toast.success('Life wish deleted successfully');
-    } catch (error) {
-      console.error('Error deleting life wish:', error);
-      toast.error('Failed to delete life wish');
-      throw error;
-    }
-  }
-
-  /**
-   * Share a life wish with another user
-   */
-  async shareLifeWish(wishId: string, shareData: {
-    shareType: 'user' | 'email';
-    sharedWith?: string;
-    sharedEmail?: string;
-    permissions?: Record<string, unknown>;
-    expiresAt?: string;
-  }): Promise<LifeWishShare> {
-    try {
+    } else {
+      // Create new profile
       const { data, error } = await supabase
-        .from('life_wish_shares')
+        .from('memorial_profiles')
         .insert({
-          wish_id: wishId,
-          shared_by: (await supabase.auth.getUser()).data.user?.id,
-          shared_with: shareData.shareType === 'user' ? shareData.sharedWith : null,
-          shared_email: shareData.shareType === 'email' ? shareData.sharedEmail : null,
-          share_type: shareData.shareType,
-          permissions: shareData.permissions || {},
-          expires_at: shareData.expiresAt
+          user_id: user.id,
+          display_name: displayName,
+          bio,
+          avatar_url: avatar,
+          is_memorial: isMemorial,
+          memorial_date: memorialDate
         })
         .select()
         .single();
 
       if (error) throw error;
-
-      toast.success('Life wish shared successfully');
       return data;
-    } catch (error) {
-      console.error('Error sharing life wish:', error);
-      toast.error('Failed to share life wish');
-      throw error;
     }
   }
 
   /**
-   * Get shares for a specific life wish
+   * Get memorial profile
    */
-  async getLifeWishShares(wishId: string): Promise<LifeWishShare[]> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wish_shares')
-        .select('*')
-        .eq('wish_id', wishId)
-        .order('created_at', { ascending: false });
+  async getMemorialProfile(): Promise<MemorialProfile | null> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching life wish shares:', error);
-      toast.error('Failed to fetch life wish shares');
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from('memorial_profiles')
+      .select(`
+        *,
+        life_wishes!inner(*)
+      `)
+      .eq('user_id', user.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
   }
 
   /**
-   * Remove a share
+   * Get public memorial profiles
    */
-  async removeShare(shareId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('life_wish_shares')
-        .delete()
-        .eq('id', shareId);
+  async getPublicMemorials(limit: number = 20, offset: number = 0): Promise<MemorialProfile[]> {
+    const { data, error } = await supabase
+      .from('memorial_profiles')
+      .select(`
+        *,
+        life_wishes!inner(*)
+      `)
+      .eq('is_memorial', true)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-      if (error) throw error;
-
-      toast.success('Share removed successfully');
-    } catch (error) {
-      console.error('Error removing share:', error);
-      toast.error('Failed to remove share');
-      throw error;
-    }
+    if (error) throw error;
+    return data || [];
   }
 
   /**
-   * Get user's shared life wishes (wishes they've shared with others)
+   * Search life wishes by tags or content
    */
-  async getMySharedWishes(): Promise<LifeWishShare[]> {
-    try {
-      const { data, error } = await supabase
-        .from('life_wish_shares')
-        .select(`
-          *,
-          life_wishes!inner(title, visibility)
-        `)
-        .eq('shared_by', (await supabase.auth.getUser()).data.user?.id)
-        .order('created_at', { ascending: false });
+  async searchWishes(query: string, category?: string): Promise<LifeWish[]> {
+    let supabaseQuery = supabase
+      .from('life_wishes')
+      .select(`
+        *,
+        profiles:user_id (
+          display_name,
+          avatar_url,
+          is_anonymous
+        )
+      `)
+      .eq('visibility', 'public')
+      .eq('is_active', true);
 
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching shared wishes:', error);
-      toast.error('Failed to fetch shared wishes');
-      throw error;
+    if (category) {
+      supabaseQuery = supabaseQuery.eq('category', category);
     }
+
+    if (query) {
+      supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%,tags.cs.{${query}}`);
+    }
+
+    const { data, error } = await supabaseQuery.order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
   }
 
   /**
-   * Check if user has permission to view a life wish
+   * Get wish statistics for user
    */
-  async hasPermissionToView(wishId: string): Promise<boolean> {
-    try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) return false;
-
-      // Check if user owns the wish
-      const { data: ownedWish } = await supabase
-        .from('life_wishes')
-        .select('id')
-        .eq('id', wishId)
-        .eq('user_id', userId)
-        .single();
-
-      if (ownedWish) return true;
-
-      // Check if wish is public
-      const { data: publicWish } = await supabase
-        .from('life_wishes')
-        .select('id')
-        .eq('id', wishId)
-        .eq('visibility', 'public')
-        .single();
-
-      if (publicWish) return true;
-
-      // Check if wish is shared with user
-      const { data: sharedWish } = await supabase
-        .from('life_wish_shares')
-        .select('id')
-        .eq('wish_id', wishId)
-        .eq('shared_with', userId)
-        .single();
-
-      return !!sharedWish;
-    } catch (error) {
-      console.error('Error checking permissions:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get life wish statistics for the current user
-   */
-  async getLifeWishStats(): Promise<{
-    total: number;
-    private: number;
-    public: number;
-    family: number;
-    shared: number;
+  async getWishStats(): Promise<{
+    totalWishes: number;
+    publicWishes: number;
+    privateWishes: number;
+    familyWishes: number;
+    categories: Record<string, number>;
   }> {
-    try {
-      const allWishes = await this.getMyLifeWishes();
-      const privateWishes = await this.getMyPrivateLifeWishes();
-      const sharedWishes = await this.getSharedLifeWishes();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-      return {
-        total: allWishes.length,
-        private: privateWishes.length,
-        public: allWishes.filter(w => w.visibility === 'public').length,
-        family: allWishes.filter(w => w.visibility === 'family').length,
-        shared: sharedWishes.length
-      };
-    } catch (error) {
-      console.error('Error fetching life wish stats:', error);
-      return {
-        total: 0,
-        private: 0,
-        public: 0,
-        family: 0,
-        shared: 0
-      };
-    }
+    const { data, error } = await supabase
+      .from('life_wishes')
+      .select('visibility, category')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+
+    if (error) throw error;
+
+    const stats = {
+      totalWishes: data?.length || 0,
+      publicWishes: data?.filter(w => w.visibility === 'public').length || 0,
+      privateWishes: data?.filter(w => w.visibility === 'private').length || 0,
+      familyWishes: data?.filter(w => w.visibility === 'family').length || 0,
+      categories: {} as Record<string, number>
+    };
+
+    // Count by category
+    data?.forEach(wish => {
+      stats.categories[wish.category] = (stats.categories[wish.category] || 0) + 1;
+    });
+
+    return stats;
+  }
+
+  /**
+   * Request family access to someone's memorial
+   */
+  async requestFamilyAccess(profileUserId: string, relationship: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('family_access')
+      .insert({
+        user_id: user.id,
+        profile_id: profileUserId,
+        relationship,
+        status: 'pending'
+      });
+
+    if (error) throw error;
+  }
+
+  /**
+   * Get pending family access requests
+   */
+  async getPendingFamilyRequests(): Promise<any[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('family_access')
+      .select(`
+        *,
+        requester:user_id (
+          display_name,
+          avatar_url
+        )
+      `)
+      .eq('profile_id', user.id)
+      .eq('status', 'pending');
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Approve or deny family access request
+   */
+  async updateFamilyAccessRequest(requestId: string, status: 'approved' | 'denied'): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('family_access')
+      .update({ status })
+      .eq('id', requestId)
+      .eq('profile_id', user.id);
+
+    if (error) throw error;
   }
 }
 

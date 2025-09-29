@@ -99,7 +99,7 @@ function App() {
   // Show onboarding for new users
   if (showOnboarding) {
     return (
-      <ComprehensiveErrorBoundary level="page" showDetails={process.env.NODE_ENV === 'development'}>
+      <ComprehensiveErrorBoundary level="page" showDetails={import.meta.env.DEV}>
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading onboarding...</div>}>
           <OnboardingFlow 
             onComplete={handleOnboardingComplete}
@@ -126,7 +126,7 @@ function App() {
   }
 
   return (
-    <ComprehensiveErrorBoundary level="critical" showDetails={process.env.NODE_ENV === 'development'}>
+    <ComprehensiveErrorBoundary level="critical" showDetails={import.meta.env.DEV}>
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading app...</div>}>
         <AuthProvider>
           <Router>

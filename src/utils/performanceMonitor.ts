@@ -1,323 +1,344 @@
-import { useEffect, useRef, useCallback } from 'react';
+/**
+ * Performance Monitoring Utility
+ * Tracks and optimizes application performance metrics
+ */
 
 interface PerformanceMetrics {
+  loadTime: number;
   renderTime: number;
   memoryUsage: number;
-  componentCount: number;
-  errorCount: number;
-  networkLatency: number;
+  networkRequests: number;
   bundleSize: number;
+  cacheHitRate: number;
+  errorRate: number;
 }
 
-interface PerformanceConfig {
-  enableMonitoring: boolean;
-  sampleRate: number;
-  maxMetrics: number;
-  reportInterval: number;
+interface PerformanceEntry {
+  timestamp: number;
+  metrics: PerformanceMetrics;
+  url: string;
+  userAgent: string;
 }
 
 class PerformanceMonitor {
-  private static instance: PerformanceMonitor;
-  private metrics: PerformanceMetrics[] = [];
-  private config: PerformanceConfig;
+  private metrics: PerformanceMetrics;
+  private entries: PerformanceEntry[] = [];
   private observers: Map<string, PerformanceObserver> = new Map();
   private isMonitoring = false;
 
   constructor() {
-    this.config = {
-      enableMonitoring: process.env.NODE_ENV === 'development' || 
-                       import.meta.env.VITE_ENABLE_PERFORMANCE_MONITORING === 'true',
-      sampleRate: 0.1, // 10% of operations
-      maxMetrics: 1000,
-      reportInterval: 30000 // 30 seconds
+    this.metrics = {
+      loadTime: 0,
+      renderTime: 0,
+      memoryUsage: 0,
+      networkRequests: 0,
+      bundleSize: 0,
+      cacheHitRate: 0,
+      errorRate: 0
     };
   }
 
-  static getInstance(): PerformanceMonitor {
-    if (!PerformanceMonitor.instance) {
-      PerformanceMonitor.instance = new PerformanceMonitor();
-    }
-    return PerformanceMonitor.instance;
-  }
-
+  /**
+   * Start performance monitoring
+   */
   startMonitoring(): void {
-    if (!this.config.enableMonitoring || this.isMonitoring) return;
+    if (this.isMonitoring || typeof window === 'undefined') return;
 
     this.isMonitoring = true;
-    this.setupPerformanceObservers();
-    this.startPeriodicReporting();
+    this.setupObservers();
+    this.trackInitialMetrics();
   }
 
+  /**
+   * Stop performance monitoring
+   */
   stopMonitoring(): void {
     this.isMonitoring = false;
     this.observers.forEach(observer => observer.disconnect());
     this.observers.clear();
   }
 
-  private setupPerformanceObservers(): void {
-    // Monitor long tasks
+  /**
+   * Setup performance observers
+   */
+  private setupObservers(): void {
+    // Navigation timing observer
     if ('PerformanceObserver' in window) {
-      try {
-        const longTaskObserver = new PerformanceObserver((list) => {
-          list.getEntries().forEach((entry) => {
-            if (entry.duration > 50) { // Tasks longer than 50ms
-              this.recordMetric({
-                renderTime: entry.duration,
-                memoryUsage: this.getMemoryUsage(),
-                componentCount: this.getComponentCount(),
-                errorCount: 0,
-                networkLatency: 0,
-                bundleSize: this.getBundleSize()
-              });
-            }
-          });
+      const navigationObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        entries.forEach((entry) => {
+          if (entry.entryType === 'navigation') {
+            this.updateNavigationMetrics(entry as PerformanceNavigationTiming);
+          }
         });
-        longTaskObserver.observe({ entryTypes: ['longtask'] });
-        this.observers.set('longtask', longTaskObserver);
-      } catch (error) {
-        console.warn('Long task observer not supported:', error);
-      }
+      });
 
-      // Monitor navigation timing
-      try {
-        const navigationObserver = new PerformanceObserver((list) => {
-          list.getEntries().forEach((entry) => {
-            if (entry.entryType === 'navigation') {
-              const navEntry = entry as PerformanceNavigationTiming;
-              this.recordMetric({
-                renderTime: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
-                memoryUsage: this.getMemoryUsage(),
-                componentCount: this.getComponentCount(),
-                errorCount: 0,
-                networkLatency: navEntry.responseEnd - navEntry.requestStart,
-                bundleSize: this.getBundleSize()
-              });
-            }
-          });
-        });
-        navigationObserver.observe({ entryTypes: ['navigation'] });
-        this.observers.set('navigation', navigationObserver);
-      } catch (error) {
-        console.warn('Navigation observer not supported:', error);
-      }
+      navigationObserver.observe({ entryTypes: ['navigation'] });
+      this.observers.set('navigation', navigationObserver);
 
-      // Monitor resource timing
-      try {
-        const resourceObserver = new PerformanceObserver((list) => {
-          list.getEntries().forEach((entry) => {
-            if (entry.entryType === 'resource') {
-              const resourceEntry = entry as PerformanceResourceTiming;
-              if (resourceEntry.duration > 1000) { // Resources taking longer than 1s
-                this.recordMetric({
-                  renderTime: 0,
-                  memoryUsage: this.getMemoryUsage(),
-                  componentCount: this.getComponentCount(),
-                  errorCount: 0,
-                  networkLatency: resourceEntry.duration,
-                  bundleSize: this.getBundleSize()
-                });
-              }
-            }
-          });
+      // Resource timing observer
+      const resourceObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        this.metrics.networkRequests += entries.length;
+      });
+
+      resourceObserver.observe({ entryTypes: ['resource'] });
+      this.observers.set('resource', resourceObserver);
+
+      // Paint timing observer
+      const paintObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        entries.forEach((entry) => {
+          if (entry.name === 'first-contentful-paint') {
+            this.metrics.renderTime = entry.startTime;
+          }
         });
-        resourceObserver.observe({ entryTypes: ['resource'] });
-        this.observers.set('resource', resourceObserver);
-      } catch (error) {
-        console.warn('Resource observer not supported:', error);
-      }
+      });
+
+      paintObserver.observe({ entryTypes: ['paint'] });
+      this.observers.set('paint', paintObserver);
     }
   }
 
-  private recordMetric(metric: PerformanceMetrics): void {
-    if (Math.random() > this.config.sampleRate) return;
-
-    this.metrics.push({
-      ...metric,
-      timestamp: Date.now()
-    } as PerformanceMetrics & { timestamp: number });
-
-    // Keep only recent metrics
-    if (this.metrics.length > this.config.maxMetrics) {
-      this.metrics = this.metrics.slice(-this.config.maxMetrics);
-    }
-  }
-
-  private getMemoryUsage(): number {
+  /**
+   * Track initial performance metrics
+   */
+  private trackInitialMetrics(): void {
+    // Track memory usage if available
     if ('memory' in performance) {
       const memory = (performance as any).memory;
-      return memory ? memory.usedJSHeapSize : 0;
+      this.metrics.memoryUsage = memory.usedJSHeapSize / 1024 / 1024; // MB
     }
-    return 0;
+
+    // Track bundle size from performance entries
+    this.trackBundleSize();
+
+    // Track cache hit rate
+    this.trackCacheHitRate();
   }
 
-  private getComponentCount(): number {
-    return document.querySelectorAll('[data-react-component]').length;
+  /**
+   * Update navigation timing metrics
+   */
+  private updateNavigationMetrics(entry: PerformanceNavigationTiming): void {
+    this.metrics.loadTime = entry.loadEventEnd - entry.fetchStart;
   }
 
-  private getBundleSize(): number {
-    // Estimate bundle size based on loaded scripts
-    const scripts = document.querySelectorAll('script[src]');
-    let totalSize = 0;
-    scripts.forEach(script => {
-      const src = script.getAttribute('src');
-      if (src && src.includes('assets')) {
-        // Rough estimation based on script count
-        totalSize += 100000; // 100KB per script estimate
-      }
-    });
-    return totalSize;
-  }
-
-  private startPeriodicReporting(): void {
-    setInterval(() => {
-      this.reportMetrics();
-    }, this.config.reportInterval);
-  }
-
-  private reportMetrics(): void {
-    if (this.metrics.length === 0) return;
-
-    const recentMetrics = this.metrics.slice(-10); // Last 10 metrics
-    const avgRenderTime = recentMetrics.reduce((sum, m) => sum + m.renderTime, 0) / recentMetrics.length;
-    const avgMemoryUsage = recentMetrics.reduce((sum, m) => sum + m.memoryUsage, 0) / recentMetrics.length;
-    const avgNetworkLatency = recentMetrics.reduce((sum, m) => sum + m.networkLatency, 0) / recentMetrics.length;
-
-    console.log('📊 Performance Metrics:', {
-      avgRenderTime: `${avgRenderTime.toFixed(2)}ms`,
-      avgMemoryUsage: `${(avgMemoryUsage / 1024 / 1024).toFixed(2)}MB`,
-      avgNetworkLatency: `${avgNetworkLatency.toFixed(2)}ms`,
-      componentCount: recentMetrics[0]?.componentCount || 0,
-      sampleSize: recentMetrics.length
-    });
-
-    // In production, send to monitoring service
-    if (process.env.NODE_ENV === 'production') {
-      this.sendToMonitoringService({
-        avgRenderTime,
-        avgMemoryUsage,
-        avgNetworkLatency,
-        componentCount: recentMetrics[0]?.componentCount || 0,
-        timestamp: Date.now()
+  /**
+   * Track bundle size from performance entries
+   */
+  private trackBundleSize(): void {
+    if ('PerformanceObserver' in window) {
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        let totalSize = 0;
+        
+        entries.forEach((entry) => {
+          if (entry.name.includes('.js') || entry.name.includes('.css')) {
+            totalSize += entry.transferSize || 0;
+          }
+        });
+        
+        this.metrics.bundleSize = totalSize / 1024; // KB
       });
+
+      observer.observe({ entryTypes: ['resource'] });
+      this.observers.set('bundle', observer);
     }
   }
 
-  private sendToMonitoringService(data: any): void {
-    // Example: Send to monitoring service
-    fetch('/api/metrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    }).catch(error => {
-      console.warn('Failed to send metrics:', error);
-    });
+  /**
+   * Track cache hit rate
+   */
+  private trackCacheHitRate(): void {
+    let cacheHits = 0;
+    let totalRequests = 0;
+
+    if ('PerformanceObserver' in window) {
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        
+        entries.forEach((entry) => {
+          totalRequests++;
+          if (entry.transferSize === 0 && entry.decodedBodySize > 0) {
+            cacheHits++;
+          }
+        });
+        
+        this.metrics.cacheHitRate = totalRequests > 0 ? cacheHits / totalRequests : 0;
+      });
+
+      observer.observe({ entryTypes: ['resource'] });
+      this.observers.set('cache', observer);
+    }
   }
 
-  getMetrics(): PerformanceMetrics[] {
-    return [...this.metrics];
-  }
-
-  getAverageMetrics(): Partial<PerformanceMetrics> {
-    if (this.metrics.length === 0) return {};
-
-    return {
-      renderTime: this.metrics.reduce((sum, m) => sum + m.renderTime, 0) / this.metrics.length,
-      memoryUsage: this.metrics.reduce((sum, m) => sum + m.memoryUsage, 0) / this.metrics.length,
-      componentCount: this.metrics[this.metrics.length - 1]?.componentCount || 0,
-      errorCount: this.metrics.reduce((sum, m) => sum + m.errorCount, 0),
-      networkLatency: this.metrics.reduce((sum, m) => sum + m.networkLatency, 0) / this.metrics.length,
-      bundleSize: this.metrics[this.metrics.length - 1]?.bundleSize || 0
+  /**
+   * Record performance entry
+   */
+  recordEntry(): void {
+    const entry: PerformanceEntry = {
+      timestamp: Date.now(),
+      metrics: { ...this.metrics },
+      url: window.location.href,
+      userAgent: navigator.userAgent
     };
+
+    this.entries.push(entry);
+
+    // Keep only last 100 entries
+    if (this.entries.length > 100) {
+      this.entries = this.entries.slice(-100);
+    }
+
+    // Store in localStorage for analysis
+    this.storeMetrics();
   }
 
-  clearMetrics(): void {
-    this.metrics = [];
+  /**
+   * Store metrics in localStorage
+   */
+  private storeMetrics(): void {
+    try {
+      const stored = localStorage.getItem('performance_metrics');
+      const metrics = stored ? JSON.parse(stored) : [];
+      
+      metrics.push({
+        timestamp: Date.now(),
+        metrics: this.metrics,
+        url: window.location.href
+      });
+
+      // Keep only last 50 entries
+      if (metrics.length > 50) {
+        metrics.splice(0, metrics.length - 50);
+      }
+
+      localStorage.setItem('performance_metrics', JSON.stringify(metrics));
+    } catch (error) {
+      console.warn('Failed to store performance metrics:', error);
+    }
+  }
+
+  /**
+   * Get current metrics
+   */
+  getMetrics(): PerformanceMetrics {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Get performance history
+   */
+  getHistory(): PerformanceEntry[] {
+    return [...this.entries];
+  }
+
+  /**
+   * Calculate performance score
+   */
+  getPerformanceScore(): number {
+    let score = 100;
+
+    // Penalize slow load times
+    if (this.metrics.loadTime > 3000) score -= 30;
+    else if (this.metrics.loadTime > 2000) score -= 20;
+    else if (this.metrics.loadTime > 1000) score -= 10;
+
+    // Penalize slow render times
+    if (this.metrics.renderTime > 1500) score -= 20;
+    else if (this.metrics.renderTime > 1000) score -= 15;
+    else if (this.metrics.renderTime > 500) score -= 10;
+
+    // Penalize high memory usage
+    if (this.metrics.memoryUsage > 100) score -= 15;
+    else if (this.metrics.memoryUsage > 50) score -= 10;
+
+    // Penalize large bundle sizes
+    if (this.metrics.bundleSize > 1000) score -= 20;
+    else if (this.metrics.bundleSize > 500) score -= 10;
+
+    // Penalize low cache hit rate
+    if (this.metrics.cacheHitRate < 0.5) score -= 15;
+    else if (this.metrics.cacheHitRate < 0.7) score -= 10;
+
+    // Reward high cache hit rate
+    if (this.metrics.cacheHitRate > 0.9) score += 5;
+
+    return Math.max(0, Math.min(100, score));
+  }
+
+  /**
+   * Get performance recommendations
+   */
+  getRecommendations(): string[] {
+    const recommendations: string[] = [];
+
+    if (this.metrics.loadTime > 2000) {
+      recommendations.push('🚀 Consider code splitting to reduce initial bundle size');
+    }
+
+    if (this.metrics.renderTime > 1000) {
+      recommendations.push('⚡ Optimize rendering with React.memo and useMemo');
+    }
+
+    if (this.metrics.memoryUsage > 50) {
+      recommendations.push('🧠 Check for memory leaks and optimize component cleanup');
+    }
+
+    if (this.metrics.bundleSize > 500) {
+      recommendations.push('📦 Implement lazy loading for heavy components');
+    }
+
+    if (this.metrics.cacheHitRate < 0.7) {
+      recommendations.push('💾 Improve caching strategy for static assets');
+    }
+
+    if (this.metrics.errorRate > 0.05) {
+      recommendations.push('🐛 Address JavaScript errors affecting performance');
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Export performance data
+   */
+  exportData(): string {
+    return JSON.stringify({
+      metrics: this.metrics,
+      history: this.entries,
+      score: this.getPerformanceScore(),
+      recommendations: this.getRecommendations(),
+      timestamp: new Date().toISOString()
+    }, null, 2);
   }
 }
 
-// React hook for performance monitoring
-export const usePerformanceMonitor = (componentName: string) => {
-  const renderStartTime = useRef<number>(0);
-  const renderCount = useRef<number>(0);
+// Singleton instance
+export const performanceMonitor = new PerformanceMonitor();
 
-  useEffect(() => {
-    renderStartTime.current = performance.now();
-    renderCount.current += 1;
+// React hook for performance monitoring
+export const usePerformanceMonitoring = () => {
+  React.useEffect(() => {
+    performanceMonitor.startMonitoring();
+
+    const interval = setInterval(() => {
+      performanceMonitor.recordEntry();
+    }, 30000); // Record every 30 seconds
 
     return () => {
-      const renderTime = performance.now() - renderStartTime.current;
-      
-      if (renderTime > 16) { // Longer than one frame (16.67ms)
-        const monitor = PerformanceMonitor.getInstance();
-        monitor.recordMetric({
-          renderTime,
-          memoryUsage: monitor.getMemoryUsage(),
-          componentCount: monitor.getComponentCount(),
-          errorCount: 0,
-          networkLatency: 0,
-          bundleSize: monitor.getBundleSize()
-        });
-      }
+      clearInterval(interval);
+      performanceMonitor.stopMonitoring();
     };
-  });
-
-  const measureAsync = useCallback(async <T>(
-    operation: () => Promise<T>,
-    operationName: string
-  ): Promise<T> => {
-    const startTime = performance.now();
-    try {
-      const result = await operation();
-      const duration = performance.now() - startTime;
-      
-      if (duration > 100) { // Operations longer than 100ms
-        console.warn(`Slow operation detected: ${operationName} took ${duration.toFixed(2)}ms`);
-      }
-      
-      return result;
-    } catch (error) {
-      const duration = performance.now() - startTime;
-      console.error(`Operation failed: ${operationName} after ${duration.toFixed(2)}ms`, error);
-      throw error;
-    }
   }, []);
 
   return {
-    measureAsync,
-    renderCount: renderCount.current
+    metrics: performanceMonitor.getMetrics(),
+    score: performanceMonitor.getPerformanceScore(),
+    recommendations: performanceMonitor.getRecommendations(),
+    exportData: performanceMonitor.exportData
   };
 };
 
-// Component performance wrapper
-export function withPerformanceMonitoring<P extends object>(
-  Component: React.ComponentType<P>,
-  componentName: string
-) {
-  const WrappedComponent = (props: P) => {
-    const { measureAsync } = usePerformanceMonitor(componentName);
-    
-    return React.createElement(Component, { ...props, measureAsync });
-  };
-
-  WrappedComponent.displayName = `withPerformanceMonitoring(${componentName})`;
-  return WrappedComponent;
-}
-
-// Initialize performance monitoring
-export const initializePerformanceMonitoring = () => {
-  const monitor = PerformanceMonitor.getInstance();
-  monitor.startMonitoring();
-  
-  // Monitor page visibility changes
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      monitor.stopMonitoring();
-    } else {
-      monitor.startMonitoring();
-    }
-  });
-
-  return monitor;
-};
-
-export default PerformanceMonitor;
+import React from 'react';

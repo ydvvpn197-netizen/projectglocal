@@ -3,7 +3,7 @@ import { RoleGuard } from '../components/RoleGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Shield, Lock } from 'lucide-react';
 import { useSecurityAudit } from '../hooks/useSecurityAudit';
-import { useIsAdmin } from '../hooks/useRBAC';
+import { useIsAdmin } from '../hooks/useRBACConsolidated';
 import CommunityInsightsDashboard from '../components/CommunityInsightsDashboard';
 
 const CommunityInsights: React.FC = () => {

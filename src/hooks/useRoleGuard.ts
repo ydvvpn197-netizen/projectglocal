@@ -5,6 +5,12 @@
 
 import { useRoleGuard as useRoleGuardConsolidated } from './useRBACConsolidated';
 
-export const useRoleGuard = (requirements: any) => {
+interface RoleRequirements {
+  roles?: string[];
+  permissions?: string[];
+  requireAll?: boolean;
+}
+
+export const useRoleGuard = (requirements: RoleRequirements) => {
   return useRoleGuardConsolidated(requirements);
 };

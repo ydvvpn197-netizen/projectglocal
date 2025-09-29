@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { useRole, useHasRole, useIsAdmin, useIsSuperAdmin, useHasPermission } from '../hooks/useRBAC';
-import { useRoleGuard } from '../hooks/useRoleGuard';
+import { useRBACConsolidated, useHasRole, useIsAdmin, useIsSuperAdmin } from '../hooks/useRBACConsolidated';
 import { UserRole, RolePermissions } from '../types/rbac';
 
 interface RoleGuardProps {
@@ -32,13 +31,12 @@ export function RoleGuard({
   requireSuperAdmin = false,
   requireAny = false
 }: RoleGuardProps) {
-  const { role, loading: roleLoading, hasRole } = useRole();
+  const { role, loading: roleLoading, hasRole, hasPermission } = useRBACConsolidated();
   const { hasRole: hasRequiredRole, loading: roleCheckLoading } = useHasRole(requiredRole || 'user');
   const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { isSuperAdmin, loading: superAdminLoading } = useIsSuperAdmin();
-  const { hasPermission, loading: permissionLoading } = useHasPermission(requiredPermission || 'canManageUsers');
 
-  const isLoading = roleLoading || roleCheckLoading || adminLoading || superAdminLoading || permissionLoading;
+  const isLoading = roleLoading || roleCheckLoading || adminLoading || superAdminLoading;
 
   if (isLoading) {
     return <>{loading}</>;

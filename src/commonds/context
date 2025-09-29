@@ -1,0 +1,137 @@
+# TheGlocal.in (projectglocal) — Cursor-ready Project Summary & Instructions
+
+## Purpose:
+This document is the single-source contextual prompt for Cursor/AI to **improve, audit, and incrementally rebuild** the existing TheGlocal.in project. It gives the AI full context about product vision, stack, core principles, priority work, and exact tasks to run automatically across the codebase.
+
+---
+
+## Project Snapshot:
+- Name: **TheGlocal.in (projectglocal)** — a privacy-first digital public square for local communities.
+- Tech stack: **Next.js (App Router, React 18), TypeScript, Vite, TailwindCSS + shadcn/ui, Supabase (Postgres + RLS + Edge Functions), GitHub (CI/CD),** or equivalent.
+- Hosting: connected to custom domain `theglocal.in` and Supabase.
+- High-level features: communities, posts, AI-summarized news + discussions, polls, events (including virtual protests), creators (artists/services), private/anonymous identity model, chat, follow, subscriptions (Normal/Pro/Creator-Pro).
+
+---
+
+## Vision & Product Goals (short)
+Build a privacy-first, local-first social platform where users can discover local issues, discuss news, create/join,follow communities and events, vote in polls, and engage with creators — all while defaulting to anonymity and transparent moderation.
+
+---
+
+## Core Principles (must-follow)
+1. Always preserve anonymity by default; identity reveal is opt-in.  
+2. Use Supabase for DB, Auth, RLS, and server-side edge functions.  
+3. Favor server components (App Router) for data-fetching; client components for interactions.  
+4. TypeScript-first with strict types and production-grade error handling.  
+5. Consolidate duplicate features rather than adding new, overlapping ones.  
+6. Implement RBAC + row-level security across tables.  
+7. Incremental, non-destructive changes: refactor, consolidate, and extend.
+
+---
+
+## High-level prioritized work (ordered)
+1. **Security & RLS baseline** for sensitive tables (profiles, posts, communities, subscriptions).  
+2. **Anonymous handle & onboarding**: generate and persist anonymous handles at signup.  
+3. **Consolidate overlapping models**: artists + service_providers → `creators`; events + protests → `events`.  
+4. **News pipeline**: edge function to fetch, dedupe, summarize (LLM) & store `news_summaries`.  
+5. **Feed & location prefs**: implement preference-driven local feed with opt-in geolocation.  
+6. **Monetization flow**: subscription tables + webhook handlers.  
+7. **Moderation & reporting**: reports table + moderator actions + audit logs.  
+8. **CI/CD & tests**: lint/test/build in GH Actions, safe migrations for Supabase.
+
+---
+
+## Required DB schema highlights (essentials)
+Ensure these tables exist or are created with migrations: `profiles`, `communities`, `community_members`, `posts`, `events`, `polls`, `creators`, `services`, `news_summaries`, `news_discussions`, `subscriptions`, `reports`, `moderation_actions`, `chats`, `messages`.
+
+Key constraints:
+- Use `auth.uid()` in RLS policies.  
+- Use `uuid` primary keys (gen_random_uuid()).  
+- Index `created_at`, `community_id`, and geo columns for feed performance.
+
+---
+
+## RLS & RBAC Requirements (baseline)
+- Enable RLS on all custom tables.  
+- Insert/update policies must check `auth.uid() = author_id` or comparable checks.  
+- Provide moderator/admin bypass via `profiles.role in ('moderator','admin')` or an `is_moderator()` SQL function.  
+- Keep `news_summaries` write-protected (service key only, via edge function).
+
+---
+
+## Actions Cursor/AI should perform automatically (step-by-step)
+1. **Scan repo root**: list files, read package.json, tsconfig, tailwind config, supabase folder, and app/ pages/components.  
+2. **Identify pages/components**: build a page-by-page index (path, renders, server/client) and mark interactive components.  
+3. **Audit each file**: for each page/component do:  
+   - UI/UX audit (redundant buttons, inconsistent CTAs, missing privacy controls).  
+   - Security audit (client-side exposure of secrets, service role keys, direct DB writes).  
+   - Performance audit (large bundles, unoptimized images, missing indexes).  
+   - Suggest merge/refactor if duplicate features exist.  
+4. **Generate fixes**: produce ready-to-apply diffs for each suggested change (TypeScript-first).  
+5. **Create migration SQL** for schema changes and RLS policies; keep migrations idempotent.  
+6. **Update single changelog** (`CHANGELOG.md`) with all changes and reasons.  
+7. **Add tests** for modified components and integration tests for critical flows.  
+8. **Provide PR checklist**: run lint/test/build, run supabase migration status, include migration file, update CHANGELOG.
+
+---
+
+## Output format (strict)
+For each file/page/component processed produce a JSON block with keys:
+- `path` — file path
+- `type` — page/component/api/migration/test
+- `issues` — array of short issue objects `{severity, description, line?}`
+- `proposed_changes` — array of proposed changes (human-readable)
+- `diff` — unified diff (patch) ready to apply
+- `tests` — list of tests added/modified
+- `notes` — short reasoning & trade-offs
+
+Consolidate these blocks into a single ZIP or PR per logical change set.
+
+---
+
+## Acceptance criteria
+- All PRs pass lint, tests, and build.  
+- RLS policies in place and verified with test accounts.  
+- No supabase service role keys in client code.  
+- Anonymous handle created automatically on sign-up.  
+- News pipeline stub implemented as an edge function and writes to `news_summaries` using service role.  
+- CHANGELOG.md updated with every change.
+
+---
+
+## Useful local commands to run before automated audit
+```bash
+# show repo files
+git ls-files | sed -n '1,200p'
+# show package.json
+cat package.json
+# show supabase config folder
+ls -la supabase || true
+# find environment references
+grep -R "process.env" -n | sed -n '1,200p'
+# run lint/tests
+pnpm install && pnpm lint && pnpm test
+```
+
+---
+
+## Safety & Operational notes for the AI
+- Do not expose or print secrets.  
+- When modifying DB, provide safe, idempotent SQL migrations.  
+- Do not create additional documentation files — keep updates to a single `CHANGELOG.md`.  
+- Do not remove functionality; prefer consolidation and improvement.  
+
+---
+
+## Final: Immediate tasks for Cursor (first-run)
+1. Run the repo scan (file list + package.json + supabase folder).  
+2. Produce the page-by-page index (JSON) and list of top-20 high-priority issues.  
+3. Create PR `chore/rls-baseline` with migrations + policies and update CHANGELOG.  
+4. Create PR `feature/profiles-anon-handle` with code, migration (profiles.handle), tests, and CHANGELOG entry.
+
+---
+
+This is the canonical context block that must be loaded by Cursor/AI to run the full audit and incremental improvements. Maintain strict privacy defaults and non-destructive migration patterns.
+
+Finally push all the changes and improvements made into github and deploy the project successfully.
+
