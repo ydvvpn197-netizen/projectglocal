@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { LegalMessage } from '../../types/extended';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,7 +126,7 @@ export function LegalAssistant({ className }: LegalAssistantProps) {
 // Legal Chat Component
 function LegalChat() {
   const [sessionId] = useState(() => crypto.randomUUID());
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<LegalMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
 

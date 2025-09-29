@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -22,8 +23,18 @@ export default defineConfig(({ mode }) => ({
     }
   },
   plugins: [
-    react(),
-  ],
+    react({
+      jsxImportSource: 'react',
+      jsxRuntime: 'automatic',
+    }),
+    // Bundle analyzer for optimization
+    process.env.ANALYZE && visualizer({
+      filename: 'bundle-analysis.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ].filter(Boolean),
   css: {
     postcss: './postcss.config.js',
     devSourcemap: true,
@@ -57,6 +68,7 @@ export default defineConfig(({ mode }) => ({
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
+      external: [], // Ensure React is not externalized
       onwarn(warning, warn) {
         // Suppress warnings about circular dependencies in production
         if (mode === 'production' && warning.code === 'CIRCULAR_DEPENDENCY') {
@@ -71,10 +83,12 @@ export default defineConfig(({ mode }) => ({
       output: {
         // Optimized chunk splitting for better performance
         manualChunks: (id) => {
-          // Core React
-          if (id.includes('react') && (id.includes('node_modules'))) {
-            if (id.includes('react-dom')) return 'react-dom';
+          // Core React - ensure single instance
+          if (id.includes('node_modules/react/')) {
             return 'react';
+          }
+          if (id.includes('node_modules/react-dom/')) {
+            return 'react-dom';
           }
           
           // Router and state management

@@ -3,21 +3,45 @@ import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    jsxImportSource: 'react',
+    jsxRuntime: 'classic', // Use classic JSX transform for tests
+    jsxDev: false, // Disable jsxDev to avoid runtime issues
+    jsx: 'classic'
+  })],
+  define: {
+    __DEV__: true, // Set to true for tests to enable jsxDEV
+    'process.env.NODE_ENV': '"test"',
+    'import.meta.env.VITEST': 'true',
+    'import.meta.env.DEV': 'true',
+    'import.meta.env.MODE': '"test"',
+  },
+  // Ensure JSX runtime is available
+  esbuild: {
+    jsx: 'classic', // Use classic JSX transform
+    jsxImportSource: 'react',
+    jsxDev: false, // Disable jsxDev in tests
+  },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/minimal-setup.ts'],
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+        pretendToBeVisual: true
+      }
+    },
     css: true,
-    pool: 'forks', // Changed from threads to forks to prevent memory leaks
+    pool: 'forks', // Use forks pool to avoid cloning issues
     poolOptions: {
       forks: {
         singleFork: true, // Use single fork to prevent memory issues
       }
     },
-    testTimeout: 30000, // Increased timeout for async operations
-    hookTimeout: 30000,
-    teardownTimeout: 10000,
+    testTimeout: 10000, // Reduced timeout for faster test execution
+    hookTimeout: 5000,
+    teardownTimeout: 5000,
     isolate: false, // Disable isolation for faster tests
     // Force garbage collection after each test
     sequence: {
@@ -25,6 +49,25 @@ export default defineConfig({
     },
     // Limit concurrent tests to prevent memory issues
     maxConcurrency: 1, // Reduce concurrency to prevent race conditions
+    // Exclude problematic test files
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+      '**/*.jest.test.*',
+      '**/*.jest.spec.*'
+    ],
+    // Updated reporter configuration to fix deprecated 'basic' reporter
+    reporters: [
+      [
+        "default",
+        {
+          "summary": false
+        }
+      ]
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -46,5 +89,24 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
+  },
+  // Ensure proper JSX handling in tests
+  server: {
+    fs: {
+      allow: ['..']
+    }
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+    ],
+    esbuildOptions: {
+      jsx: 'automatic',
+      jsxImportSource: 'react',
+      jsxDev: true, // Enable jsxDev in tests
+    }
   },
 });

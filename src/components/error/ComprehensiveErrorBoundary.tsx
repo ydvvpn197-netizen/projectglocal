@@ -123,12 +123,12 @@ export class ComprehensiveErrorBoundary extends Component<ErrorBoundaryProps, Er
     const issues = [];
     
     // Check environment variables
-    if (!process.env.REACT_APP_SUPABASE_URL) {
-      issues.push('Missing REACT_APP_SUPABASE_URL environment variable');
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      issues.push('Missing VITE_SUPABASE_URL environment variable');
     }
     
-    if (!process.env.REACT_APP_SUPABASE_ANON_KEY) {
-      issues.push('Missing REACT_APP_SUPABASE_ANON_KEY environment variable');
+    if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      issues.push('Missing VITE_SUPABASE_ANON_KEY environment variable');
     }
     
     // Check network connectivity

@@ -869,10 +869,14 @@ export const ArtistServiceProvider: React.FC<ArtistServiceProviderProps> = React
 
       {/* Service Creation Dialog */}
       <Dialog open={showServiceDialog} onOpenChange={setShowServiceDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="create-service-description">
           <DialogHeader>
             <DialogTitle>Create New Service</DialogTitle>
           </DialogHeader>
+          
+          <div id="create-service-description" className="sr-only">
+            Create a new service offering for your artist profile
+          </div>
           
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -947,10 +951,14 @@ export const ArtistServiceProvider: React.FC<ArtistServiceProviderProps> = React
 
       {/* Booking Dialog */}
       <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="book-service-description">
           <DialogHeader>
             <DialogTitle>Book Service</DialogTitle>
           </DialogHeader>
+          
+          <div id="book-service-description" className="sr-only">
+            Book a service from an artist
+          </div>
           
           <div className="space-y-4">
             <div>

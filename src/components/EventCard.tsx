@@ -57,7 +57,7 @@ export const EventCard = ({
   };
 
   const getOrganizerAvatar = () => {
-    return event.organizer_avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face";
+    return event.organizer_avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&";
   };
 
   const handleEventClick = () => {

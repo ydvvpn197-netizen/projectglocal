@@ -194,6 +194,62 @@ export interface ArticleCategory {
 }
 
 // User and Community Types
+export interface UserWithRole {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url?: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LifeWishStats {
+  total_wishes: number;
+  completed_wishes: number;
+  pending_wishes: number;
+  memorial_views: number;
+}
+
+export interface LifeWishVisibility {
+  visibility: 'public' | 'private' | 'friends';
+}
+
+export interface MemorialProfile {
+  id: string;
+  user_id: string;
+  display_name: string;
+  bio?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LegalMessage {
+  id: string;
+  content: string;
+  sender: 'user' | 'assistant';
+  timestamp: string;
+  session_id: string;
+}
+
+// Community type alias
+export type Community = {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  member_count: number;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+  avatar_url?: string;
+  cover_url?: string;
+  tags?: string[];
+  location?: string;
+  owner_id: string;
+};
+
 export interface UserWithConnections {
   id: string;
   username: string;

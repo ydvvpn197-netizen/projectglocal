@@ -1,25 +1,17 @@
-import { supabase } from '@/integrations/supabase/client';
+/**
+ * Government Polls Service
+ * Handles government authority tagging and poll management
+ */
 
-export interface GovernmentAuthority {
-  id: string;
-  name: string;
-  department: string;
-  level: 'local' | 'state' | 'national';
-  contact_email?: string;
-  contact_phone?: string;
-  jurisdiction: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { resilientSupabase } from '@/integrations/supabase/client';
 
 export interface GovernmentPoll {
   id: string;
-  user_id?: string;
+  user_id: string;
   title: string;
   description: string;
-  location?: string;
-  category?: string;
+  location: string;
+  category: string;
   expires_at: string;
   is_active: boolean;
   is_anonymous: boolean;
@@ -27,9 +19,19 @@ export interface GovernmentPoll {
   total_votes: number;
   created_at: string;
   updated_at: string;
-  options?: PollOption[];
-  authorities?: GovernmentAuthority[];
-  user_vote?: PollVote;
+}
+
+export interface GovernmentAuthority {
+  id: string;
+  name: string;
+  department: string;
+  level: 'local' | 'state' | 'national';
+  contact_email: string;
+  contact_phone: string;
+  jurisdiction: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PollOption {
@@ -44,483 +46,337 @@ export interface PollOption {
 export interface PollVote {
   id: string;
   poll_id: string;
-  user_id?: string;
+  user_id: string;
   option_index: number;
   is_anonymous: boolean;
   created_at: string;
 }
 
-export interface GovernmentResponse {
-  id: string;
-  poll_id: string;
-  authority_id: string;
-  response_text: string;
-  response_type: 'acknowledgment' | 'detailed_response' | 'action_plan' | 'rejection';
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  updated_at: string;
-  authority?: GovernmentAuthority;
-}
-
-export interface CivicEngagementAnalytics {
-  total_polls: number;
-  active_polls: number;
-  total_votes: number;
-  average_participation: number;
-  authority_responses: number;
-  response_rate: number;
-  top_categories: Array<{ category: string; count: number }>;
-  participation_by_level: Array<{ level: string; count: number }>;
-  recent_activity: Array<{
-    type: 'poll_created' | 'vote_cast' | 'authority_response';
-    description: string;
-    timestamp: string;
-  }>;
-}
-
 export class GovernmentPollsService {
   /**
-   * Get all government authorities
+   * Create a new government poll with authority tagging
    */
-  async getAuthorities(level?: 'local' | 'state' | 'national'): Promise<GovernmentAuthority[]> {
-    try {
-      let query = supabase
-        .from('government_authorities')
-        .select('*')
-        .eq('is_active', true)
-        .order('level', { ascending: true })
-        .order('name', { ascending: true });
-
-      if (level) {
-        query = query.eq('level', level);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(`Failed to fetch authorities: ${error.message}`);
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching authorities:', error);
-      throw error;
+  static async createPoll(
+    userId: string,
+    pollData: {
+      title: string;
+      description: string;
+      location: string;
+      category: string;
+      expiresAt: string;
+      isAnonymous: boolean;
+      authorityIds: string[];
+      options: string[];
     }
-  }
-
-  /**
-   * Create a new government poll
-   */
-  async createPoll(pollData: {
-    title: string;
-    description: string;
-    location?: string;
-    category?: string;
-    expires_at: string;
-    is_anonymous?: boolean;
-    tagged_authorities: string[];
-    options: string[];
-  }): Promise<GovernmentPoll> {
+  ): Promise<{ success: boolean; poll?: GovernmentPoll; error?: string }> {
     try {
       // Create the poll
-      const { data: poll, error: pollError } = await supabase
+      const { data: poll, error: pollError } = await resilientSupabase
         .from('government_polls')
         .insert({
+          user_id: userId,
           title: pollData.title,
           description: pollData.description,
           location: pollData.location,
           category: pollData.category,
-          expires_at: pollData.expires_at,
-          is_anonymous: pollData.is_anonymous || false,
-          tagged_authorities: pollData.tagged_authorities,
-          is_active: true
+          expires_at: pollData.expiresAt,
+          is_anonymous: pollData.isAnonymous,
+          tagged_authorities: pollData.authorityIds
         })
         .select()
         .single();
 
       if (pollError) {
-        throw new Error(`Failed to create poll: ${pollError.message}`);
+        console.error('Error creating poll:', pollError);
+        return { success: false, error: pollError.message };
       }
 
       // Create poll options
-      const optionsData = pollData.options.map((text, index) => ({
+      const optionsData = pollData.options.map((option, index) => ({
         poll_id: poll.id,
-        text,
+        text: option,
         option_index: index,
         votes: 0
       }));
 
-      const { error: optionsError } = await supabase
+      const { error: optionsError } = await resilientSupabase
         .from('poll_options')
         .insert(optionsData);
 
       if (optionsError) {
-        throw new Error(`Failed to create poll options: ${optionsError.message}`);
+        console.error('Error creating poll options:', optionsError);
+        return { success: false, error: optionsError.message };
       }
 
-      // Fetch the complete poll with options
-      return await this.getPollById(poll.id);
+      // Create authority tags
+      if (pollData.authorityIds.length > 0) {
+        const authorityTags = pollData.authorityIds.map(authorityId => ({
+          poll_id: poll.id,
+          authority_id: authorityId
+        }));
+
+        const { error: tagsError } = await resilientSupabase
+          .from('poll_authority_tags')
+          .insert(authorityTags);
+
+        if (tagsError) {
+          console.error('Error creating authority tags:', tagsError);
+          return { success: false, error: tagsError.message };
+        }
+      }
+
+      return { success: true, poll };
     } catch (error) {
-      console.error('Error creating poll:', error);
-      throw error;
+      console.error('Error in createPoll:', error);
+      return { success: false, error: 'Failed to create poll' };
     }
   }
 
   /**
-   * Get poll by ID with options and authorities
+   * Get all government authorities
    */
-  async getPollById(pollId: string): Promise<GovernmentPoll> {
+  static async getGovernmentAuthorities(): Promise<{ authorities: GovernmentAuthority[]; error?: string }> {
     try {
-      // Get poll
-      const { data: poll, error: pollError } = await supabase
+      const { data, error } = await resilientSupabase
+        .from('government_authorities')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching government authorities:', error);
+        return { authorities: [], error: error.message };
+      }
+
+      return { authorities: data || [] };
+    } catch (error) {
+      console.error('Error in getGovernmentAuthorities:', error);
+      return { authorities: [], error: 'Failed to fetch government authorities' };
+    }
+  }
+
+  /**
+   * Get polls by authority
+   */
+  static async getPollsByAuthority(authorityId: string): Promise<{ polls: GovernmentPoll[]; error?: string }> {
+    try {
+      const { data, error } = await resilientSupabase
+        .from('poll_authority_tags')
+        .select(`
+          poll_id,
+          government_polls (
+            id,
+            user_id,
+            title,
+            description,
+            location,
+            category,
+            expires_at,
+            is_active,
+            is_anonymous,
+            tagged_authorities,
+            total_votes,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq('authority_id', authorityId);
+
+      if (error) {
+        console.error('Error fetching polls by authority:', error);
+        return { polls: [], error: error.message };
+      }
+
+      const polls = data?.map(item => item.government_polls).filter(Boolean) || [];
+      return { polls };
+    } catch (error) {
+      console.error('Error in getPollsByAuthority:', error);
+      return { polls: [], error: 'Failed to fetch polls by authority' };
+    }
+  }
+
+  /**
+   * Vote on a poll
+   */
+  static async voteOnPoll(
+    userId: string,
+    pollId: string,
+    optionIndex: number,
+    isAnonymous: boolean = false
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Check if user already voted
+      const { data: existingVote, error: checkError } = await resilientSupabase
+        .from('poll_votes')
+        .select('id')
+        .eq('poll_id', pollId)
+        .eq('user_id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing vote:', checkError);
+        return { success: false, error: checkError.message };
+      }
+
+      if (existingVote) {
+        return { success: false, error: 'You have already voted on this poll' };
+      }
+
+      // Create the vote
+      const { error: voteError } = await resilientSupabase
+        .from('poll_votes')
+        .insert({
+          poll_id: pollId,
+          user_id: userId,
+          option_index: optionIndex,
+          is_anonymous: isAnonymous
+        });
+
+      if (voteError) {
+        console.error('Error creating vote:', voteError);
+        return { success: false, error: voteError.message };
+      }
+
+      // Update poll option vote count
+      const { error: updateError } = await resilientSupabase
+        .from('poll_options')
+        .update({ votes: resilientSupabase.raw('votes + 1') })
+        .eq('poll_id', pollId)
+        .eq('option_index', optionIndex);
+
+      if (updateError) {
+        console.error('Error updating poll option votes:', updateError);
+        return { success: false, error: updateError.message };
+      }
+
+      // Update total votes on poll
+      const { error: pollUpdateError } = await resilientSupabase
+        .from('government_polls')
+        .update({ total_votes: resilientSupabase.raw('total_votes + 1') })
+        .eq('id', pollId);
+
+      if (pollUpdateError) {
+        console.error('Error updating poll total votes:', pollUpdateError);
+        return { success: false, error: pollUpdateError.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error in voteOnPoll:', error);
+      return { success: false, error: 'Failed to vote on poll' };
+    }
+  }
+
+  /**
+   * Get poll results
+   */
+  static async getPollResults(pollId: string): Promise<{ results: PollOption[]; error?: string }> {
+    try {
+      const { data, error } = await resilientSupabase
+        .from('poll_options')
+        .select('*')
+        .eq('poll_id', pollId)
+        .order('option_index');
+
+      if (error) {
+        console.error('Error fetching poll results:', error);
+        return { results: [], error: error.message };
+      }
+
+      return { results: data || [] };
+    } catch (error) {
+      console.error('Error in getPollResults:', error);
+      return { results: [], error: 'Failed to fetch poll results' };
+    }
+  }
+
+  /**
+   * Get active polls
+   */
+  static async getActivePolls(): Promise<{ polls: GovernmentPoll[]; error?: string }> {
+    try {
+      const { data, error } = await resilientSupabase
         .from('government_polls')
         .select('*')
+        .eq('is_active', true)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching active polls:', error);
+        return { polls: [], error: error.message };
+      }
+
+      return { polls: data || [] };
+    } catch (error) {
+      console.error('Error in getActivePolls:', error);
+      return { polls: [], error: 'Failed to fetch active polls' };
+    }
+  }
+
+  /**
+   * Notify authorities about new poll
+   */
+  static async notifyAuthorities(pollId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Get poll details
+      const { data: poll, error: pollError } = await resilientSupabase
+        .from('government_polls')
+        .select('title, description, tagged_authorities')
         .eq('id', pollId)
         .single();
 
       if (pollError) {
-        throw new Error(`Failed to fetch poll: ${pollError.message}`);
+        console.error('Error fetching poll details:', pollError);
+        return { success: false, error: pollError.message };
       }
 
-      // Get poll options
-      const { data: options, error: optionsError } = await supabase
-        .from('poll_options')
-        .select('*')
-        .eq('poll_id', pollId)
-        .order('option_index', { ascending: true });
-
-      if (optionsError) {
-        throw new Error(`Failed to fetch poll options: ${optionsError.message}`);
-      }
-
-      // Get tagged authorities
-      const { data: authorities, error: authoritiesError } = await supabase
+      // Get authority details
+      const { data: authorities, error: authoritiesError } = await resilientSupabase
         .from('government_authorities')
-        .select('*')
+        .select('id, name, contact_email')
         .in('id', poll.tagged_authorities);
 
       if (authoritiesError) {
-        console.warn('Failed to fetch authorities:', authoritiesError);
+        console.error('Error fetching authority details:', authoritiesError);
+        return { success: false, error: authoritiesError.message };
       }
 
-      return {
-        ...poll,
-        options: options || [],
-        authorities: authorities || []
-      };
+      // Here you would implement the actual notification logic
+      // For now, we'll just log the notification
+      console.log('Notifying authorities about poll:', {
+        pollId,
+        pollTitle: poll.title,
+        authorities: authorities?.map(a => ({ id: a.id, name: a.name, email: a.contact_email }))
+      });
+
+      return { success: true };
     } catch (error) {
-      console.error('Error fetching poll:', error);
-      throw error;
+      console.error('Error in notifyAuthorities:', error);
+      return { success: false, error: 'Failed to notify authorities' };
     }
   }
 
   /**
-   * Get all government polls with filtering
+   * Close a poll
    */
-  async getPolls(filters: {
-    category?: string;
-    location?: string;
-    level?: 'local' | 'state' | 'national';
-    is_active?: boolean;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<GovernmentPoll[]> {
+  static async closePoll(pollId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     try {
-      let query = supabase
+      const { error } = await resilientSupabase
         .from('government_polls')
-        .select(`
-          *,
-          options:poll_options(*),
-          authorities:government_authorities(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
-
-      if (filters.location) {
-        query = query.eq('location', filters.location);
-      }
-
-      if (filters.is_active !== undefined) {
-        query = query.eq('is_active', filters.is_active);
-      }
-
-      if (filters.limit) {
-        query = query.limit(filters.limit);
-      }
-
-      if (filters.offset) {
-        query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
-      }
-
-      const { data, error } = await query;
+        .update({ is_active: false })
+        .eq('id', pollId)
+        .eq('user_id', userId);
 
       if (error) {
-        throw new Error(`Failed to fetch polls: ${error.message}`);
+        console.error('Error closing poll:', error);
+        return { success: false, error: error.message };
       }
 
-      return data || [];
+      return { success: true };
     } catch (error) {
-      console.error('Error fetching polls:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Vote on a government poll
-   */
-  async voteOnPoll(pollId: string, optionIndex: number, isAnonymous: boolean = false): Promise<PollVote> {
-    try {
-      // Check if user already voted
-      const { data: existingVote } = await supabase
-        .from('poll_votes')
-        .select('*')
-        .eq('poll_id', pollId)
-        .single();
-
-      if (existingVote) {
-        throw new Error('You have already voted on this poll');
-      }
-
-      // Create vote
-      const { data: vote, error: voteError } = await supabase
-        .from('poll_votes')
-        .insert({
-          poll_id: pollId,
-          option_index: optionIndex,
-          is_anonymous: isAnonymous
-        })
-        .select()
-        .single();
-
-      if (voteError) {
-        throw new Error(`Failed to cast vote: ${voteError.message}`);
-      }
-
-      // Update poll vote count
-      await supabase
-        .from('government_polls')
-        .update({ total_votes: supabase.sql`total_votes + 1` })
-        .eq('id', pollId);
-
-      // Update option vote count
-      await supabase
-        .from('poll_options')
-        .update({ votes: supabase.sql`votes + 1` })
-        .eq('poll_id', pollId)
-        .eq('option_index', optionIndex);
-
-      return vote;
-    } catch (error) {
-      console.error('Error voting on poll:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get user's vote for a poll
-   */
-  async getUserVote(pollId: string): Promise<PollVote | null> {
-    try {
-      const { data, error } = await supabase
-        .from('poll_votes')
-        .select('*')
-        .eq('poll_id', pollId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        throw new Error(`Failed to fetch user vote: ${error.message}`);
-      }
-
-      return data || null;
-    } catch (error) {
-      console.error('Error fetching user vote:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Submit government response to a poll
-   */
-  async submitGovernmentResponse(responseData: {
-    poll_id: string;
-    authority_id: string;
-    response_text: string;
-    response_type: 'acknowledgment' | 'detailed_response' | 'action_plan' | 'rejection';
-  }): Promise<GovernmentResponse> {
-    try {
-      const { data, error } = await supabase
-        .from('government_responses')
-        .insert({
-          poll_id: responseData.poll_id,
-          authority_id: responseData.authority_id,
-          response_text: responseData.response_text,
-          response_type: responseData.response_type,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to submit response: ${error.message}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error submitting government response:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get government responses for a poll
-   */
-  async getPollResponses(pollId: string): Promise<GovernmentResponse[]> {
-    try {
-      const { data, error } = await supabase
-        .from('government_responses')
-        .select(`
-          *,
-          authority:government_authorities(*)
-        `)
-        .eq('poll_id', pollId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Failed to fetch responses: ${error.message}`);
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching poll responses:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get civic engagement analytics
-   */
-  async getCivicEngagementAnalytics(): Promise<CivicEngagementAnalytics> {
-    try {
-      // Get basic poll statistics
-      const { data: pollStats } = await supabase
-        .from('government_polls')
-        .select('is_active, category, level, created_at, total_votes');
-
-      // Get authority response statistics
-      const { data: responseStats } = await supabase
-        .from('government_responses')
-        .select('poll_id, status, created_at');
-
-      // Calculate analytics
-      const totalPolls = pollStats?.length || 0;
-      const activePolls = pollStats?.filter(p => p.is_active).length || 0;
-      const totalVotes = pollStats?.reduce((sum, p) => sum + (p.total_votes || 0), 0) || 0;
-      const averageParticipation = totalPolls > 0 ? totalVotes / totalPolls : 0;
-
-      // Category breakdown
-      const categoryCounts = pollStats?.reduce((acc, poll) => {
-        if (poll.category) {
-          acc[poll.category] = (acc[poll.category] || 0) + 1;
-        }
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      const topCategories = Object.entries(categoryCounts)
-        .map(([category, count]) => ({ category, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-      // Level breakdown
-      const levelCounts = pollStats?.reduce((acc, poll) => {
-        if (poll.level) {
-          acc[poll.level] = (acc[poll.level] || 0) + 1;
-        }
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      const participationByLevel = Object.entries(levelCounts)
-        .map(([level, count]) => ({ level, count }));
-
-      // Authority responses
-      const authorityResponses = responseStats?.length || 0;
-      const responseRate = totalPolls > 0 ? (authorityResponses / totalPolls) * 100 : 0;
-
-      // Recent activity (simplified)
-      const recentActivity = [
-        {
-          type: 'poll_created' as const,
-          description: `${totalPolls} polls created`,
-          timestamp: new Date().toISOString()
-        },
-        {
-          type: 'vote_cast' as const,
-          description: `${totalVotes} votes cast`,
-          timestamp: new Date().toISOString()
-        },
-        {
-          type: 'authority_response' as const,
-          description: `${authorityResponses} authority responses`,
-          timestamp: new Date().toISOString()
-        }
-      ];
-
-      return {
-        total_polls: totalPolls,
-        active_polls: activePolls,
-        total_votes: totalVotes,
-        average_participation: Math.round(averageParticipation * 100) / 100,
-        authority_responses: authorityResponses,
-        response_rate: Math.round(responseRate * 100) / 100,
-        top_categories: topCategories,
-        participation_by_level: participationByLevel,
-        recent_activity: recentActivity
-      };
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Search polls by text
-   */
-  async searchPolls(searchTerm: string, filters: {
-    category?: string;
-    location?: string;
-    level?: 'local' | 'state' | 'national';
-  } = {}): Promise<GovernmentPoll[]> {
-    try {
-      let query = supabase
-        .from('government_polls')
-        .select(`
-          *,
-          options:poll_options(*),
-          authorities:government_authorities(*)
-        `)
-        .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
-        .order('created_at', { ascending: false });
-
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
-
-      if (filters.location) {
-        query = query.eq('location', filters.location);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(`Failed to search polls: ${error.message}`);
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error searching polls:', error);
-      throw error;
+      console.error('Error in closePoll:', error);
+      return { success: false, error: 'Failed to close poll' };
     }
   }
 }

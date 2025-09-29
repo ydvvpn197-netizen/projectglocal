@@ -3,7 +3,7 @@
  * Allows super admins to manage user roles
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,26 @@ import { Loader2, Shield, Users, Search, Crown, User, UserCheck, UserX } from 'l
 import { useAdmin } from '@/hooks/useRBAC';
 import { UserRole } from '@/services/rbacService';
 
+interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  created_at: string;
+  last_login?: string;
+}
+
+interface AuditLog {
+  id: string;
+  user_id: string;
+  action: string;
+  details: string;
+  timestamp: string;
+}
+
 export function RoleManagement() {
   const { isSuperAdmin, loading, getAllUsers, promoteUser, demoteUser, getAuditLogs } = useAdmin();
-  const [users, setUsers] = useState<any[]>([]);
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -28,9 +44,9 @@ export function RoleManagement() {
       loadUsers();
       loadAuditLogs();
     }
-  }, [isSuperAdmin]);
+  }, [isSuperAdmin, loadUsers, loadAuditLogs]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoadingUsers(true);
       setError(null);
@@ -42,9 +58,9 @@ export function RoleManagement() {
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [getAllUsers]);
 
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = useCallback(async () => {
     try {
       setLoadingLogs(true);
       const logs = await getAuditLogs(20, 0);
@@ -54,7 +70,7 @@ export function RoleManagement() {
     } finally {
       setLoadingLogs(false);
     }
-  };
+  }, [getAuditLogs]);
 
   const handlePromoteUser = async (userId: string, newRole: UserRole) => {
     try {

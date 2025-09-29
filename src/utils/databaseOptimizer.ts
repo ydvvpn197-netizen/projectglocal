@@ -11,20 +11,20 @@ export interface QueryOptions {
   orderBy?: string;
   orderDirection?: 'asc' | 'desc';
   select?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   cache?: boolean;
   cacheTTL?: number; // seconds
 }
 
 export interface CacheEntry {
-  data: any;
+  data: unknown;
   timestamp: number;
   ttl: number;
 }
 
 class DatabaseOptimizer {
   private cache = new Map<string, CacheEntry>();
-  private queryCache = new Map<string, Promise<any>>();
+  private queryCache = new Map<string, Promise<unknown>>();
 
   /**
    * Optimized query with caching and pagination
@@ -32,7 +32,7 @@ class DatabaseOptimizer {
   async optimizedQuery<T>(
     table: string,
     options: QueryOptions = {}
-  ): Promise<{ data: T[] | null; error: any; count?: number }> {
+  ): Promise<{ data: T[] | null; error: unknown; count?: number }> {
     const {
       limit = 20,
       offset = 0,
@@ -97,9 +97,9 @@ class DatabaseOptimizer {
       orderBy: string;
       orderDirection: 'asc' | 'desc';
       select: string;
-      filters: Record<string, any>;
+      filters: Record<string, unknown>;
     }
-  ): Promise<{ data: T[] | null; error: any; count?: number }> {
+  ): Promise<{ data: T[] | null; error: unknown; count?: number }> {
     let query = supabase.from(table).select(options.select, { count: 'exact' });
 
     // Apply filters with optimized conditions
@@ -132,9 +132,9 @@ class DatabaseOptimizer {
     table: string,
     records: T[],
     batchSize: number = 100
-  ): Promise<{ data: any[] | null; error: any }> {
-    const results: any[] = [];
-    const errors: any[] = [];
+  ): Promise<{ data: unknown[] | null; error: unknown }> {
+    const results: unknown[] = [];
+    const errors: unknown[] = [];
 
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
@@ -163,7 +163,7 @@ class DatabaseOptimizer {
     table: string,
     record: T,
     conflictColumns: string[]
-  ): Promise<{ data: any | null; error: any }> {
+  ): Promise<{ data: unknown | null; error: unknown }> {
     const { data, error } = await supabase
       .from(table)
       .upsert(record, { 
@@ -184,7 +184,7 @@ class DatabaseOptimizer {
       .reduce((result, key) => {
         result[key] = options[key as keyof QueryOptions];
         return result;
-      }, {} as any);
+      }, {} as Record<string, unknown>);
 
     return `${table}:${JSON.stringify(sortedOptions)}`;
   }
@@ -252,7 +252,7 @@ export const useOptimizedQuery = <T>(
 ) => {
   const [data, setData] = React.useState<T[] | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<any>(null);
+  const [error, setError] = React.useState<unknown>(null);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -264,7 +264,7 @@ export const useOptimizedQuery = <T>(
     };
 
     fetchData();
-  }, [table, JSON.stringify(options)]);
+  }, [table, options]);
 
   return { data, loading, error, refetch: () => fetchData() };
 };

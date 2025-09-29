@@ -1,207 +1,187 @@
 /**
  * Anonymous Handle Hook
- * Manages privacy-first anonymous handles for users
+ * Manages anonymous user identity and privacy controls
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from './useAuth';
 
-export interface AnonymousHandleData {
-  anonymous_handle: string;
-  is_anonymous: boolean;
-  real_name_visibility: boolean;
-  handle_generated_at: string;
+export interface AnonymousHandle {
+  id: string;
+  handle: string;
+  displayName: string;
+  isAnonymous: boolean;
+  canRevealIdentity: boolean;
+  createdAt: string;
 }
 
-export interface UserDisplayInfo {
-  display_name: string;
-  is_anonymous: boolean;
-  can_see_real_name: boolean;
-}
-
-export function useAnonymousHandle() {
+export const useAnonymousHandle = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [handleData, setHandleData] = useState<AnonymousHandleData | null>(null);
+  const [anonymousHandle, setAnonymousHandle] = useState<AnonymousHandle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load user's anonymous handle data
-  const loadHandleData = useCallback(async () => {
-    if (!user) {
-      setHandleData(null);
-      setIsLoading(false);
-      return;
-    }
+  // Generate anonymous handle
+  const generateAnonymousHandle = useCallback(async (): Promise<string> => {
+    const adjectives = [
+      'Mysterious', 'Silent', 'Hidden', 'Quiet', 'Secret', 'Unknown', 'Private', 'Stealthy',
+      'Whispered', 'Shadow', 'Echo', 'Silhouette', 'Phantom', 'Ghost', 'Spirit', 'Guardian'
+    ];
+    
+    const nouns = [
+      'Observer', 'Watcher', 'Listener', 'Thinker', 'Dreamer', 'Wanderer', 'Explorer',
+      'Seeker', 'Guardian', 'Keeper', 'Protector', 'Defender', 'Advocate', 'Voice'
+    ];
 
-    try {
-      setIsLoading(true);
-      setError(null);
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const number = Math.floor(Math.random() * 9999) + 1;
+    
+    return `${adjective}${noun}${number}`;
+  }, []);
 
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('anonymous_handle, is_anonymous, real_name_visibility, handle_generated_at')
-        .eq('id', user.id)
-        .single();
+  // Create anonymous handle for new user
+  const createAnonymousHandle = useCallback(async (): Promise<AnonymousHandle> => {
+    if (!user) throw new Error('User not authenticated');
 
-      if (fetchError) {
-        throw fetchError;
-      }
+    const handle = await generateAnonymousHandle();
+    const displayName = `Anonymous ${handle}`;
 
-      setHandleData(data);
-    } catch (err) {
-      console.error('Error loading anonymous handle data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load handle data');
-      toast({
-        title: 'Error',
-        description: 'Failed to load your anonymous handle settings',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, toast]);
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        anonymous_handle: handle,
+        anonymous_display_name: displayName,
+        is_anonymous: true,
+        can_reveal_identity: false
+      })
+      .eq('user_id', user.id)
+      .select()
+      .single();
 
-  // Update anonymity settings
-  const updateAnonymitySettings = useCallback(async (
-    isAnonymous: boolean,
-    realNameVisibility: boolean = false
-  ) => {
-    if (!user || !handleData) return;
+    if (error) throw error;
 
-    try {
-      setError(null);
+    return {
+      id: data.id,
+      handle: data.anonymous_handle,
+      displayName: data.anonymous_display_name,
+      isAnonymous: data.is_anonymous,
+      canRevealIdentity: data.can_reveal_identity,
+      createdAt: data.created_at
+    };
+  }, [user, generateAnonymousHandle]);
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          is_anonymous: isAnonymous,
-          real_name_visibility: realNameVisibility
-        })
-        .eq('id', user.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Update local state
-      setHandleData(prev => prev ? {
-        ...prev,
-        is_anonymous: isAnonymous,
-        real_name_visibility: realNameVisibility
-      } : null);
-
-      toast({
-        title: 'Settings Updated',
-        description: `Your anonymity settings have been updated`,
-      });
-    } catch (err) {
-      console.error('Error updating anonymity settings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
-      toast({
-        title: 'Error',
-        description: 'Failed to update your anonymity settings',
-        variant: 'destructive'
-      });
-    }
-  }, [user, handleData, toast]);
-
-  // Regenerate anonymous handle
-  const regenerateHandle = useCallback(async () => {
+  // Load existing anonymous handle
+  const loadAnonymousHandle = useCallback(async () => {
     if (!user) return;
 
     try {
-      setError(null);
-
-      const { data, error: regenerateError } = await supabase
-        .rpc('generate_anonymous_handle');
-
-      if (regenerateError) {
-        throw regenerateError;
-      }
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          anonymous_handle: data,
-          handle_generated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Reload handle data
-      await loadHandleData();
-
-      toast({
-        title: 'Handle Regenerated',
-        description: 'Your anonymous handle has been regenerated',
-      });
-    } catch (err) {
-      console.error('Error regenerating handle:', err);
-      setError(err instanceof Error ? err.message : 'Failed to regenerate handle');
-      toast({
-        title: 'Error',
-        description: 'Failed to regenerate your anonymous handle',
-        variant: 'destructive'
-      });
-    }
-  }, [user, loadHandleData, toast]);
-
-  // Get display name for a user (respects anonymity)
-  const getUserDisplayName = useCallback(async (userId: string): Promise<UserDisplayInfo> => {
-    try {
       const { data, error } = await supabase
-        .rpc('get_user_display_name', { profile_record: { id: userId } });
+        .from('profiles')
+        .select('id, anonymous_handle, anonymous_display_name, is_anonymous, can_reveal_identity, created_at')
+        .eq('user_id', user.id)
+        .single();
 
       if (error) throw error;
 
-      // Check if current user can see real name
-      const { data: canSeeRealName, error: canSeeError } = await supabase
-        .rpc('can_see_real_name', {
-          viewer_id: user?.id || null,
-          target_id: userId
+      if (data.anonymous_handle) {
+        setAnonymousHandle({
+          id: data.id,
+          handle: data.anonymous_handle,
+          displayName: data.anonymous_display_name,
+          isAnonymous: data.is_anonymous,
+          canRevealIdentity: data.can_reveal_identity,
+          createdAt: data.created_at
         });
-
-      if (canSeeError) {
-        console.warn('Error checking real name visibility:', canSeeError);
+      } else {
+        // Create new anonymous handle
+        const newHandle = await createAnonymousHandle();
+        setAnonymousHandle(newHandle);
       }
-
-      return {
-        display_name: data || 'Anonymous User',
-        is_anonymous: canSeeRealName === false,
-        can_see_real_name: canSeeRealName === true
-      };
     } catch (err) {
-      console.error('Error getting user display name:', err);
-      return {
-        display_name: 'Anonymous User',
-        is_anonymous: true,
-        can_see_real_name: false
-      };
+      setError(err instanceof Error ? err.message : 'Failed to load anonymous handle');
+    } finally {
+      setIsLoading(false);
     }
-  }, [user]);
+  }, [user, createAnonymousHandle]);
 
-  // Load data on mount
+  // Toggle anonymity
+  const toggleAnonymity = useCallback(async (isAnonymous: boolean) => {
+    if (!user || !anonymousHandle) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_anonymous: isAnonymous })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setAnonymousHandle(prev => prev ? { ...prev, isAnonymous } : null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle anonymity');
+    }
+  }, [user, anonymousHandle]);
+
+  // Update display name
+  const updateDisplayName = useCallback(async (newDisplayName: string) => {
+    if (!user || !anonymousHandle) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ anonymous_display_name: newDisplayName })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setAnonymousHandle(prev => prev ? { ...prev, displayName: newDisplayName } : null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update display name');
+    }
+  }, [user, anonymousHandle]);
+
+  // Reveal identity (one-time action)
+  const revealIdentity = useCallback(async () => {
+    if (!user || !anonymousHandle) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          can_reveal_identity: true,
+          is_anonymous: false 
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setAnonymousHandle(prev => prev ? { 
+        ...prev, 
+        canRevealIdentity: true, 
+        isAnonymous: false 
+      } : null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reveal identity');
+    }
+  }, [user, anonymousHandle]);
+
+  // Load handle on mount
   useEffect(() => {
-    loadHandleData();
-  }, [loadHandleData]);
+    if (user) {
+      loadAnonymousHandle();
+    }
+  }, [user, loadAnonymousHandle]);
 
   return {
-    handleData,
+    anonymousHandle,
     isLoading,
     error,
-    updateAnonymitySettings,
-    regenerateHandle,
-    getUserDisplayName,
-    refreshHandleData: loadHandleData,
-    // Convenience getters
-    isAnonymous: handleData?.is_anonymous ?? true,
-    anonymousHandle: handleData?.anonymous_handle ?? null,
-    realNameVisibility: handleData?.real_name_visibility ?? false
+    createAnonymousHandle,
+    toggleAnonymity,
+    updateDisplayName,
+    revealIdentity,
+    refetch: loadAnonymousHandle
   };
-}
+};

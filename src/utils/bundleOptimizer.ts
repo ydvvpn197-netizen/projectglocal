@@ -20,7 +20,7 @@ export const dynamicImport = async <T>(
 };
 
 // Component lazy loading with retry
-export const createLazyComponent = <T extends React.ComponentType<any>>(
+export const createLazyComponent = <T extends React.ComponentType<unknown>>(
   importFn: () => Promise<{ default: T }>,
   retries = 3
 ) => {

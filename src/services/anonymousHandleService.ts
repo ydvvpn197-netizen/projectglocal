@@ -105,10 +105,11 @@ class AnonymousHandleService {
       case 'noun-color':
         return noun + color + number;
       case 'random':
-      default:
+      default: {
         const formats = ['adjective-noun', 'color-noun', 'adjective-color', 'noun-color'];
         const randomFormat = formats[Math.floor(Math.random() * formats.length)];
         return this.generateHandle(randomFormat, includeNumbers);
+      }
     }
   }
 

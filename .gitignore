@@ -1,13 +1,9 @@
 # Dependencies
 node_modules/
-*/node_modules/
-**/node_modules/
-
-# Build outputs
-dist/
-build/
-.next/
-out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Environment variables
 .env
@@ -15,13 +11,38 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+out/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+logs
+*.log
 
 # Runtime data
 pids
@@ -39,17 +60,11 @@ coverage/
 # Dependency directories
 jspm_packages/
 
-# TypeScript cache
-*.tsbuildinfo
-
 # Optional npm cache directory
 .npm
 
 # Optional eslint cache
 .eslintcache
-
-# Optional stylelint cache
-.stylelintcache
 
 # Microbundle cache
 .rpt2_cache/
@@ -66,71 +81,69 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
+# dotenv environment variables file
+.env.test
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
-# Next.js build output
+# next.js build output
 .next
 
-# Nuxt.js build / generate output
+# nuxt.js build output
 .nuxt
-dist
 
-# Gatsby files
-.cache/
-public
+# vuepress build output
+.vuepress/dist
 
-# Storybook build outputs
-.out
-.storybook-out
-storybook-static
+# Serverless directories
+.serverless/
 
-# Temporary folders
-tmp/
-temp/
+# FuseBox cache
+.fusebox/
 
-# Editor directories and files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# DynamoDB Local files
+.dynamodb/
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
 
 # Supabase
 .supabase/
 
-# Vite
-.vite/
+# Temporary files
+*.tmp
+*.temp
 
-# Local development
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Test results
+test-results/
+coverage/
 
-# Database
+# Bundle analysis
+bundle-optimization-report.json
+
+# Local development files
+.env.development
+.env.production
+
+# API keys and secrets (additional protection)
+**/secrets.json
+**/credentials.json
+**/api-keys.json
+
+# Backup files
+*.bak
+*.backup
+
+# Database files
 *.db
 *.sqlite
 *.sqlite3
 
-# Backup files
-*.backup
-*.bak
-
-# Lock files (keep package-lock.json but ignore others)
-yarn.lock
-pnpm-lock.yaml
-
-# Embedded git repositories
-.github/workflows/projectglocal/
-apps/web/node_modules/glocal-monorepo/
+# Deployment files
+deploy/
+deployment-*.log

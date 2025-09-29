@@ -55,8 +55,8 @@ describe('App Component', () => {
   it('should render the app without crashing', async () => {
     // Mock the App component to avoid router conflicts
     const MockApp = () => (
-      <div data-testid="error-boundary">
-        <div data-testid="auth-provider">Mock App</div>
+      <div data-testid="mock-app">
+        <div data-testid="app-content">Mock App Content</div>
       </div>
     );
 
@@ -66,8 +66,8 @@ describe('App Component', () => {
       </QueryClientProvider>
     );
 
-    expect(screen.getByTestId('error-boundary')).toBeInTheDocument();
-    expect(screen.getByTestId('auth-provider')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-app')).toBeInTheDocument();
+    expect(screen.getByTestId('app-content')).toBeInTheDocument();
   });
 
   it('should handle Supabase configuration validation', async () => {

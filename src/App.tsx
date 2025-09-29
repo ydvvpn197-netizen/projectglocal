@@ -1,26 +1,29 @@
 import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { registerServiceWorker } from '@/utils/serviceWorker';
 import { ComprehensiveErrorBoundary } from '@/components/error/ComprehensiveErrorBoundary';
 import { initializePerformanceMonitoring } from '@/utils/performanceOptimizer';
 import { initializeSecurityAudit } from '@/utils/securityAudit';
+import { performanceMonitor } from '@/utils/performance';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 // Lazy load components for better performance
-const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
-const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation'));
-const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel'));
-const AuthProvider = lazy(() => import('@/components/auth/AuthProvider'));
-const AppRoutes = lazy(() => import('@/routes/AppRoutes'));
-const ResponsiveLayout = lazy(() => import('@/components/ResponsiveLayout'));
-const LazyLoader = lazy(() => import('@/components/LazyLoader'));
+const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
+const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation').then(module => ({ default: module.MobileLayout })));
+const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel').then(module => ({ default: module.VoiceControlPanel })));
+const AppRoutes = lazy(() => import('@/routes/AppRoutes').then(module => ({ default: module.AppRoutes })));
+const ResponsiveLayout = lazy(() => import('@/components/ResponsiveLayout').then(module => ({ default: module.ResponsiveLayout })));
+const LazyLoader = lazy(() => import('@/components/LazyLoader').then(module => ({ default: module.LazyLoader })));
 
 // Import hooks normally (hooks can't be lazy loaded)
 import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
 
-function App() {
+// Inner App component that uses auth
+function AppContent() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -36,6 +39,9 @@ function App() {
     
     // Initialize security audit
     initializeSecurityAudit();
+    
+    // Initialize performance monitoring dashboard
+    performanceMonitor.reportToAnalytics();
   }, []);
 
   // Service Worker registration
@@ -128,45 +134,54 @@ function App() {
   return (
     <ComprehensiveErrorBoundary level="critical" showDetails={import.meta.env.DEV}>
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading app...</div>}>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50">
-              {/* Main App Layout */}
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
-                <ResponsiveLayout>
-                  <Routes>
-                    <Route path="/*" element={
-                      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
-                        <AppRoutes />
-                      </Suspense>
-                    } />
-                  </Routes>
-                </ResponsiveLayout>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            {/* Main App Layout */}
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
+              <ResponsiveLayout>
+                <Routes>
+                  <Route path="/*" element={
+                    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
+                      <AppRoutes />
+                    </Suspense>
+                  } />
+                </Routes>
+              </ResponsiveLayout>
+            </Suspense>
+
+            {/* Voice Control Panel - Desktop only */}
+            <div className="hidden md:block fixed bottom-4 right-4 z-40">
+              <Suspense fallback={<div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>}>
+                <VoiceControlPanel compact />
               </Suspense>
-
-              {/* Voice Control Panel - Desktop only */}
-              <div className="hidden md:block fixed bottom-4 right-4 z-40">
-                <Suspense fallback={<div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>}>
-                  <VoiceControlPanel compact />
-                </Suspense>
-              </div>
-
-              {/* Service Worker Status Indicator */}
-              {isServiceWorkerRegistered && (
-                <div className="fixed top-4 right-4 z-50">
-                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
-                    Offline Ready
-                  </div>
-                </div>
-              )}
-
-              {/* Toast Notifications */}
-              <Toaster />
             </div>
-          </Router>
-        </AuthProvider>
+
+            {/* Service Worker Status Indicator */}
+            {isServiceWorkerRegistered && (
+              <div className="fixed top-4 right-4 z-50">
+                <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+                  Offline Ready
+                </div>
+              </div>
+            )}
+
+            {/* Toast Notifications */}
+            <Toaster />
+          </div>
+        </Router>
       </Suspense>
     </ComprehensiveErrorBoundary>
+  );
+}
+
+// Main App component with providers
+function App() {
+  return (
+    <QueryProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </QueryProvider>
   );
 }
 
