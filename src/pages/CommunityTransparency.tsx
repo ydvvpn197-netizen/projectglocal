@@ -20,7 +20,12 @@ import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 
 const CommunityTransparency: React.FC = () => {
   return (
-    <ResponsiveLayout showNewsFeed={false}>
+    <ResponsiveLayout 
+      showHeader={true}
+      showFooter={true}
+      showSidebar={false}
+      showNewsFeed={false}
+    >
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
         {/* Header */}

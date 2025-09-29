@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { ConsolidatedSidebar } from './ConsolidatedSidebar';
+import { ConsolidatedHeader } from './ConsolidatedHeader';
+import { ConsolidatedFooter } from './ConsolidatedFooter';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebarExports';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -284,7 +286,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
   // Main layout (default)
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background flex">
+      <div className="min-h-screen bg-background flex flex-col">
         {/* Network Status Alert */}
         <NetworkStatus />
         
@@ -296,29 +298,45 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
           className="z-40"
         />
         
-        {/* Mobile Navigation - Only show on mobile */}
-        {shouldShowMobileNav && (
-          <MobileLayout />
-        )}
-        
-        {/* Desktop Sidebar - Hidden on mobile */}
-        {shouldShowSidebar && (
-          <div className="hidden lg:block">
-            <ConsolidatedSidebar
-              variant="main"
-              isOpen={sidebarOpen}
-              isMobile={isMobile}
+        {/* Header */}
+        {showHeader && (
+          <div className="sticky top-0 z-30">
+            <ConsolidatedHeader
+              variant="default"
               showSearch={showSearch}
+              showCreateButton={showCreateButton}
               showNotifications={showNotifications}
               showUserMenu={showUserMenu}
-              showCreateButton={showCreateButton}
+              showNavigation={!shouldShowSidebar}
             />
           </div>
         )}
+        
+        {/* Main Content Area with Sidebar */}
+        <div className="flex flex-1">
+          {/* Mobile Navigation - Only show on mobile */}
+          {shouldShowMobileNav && (
+            <MobileLayout />
+          )}
+          
+          {/* Desktop Sidebar - Hidden on mobile */}
+          {shouldShowSidebar && (
+            <div className="hidden lg:block">
+              <ConsolidatedSidebar
+                variant="main"
+                isOpen={sidebarOpen}
+                isMobile={isMobile}
+                showSearch={showSearch}
+                showNotifications={showNotifications}
+                showUserMenu={showUserMenu}
+                showCreateButton={showCreateButton}
+              />
+            </div>
+          )}
 
-        {/* Main Content Area */}
-        <SidebarInset className="flex-1">
-          <main className="flex-1 overflow-auto bg-background">
+          {/* Main Content Area */}
+          <SidebarInset className="flex-1">
+            <main className="flex-1 overflow-auto bg-background">
             <div className={cn(
               'w-full mx-auto',
               getMaxWidthClass(),
@@ -346,6 +364,18 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
               )}
             </div>
           </main>
+          
+          {/* Footer */}
+          {showFooter && (
+            <ConsolidatedFooter
+              variant="default"
+              showNewsletter={true}
+              showSocialLinks={true}
+              showContactInfo={true}
+              showQuickLinks={true}
+              showLegalLinks={true}
+            />
+          )}
         </SidebarInset>
       </div>
     </SidebarProvider>

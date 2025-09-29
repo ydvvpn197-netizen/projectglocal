@@ -13,7 +13,12 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <ResponsiveLayout showNewsFeed={false}>
+    <ResponsiveLayout 
+      showHeader={true}
+      showFooter={true}
+      showSidebar={false}
+      showNewsFeed={false}
+    >
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">404</h1>

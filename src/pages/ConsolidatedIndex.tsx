@@ -330,7 +330,11 @@ const ConsolidatedIndex = () => {
   // Enhanced loading component
   if (isLoading) {
     return (
-      <ResponsiveLayout>
+      <ResponsiveLayout 
+        showHeader={true}
+        showFooter={true}
+        showSidebar={false}
+      >
         <div className="min-h-screen flex items-center justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -347,7 +351,11 @@ const ConsolidatedIndex = () => {
   }
 
   return (
-    <ResponsiveLayout>
+    <ResponsiveLayout 
+      showHeader={true}
+      showFooter={true}
+      showSidebar={false}
+    >
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
         {/* Enhanced Hero Section - Mobile Optimized */}
         <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 px-4">
