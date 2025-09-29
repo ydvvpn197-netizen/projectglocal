@@ -55,7 +55,7 @@ export class TestingFramework {
   /**
    * Create a new test suite
    */
-  describe(name: string, fn: () => void): void {
+  async describe(name: string, fn: () => void | Promise<void>): Promise<void> {
     this.currentSuite = {
       name,
       tests: [],
@@ -68,7 +68,7 @@ export class TestingFramework {
     const startTime = performance.now();
     
     try {
-      fn();
+      await fn();
     } catch (error) {
       console.error(`Test suite "${name}" failed to run:`, error);
     }
@@ -117,6 +117,12 @@ export class TestingFramework {
       error,
       assertions
     };
+
+    // Safeguard: Ensure currentSuite exists before accessing it
+    if (!this.currentSuite) {
+      console.error('Test executed outside of describe block:', name);
+      return;
+    }
 
     this.currentSuite.tests.push(testResult);
     

@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from '@/utils/testingFramework';
 
-describe('Authentication Integration', () => {
+describe('Authentication Integration', async () => {
   it('should handle complete user registration flow', async () => {
     // Mock user registration
     const userData = {

@@ -7,7 +7,7 @@ import { describe, it, expect } from '@/utils/testingFramework';
 import { performanceMonitor, usePerformanceMonitoring } from '@/utils/performance';
 import { mobileOptimizer } from '@/utils/mobileOptimization';
 
-describe('Performance Monitoring', () => {
+describe('Performance Monitoring', async () => {
   it('should initialize performance monitoring', () => {
     const { metrics, score } = usePerformanceMonitoring();
     

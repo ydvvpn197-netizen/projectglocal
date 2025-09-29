@@ -6,7 +6,7 @@
 import { describe, it, expect } from '@/utils/testingFramework';
 import { securityAuditor } from '@/utils/securityAudit';
 
-describe('Security Audit', () => {
+describe('Security Audit', async () => {
   it('should pass security audit with score >= 80', async () => {
     const result = await securityAuditor.runAudit();
     
