@@ -165,8 +165,8 @@ const SignIn = () => {
         { label: "Local", variant: "outline", icon: <MapPin className="w-3 h-3" /> }
       ]}
     >
-        <div className="flex items-center justify-center p-4 pt-12">
-          <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+      <div className="flex items-center justify-center p-4 pt-12">
+        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
           {/* Left Side - Welcome */}
           <div className="space-y-6">
             <div className="space-y-2">
@@ -571,7 +571,6 @@ const SignIn = () => {
                 </Tabs>
               </CardContent>
             </Card>
-          </div>
           </div>
         </div>
       </div>
