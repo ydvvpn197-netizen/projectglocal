@@ -22,7 +22,7 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:fast": "vitest run --config vitest.config.simple.ts --reporter=default --no-coverage --run",
+    "test:fast": "VITEST_SIMPLE=true vitest run --reporter=default --no-coverage --run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest --watch",
     "test:debug": "vitest --inspect-brk",

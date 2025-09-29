@@ -16,7 +16,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/test/consolidated-setup.ts'],
+    setupFiles: process.env.VITEST_SIMPLE ? ['./src/test/minimal-setup.ts'] : ['./src/test/consolidated-setup.ts'],
     environmentOptions: {
       jsdom: {
         resources: 'usable',
@@ -39,7 +39,7 @@ export default defineConfig({
       hooks: 'parallel'
     },
     // Limit concurrent tests to prevent memory issues
-    maxConcurrency: 1, // Reduce concurrency to prevent race conditions
+    maxConcurrency: process.env.VITEST_SIMPLE ? 1 : 1, // Reduce concurrency to prevent race conditions
     // Exclude problematic test files
     exclude: [
       '**/node_modules/**',

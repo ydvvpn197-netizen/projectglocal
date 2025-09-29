@@ -104,7 +104,8 @@ export default defineConfig(({ mode }) => ({
   }
 }));`;
 
-  fs.writeFileSync('vite.config.optimized.ts', optimizedViteConfig);
+  // Note: Optimized config is now integrated into main vite.config.ts
+  console.log('Optimized Vite configuration integrated into main config');
 
   // Create lazy loading utilities
   const lazyLoadingUtils = `import { lazy, Suspense } from 'react';
