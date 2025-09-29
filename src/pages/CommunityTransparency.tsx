@@ -44,9 +44,8 @@ const CommunityTransparency: React.FC = () => {
         </div>
       }
     >
-        <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
+      {/* Header */}
+      <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Community Transparency</h1>
@@ -221,8 +220,6 @@ const CommunityTransparency: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        </div>
-      </div>
     </StandardPageLayout>
   );
 };
