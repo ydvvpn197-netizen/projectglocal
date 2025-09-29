@@ -264,8 +264,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ chi
                 last_name: lastName,
               });
             } else {
+              // Enforce anonymous-by-default: Create anonymous handle and set privacy settings
+              console.log('Enforcing anonymous-by-default for new user...');
+              
+              // Update profile to be anonymous by default
+              const { error: privacyError } = await resilientSupabase
+                .from('profiles')
+                .update({
+                  is_anonymous: true,
+                  privacy_level: 'anonymous',
+                  real_name_visibility: false,
+                  anonymous_handle: `Anonymous_${Math.random().toString(36).substr(2, 8)}`
+                })
+                .eq('user_id', result.user.id);
+                
+              if (privacyError) {
+                console.error('Error setting anonymous defaults:', privacyError);
+              }
+              
               // Create anonymous handle for new user automatically
-              console.log('Creating anonymous handle for new user...');
               const handleResult = await anonymousHandleService.createAnonymousHandleForUser(
                 result.user.id,
                 {
@@ -279,6 +296,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ chi
                 console.log('Anonymous handle created:', handleResult.handle?.username);
               } else {
                 console.warn('Failed to create anonymous handle:', handleResult.error);
+              }
+              
+              // Create privacy settings with anonymous defaults
+              const { error: privacySettingsError } = await resilientSupabase
+                .from('privacy_settings')
+                .insert({
+                  user_id: result.user.id,
+                  profile_visibility: 'private',
+                  show_email: false,
+                  show_phone: false,
+                  show_location: false,
+                  anonymous_mode: true,
+                  anonymous_posts: true,
+                  anonymous_comments: true,
+                  anonymous_votes: true,
+                  location_sharing: false,
+                  precise_location: false
+                });
+                
+              if (privacySettingsError) {
+                console.error('Error creating privacy settings:', privacySettingsError);
               }
               // Check if profile needs updates (e.g., user_type wasn't set correctly)
               const needsUpdate = 
@@ -338,7 +376,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = memo(({ chi
         } else {
           toast({
             title: "Welcome!",
-            description: `Account created successfully as ${userType || 'user'}.`,
+            description: `Your anonymous account is ready! You can reveal your identity anytime in settings.`,
           });
         }
       }

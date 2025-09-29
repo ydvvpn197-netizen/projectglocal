@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -26,7 +27,14 @@ export default defineConfig(({ mode }) => ({
       jsxImportSource: 'react',
       jsxRuntime: 'automatic',
     }),
-  ],
+    // Bundle analyzer for optimization
+    process.env.ANALYZE && visualizer({
+      filename: 'bundle-analysis.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ].filter(Boolean),
   css: {
     postcss: './postcss.config.js',
     devSourcemap: true,

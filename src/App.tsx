@@ -7,6 +7,7 @@ import { registerServiceWorker } from '@/utils/serviceWorker';
 import { ComprehensiveErrorBoundary } from '@/components/error/ComprehensiveErrorBoundary';
 import { initializePerformanceMonitoring } from '@/utils/performanceOptimizer';
 import { initializeSecurityAudit } from '@/utils/securityAudit';
+import { performanceMonitor } from '@/utils/performance';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 
@@ -38,6 +39,9 @@ function AppContent() {
     
     // Initialize security audit
     initializeSecurityAudit();
+    
+    // Initialize performance monitoring dashboard
+    performanceMonitor.reportToAnalytics();
   }, []);
 
   // Service Worker registration

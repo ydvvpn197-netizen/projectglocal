@@ -349,22 +349,22 @@ const ConsolidatedIndex = () => {
   return (
     <ResponsiveLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
-        {/* Enhanced Hero Section */}
-        <section className="relative overflow-hidden py-20 px-4">
+        {/* Enhanced Hero Section - Mobile Optimized */}
+        <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 px-4">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
           <div className="relative max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center space-y-8"
+              className="text-center space-y-6 sm:space-y-8"
             >
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight"
                 >
                   Welcome to TheGlocal
                 </motion.h1>
@@ -372,7 +372,7 @@ const ConsolidatedIndex = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto"
+                  className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto px-4"
                 >
                   Connect with your local community, discover amazing events, and share your stories with the world.
                 </motion.p>
@@ -382,23 +382,23 @@ const ConsolidatedIndex = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                className="flex flex-col sm:flex-row gap-4 justify-center"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4"
               >
                 <UnifiedButton
                   size="lg"
-                  className="text-lg px-8 py-4"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
                   onClick={() => navigate('/events')}
                 >
-                  <Calendar className="w-5 h-5 mr-2" />
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Explore Events
                 </UnifiedButton>
                 <UnifiedButton
                   variant="outline"
                   size="lg"
-                  className="text-lg px-8 py-4"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
                   onClick={() => navigate('/create')}
                 >
-                  <Plus className="w-5 h-5 mr-2" />
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Share Your Story
                 </UnifiedButton>
               </motion.div>
@@ -406,22 +406,22 @@ const ConsolidatedIndex = () => {
           </div>
         </section>
 
-        {/* Enhanced Hero Features */}
-        <section className="py-16 px-4">
+        {/* Enhanced Hero Features - Mobile Optimized */}
+        <section className="py-12 sm:py-16 px-4">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-12"
+              className="text-center mb-8 sm:mb-12"
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Makes Us Special</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">What Makes Us Special</h2>
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                 Discover the features that make TheGlocal the perfect platform for your community
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {heroFeatures.map((feature, index) => (
                 <motion.div
                   key={feature.id}
@@ -458,41 +458,44 @@ const ConsolidatedIndex = () => {
           </div>
         </section>
 
-        {/* Enhanced Trending Content */}
-        <section className="py-16 px-4 bg-white/50 dark:bg-slate-900/50">
+        {/* Enhanced Trending Content - Mobile Optimized */}
+        <section className="py-12 sm:py-16 px-4 bg-white/50 dark:bg-slate-900/50">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-12"
+              className="text-center mb-8 sm:mb-12"
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Trending Now</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Trending Now</h2>
+              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                 Discover what's popular in your community right now
               </p>
             </motion.div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-              <div className="flex justify-center">
-                <TabsList className="grid w-full max-w-md grid-cols-3">
-                  <TabsTrigger value="trending" className="flex items-center gap-2">
-                    <Flame className="w-4 h-4" />
-                    Trending
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 sm:space-y-8">
+              <div className="flex justify-center px-4">
+                <TabsList className="grid w-full max-w-md grid-cols-3 h-auto">
+                  <TabsTrigger value="trending" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                    <Flame className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Trending</span>
+                    <span className="sm:hidden">Hot</span>
                   </TabsTrigger>
-                  <TabsTrigger value="events" className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Events
+                  <TabsTrigger value="events" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Events</span>
+                    <span className="sm:hidden">Events</span>
                   </TabsTrigger>
-                  <TabsTrigger value="communities" className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Communities
+                  <TabsTrigger value="communities" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                    <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Communities</span>
+                    <span className="sm:hidden">Groups</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
 
               <TabsContent value="trending" className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                   {/* Trending Events */}
                   <AnimatedCard className="p-6">
                     <div className="flex items-center gap-3 mb-6">
@@ -631,7 +634,7 @@ const ConsolidatedIndex = () => {
               </TabsContent>
 
               <TabsContent value="events" className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {trendingEvents.map((event, index) => (
                     <motion.div
                       key={event.id}
@@ -686,7 +689,7 @@ const ConsolidatedIndex = () => {
               </TabsContent>
 
               <TabsContent value="communities" className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {trendingCommunities.map((community, index) => (
                     <motion.div
                       key={community.id}
@@ -861,38 +864,38 @@ const ConsolidatedIndex = () => {
           </div>
         </section>
 
-        {/* Enhanced CTA Section */}
-        <section className="py-20 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+        {/* Enhanced CTA Section - Mobile Optimized */}
+        <section className="py-12 sm:py-16 lg:py-20 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
           <div className="max-w-4xl mx-auto text-center text-white">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-4">
                 Ready to Join Your Community?
               </h2>
-              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
                 Start connecting with your neighbors, discover local events, and share your stories with the world.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
                 <UnifiedButton
                   size="lg"
                   variant="secondary"
-                  className="text-lg px-8 py-4"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
                   onClick={() => navigate('/signup')}
                 >
-                  <UserPlus className="w-5 h-5 mr-2" />
+                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Join TheGlocal
                 </UnifiedButton>
                 <UnifiedButton
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-4 border-white text-white hover:bg-white hover:text-black"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 border-white text-white hover:bg-white hover:text-black w-full sm:w-auto"
                   onClick={() => navigate('/about')}
                 >
-                  <BookOpen className="w-5 h-5 mr-2" />
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Learn More
                 </UnifiedButton>
               </div>
