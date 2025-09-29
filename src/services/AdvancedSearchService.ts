@@ -37,7 +37,7 @@ export interface SearchAnalytics {
   searchSuggestions: string[];
 }
 
-export interface SearchResult<T = any> {
+export interface SearchResult<T = Record<string, unknown>> {
   data: T[];
   pagination: {
     page: number;
@@ -569,7 +569,7 @@ export class AdvancedSearchService {
     return fieldMap[table]?.[field] || 'created_at';
   }
 
-  private combineSearchResults(results: any[]): any[] {
+  private combineSearchResults(results: SearchResult[]): SearchResult[] {
     // Implement result ranking and combination logic
     return results.sort((a, b) => {
       // Simple relevance scoring

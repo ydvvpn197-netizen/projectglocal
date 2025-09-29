@@ -111,7 +111,7 @@ describe('Memory Management', () => {
   it('should monitor memory usage', () => {
     // Test memory monitoring
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
       const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
       
       expect(usagePercent).toBeLessThan(90);

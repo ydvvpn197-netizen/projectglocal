@@ -81,7 +81,7 @@ export class EnhancedRealtimeService {
         channel.on(
           'postgres_changes',
           {
-            event: config.event as any,
+            event: config.event as 'INSERT' | 'UPDATE' | 'DELETE',
             schema: 'public',
             table: config.table,
             filter: config.filter

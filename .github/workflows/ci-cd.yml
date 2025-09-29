@@ -110,6 +110,7 @@ jobs:
             coverage/
             dist/
           retention-days: 7
+          if-no-files-found: warn
 
   # Job 2: Testing
   test:
@@ -163,6 +164,7 @@ jobs:
             coverage/
             test-results/
           retention-days: 7
+          if-no-files-found: warn
 
   # Job 3: Build
   build:

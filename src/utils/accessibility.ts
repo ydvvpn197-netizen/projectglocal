@@ -35,7 +35,7 @@ export interface AccessibilityProps {
 /**
  * Generate ARIA attributes for common UI patterns
  */
-export function getAriaAttributes(type: string, options: Record<string, any> = {}): AccessibilityProps {
+export function getAriaAttributes(type: string, options: Record<string, string | number | boolean> = {}): AccessibilityProps {
   const baseProps: AccessibilityProps = {};
 
   switch (type) {

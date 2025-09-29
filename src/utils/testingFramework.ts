@@ -174,14 +174,14 @@ export class TestingFramework {
   /**
    * Assertion helpers
    */
-  expect(actual: any) {
+  expect(actual: unknown) {
     return {
-      toBe: (expected: any) => {
+      toBe: (expected: unknown) => {
         if (actual !== expected) {
           throw new Error(`Expected ${actual} to be ${expected}`);
         }
       },
-      toEqual: (expected: any) => {
+      toEqual: (expected: unknown) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) {
           throw new Error(`Expected ${JSON.stringify(actual)} to equal ${JSON.stringify(expected)}`);
         }
@@ -206,7 +206,7 @@ export class TestingFramework {
           throw new Error(`Expected ${actual} to be undefined`);
         }
       },
-      toContain: (expected: any) => {
+      toContain: (expected: unknown) => {
         if (Array.isArray(actual)) {
           if (!actual.includes(expected)) {
             throw new Error(`Expected array to contain ${expected}`);
@@ -347,7 +347,7 @@ export class TestingFramework {
    */
   private measureMemoryUsage(): number {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
       return Math.round(memory.usedJSHeapSize / 1024 / 1024);
     }
     return 0;

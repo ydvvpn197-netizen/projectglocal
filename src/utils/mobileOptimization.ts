@@ -269,7 +269,7 @@ export class MobileOptimizer {
     // Monitor memory usage
     if ('memory' in performance) {
       setInterval(() => {
-        const memory = (performance as any).memory;
+        const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
         const usedMB = memory.usedJSHeapSize / 1024 / 1024;
         const limitMB = memory.jsHeapSizeLimit / 1024 / 1024;
         const usagePercent = (usedMB / limitMB) * 100;
@@ -307,7 +307,7 @@ export class MobileOptimizer {
 
     // Clean up on memory pressure
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
+      const memory = (performance as Performance & { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
       if (memory.usedJSHeapSize / memory.jsHeapSizeLimit > 0.9) {
         this.cleanupInactiveResources();
       }
@@ -353,7 +353,7 @@ export class MobileOptimizer {
    */
   private optimizeNetworkRequests(): void {
     // Implement request batching
-    const requestQueue: Array<() => Promise<any>> = [];
+    const requestQueue: Array<() => Promise<unknown>> = [];
     let isProcessing = false;
 
     const processQueue = async () => {
