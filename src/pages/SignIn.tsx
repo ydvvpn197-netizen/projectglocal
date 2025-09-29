@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, MapPin, Users, Palette, MessageCircle, Star, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { StandardPageLayout, StandardContentSection } from "@/components/layout";
 
 const SignIn = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -152,7 +153,18 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-background to-green-50 dark:from-orange-950/20 dark:via-background dark:to-green-950/20">
+    <StandardPageLayout
+      title={isSignUp ? "Join TheGlocal" : "Welcome Back"}
+      subtitle={isSignUp ? "Create your account" : "Sign in to your account"}
+      description={isSignUp ? "Join your local community and start connecting with neighbors" : "Access your personalized community dashboard"}
+      variant="hero"
+      background="gradient"
+      maxWidth="lg"
+      badges={[
+        { label: "Community", variant: "secondary", icon: <Users className="w-3 h-3" /> },
+        { label: "Local", variant: "outline", icon: <MapPin className="w-3 h-3" /> }
+      ]}
+    >
         <div className="flex items-center justify-center p-4 pt-12">
           <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
           {/* Left Side - Welcome */}
@@ -563,6 +575,7 @@ const SignIn = () => {
           </div>
         </div>
       </div>
+    </StandardPageLayout>
   );
 };
 

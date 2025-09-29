@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Search, Users, Calendar, Star, ExternalLink, Clock, Filter, TrendingUp, Heart, Map, Sparkles, UserPlus, GripVertical, BarChart3 } from "lucide-react";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
+import { StandardPageLayout, StandardContentSection, StandardGridLayout } from "@/components/layout";
 import { useToast } from "@/components/ui/use-toast";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
@@ -467,16 +467,30 @@ const Discover = () => {
   }, [toast]);
 
   return (
-    <ResponsiveLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-center mb-4">
-            Discover Your Community
-          </h1>
-          <p className="text-xl text-center text-muted-foreground max-w-3xl mx-auto">
-            Connect with amazing people, discover local events, and explore trending content in your area
-          </p>
+    <StandardPageLayout
+      title="Discover Your Community"
+      subtitle="Connect & Explore"
+      description="Connect with amazing people, discover local events, and explore trending content in your area"
+      variant="dashboard"
+      maxWidth="xl"
+      badges={[
+        { label: "Live", variant: "destructive", icon: <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> },
+        { label: "Community", variant: "secondary", icon: <Users className="w-3 h-3" /> },
+        { label: "Local", variant: "outline", icon: <MapPin className="w-3 h-3" /> }
+      ]}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filter
+          </Button>
+          <Button variant="outline" size="sm">
+            <Search className="w-4 h-4 mr-2" />
+            Search
+          </Button>
         </div>
+      }
+    >
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-7">
@@ -719,8 +733,7 @@ const Discover = () => {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </ResponsiveLayout>
+    </StandardPageLayout>
   );
 };
 

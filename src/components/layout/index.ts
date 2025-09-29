@@ -14,6 +14,11 @@ export { ConsolidatedFooter } from './ConsolidatedFooter';
 export { ConsolidatedSidebar } from './ConsolidatedSidebar';
 export { ConsolidatedLayout } from './ConsolidatedLayout';
 
+// Standard layout components
+export { StandardPageLayout, HeroPageLayout, DashboardPageLayout, MinimalPageLayout } from './StandardPageLayout';
+export { StandardContentSection, HeroSection, CardSection, MinimalSection } from './StandardContentSection';
+export { StandardGridLayout, ResponsiveGrid, MasonryGrid, EqualGrid, AutoGrid } from './StandardGridLayout';
+
 // Re-export layout types
 export type { default as HeaderProps } from './Header';
 export type { default as FooterProps } from './Footer';

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { StandardPageLayout, StandardContentSection, StandardGridLayout } from '@/components/layout';
 import {
   ArrowRight,
   MapPin,
@@ -344,7 +345,42 @@ const ConsolidatedIndex = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30">
+    <StandardPageLayout
+      title="Welcome to TheGlocal"
+      subtitle="Your Local Community Hub"
+      description="Connect with your neighbors, discover local events, and share your stories with the world."
+      variant="hero"
+      background="gradient"
+      maxWidth="full"
+      padding="none"
+      badges={[
+        { label: "Live", variant: "destructive", icon: <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> },
+        { label: "Community", variant: "secondary", icon: <Users className="w-3 h-3" /> },
+        { label: "Local", variant: "outline", icon: <MapPin className="w-3 h-3" /> }
+      ]}
+      actions={
+        <div className="flex flex-col sm:flex-row gap-3">
+          <UnifiedButton
+            size="lg"
+            variant="default"
+            className="text-base px-6 py-3"
+            onClick={() => navigate('/signup')}
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Join TheGlocal
+          </UnifiedButton>
+          <UnifiedButton
+            size="lg"
+            variant="outline"
+            className="text-base px-6 py-3"
+            onClick={() => navigate('/about')}
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Learn More
+          </UnifiedButton>
+        </div>
+      }
+    >
         {/* Enhanced Hero Section - Mobile Optimized */}
         <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-4">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5"></div>
@@ -898,7 +934,7 @@ const ConsolidatedIndex = () => {
             </motion.div>
           </div>
         </section>
-      </div>
+    </StandardPageLayout>
   );
 };
 

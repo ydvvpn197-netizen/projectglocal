@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StandardPageLayout, StandardContentSection, StandardGridLayout } from "@/components/layout";
 import { 
   Search, 
   Filter, 
@@ -500,7 +501,29 @@ const ConsolidatedFeed = () => {
   );
 
   return (
-    <>
+    <StandardPageLayout
+      title="Your Feed"
+      subtitle="Stay connected with your community"
+      description="Discover the latest posts, events, and updates from your local community"
+      variant="dashboard"
+      maxWidth="xl"
+      badges={[
+        { label: "Live Feed", variant: "secondary", icon: <TrendingUp className="w-3 h-3" /> },
+        { label: "Community", variant: "outline", icon: <Users className="w-3 h-3" /> }
+      ]}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filter
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      }
+    >
       <FeedContent />
       
       {/* Voice Control Panel */}
@@ -510,7 +533,7 @@ const ConsolidatedFeed = () => {
           onClose={() => setShowVoiceControl(false)}
         />
       )}
-    </>
+    </StandardPageLayout>
   );
 };
 
