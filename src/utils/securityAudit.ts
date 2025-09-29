@@ -509,6 +509,21 @@ ${this.recommendations.map(r => `- ${r.title}: ${r.description}`).join('\n')}
 // Export singleton instance
 export const securityAuditor = new SecurityAuditor();
 
+// Initialize security audit function
+export const initializeSecurityAudit = async (): Promise<void> => {
+  try {
+    const result = await securityAuditor.runAudit();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Security Audit Initialized:', result);
+      if (!result.passed) {
+        console.warn('Security audit failed. Please review issues and recommendations.');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to initialize security audit:', error);
+  }
+};
+
 // Auto-run audit in development
 if (process.env.NODE_ENV === 'development') {
   securityAuditor.runAudit().then(result => {

@@ -39,7 +39,7 @@ function AppContent() {
     initializePerformanceMonitoring();
     
     // Initialize security audit
-    initializeSecurityAudit();
+    initializeSecurityAudit().catch(console.error);
     
     // Initialize performance monitoring dashboard
     performanceMonitor.reportToAnalytics();
