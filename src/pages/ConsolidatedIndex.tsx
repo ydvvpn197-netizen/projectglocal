@@ -355,11 +355,12 @@ const ConsolidatedIndex = () => {
       showHeader={true}
       showFooter={true}
       showSidebar={false}
+      useMobileLayout={false}
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30">
         {/* Enhanced Hero Section - Mobile Optimized */}
-        <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 px-4">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
+        <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-4">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5"></div>
           <div className="relative max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -415,21 +416,21 @@ const ConsolidatedIndex = () => {
         </section>
 
         {/* Enhanced Hero Features - Mobile Optimized */}
-        <section className="py-12 sm:py-16 px-4">
+        <section className="py-16 sm:py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-8 sm:mb-12"
+              className="text-center mb-12 sm:mb-16"
             >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">What Makes Us Special</h2>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">What Makes Us Special</h2>
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
                 Discover the features that make TheGlocal the perfect platform for your community
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {heroFeatures.map((feature, index) => (
                 <motion.div
                   key={feature.id}
@@ -439,22 +440,22 @@ const ConsolidatedIndex = () => {
                   whileHover={{ y: -5 }}
                   className="group"
                 >
-                  <AnimatedCard className="h-full p-6 text-center hover:shadow-xl transition-all duration-300">
-                    <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <feature.icon className="w-8 h-8 text-white" />
+                  <AnimatedCard className="h-full p-8 text-center hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+                    <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-r ${feature.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <feature.icon className="w-10 h-10 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground mb-4">{feature.description}</p>
+                    <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                    <p className="text-muted-foreground mb-6 leading-relaxed">{feature.description}</p>
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-muted-foreground">
-                        <span className="font-semibold text-primary">{feature.stats.value}</span>
+                        <span className="font-bold text-primary text-lg">{feature.stats.value}</span>
                         <span className="ml-1">{feature.stats.label}</span>
                       </div>
                       <UnifiedButton
                         variant="ghost"
                         size="sm"
                         onClick={() => navigate(feature.href)}
-                        className="group-hover:bg-primary group-hover:text-white transition-colors"
+                        className="group-hover:bg-primary group-hover:text-white transition-colors rounded-full p-2"
                       >
                         <ArrowRight className="w-4 h-4" />
                       </UnifiedButton>
@@ -467,52 +468,49 @@ const ConsolidatedIndex = () => {
         </section>
 
         {/* Enhanced Trending Content - Mobile Optimized */}
-        <section className="py-12 sm:py-16 px-4 bg-white/50 dark:bg-slate-900/50">
+        <section className="py-16 sm:py-20 px-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-8 sm:mb-12"
+              className="text-center mb-12 sm:mb-16"
             >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Trending Now</h2>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">Trending Now</h2>
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
                 Discover what's popular in your community right now
               </p>
             </motion.div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 sm:space-y-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 sm:space-y-12">
               <div className="flex justify-center px-4">
-                <TabsList className="grid w-full max-w-md grid-cols-3 h-auto">
-                  <TabsTrigger value="trending" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
-                    <Flame className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Trending</span>
-                    <span className="sm:hidden">Hot</span>
+                <TabsList className="grid w-full max-w-lg grid-cols-3 h-auto bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-lg">
+                  <TabsTrigger value="trending" className="flex items-center gap-2 text-sm sm:text-base py-3 px-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">
+                    <Flame className="w-4 h-4" />
+                    <span>Trending</span>
                   </TabsTrigger>
-                  <TabsTrigger value="events" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
-                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Events</span>
-                    <span className="sm:hidden">Events</span>
+                  <TabsTrigger value="events" className="flex items-center gap-2 text-sm sm:text-base py-3 px-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white">
+                    <Calendar className="w-4 h-4" />
+                    <span>Events</span>
                   </TabsTrigger>
-                  <TabsTrigger value="communities" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
-                    <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Communities</span>
-                    <span className="sm:hidden">Groups</span>
+                  <TabsTrigger value="communities" className="flex items-center gap-2 text-sm sm:text-base py-3 px-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                    <Users className="w-4 h-4" />
+                    <span>Communities</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
 
               <TabsContent value="trending" className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                   {/* Trending Events */}
-                  <AnimatedCard className="p-6">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                        <Flame className="w-5 h-5 text-white" />
+                  <AnimatedCard className="p-8 h-fit bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-xl">
+                        <Flame className="w-8 h-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">Trending Events</h3>
-                        <p className="text-sm text-muted-foreground">Most popular events right now</p>
+                        <h3 className="text-2xl font-bold">Trending Events</h3>
+                        <p className="text-base text-muted-foreground">Most popular events right now</p>
                       </div>
                     </div>
                     <div className="space-y-4">
@@ -569,14 +567,14 @@ const ConsolidatedIndex = () => {
                   </AnimatedCard>
 
                   {/* Trending Posts */}
-                  <AnimatedCard className="p-6">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-white" />
+                  <AnimatedCard className="p-8 h-fit bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-xl">
+                        <TrendingUp className="w-8 h-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">Trending Posts</h3>
-                        <p className="text-sm text-muted-foreground">Most engaging content</p>
+                        <h3 className="text-2xl font-bold">Trending Posts</h3>
+                        <p className="text-base text-muted-foreground">Most engaging content</p>
                       </div>
                     </div>
                     <div className="space-y-4">
@@ -593,17 +591,25 @@ const ConsolidatedIndex = () => {
                             <AvatarFallback>{post.author?.name?.charAt(0) || 'U'}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold text-sm">{post.author?.name}</h4>
-                              {post.author?.verified && (
-                                <Badge variant="secondary" className="text-xs">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Verified
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold text-sm">{post.author?.name}</h4>
+                                {post.author?.verified && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Verified
+                                  </Badge>
+                                )}
+                              </div>
+                              {post.trending && (
+                                <Badge className="bg-blue-500 text-white text-xs">
+                                  <TrendingUp className="w-3 h-3 mr-1" />
+                                  Hot
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{post.content || post.title}</p>
-                            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{post.content || post.title}</p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Heart className="w-3 h-3" />
                                 {post.likes_count || post.likes}
@@ -618,12 +624,6 @@ const ConsolidatedIndex = () => {
                               </span>
                             </div>
                           </div>
-                          {post.trending && (
-                            <Badge className="bg-blue-500 text-white">
-                              <TrendingUp className="w-3 h-3 mr-1" />
-                              Hot
-                            </Badge>
-                          )}
                         </motion.div>
                       ))}
                     </div>
@@ -751,16 +751,16 @@ const ConsolidatedIndex = () => {
         </section>
 
         {/* Enhanced Community Spotlight */}
-        <section className="py-16 px-4">
+        <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-12"
+              className="text-center mb-16"
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Community Spotlight</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">Community Spotlight</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Meet the amazing communities that make our platform special
               </p>
             </motion.div>
@@ -835,16 +835,16 @@ const ConsolidatedIndex = () => {
         </section>
 
         {/* Enhanced Categories */}
-        <section className="py-16 px-4 bg-white/50 dark:bg-slate-900/50">
+        <section className="py-20 px-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-12"
+              className="text-center mb-16"
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Explore Categories</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">Explore Categories</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Find your interests and connect with like-minded people
               </p>
             </motion.div>
@@ -873,37 +873,38 @@ const ConsolidatedIndex = () => {
         </section>
 
         {/* Enhanced CTA Section - Mobile Optimized */}
-        <section className="py-12 sm:py-16 lg:py-20 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-          <div className="max-w-4xl mx-auto text-center text-white">
+        <section className="py-20 sm:py-24 lg:py-28 px-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative max-w-5xl mx-auto text-center text-white">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="space-y-6 sm:space-y-8"
+              className="space-y-8 sm:space-y-10"
             >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 px-4">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 sm:mb-8 px-4">
                 Ready to Join Your Community?
               </h2>
-              <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
+              <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 sm:mb-10 max-w-3xl mx-auto px-4">
                 Start connecting with your neighbors, discover local events, and share your stories with the world.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center px-4">
                 <UnifiedButton
                   size="lg"
                   variant="secondary"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
+                  className="text-lg sm:text-xl px-8 sm:px-10 py-4 sm:py-5 w-full sm:w-auto bg-white text-blue-600 hover:bg-white/90 shadow-xl font-semibold"
                   onClick={() => navigate('/signup')}
                 >
-                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 mr-3" />
                   Join TheGlocal
                 </UnifiedButton>
                 <UnifiedButton
                   size="lg"
                   variant="outline"
-                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 border-white text-white hover:bg-white hover:text-black w-full sm:w-auto"
+                  className="text-lg sm:text-xl px-8 sm:px-10 py-4 sm:py-5 border-2 border-white text-white hover:bg-white hover:text-blue-600 w-full sm:w-auto font-semibold shadow-xl"
                   onClick={() => navigate('/about')}
                 >
-                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 mr-3" />
                   Learn More
                 </UnifiedButton>
               </div>

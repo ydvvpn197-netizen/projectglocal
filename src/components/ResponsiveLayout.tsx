@@ -8,7 +8,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useAuth } from '@/hooks/useAuth';
-import { ConsolidatedLayout } from '@/components/layout/ConsolidatedLayout';
+import { MainLayout } from '@/components/MainLayout';
 import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
 
 interface ResponsiveLayoutProps {
@@ -58,20 +58,18 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     );
   }
 
-  // Use the consolidated layout for desktop and tablet
+  // Use the main layout for desktop and tablet
   return (
-    <ConsolidatedLayout
-      variant="main"
+    <MainLayout
       className={className}
-      showNewsFeed={showNewsFeed}
       showHeader={showHeader}
       showSidebar={showSidebar && !!user}
       showFooter={showFooter}
-      showMobileNavigation={useMobileLayout}
-      maxWidth={maxWidth}
-      padding={padding}
+      headerVariant={headerVariant}
+      maxContentWidth={maxWidth}
+      showNewsFeed={showNewsFeed}
     >
       {children}
-    </ConsolidatedLayout>
+    </MainLayout>
   );
 };

@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
-import { Header } from './layout/Header';
+import { ConsolidatedHeader as Header } from './layout/ConsolidatedHeader';
 import { ConsolidatedSidebar as Sidebar } from './layout/ConsolidatedSidebar';
-import { Footer } from './layout/Footer';
+import { ConsolidatedFooter as Footer } from './layout/ConsolidatedFooter';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -58,6 +58,10 @@ export function MainLayout({
         <Header 
           variant={headerVariant}
           showNavigation={!shouldShowSidebar}
+          showSearch={true}
+          showNotifications={true}
+          showUserMenu={true}
+          showCreateButton={true}
         />
       )}
 
@@ -94,7 +98,14 @@ export function MainLayout({
 
           {/* Footer */}
           {showFooter && (
-            <Footer />
+            <Footer 
+              variant="default"
+              showNewsletter={true}
+              showSocialLinks={true}
+              showContactInfo={true}
+              showQuickLinks={true}
+              showLegalLinks={true}
+            />
           )}
         </main>
       </div>
