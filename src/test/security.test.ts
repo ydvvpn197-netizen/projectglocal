@@ -129,7 +129,7 @@ describe('Security Tests', () => {
     it('should run security audit and identify vulnerabilities', async () => {
       const auditResult = await SecurityAuditor.runSecurityAudit();
       
-      expect(auditResult.vulnerabilities).toBeDefined();
+      expect(auditResult.issues).toBeDefined();
       expect(auditResult.score).toBeGreaterThanOrEqual(0);
       expect(auditResult.score).toBeLessThanOrEqual(100);
       expect(auditResult.recommendations).toBeDefined();

@@ -75,7 +75,7 @@ export class TestingFramework {
   /**
    * Define a test case
    */
-  it(name: string, fn: () => void | Promise<void>, timeout?: number): void {
+  async it(name: string, fn: () => void | Promise<void>, timeout?: number): Promise<void> {
     if (!this.currentSuite) {
       throw new Error('Test must be defined within a describe block');
     }

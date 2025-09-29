@@ -34,6 +34,61 @@ export interface SecurityRecommendation {
 export class SecurityAuditor {
   private issues: SecurityIssue[] = [];
   private recommendations: SecurityRecommendation[] = [];
+  private static instance: SecurityAuditor;
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): SecurityAuditor {
+    if (!SecurityAuditor.instance) {
+      SecurityAuditor.instance = new SecurityAuditor();
+    }
+    return SecurityAuditor.instance;
+  }
+
+  /**
+   * Static method to run security audit
+   */
+  static async runSecurityAudit(): Promise<SecurityAuditResult> {
+    const auditor = SecurityAuditor.getInstance();
+    return await auditor.runAudit();
+  }
+
+  /**
+   * Static method to get vulnerabilities by severity
+   */
+  static getVulnerabilitiesBySeverity(severity: string): SecurityIssue[] {
+    const auditor = SecurityAuditor.getInstance();
+    return auditor.issues.filter(issue => issue.severity === severity);
+  }
+
+  /**
+   * Static method to get vulnerabilities by category
+   */
+  static getVulnerabilitiesByCategory(category: string): SecurityIssue[] {
+    const auditor = SecurityAuditor.getInstance();
+    return auditor.issues.filter(issue => issue.category === category);
+  }
+
+  /**
+   * Static method to get security summary
+   */
+  static getSecuritySummary(): { totalVulnerabilities: number; score: number; criticalCount: number; highCount: number; mediumCount: number; lowCount: number } {
+    const auditor = SecurityAuditor.getInstance();
+    const criticalCount = auditor.issues.filter(issue => issue.severity === 'critical').length;
+    const highCount = auditor.issues.filter(issue => issue.severity === 'high').length;
+    const mediumCount = auditor.issues.filter(issue => issue.severity === 'medium').length;
+    const lowCount = auditor.issues.filter(issue => issue.severity === 'low').length;
+    
+    return {
+      totalVulnerabilities: auditor.issues.length,
+      score: auditor.calculateSecurityScore(),
+      criticalCount,
+      highCount,
+      mediumCount,
+      lowCount
+    };
+  }
 
   /**
    * Run comprehensive security audit
