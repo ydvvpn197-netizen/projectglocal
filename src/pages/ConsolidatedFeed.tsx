@@ -37,6 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
 import { CommunityCard } from "@/components/CommunityCard";
+import { EnhancedFeed } from "@/components/feed/EnhancedFeed";
 import { motion } from "framer-motion";
 
 interface TrendingTopic {

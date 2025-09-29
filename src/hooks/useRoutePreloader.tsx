@@ -35,7 +35,7 @@ export const useRoutePreloader = () => {
       // Dynamic import for route preloading
       switch (route) {
         case '/feed':
-          import('../pages/Feed');
+          import('../pages/ConsolidatedFeed');
           break;
         case '/discover':
           import('../pages/Discover');
@@ -68,7 +68,7 @@ export const useRoutePreloader = () => {
           import('../pages/CreateEvent');
           break;
         case '/artist-dashboard':
-          import('../pages/ArtistDashboard');
+          import('../pages/ConsolidatedDashboard');
           break;
         case '/community/create-discussion':
           import('../pages/CreateDiscussion');

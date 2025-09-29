@@ -13,6 +13,7 @@
     "build:prod": "tsc --noEmit && vite build --mode production",
     "build:optimized": "npm run build:prod && npm run analyze:bundle",
     "build:production": "node scripts/build-production.js",
+    "build:consolidated": "node scripts/build-consolidated.js",
     "preview": "vite preview",
     "preview:prod": "npm run build:prod && npm run preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 1000",
@@ -80,7 +81,10 @@
     "test:security": "npx vitest run src/tests/security.test.ts",
     "test:performance": "npx vitest run src/tests/performance.test.ts",
     "test:integration": "npx vitest run src/tests/integration.test.ts",
-    "test:all": "npm run test:comprehensive && npm run test:security && npm run test:performance && npm run test:integration"
+    "test:all": "npm run test:comprehensive && npm run test:security && npm run test:performance && npm run test:integration",
+    "test:consolidated": "vitest run src/tests/consolidated-components.test.tsx",
+    "test:consolidated:watch": "vitest watch src/tests/consolidated-components.test.tsx",
+    "verify:consolidated": "node scripts/verify-consolidated-deployment.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

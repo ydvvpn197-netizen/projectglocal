@@ -21,6 +21,7 @@ export const LazyChart = lazy(() => import('@/components/ui/Chart'));
 export const LazyAnalyticsChart = lazy(() => import('@/components/analytics/AnalyticsChart'));
 
 // Lazy load heavy pages
-export const LazyArtistDashboard = lazy(() => import('@/pages/ArtistDashboard'));
-export const LazyCommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
-export const LazyRealTimeNews = lazy(() => import('@/components/RealTimeNewsFeed'));
+export const LazyArtistDashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
+export const LazyUserDashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
+export const LazyCommunityInsights = lazy(() => import('@/pages/ConsolidatedCommunityInsights'));
+export const LazyRealTimeNews = lazy(() => import('@/components/feed/EnhancedFeed'));

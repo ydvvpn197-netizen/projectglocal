@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       },
       output: {
-        // Optimized chunk splitting for better performance
+        // Optimized chunk splitting for consolidated components
         manualChunks: (id) => {
           // Core React - ensure single instance
           if (id.includes('node_modules/react/')) {
@@ -97,6 +97,20 @@ export default defineConfig(({ mode }) => ({
           
           // Supabase
           if (id.includes('@supabase/supabase-js')) return 'supabase';
+          
+          // Consolidated Dashboard Components
+          if (id.includes('src/pages/ConsolidatedDashboard') || 
+              id.includes('src/pages/ConsolidatedFeed') || 
+              id.includes('src/pages/ConsolidatedIndex')) {
+            return 'consolidated-pages';
+          }
+          
+          // Layout Components
+          if (id.includes('src/components/MainLayout') || 
+              id.includes('src/components/ResponsiveLayout') ||
+              id.includes('src/components/layout/')) {
+            return 'layout-components';
+          }
           
           // UI Components - group by usage frequency
           if (id.includes('@radix-ui')) {

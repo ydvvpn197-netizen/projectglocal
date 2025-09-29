@@ -7,6 +7,7 @@ import { AcceptedBookingsPanel } from '@/components/AcceptedBookingsPanel';
 import { ActiveChatsPanel } from '@/components/ActiveChatsPanel';
 import { EarningsPanel } from '@/components/EarningsPanel';
 import { ArtistModerationPanel } from '@/components/ArtistModerationPanel';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,7 @@ import {
   Hash,
   AtSign,
   ExternalLink,
+  AlertTriangle,
   BookOpen as BookOpenIcon,
   Music,
   Camera,

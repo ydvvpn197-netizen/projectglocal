@@ -16,7 +16,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/test/minimal-setup.ts'],
+    setupFiles: ['./src/test/consolidated-setup.ts'],
     environmentOptions: {
       jsdom: {
         resources: 'usable',

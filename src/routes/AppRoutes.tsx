@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load pages for better performance - Using consolidated versions
 const Index = lazy(() => import('@/pages/ConsolidatedIndex'));
+const HomePage = lazy(() => import('@/pages/ConsolidatedIndex'));
 const Events = lazy(() => import('@/pages/ConsolidatedEvents'));
 const EventDetails = lazy(() => import('@/pages/EventDetails'));
 const CreateEvent = lazy(() => import('@/pages/CreateEvent'));
@@ -24,6 +25,8 @@ const Discover = lazy(() => import('@/pages/Discover'));
 const News = lazy(() => import('@/pages/News'));
 const Feed = lazy(() => import('@/pages/ConsolidatedFeed'));
 const Dashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
+const UserDashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
+const ArtistDashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
 const SignIn = lazy(() => import('@/pages/SignIn'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
 const CommunityInsights = lazy(() => import('@/pages/ConsolidatedCommunityInsights'));
@@ -40,7 +43,6 @@ const Privacy = lazy(() => import('@/pages/Privacy'));
 const BookArtist = lazy(() => import('@/pages/BookArtist'));
 const BookArtistSimple = lazy(() => import('@/pages/BookArtistSimple'));
 const BookArtistTest = lazy(() => import('@/pages/BookArtistTest'));
-const ArtistDashboard = lazy(() => import('@/pages/ArtistDashboard'));
 const ArtistProfile = lazy(() => import('@/pages/ArtistProfile'));
 const ArtistOnboarding = lazy(() => import('@/pages/ArtistOnboarding'));
 const LocalBusinesses = lazy(() => import('@/pages/LocalBusinesses'));
@@ -224,7 +226,7 @@ export const AppRoutes: React.FC = () => {
       
       <Route path="/artist-dashboard" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading artist dashboard...</div>}>
-          <ArtistDashboard />
+          <Dashboard />
         </Suspense>
       } />
       
