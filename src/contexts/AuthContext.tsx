@@ -5,3 +5,12 @@
 
 export { AuthContext, AuthContextType } from '@/components/auth/AuthContext';
 export { useAuth } from '@/hooks/useAuth';
+
+// Default export to satisfy Fast Refresh
+const AuthContextModule = {
+  AuthContext,
+  AuthContextType,
+  useAuth
+};
+
+export default AuthContextModule;
