@@ -3,11 +3,11 @@
  * Comprehensive performance testing for the application
  */
 
-import { describe, it, expect } from '@/utils/testingFramework';
+import { describe, it, expect } from 'vitest';
 import { performanceMonitor, usePerformanceMonitoring } from '@/utils/performance';
 import { mobileOptimizer } from '@/utils/mobileOptimization';
 
-describe('Performance Monitoring', async () => {
+describe('Performance Monitoring', () => {
   it('should initialize performance monitoring', () => {
     const { metrics, score } = usePerformanceMonitoring();
     

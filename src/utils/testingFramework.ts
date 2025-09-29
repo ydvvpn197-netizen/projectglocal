@@ -74,9 +74,15 @@ export class TestingFramework {
     }
 
     const endTime = performance.now();
-    this.currentSuite.totalDuration = endTime - startTime;
     
-    this.suites.push(this.currentSuite);
+    // Safeguard: Ensure currentSuite exists before accessing it
+    if (this.currentSuite) {
+      this.currentSuite.totalDuration = endTime - startTime;
+      this.suites.push(this.currentSuite);
+    } else {
+      console.error(`Test suite "${name}" lost currentSuite context`);
+    }
+    
     this.currentSuite = undefined;
   }
 

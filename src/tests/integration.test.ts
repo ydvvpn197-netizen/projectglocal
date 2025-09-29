@@ -3,9 +3,9 @@
  * End-to-end integration testing for core features
  */
 
-import { describe, it, expect } from '@/utils/testingFramework';
+import { describe, it, expect } from 'vitest';
 
-describe('Authentication Integration', async () => {
+describe('Authentication Integration', () => {
   it('should handle complete user registration flow', async () => {
     // Mock user registration
     const userData = {

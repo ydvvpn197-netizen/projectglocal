@@ -3,10 +3,10 @@
  * Comprehensive security testing for the application
  */
 
-import { describe, it, expect } from '@/utils/testingFramework';
+import { describe, it, expect } from 'vitest';
 import { securityAuditor } from '@/utils/securityAudit';
 
-describe('Security Audit', async () => {
+describe('Security Audit', () => {
   it('should pass security audit with score >= 80', async () => {
     const result = await securityAuditor.runAudit();
     
