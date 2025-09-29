@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { MainLayout } from '@/components/MainLayout';
 import { ClientBookingsPanel } from '@/components/ClientBookingsPanel';
 import { BookingRequestsPanel } from '@/components/BookingRequestsPanel';
 import { AcceptedBookingsPanel } from '@/components/AcceptedBookingsPanel';

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { MainLayout } from '@/components/MainLayout';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { CardLayout } from '@/components/layout/CardLayout';
 import { Button } from '@/components/ui/button';
