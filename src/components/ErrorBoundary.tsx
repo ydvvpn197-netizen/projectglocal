@@ -1,71 +1,136 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
-  error?: Error;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null
+    };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return {
+      hasError: true,
+      error,
+      errorInfo: null
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    this.setState({
+      error,
+      errorInfo
+    });
+
+    // Log error to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    }
+
+    // Call custom error handler if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+
+    // Log error to external service in production
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Implement error logging service
+      console.error('Production error:', error);
+    }
   }
+
+  handleRetry = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null
+    });
+  };
+
+  handleGoHome = () => {
+    window.location.href = '/';
+  };
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 text-center mb-2">
-              Something went wrong
-            </h3>
-            <p className="text-sm text-gray-500 text-center mb-4">
-              We're sorry, but something unexpected happened. Please try refreshing the page.
-            </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => window.location.reload()}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Try Again
-              </button>
-              <button
-                onClick={() => window.location.href = '/'}
-                className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-              >
-                Go to Home
-              </button>
-            </div>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mt-4 p-4 bg-gray-100 rounded-md">
-                <summary className="cursor-pointer text-sm font-medium text-gray-700">
-                  Error Details
-                </summary>
-                <pre className="mt-2 text-xs text-gray-600 whitespace-pre-wrap">
-                  {this.state.error.message}
-                  {this.state.error.stack}
-                </pre>
-              </details>
-            )}
-          </div>
+      // Custom fallback UI
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      // Default error UI
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                Something went wrong
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                We're sorry, but something unexpected happened. Please try again.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <div className="rounded-md bg-red-50 p-3">
+                  <h4 className="text-sm font-medium text-red-800">Error Details:</h4>
+                  <p className="mt-1 text-sm text-red-700">
+                    {this.state.error.message}
+                  </p>
+                  {this.state.errorInfo && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-sm text-red-600">
+                        Stack Trace
+                      </summary>
+                      <pre className="mt-2 text-xs text-red-600 overflow-auto">
+                        {this.state.errorInfo.componentStack}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex flex-col space-y-2">
+                <Button 
+                  onClick={this.handleRetry}
+                  className="w-full"
+                  variant="default"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Try Again
+                </Button>
+                
+                <Button 
+                  onClick={this.handleGoHome}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  Go Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       );
     }
@@ -73,3 +138,33 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+// Hook for functional components to catch errors
+export const useErrorHandler = () => {
+  const handleError = (error: Error, errorInfo?: string) => {
+    console.error('Error caught by useErrorHandler:', error);
+    
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Implement error logging service
+      console.error('Production error:', error, errorInfo);
+    }
+  };
+
+  return { handleError };
+};
+
+// Higher-order component for error boundaries
+export const withErrorBoundary = <P extends object>(
+  Component: React.ComponentType<P>,
+  errorBoundaryProps?: Omit<Props, 'children'>
+) => {
+  const WrappedComponent = (props: P) => (
+    <ErrorBoundary {...errorBoundaryProps}>
+      <Component {...props} />
+    </ErrorBoundary>
+  );
+
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
+  
+  return WrappedComponent;
+};
