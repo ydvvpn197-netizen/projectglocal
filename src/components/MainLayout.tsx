@@ -3,6 +3,7 @@ import { ConsolidatedHeader as Header } from './layout/ConsolidatedHeader';
 import { ConsolidatedSidebar as Sidebar } from './layout/ConsolidatedSidebar';
 import { ConsolidatedFooter as Footer } from './layout/ConsolidatedFooter';
 import { RightSidebar } from './layout/RightSidebar';
+import { SidebarProvider } from '@/components/ui/sidebarExports';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -74,12 +75,14 @@ export function MainLayout({
       <div className="flex flex-1">
         {/* Left Sidebar */}
         {shouldShowSidebar && (
-          <div className="fixed left-0 top-14 bottom-0 w-64 hidden lg:block z-30">
-            <Sidebar 
-              isOpen={sidebarOpen}
-              isMobile={isMobile}
-            />
-          </div>
+          <SidebarProvider>
+            <div className="fixed left-0 top-14 bottom-0 w-64 hidden lg:block z-30">
+              <Sidebar 
+                isOpen={sidebarOpen}
+                isMobile={isMobile}
+              />
+            </div>
+          </SidebarProvider>
         )}
 
         {/* Main Content */}
