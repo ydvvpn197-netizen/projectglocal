@@ -251,6 +251,10 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Projects");
+  
+  // State for collapsible sections - must be at top level
+  const [customFeedsOpen, setCustomFeedsOpen] = useState(true);
+  const [recentOpen, setRecentOpen] = useState(true);
 
   // Get navigation items based on variant
   const getNavigationItems = (): NavigationItem[] => {
@@ -526,10 +530,6 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
     );
   }
 
-  // Render main/admin sidebar using Reddit-inspired clean design
-  const [customFeedsOpen, setCustomFeedsOpen] = useState(true);
-  const [recentOpen, setRecentOpen] = useState(true);
-  
   // Get recent communities from localStorage
   const getRecentCommunities = () => {
     const recent = localStorage.getItem('recent_communities');
@@ -539,6 +539,8 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
       { name: 'Public Square', icon: Globe, path: '/public-square' },
     ];
   };
+  
+  // Render main/admin sidebar using Reddit-inspired clean design
 
   return (
     <Sidebar
