@@ -248,16 +248,15 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
           )}
 
           {/* Main Content Area */}
-          <SidebarInset className="flex-1">
+          <SidebarInset className="flex-1 min-w-0">
             <main className="flex-1 overflow-auto bg-background">
               <div className={cn(
-                'w-full mx-auto',
-                getMaxWidthClass(),
+                'w-full',
                 getPaddingClass(),
                 'pt-16 lg:pt-4'
               )}>
                 {showNewsFeed ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                     {/* Main Content Area */}
                     <div className="lg:col-span-3 min-h-0">
                       {children}
@@ -335,16 +334,15 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
           )}
 
           {/* Main Content Area */}
-          <SidebarInset className="flex-1">
+          <SidebarInset className="flex-1 min-w-0">
             <main className="flex-1 overflow-auto bg-background">
             <div className={cn(
-              'w-full mx-auto',
-              getMaxWidthClass(),
+              'w-full',
               getPaddingClass(),
               'pt-16 lg:pt-4 space-y-6'
             )}>
               {showNewsFeed ? (
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                   {/* Main Content Area */}
                   <div className="lg:col-span-3 min-h-0 space-y-4">
                     {children}
@@ -358,7 +356,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="w-full space-y-4">
+                <div className="w-full max-w-7xl mx-auto space-y-4">
                   {children}
                 </div>
               )}

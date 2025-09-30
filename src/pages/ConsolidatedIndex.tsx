@@ -337,7 +337,7 @@ const ConsolidatedIndex = () => {
         {/* Enhanced Hero Section - Mobile Optimized */}
         <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 px-4">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5"></div>
-          <div className="relative max-w-7xl mx-auto">
+          <div className="relative w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -393,7 +393,7 @@ const ConsolidatedIndex = () => {
 
         {/* Enhanced Hero Features - Mobile Optimized */}
         <section className="py-16 sm:py-20 px-4">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -445,7 +445,7 @@ const ConsolidatedIndex = () => {
 
         {/* Enhanced Trending Content - Mobile Optimized */}
         <section className="py-12 sm:py-16 px-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -728,7 +728,7 @@ const ConsolidatedIndex = () => {
 
         {/* Enhanced Community Spotlight */}
         <section className="py-20 px-4">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -812,7 +812,7 @@ const ConsolidatedIndex = () => {
 
         {/* Enhanced Categories */}
         <section className="py-20 px-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
