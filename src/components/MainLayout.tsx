@@ -15,7 +15,6 @@ interface MainLayoutProps {
   showHeader?: boolean;
   showSidebar?: boolean;
   showRightSidebar?: boolean;
-  showFooter?: boolean;
   headerVariant?: 'default' | 'minimal' | 'glass';
   sidebarCollapsible?: boolean;
   maxContentWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
@@ -28,7 +27,6 @@ export function MainLayout({
   showHeader = true,
   showSidebar = true,
   showRightSidebar = false,
-  showFooter = true,
   headerVariant = 'default',
   sidebarCollapsible = true,
   maxContentWidth = 'xl',
@@ -87,14 +85,13 @@ export function MainLayout({
 
         {/* Main Content */}
         <main className={cn(
-          'flex-1 flex',
+          'flex-1',
           'w-full min-w-0',
           shouldShowSidebar && !isMobile && 'lg:ml-64'
         )}>
           {/* Center Content Area */}
           <div className={cn(
-            'flex-1',
-            'w-full',
+            'w-full h-full',
             shouldShowRightSidebar ? 'max-w-3xl' : maxWidthClasses[maxContentWidth],
             'px-4 sm:px-6 lg:px-8',
             'mx-auto'
@@ -102,18 +99,6 @@ export function MainLayout({
             <div className="py-6">
               {children}
             </div>
-
-            {/* Footer */}
-            {showFooter && !shouldShowRightSidebar && (
-              <Footer 
-                variant="default"
-                showNewsletter={true}
-                showSocialLinks={true}
-                showContactInfo={true}
-                showQuickLinks={true}
-                showLegalLinks={true}
-              />
-            )}
           </div>
 
           {/* Right Sidebar */}

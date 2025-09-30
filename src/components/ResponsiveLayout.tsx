@@ -21,7 +21,6 @@ interface ResponsiveLayoutProps {
   useMobileLayout?: boolean;
   showHeader?: boolean;
   showSidebar?: boolean;
-  showFooter?: boolean;
   headerVariant?: 'default' | 'minimal' | 'glass';
 }
 
@@ -35,7 +34,6 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   useMobileLayout = true,
   showHeader = true,
   showSidebar = true,
-  showFooter = true,
   headerVariant = 'default'
 }) => {
   const isMobile = useMediaQuery('(max-width: 1024px)');
@@ -67,7 +65,6 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
       showHeader={showHeader}
       showSidebar={showSidebar && !!user}
       showRightSidebar={showRightSidebar}
-      showFooter={showFooter}
       headerVariant={headerVariant}
       maxContentWidth={maxWidth}
       showNewsFeed={showNewsFeed}

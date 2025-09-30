@@ -29,7 +29,6 @@ function AppContent() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isServiceWorkerRegistered, setIsServiceWorkerRegistered] = useState(false);
 
   // Register voice commands
   useCommonVoiceCommands();
@@ -62,7 +61,6 @@ function AppContent() {
           },
           onSuccess: (registration) => {
             console.log('Service Worker registered successfully');
-            setIsServiceWorkerRegistered(true);
           },
           onError: (error) => {
             console.error('Service Worker registration failed:', error);
@@ -73,10 +71,6 @@ function AppContent() {
             });
           }
         });
-
-        if (registration) {
-          setIsServiceWorkerRegistered(true);
-        }
       } catch (error) {
         console.error('Error registering Service Worker:', error);
       }
@@ -158,14 +152,6 @@ function AppContent() {
               </Suspense>
             </div>
 
-            {/* Service Worker Status Indicator */}
-            {isServiceWorkerRegistered && (
-              <div className="fixed top-4 right-4 z-50">
-                <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
-                  Offline Ready
-                </div>
-              </div>
-            )}
 
             {/* Toast Notifications */}
             <Toaster />
