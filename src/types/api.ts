@@ -1,5 +1,5 @@
 // API types for TheGlocal project
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -7,7 +7,7 @@ export interface ApiResponse<T = any> {
   timestamp: string;
 }
 
-export interface PaginatedResponse<T = any> extends ApiResponse<T[]> {
+export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
   pagination: {
     page: number;
     limit: number;
@@ -21,7 +21,7 @@ export interface PaginatedResponse<T = any> extends ApiResponse<T[]> {
 export interface ApiError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
   context?: string;
 }
@@ -381,7 +381,7 @@ export interface SearchRequest {
   limit?: number;
 }
 
-export interface SearchResult<T = any> {
+export interface SearchResult<T = unknown> {
   id: string;
   type: string;
   title: string;
@@ -391,7 +391,7 @@ export interface SearchResult<T = any> {
   data: T;
 }
 
-export interface SearchResponse<T = any> extends PaginatedResponse<SearchResult<T>> {
+export interface SearchResponse<T = unknown> extends PaginatedResponse<SearchResult<T>> {
   query: string;
   filters: {
     type?: string;
@@ -430,7 +430,7 @@ export interface Notification {
   type: 'like' | 'comment' | 'follow' | 'event' | 'post' | 'system';
   title: string;
   message: string;
-  data?: any;
+  data?: unknown;
   read: boolean;
   created_at: string;
 }
@@ -440,7 +440,7 @@ export interface CreateNotificationRequest {
   type: 'like' | 'comment' | 'follow' | 'event' | 'post' | 'system';
   title: string;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 // Report API types

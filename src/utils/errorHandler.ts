@@ -2,7 +2,7 @@
 export interface AppError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
   userId?: string;
   context?: string;
@@ -53,7 +53,7 @@ export class ErrorHandler {
   }
 
   // Handle API errors
-  handleApiError(error: any, endpoint: string): AppError {
+  handleApiError(error: Error | unknown, endpoint: string): AppError {
     const appError: AppError = {
       code: error.code || 'API_ERROR',
       message: error.message || 'API request failed',
@@ -71,7 +71,7 @@ export class ErrorHandler {
   }
 
   // Handle authentication errors
-  handleAuthError(error: any, action: string): AppError {
+  handleAuthError(error: Error | unknown, action: string): AppError {
     const appError: AppError = {
       code: 'AUTH_ERROR',
       message: error.message || 'Authentication failed',
@@ -88,7 +88,7 @@ export class ErrorHandler {
   }
 
   // Handle database errors
-  handleDatabaseError(error: any, operation: string): AppError {
+  handleDatabaseError(error: Error | unknown, operation: string): AppError {
     const appError: AppError = {
       code: 'DATABASE_ERROR',
       message: error.message || 'Database operation failed',
@@ -106,7 +106,7 @@ export class ErrorHandler {
   }
 
   // Handle validation errors
-  handleValidationError(error: any, field: string): AppError {
+  handleValidationError(error: Error | unknown, field: string): AppError {
     const appError: AppError = {
       code: 'VALIDATION_ERROR',
       message: error.message || 'Validation failed',
@@ -124,7 +124,7 @@ export class ErrorHandler {
   }
 
   // Handle network errors
-  handleNetworkError(error: any, url: string): AppError {
+  handleNetworkError(error: Error | unknown, url: string): AppError {
     const appError: AppError = {
       code: 'NETWORK_ERROR',
       message: error.message || 'Network request failed',
@@ -263,22 +263,22 @@ export const handleError = (error: Error | AppError, context?: string): AppError
   return errorHandler.handleError(error, context);
 };
 
-export const handleApiError = (error: any, endpoint: string): AppError => {
+export const handleApiError = (error: Error | unknown, endpoint: string): AppError => {
   return errorHandler.handleApiError(error, endpoint);
 };
 
-export const handleAuthError = (error: any, action: string): AppError => {
+export const handleAuthError = (error: Error | unknown, action: string): AppError => {
   return errorHandler.handleAuthError(error, action);
 };
 
-export const handleDatabaseError = (error: any, operation: string): AppError => {
+export const handleDatabaseError = (error: Error | unknown, operation: string): AppError => {
   return errorHandler.handleDatabaseError(error, operation);
 };
 
-export const handleValidationError = (error: any, field: string): AppError => {
+export const handleValidationError = (error: Error | unknown, field: string): AppError => {
   return errorHandler.handleValidationError(error, field);
 };
 
-export const handleNetworkError = (error: any, url: string): AppError => {
+export const handleNetworkError = (error: Error | unknown, url: string): AppError => {
   return errorHandler.handleNetworkError(error, url);
 };

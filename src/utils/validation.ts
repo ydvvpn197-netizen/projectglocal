@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const emailSchema = z.string().email('Invalid email address');
 export const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
 export const usernameSchema = z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be less than 20 characters');
-export const phoneSchema = z.string().regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format');
+export const phoneSchema = z.string().regex(/^\+?[\d\s\-()]+$/, 'Invalid phone number format');
 
 // User validation schemas
 export const userProfileSchema = z.object({
@@ -196,7 +196,7 @@ export const sanitizeUrl = (url: string): string => {
 
 // Validation middleware for API routes
 export const createValidationMiddleware = <T>(schema: z.ZodSchema<T>) => {
-  return (req: any, res: any, next: any) => {
+  return (req: unknown, res: unknown, next: unknown) => {
     const validation = validateData(schema, req.body);
     if (!validation.success) {
       return res.status(400).json({

@@ -36,12 +36,12 @@ export type RequestConfig = {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   url: string;
   headers?: Record<string, string>;
-  params?: Record<string, any>;
-  data?: any;
+  params?: Record<string, unknown>;
+  data?: unknown;
   timeout?: number;
 };
 
-export type ResponseConfig<T = any> = {
+export type ResponseConfig<T = unknown> = {
   data: T;
   status: number;
   statusText: string;
@@ -219,7 +219,7 @@ export type ErrorCode =
 export type ErrorDetails = {
   code: ErrorCode;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
   context?: string;
   stack?: string;
@@ -258,7 +258,7 @@ export type CacheEntry<T> = {
 // Analytics types
 export type AnalyticsEvent = {
   name: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   timestamp: string;
   userId?: string;
   sessionId?: string;
@@ -277,7 +277,7 @@ export type PerformanceMetric = {
   value: number;
   unit: string;
   timestamp: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 };
 
 export type PerformanceConfig = {

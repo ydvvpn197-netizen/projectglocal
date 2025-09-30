@@ -263,7 +263,7 @@ export interface AccordionItem {
   disabled?: boolean;
 }
 
-export interface TableProps<T = any> extends BaseComponentProps {
+export interface TableProps<T = unknown> extends BaseComponentProps {
   data: T[];
   columns: TableColumn<T>[];
   sortable?: boolean;
@@ -275,11 +275,11 @@ export interface TableProps<T = any> extends BaseComponentProps {
   emptyMessage?: string;
 }
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = unknown> {
   key: string;
   title: string;
   dataIndex?: keyof T;
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
   sortable?: boolean;
   filterable?: boolean;
   width?: number;
@@ -287,11 +287,11 @@ export interface TableColumn<T = any> {
 }
 
 export interface FormProps extends BaseComponentProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: unknown) => void;
   onReset?: () => void;
   loading?: boolean;
   disabled?: boolean;
-  validation?: any;
+  validation?: unknown;
 }
 
 export interface FormFieldProps extends BaseComponentProps {

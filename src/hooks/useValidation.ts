@@ -62,7 +62,7 @@ export const useFormValidation = <T>(schema: z.ZodSchema<T>) => {
   const [isValid, setIsValid] = useState<boolean>(false);
 
   // Update form data
-  const updateField = useCallback((field: keyof T, value: any) => {
+  const updateField = useCallback((field: keyof T, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -99,7 +99,7 @@ export const useFormValidation = <T>(schema: z.ZodSchema<T>) => {
   }, [schema, formData]);
 
   // Validate single field
-  const validateField = useCallback((field: keyof T, value: any): boolean => {
+  const validateField = useCallback((field: keyof T, value: unknown): boolean => {
     const fieldSchema = schema.shape[field];
     if (!fieldSchema) return true;
 
@@ -159,7 +159,7 @@ export const useRealTimeValidation = <T>(schema: z.ZodSchema<T>) => {
   const [isValidating, setIsValidating] = useState<boolean>(false);
 
   // Validate field in real-time
-  const validateField = useCallback(async (field: keyof T, value: any) => {
+  const validateField = useCallback(async (field: keyof T, value: unknown) => {
     setIsValidating(true);
     
     try {
