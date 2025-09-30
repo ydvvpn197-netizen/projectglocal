@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -751,39 +750,34 @@ const ConsolidatedProfile = () => {
 
   if (isLoading) {
     return (
-      <ResponsiveLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <h2 className="text-lg font-semibold mb-2">Loading Profile...</h2>
-            <p className="text-muted-foreground">Getting profile information</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold mb-2">Loading Profile...</h2>
+          <p className="text-muted-foreground">Getting profile information</p>
         </div>
-      </ResponsiveLayout>
+      </div>
     );
   }
 
   // Handle profile not found
   if (!profileUser && !artist) {
     return (
-      <ResponsiveLayout>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            The profile you're looking for doesn't exist or has been removed.
-          </p>
-          <Button onClick={() => navigate('/')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </div>
-      </ResponsiveLayout>
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
+        <p className="text-muted-foreground mb-6">
+          The profile you're looking for doesn't exist or has been removed.
+        </p>
+        <Button onClick={() => navigate('/')}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
     );
   }
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -1734,7 +1728,6 @@ const ConsolidatedProfile = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </ResponsiveLayout>
   );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -673,38 +672,33 @@ const ConsolidatedArtist: React.FC = () => {
   // Render profile mode (default)
   if (loading) {
     return (
-      <ResponsiveLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <h2 className="text-lg font-semibold mb-2">Loading Artist Profile...</h2>
-            <p className="text-muted-foreground">Getting artist information</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold mb-2">Loading Artist Profile...</h2>
+          <p className="text-muted-foreground">Getting artist information</p>
         </div>
-      </ResponsiveLayout>
+      </div>
     );
   }
 
   if (!artist) {
     return (
-      <ResponsiveLayout>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Artist Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            The artist profile you're looking for doesn't exist or has been removed.
-          </p>
-          <Button onClick={() => navigate('/')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </div>
-      </ResponsiveLayout>
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold mb-4">Artist Not Found</h2>
+        <p className="text-muted-foreground mb-6">
+          The artist profile you're looking for doesn't exist or has been removed.
+        </p>
+        <Button onClick={() => navigate('/')}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
     );
   }
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -1014,7 +1008,6 @@ const ConsolidatedArtist: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </ResponsiveLayout>
   );
 };
 

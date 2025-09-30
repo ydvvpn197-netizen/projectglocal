@@ -9,7 +9,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ResponsiveLayout } from "@/components/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -191,44 +190,39 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <ResponsiveLayout>
-        <div className="space-y-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
-            <div className="h-64 bg-muted rounded-lg mb-6"></div>
-            <div className="space-y-4">
-              <div className="h-6 bg-muted rounded w-3/4"></div>
-              <div className="h-4 bg-muted rounded w-full"></div>
-              <div className="h-4 bg-muted rounded w-2/3"></div>
-            </div>
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-muted rounded-lg mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-6 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-full"></div>
+            <div className="h-4 bg-muted rounded w-2/3"></div>
           </div>
         </div>
-      </ResponsiveLayout>
+      </div>
     );
   }
 
   if (!profileUser) {
     return (
-      <ResponsiveLayout>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">User Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            The user you're looking for doesn't exist or has been removed.
-          </p>
-          <Button onClick={() => navigate('/events')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Button>
-        </div>
-      </ResponsiveLayout>
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold mb-4">User Not Found</h2>
+        <p className="text-muted-foreground mb-6">
+          The user you're looking for doesn't exist or has been removed.
+        </p>
+        <Button onClick={() => navigate('/events')}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Events
+        </Button>
+      </div>
     );
   }
 
   const isOwnProfile = currentUser?.id === userId;
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -561,7 +555,6 @@ const UserProfile = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </ResponsiveLayout>
   );
 };
 
