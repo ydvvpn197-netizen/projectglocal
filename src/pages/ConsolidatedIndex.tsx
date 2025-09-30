@@ -298,46 +298,12 @@ const ConsolidatedIndex = () => {
   }
 
   return (
-    <StandardPageLayout
-      title="Welcome to TheGlocal"
-      subtitle="Your Local Community Hub"
-      description="Connect with your neighbors, discover local events, and share your stories with the world."
-      variant="hero"
-      background="gradient"
-      maxWidth="full"
-      padding="none"
-      badges={[
-        { label: "Live", variant: "destructive", icon: <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> },
-        { label: "Community", variant: "secondary", icon: <Users className="w-3 h-3" /> },
-        { label: "Local", variant: "outline", icon: <MapPin className="w-3 h-3" /> }
-      ]}
-      actions={
-        <div className="flex flex-col sm:flex-row gap-3">
-          <UnifiedButton
-            size="lg"
-            variant="default"
-            className="text-base px-6 py-3"
-            onClick={() => navigate('/signup')}
-          >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Join TheGlocal
-          </UnifiedButton>
-          <UnifiedButton
-            size="lg"
-            variant="outline"
-            className="text-base px-6 py-3"
-            onClick={() => navigate('/about')}
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Learn More
-          </UnifiedButton>
-        </div>
-      }
-    >
-        {/* Enhanced Hero Section - Mobile Optimized */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30">
+      <div className="w-full">
+        {/* Hero Section with Full Width Layout */}
         <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 px-4">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5"></div>
-          <div className="relative w-full">
+          <div className="relative max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -345,6 +311,14 @@ const ConsolidatedIndex = () => {
               className="text-center space-y-4 sm:space-y-6"
             >
               <div className="space-y-2 sm:space-y-3">
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.1 }}
+                  className="text-sm font-medium text-muted-foreground mb-2"
+                >
+                  Your Local Community Hub
+                </motion.p>
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -357,11 +331,32 @@ const ConsolidatedIndex = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto px-4"
+                  className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto px-4"
                 >
-                  Connect with your local community, discover amazing events, and share your stories with the world.
+                  Connect with your neighbors, discover local events, and share your stories with the world.
                 </motion.p>
               </div>
+
+              {/* Badges */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="flex flex-wrap justify-center gap-2 mb-6"
+              >
+                <Badge variant="destructive" className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  Live
+                </Badge>
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  Community
+                </Badge>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  Local
+                </Badge>
+              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -372,19 +367,19 @@ const ConsolidatedIndex = () => {
                 <UnifiedButton
                   size="lg"
                   className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
-                  onClick={() => navigate('/events')}
+                  onClick={() => navigate('/signup')}
                 >
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Explore Events
+                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Join TheGlocal
                 </UnifiedButton>
                 <UnifiedButton
                   variant="outline"
                   size="lg"
                   className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
-                  onClick={() => navigate('/create')}
+                  onClick={() => navigate('/about')}
                 >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Share Your Story
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Learn More
                 </UnifiedButton>
               </motion.div>
             </motion.div>
@@ -887,7 +882,8 @@ const ConsolidatedIndex = () => {
             </motion.div>
           </div>
         </section>
-    </StandardPageLayout>
+      </div>
+    </div>
   );
 };
 

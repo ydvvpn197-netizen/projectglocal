@@ -334,13 +334,13 @@ export const ConsolidatedHeader: React.FC<ConsolidatedHeaderProps> = ({
           {/* Left Section - Logo and Search */}
           <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
             {/* Logo - Compact on mobile */}
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
               <img 
                 src="/logo.png" 
                 alt="TheGlocal Logo" 
-                className="h-8 w-8"
+                className="h-8 w-8 flex-shrink-0"
               />
-              <span className="text-lg lg:text-xl font-bold hidden sm:inline">
+              <span className="text-lg lg:text-xl font-bold hidden sm:inline truncate">
                 {title || 'TheGlocal'}
               </span>
             </Link>

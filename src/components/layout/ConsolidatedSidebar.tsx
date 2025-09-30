@@ -139,7 +139,7 @@ const mainNavigationItems: NavigationItem[] = [
   
   // Explore navigation
   { label: 'News', href: '/news', icon: Newspaper, priority: 'medium', group: 'explore', mobile: true },
-  { label: 'Public Square', href: '/public-square', icon: Globe, priority: 'low', group: 'explore' },
+  { label: 'Public Square', href: '/public-square', icon: Globe, priority: 'medium', group: 'explore', mobile: true },
   { label: 'Local Communities', href: '/communities', icon: Building2, priority: 'low', group: 'explore' },
   { label: 'Local Businesses', href: '/businesses', icon: Store, priority: 'low', group: 'explore' },
   { label: 'Polls', href: '/polls', icon: Vote, priority: 'low', group: 'explore' },
@@ -537,7 +537,6 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
     return recent ? JSON.parse(recent) : [
       { name: 'Local Events', icon: Calendar, path: '/events' },
       { name: 'Community News', icon: Newspaper, path: '/news' },
-      { name: 'Public Square', icon: Globe, path: '/public-square' },
     ];
   };
   
@@ -552,8 +551,8 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
       )}
       collapsible="icon"
     >
-      <SidebarContent className="p-0">
-        <ScrollArea className="h-full">
+      <SidebarContent className="p-0 flex flex-col h-full">
+        <ScrollArea className="flex-1">
           <div className="py-3 px-2 space-y-1">
             {/* Primary Navigation */}
             <SidebarMenu>
