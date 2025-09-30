@@ -74,6 +74,7 @@ const TestButtons = lazy(() => import('@/pages/TestButtons'));
 const PerformancePage = lazy(() => import('@/pages/PerformancePage'));
 const EnhancedSearchDemo = lazy(() => import('@/pages/EnhancedSearchDemo'));
 const VoiceControlDemo = lazy(() => import('@/pages/VoiceControlDemo'));
+const MonetizationTest = lazy(() => import('@/pages/MonetizationTest'));
 
 // Utility Pages
 const NotFound = lazy(() => import('@/pages/NotFound'));
