@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { StandardPageLayout, StandardContentSection, StandardGridLayout } from "@/components/layout";
 import { 
   Search, 
   Filter, 
@@ -24,9 +23,7 @@ import {
   Bell,
   Settings,
   Globe,
-  Local,
-  Following,
-  Latest
+  Star
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { usePosts } from "@/hooks/usePosts";
@@ -173,18 +170,20 @@ const ConsolidatedFeed = () => {
   // Enhanced loading state
   if (postsLoading && eventsLoading && communitiesLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <h2 className="text-lg font-semibold mb-2">Loading Feed...</h2>
-          <p className="text-muted-foreground">Getting the latest content for you</p>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <h2 className="text-lg font-semibold mb-2">Loading Feed...</h2>
+            <p className="text-muted-foreground">Getting the latest content for you</p>
+          </div>
         </div>
       </div>
     );
   }
 
   const FeedContent = () => (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
       {/* Enhanced Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -501,29 +500,7 @@ const ConsolidatedFeed = () => {
   );
 
   return (
-    <StandardPageLayout
-      title="Your Feed"
-      subtitle="Stay connected with your community"
-      description="Discover the latest posts, events, and updates from your local community"
-      variant="dashboard"
-      maxWidth="xl"
-      badges={[
-        { label: "Live Feed", variant: "secondary", icon: <TrendingUp className="w-3 h-3" /> },
-        { label: "Community", variant: "outline", icon: <Users className="w-3 h-3" /> }
-      ]}
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-      }
-    >
+    <>
       <FeedContent />
       
       {/* Voice Control Panel */}
@@ -533,7 +510,7 @@ const ConsolidatedFeed = () => {
           onClose={() => setShowVoiceControl(false)}
         />
       )}
-    </StandardPageLayout>
+    </>
   );
 };
 

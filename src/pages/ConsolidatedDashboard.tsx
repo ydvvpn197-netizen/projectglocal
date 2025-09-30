@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StandardPageLayout, StandardContentSection } from '@/components/layout';
 import { ClientBookingsPanel } from '@/components/ClientBookingsPanel';
 import { BookingRequestsPanel } from '@/components/BookingRequestsPanel';
 import { AcceptedBookingsPanel } from '@/components/AcceptedBookingsPanel';
@@ -590,63 +589,73 @@ const ConsolidatedDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <StandardPageLayout
-        title="Loading Dashboard"
-        subtitle="Please wait"
-        description="Loading your dashboard data..."
-        variant="dashboard"
-        maxWidth="xl"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      <PageLayout>
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Loading Dashboard</h1>
+            <p className="text-muted-foreground">Loading your dashboard data...</p>
+          </div>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
         </div>
-      </StandardPageLayout>
+      </PageLayout>
     );
   }
 
   if (error) {
     return (
-      <StandardPageLayout
-        title="Error Loading Dashboard"
-        subtitle="Something went wrong"
-        description="We encountered an error while loading your dashboard."
-        variant="dashboard"
-        maxWidth="xl"
-        badges={[
-          { label: "Error", variant: "destructive", icon: <AlertTriangle className="w-3 h-3" /> }
-        ]}
-      >
-        <div className="text-center py-12">
-          <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Dashboard</h3>
-          <p className="text-gray-600">{error}</p>
+      <PageLayout>
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h1 className="text-3xl font-bold">Error Loading Dashboard</h1>
+              <Badge variant="destructive"><AlertTriangle className="w-3 h-3 mr-1" />Error</Badge>
+            </div>
+            <p className="text-muted-foreground">We encountered an error while loading your dashboard.</p>
+          </div>
+          <div className="text-center py-12">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Dashboard</h3>
+            <p className="text-gray-600">{error}</p>
+          </div>
         </div>
-      </StandardPageLayout>
+      </PageLayout>
     );
   }
 
   return (
-    <StandardPageLayout
-      title={userType === 'artist' ? 'Artist Dashboard' : 'User Dashboard'}
-      subtitle={userType === 'artist' ? 'Manage your bookings and earnings' : 'Track your bookings and account'}
-      description={userType === 'artist' 
-        ? 'Manage your bookings, earnings, and client interactions'
-        : 'Explore communities, book artists, and stay connected'}
-      variant="dashboard"
-      maxWidth="xl"
-      badges={[
-        { label: userType === 'artist' ? 'Artist' : 'User', variant: userType === 'artist' ? 'default' : 'secondary', icon: <User className="w-3 h-3" /> },
-        { label: "Dashboard", variant: "outline", icon: <TrendingUp className="w-3 h-3" /> }
-      ]}
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
-            Settings
-          </Button>
+    <PageLayout>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold">
+                  {userType === 'artist' ? 'Artist Dashboard' : 'User Dashboard'}
+                </h1>
+                <Badge variant={userType === 'artist' ? 'default' : 'secondary'}>
+                  <User className="w-3 h-3 mr-1" />
+                  {userType === 'artist' ? 'Artist' : 'User'}
+                </Badge>
+                <Badge variant="outline">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  Dashboard
+                </Badge>
+              </div>
+              <p className="text-muted-foreground">
+                {userType === 'artist' 
+                  ? 'Manage your bookings, earnings, and client interactions'
+                  : 'Explore communities, book artists, and stay connected'}
+              </p>
+            </div>
+            <Button variant="outline" size="sm">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+          </div>
         </div>
-      }
-    >
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as string)}>
@@ -678,7 +687,8 @@ const ConsolidatedDashboard: React.FC = () => {
             {renderAnalytics()}
           </TabsContent>
         </Tabs>
-    </StandardPageLayout>
+      </div>
+    </PageLayout>
   );
 };
 
