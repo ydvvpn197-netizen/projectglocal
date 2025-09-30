@@ -72,6 +72,7 @@ const LocalCommunities = lazy(() => import('@/pages/LocalCommunities'));
 const CivicEngagementTest = lazy(() => import('@/pages/CivicEngagementTest'));
 const TestButtons = lazy(() => import('@/pages/TestButtons'));
 const PerformancePage = lazy(() => import('@/pages/PerformancePage'));
+const EnhancedSearchDemo = lazy(() => import('@/pages/EnhancedSearchDemo'));
 
 // Utility Pages
 const NotFound = lazy(() => import('@/pages/NotFound'));
