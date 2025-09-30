@@ -204,14 +204,6 @@ const ConsolidatedFeed = () => {
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowVoiceControl(!showVoiceControl)}
-          >
-            <Bell className="h-4 w-4 mr-2" />
-            Voice
-          </Button>
         </div>
       </div>
 

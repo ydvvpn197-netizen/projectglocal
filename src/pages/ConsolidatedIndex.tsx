@@ -16,27 +16,14 @@ import {
   MapPin,
   Users,
   Calendar,
-  Zap,
-  Sparkles,
-  TrendingUp,
-  Flame,
   Star,
   Heart,
   MessageCircle,
   Share2,
-  Clock,
-  Tag,
-  Award,
-  Trophy,
   Globe,
   Home,
   Plus,
   Bell,
-  Settings,
-  Ticket,
-  Play,
-  Camera,
-  Mic,
   BookOpen,
   Music,
   Palette,
@@ -47,53 +34,17 @@ import {
   Leaf,
   Mountain,
   Shield,
-  HeartHandshake,
   Target,
-  Lightbulb,
-  Rocket,
   CheckCircle,
-  BarChart3,
   UserPlus,
-  Megaphone,
   Building2,
-  TreePine,
   Utensils,
   Dumbbell,
   GraduationCap,
   Briefcase,
-  Gamepad2,
-  Smartphone,
-  Laptop,
-  Headphones,
-  ShoppingBag,
-  Gift,
-  PartyPopper,
-  Sun,
-  Moon,
-  Cloud,
-  CloudRain,
-  Snowflake,
-  Wind,
-  Droplets,
-  Thermometer,
-  Eye,
   Search,
   Filter,
-  Grid3X3,
-  List,
-  MoreHorizontal,
-  Mail,
-  Phone,
-  Map,
-  Navigation,
-  Compass,
-  Flag,
-  Hash,
-  AtSign,
-  DollarSign,
-  CreditCard,
-  Wallet,
-  PiggyBank,
+  TrendingUp,
   TrendingDown,
   Activity
 } from 'lucide-react';
@@ -382,16 +333,16 @@ const ConsolidatedIndex = () => {
       }
     >
         {/* Enhanced Hero Section - Mobile Optimized */}
-        <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 px-4">
+        <section className="relative overflow-hidden py-12 sm:py-16 lg:py-20 px-4">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-pink-600/5"></div>
           <div className="relative max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center space-y-6 sm:space-y-8"
+              className="text-center space-y-4 sm:space-y-6"
             >
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-3">
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -491,21 +442,21 @@ const ConsolidatedIndex = () => {
         </section>
 
         {/* Enhanced Trending Content - Mobile Optimized */}
-        <section className="py-16 sm:py-20 px-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
+        <section className="py-12 sm:py-16 px-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-12 sm:mb-16"
+              className="text-center mb-8 sm:mb-12"
             >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">Trending Now</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">Trending Now</h2>
               <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
                 Discover what's popular in your community right now
               </p>
             </motion.div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 sm:space-y-12">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 sm:space-y-8">
               <div className="flex justify-center px-4">
                 <TabsList className="grid w-full max-w-lg grid-cols-3 h-auto bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-lg">
                   <TabsTrigger value="trending" className="flex items-center gap-2 text-sm sm:text-base py-3 px-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">

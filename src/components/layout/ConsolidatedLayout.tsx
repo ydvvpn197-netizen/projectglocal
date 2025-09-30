@@ -94,7 +94,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
       case 'sm': return 'max-w-sm';
       case 'md': return 'max-w-md';
       case 'lg': return 'max-w-lg';
-      case 'xl': return 'max-w-xl';
+      case 'xl': return 'max-w-7xl';
       case '2xl': return 'max-w-2xl';
       case 'full': return 'max-w-full';
       default: return 'max-w-7xl';
@@ -105,7 +105,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
   const getPaddingClass = () => {
     switch (padding) {
       case 'none': return '';
-      case 'sm': return 'px-2 py-2';
+      case 'sm': return 'px-3 py-3';
       case 'md': return 'px-4 py-4';
       case 'lg': return 'px-6 py-6';
       default: return 'px-4 py-4';
@@ -133,7 +133,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
             className="z-40"
           />
           
-          <div className={cn('w-full mx-auto', getMaxWidthClass(), getPaddingClass())}>
+          <div className={cn('w-full mx-auto', getMaxWidthClass(), getPaddingClass(), 'space-y-4')}>
             {children}
           </div>
         </div>
@@ -341,12 +341,12 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
               'w-full mx-auto',
               getMaxWidthClass(),
               getPaddingClass(),
-              'pt-16 lg:pt-4'
+              'pt-16 lg:pt-4 space-y-6'
             )}>
               {showNewsFeed ? (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   {/* Main Content Area */}
-                  <div className="lg:col-span-3 min-h-0">
+                  <div className="lg:col-span-3 min-h-0 space-y-4">
                     {children}
                   </div>
                   
@@ -358,7 +358,7 @@ export const ConsolidatedLayout: React.FC<ConsolidatedLayoutProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="w-full max-w-7xl mx-auto">
+                <div className="w-full space-y-4">
                   {children}
                 </div>
               )}

@@ -43,71 +43,7 @@ import {
   Hash,
   AtSign,
   ExternalLink,
-  AlertTriangle,
-  BookOpen as BookOpenIcon,
-  Music,
-  Camera,
-  Mic,
-  Coffee,
-  Car,
-  Building,
-  Leaf,
-  Mountain,
-  Globe,
-  UserPlus,
-  Crown,
-  Sparkles,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown,
-  Activity as ActivityIcon,
-  BarChart3 as BarChart3Icon,
-  MessageSquare as MessageSquareIcon,
-  Navigation as NavigationIcon,
-  Compass as CompassIcon,
-  Flag as FlagIcon,
-  Hash as HashIcon,
-  AtSign as AtSignIcon,
-  ExternalLink as ExternalLinkIcon,
-  BookOpen as BookOpenIcon2,
-  Music as MusicIcon,
-  Camera as CameraIcon,
-  Mic as MicIcon,
-  Coffee as CoffeeIcon,
-  Car as CarIcon,
-  Building as BuildingIcon,
-  Leaf as LeafIcon,
-  Mountain as MountainIcon,
-  Globe as GlobeIcon,
-  UserPlus as UserPlusIcon,
-  Crown as CrownIcon,
-  Sparkles as SparklesIcon,
-  TrendingUp as TrendingUpIcon2,
-  TrendingDown as TrendingDownIcon,
-  Activity as ActivityIcon2,
-  BarChart3 as BarChart3Icon2,
-  MessageSquare as MessageSquareIcon2,
-  Navigation as NavigationIcon2,
-  Compass as CompassIcon2,
-  Flag as FlagIcon2,
-  Hash as HashIcon2,
-  AtSign as AtSignIcon2,
-  ExternalLink as ExternalLinkIcon2,
-  BookOpen as BookOpenIcon3,
-  Music as MusicIcon2,
-  Camera as CameraIcon2,
-  Mic as MicIcon2,
-  Coffee as CoffeeIcon2,
-  Car as CarIcon2,
-  Building as BuildingIcon2,
-  Leaf as LeafIcon2,
-  Mountain as MountainIcon2,
-  Globe as GlobeIcon2,
-  UserPlus as UserPlusIcon2,
-  Crown as CrownIcon2,
-  Sparkles as SparklesIcon2,
-  TrendingUp as TrendingUpIcon3,
-  TrendingDown as TrendingDownIcon2,
-  Activity as ActivityIcon3
+  AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -332,7 +268,7 @@ const ConsolidatedDashboard: React.FC = () => {
       title: 'Create Post',
       description: 'Share something with your community',
       icon: <Plus className="w-5 h-5" />,
-      action: () => navigate('/create-post'),
+      action: () => navigate('/create'),
       color: 'bg-blue-500'
     },
     {
@@ -340,7 +276,7 @@ const ConsolidatedDashboard: React.FC = () => {
       title: 'Create Event',
       description: 'Organize a community event',
       icon: <CalendarDays className="w-5 h-5" />,
-      action: () => navigate('/create-event'),
+      action: () => navigate('/create'),
       color: 'bg-green-500'
     },
     {
@@ -667,23 +603,23 @@ const ConsolidatedDashboard: React.FC = () => {
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-4">
             {renderOverview()}
           </TabsContent>
 
-          <TabsContent value="bookings" className="space-y-6">
+          <TabsContent value="bookings" className="space-y-4">
             {renderBookings()}
           </TabsContent>
 
-          <TabsContent value="earnings" className="space-y-6">
+          <TabsContent value="earnings" className="space-y-4">
             {renderEarnings()}
           </TabsContent>
 
-          <TabsContent value="chats" className="space-y-6">
+          <TabsContent value="chats" className="space-y-4">
             {renderChats()}
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
+          <TabsContent value="analytics" className="space-y-4">
             {renderAnalytics()}
           </TabsContent>
         </Tabs>
