@@ -1,3 +1,12 @@
+/**
+ * @deprecated This file is deprecated and will be removed in a future version.
+ * Please use ConsolidatedSettings.tsx instead.
+ * Category: settings
+ * 
+ * This page has been consolidated to provide a better, more consistent user experience.
+ * All functionality from this page is available in the consolidated version.
+ */
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';

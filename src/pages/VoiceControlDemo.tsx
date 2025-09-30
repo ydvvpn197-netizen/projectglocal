@@ -1,3 +1,10 @@
+/**
+ * @internal Test/Demo page
+ * This page is for testing and demonstration purposes.
+ * Should be moved to /dev route behind feature flag.
+ * Not for production use.
+ */
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, Command, ArrowRight, CheckCircle, XCircle } from 'lucide-react';

@@ -15,6 +15,7 @@ interface ResponsiveLayoutProps {
   children: React.ReactNode;
   className?: string;
   showNewsFeed?: boolean;
+  showRightSidebar?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   useMobileLayout?: boolean;
@@ -28,6 +29,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   children, 
   className,
   showNewsFeed = false,
+  showRightSidebar = false,
   maxWidth = 'xl',
   padding = 'md',
   useMobileLayout = true,
@@ -64,6 +66,7 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
       className={className}
       showHeader={showHeader}
       showSidebar={showSidebar && !!user}
+      showRightSidebar={showRightSidebar}
       showFooter={showFooter}
       headerVariant={headerVariant}
       maxContentWidth={maxWidth}

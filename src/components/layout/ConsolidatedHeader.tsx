@@ -43,7 +43,9 @@ import {
   ChevronDown,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  MessageSquare,
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -327,103 +329,187 @@ export const ConsolidatedHeader: React.FC<ConsolidatedHeaderProps> = ({
       getVariantStyles(),
       className
     )}>
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Left Section */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile Menu Button */}
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMenuToggle || toggleSidebar}
-                className="md:hidden"
-              >
-                {isMenuOpen || sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
-            )}
-
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
+      <div className="max-w-full px-3 lg:px-6">
+        <div className="flex h-14 items-center justify-between gap-2">
+          {/* Left Section - Logo and Search */}
+          <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
+            {/* Logo - Compact on mobile */}
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
               <img 
                 src="/logo.png" 
                 alt="TheGlocal Logo" 
                 className="h-8 w-8"
               />
-              <span className="text-xl font-bold">
+              <span className="text-lg lg:text-xl font-bold hidden sm:inline">
                 {title || 'TheGlocal'}
               </span>
             </Link>
 
-            {/* Subtitle for admin variant */}
-            {variant === 'admin' && subtitle && (
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {subtitle}
-              </span>
+            {/* Search Bar - Prominent like Reddit */}
+            {showSearch && !isMobile && (
+              <div className="flex-1 max-w-2xl">
+                <form onSubmit={handleSearch} className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    type="text"
+                    placeholder="Search TheGlocal"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    className={cn(
+                      'pl-10 pr-4 h-10 bg-muted/50 border-muted hover:border-border hover:bg-background focus:bg-background transition-colors rounded-full',
+                      isSearchFocused && 'ring-1 ring-primary border-transparent'
+                    )}
+                  />
+                </form>
+              </div>
             )}
-
-            {/* Navigation */}
-            {renderNavigation()}
           </div>
 
-          {/* Center Section - Search */}
-          {showSearch && (
-            <div className="flex-1 max-w-md mx-4">
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search community, events, news..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
-                  className={cn(
-                    'pl-10 pr-4 w-full',
-                    isSearchFocused && 'ring-2 ring-primary'
-                  )}
-                />
-              </form>
-            </div>
-          )}
-
-          {/* Right Section */}
-          <div className="flex items-center space-x-2">
-            {/* Location Controls */}
-            {renderLocationControls()}
-
-            {/* Create Button */}
-            {showCreateButton && user && (
-              <Button onClick={handleCreatePost} size="sm" className="hidden sm:flex">
-                <Plus className="h-4 w-4 mr-2" />
-                Create
+          {/* Right Section - Actions */}
+          <div className="flex items-center gap-1 lg:gap-2 flex-shrink-0">
+            {/* Search Icon for Mobile */}
+            {showSearch && isMobile && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-9 w-9 p-0"
+                onClick={() => navigate('/search')}
+              >
+                <Search className="h-5 w-5" />
               </Button>
+            )}
+
+            {/* Create Post Button */}
+            {showCreateButton && user && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={handleCreatePost} 
+                      size="sm" 
+                      variant="ghost"
+                      className="hidden sm:flex h-9 px-3 gap-1"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden lg:inline">Create</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Create Post</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             {/* Notifications */}
             {showNotifications && user && (
-              <div className="flex items-center space-x-1">
-                <NotificationBell />
+              <div className="flex items-center">
                 <NotificationButton />
               </div>
             )}
 
-            {/* Theme Toggle */}
-            <div className="hidden sm:block">
-              {renderThemeToggle()}
-            </div>
+            {/* Messages */}
+            {user && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-9 w-9 p-0"
+                      onClick={() => navigate('/messages')}
+                    >
+                      <MessageSquare className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Messages</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
 
-            {/* User Menu */}
-            {renderUserMenu()}
-
-            {/* Login Button for non-authenticated users */}
-            {!user && (
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" asChild>
-                  <Link to="/login">Login</Link>
+            {/* User Menu - Reddit Style */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-9 px-2 gap-2 hover:bg-muted">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={user.avatar_url} alt={user.display_name || user.email} />
+                      <AvatarFallback className="text-xs">
+                        {user.display_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden lg:flex flex-col items-start min-w-0">
+                      <span className="text-xs font-medium truncate max-w-[100px]">
+                        {user.display_name || user.email?.split('@')[0]}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user.display_name || 'User'}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>View Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center cursor-pointer">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="flex items-center cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center cursor-pointer">
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Admin Panel</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleThemeChange(theme === 'light' ? 'dark' : 'light')} className="cursor-pointer">
+                    {theme === 'light' ? (
+                      <Moon className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Sun className="mr-2 h-4 w-4" />
+                    )}
+                    <span>{theme === 'light' ? 'Dark' : 'Light'} Mode</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild className="h-9">
+                  <Link to="/signin">Log In</Link>
                 </Button>
-                <Button asChild>
-                  <Link to="/register">Sign Up</Link>
+                <Button size="sm" asChild className="h-9 hidden sm:flex">
+                  <Link to="/signup">Sign Up</Link>
                 </Button>
               </div>
             )}
@@ -434,5 +520,3 @@ export const ConsolidatedHeader: React.FC<ConsolidatedHeaderProps> = ({
   );
 };
 
-// Import missing icons
-import { Calendar, Newspaper } from 'lucide-react';

@@ -1,3 +1,10 @@
+/**
+ * @internal Test/Demo page
+ * This page is for testing and demonstration purposes.
+ * Should be moved to /dev route behind feature flag.
+ * Not for production use.
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ResponsiveLayout } from '@/components/ResponsiveLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

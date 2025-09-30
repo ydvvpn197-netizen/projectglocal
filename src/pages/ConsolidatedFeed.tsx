@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { FeedPageTemplate } from "@/components/layout/UnifiedPageTemplate";
+import { RedditStyleFeed } from "@/components/feed/RedditStyleFeed";
 import { VoiceControlPanel } from "@/components/VoiceControlPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

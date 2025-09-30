@@ -10,60 +10,72 @@ import { AdminRoute } from '@/components/AdminRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load pages for better performance - Using consolidated versions
+// Main Pages
 const Index = lazy(() => import('@/pages/ConsolidatedIndex'));
-const HomePage = lazy(() => import('@/pages/ConsolidatedIndex'));
-const Events = lazy(() => import('@/pages/ConsolidatedEvents'));
-const EventDetails = lazy(() => import('@/pages/EventDetails'));
-const CreateEvent = lazy(() => import('@/pages/CreateEvent'));
-const Community = lazy(() => import('@/pages/ConsolidatedCommunity'));
-const Profile = lazy(() => import('@/pages/ConsolidatedProfile'));
-const Messages = lazy(() => import('@/pages/EnhancedMessages'));
-const Notifications = lazy(() => import('@/pages/NotificationsPage'));
-const Settings = lazy(() => import('@/pages/ConsolidatedSettings'));
-const About = lazy(() => import('@/pages/About'));
-const Discover = lazy(() => import('@/pages/Discover'));
-const News = lazy(() => import('@/pages/News'));
 const Feed = lazy(() => import('@/pages/ConsolidatedFeed'));
 const Dashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
-const UserDashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
-const ArtistDashboard = lazy(() => import('@/pages/ConsolidatedDashboard'));
-const SignIn = lazy(() => import('@/pages/SignIn'));
-const SignUp = lazy(() => import('@/pages/SignUp'));
+const Discover = lazy(() => import('@/pages/Discover'));
+const News = lazy(() => import('@/pages/News'));
+
+// User Pages - Consolidated
+const ConsolidatedProfile = lazy(() => import('@/pages/ConsolidatedProfile'));
+const ConsolidatedSettings = lazy(() => import('@/pages/ConsolidatedSettings'));
+const ConsolidatedNotifications = lazy(() => import('@/pages/ConsolidatedNotifications'));
+const ConsolidatedChat = lazy(() => import('@/pages/ConsolidatedChat'));
+
+// Content Creation - Consolidated
+const ConsolidatedCreate = lazy(() => import('@/pages/ConsolidatedCreate'));
+
+// Events
+const Events = lazy(() => import('@/pages/ConsolidatedEvents'));
+const EventDetails = lazy(() => import('@/pages/EventDetails'));
+
+// Community - Consolidated
+const Community = lazy(() => import('@/pages/ConsolidatedCommunity'));
 const CommunityInsights = lazy(() => import('@/pages/ConsolidatedCommunityInsights'));
+
+// Auth - Consolidated
+const ConsolidatedAuth = lazy(() => import('@/pages/ConsolidatedAuth'));
+
+// Features
 const LegalAssistant = lazy(() => import('@/pages/LegalAssistant'));
 const LifeWish = lazy(() => import('@/pages/LifeWish'));
 
+// Static Pages
+const About = lazy(() => import('@/pages/About'));
+
 // Additional pages that need integration
-const PublicSquare = lazy(() => import('@/pages/PublicSquare'));
-const Polls = lazy(() => import('@/pages/Polls'));
-const CivicEngagementTest = lazy(() => import('@/pages/CivicEngagementTest'));
-const NotFound = lazy(() => import('@/pages/NotFound'));
-const Pricing = lazy(() => import('@/pages/Pricing'));
-const Privacy = lazy(() => import('@/pages/Privacy'));
-const BookArtist = lazy(() => import('@/pages/BookArtist'));
-const BookArtistSimple = lazy(() => import('@/pages/BookArtistSimple'));
-const BookArtistTest = lazy(() => import('@/pages/BookArtistTest'));
-const ArtistProfile = lazy(() => import('@/pages/ArtistProfile'));
-const ArtistOnboarding = lazy(() => import('@/pages/ArtistOnboarding'));
-const LocalBusinesses = lazy(() => import('@/pages/LocalBusinesses'));
-const LocalCommunities = lazy(() => import('@/pages/LocalCommunities'));
-const TestButtons = lazy(() => import('@/pages/TestButtons'));
-const PerformancePage = lazy(() => import('@/pages/PerformancePage'));
-const EnhancedSearchDemo = lazy(() => import('@/pages/EnhancedSearchDemo'));
-const VoiceControlDemo = lazy(() => import('@/pages/VoiceControlDemo'));
-const MonetizationTest = lazy(() => import('@/pages/MonetizationTest'));
-const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
-const SubscriptionPlansPage = lazy(() => import('@/pages/SubscriptionPlansPage'));
+// Booking & Artist - Consolidated
+const ConsolidatedBooking = lazy(() => import('@/pages/ConsolidatedBooking'));
+const ConsolidatedArtist = lazy(() => import('@/pages/ConsolidatedArtist'));
+
+// Subscription - Consolidated
+const ConsolidatedSubscription = lazy(() => import('@/pages/ConsolidatedSubscription'));
 const SubscriptionSuccess = lazy(() => import('@/pages/SubscriptionSuccess'));
 const SubscriptionCancel = lazy(() => import('@/pages/SubscriptionCancel'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentCancel = lazy(() => import('@/pages/PaymentCancel'));
+
+// Onboarding - Consolidated
+const ConsolidatedOnboarding = lazy(() => import('@/pages/ConsolidatedOnboarding'));
+
+// Auth Utility Pages
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const AuthCallback = lazy(() => import('@/pages/AuthCallback'));
-const Onboarding = lazy(() => import('@/pages/Onboarding'));
-const PrivacyFirstOnboarding = lazy(() => import('@/pages/PrivacyFirstOnboarding'));
+
+// Feature Pages
+const PublicSquare = lazy(() => import('@/pages/PublicSquare'));
+const Polls = lazy(() => import('@/pages/Polls'));
+const LocalBusinesses = lazy(() => import('@/pages/LocalBusinesses'));
+const LocalCommunities = lazy(() => import('@/pages/LocalCommunities'));
+
+// Utility Pages
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
 const LocationSetup = lazy(() => import('@/pages/LocationSetup'));
+const PostDetailPage = lazy(() => import('@/pages/PostDetailPage'));
 const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const AdminAnalytics = lazy(() => import('@/pages/admin/Analytics'));
@@ -100,45 +112,67 @@ export const AppRoutes: React.FC = () => {
           <Events />
         </Suspense>
       } />
-      <Route path="/event/:eventId" element={
+      <Route path="/events/:eventId" element={
         <ErrorBoundary>
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading event...</div>}>
             <EventDetails />
           </Suspense>
         </ErrorBoundary>
       } />
-      <Route path="/create-event" element={
+      <Route path="/event/:eventId" element={<Navigate to="/events/:eventId" replace />} />
+      
+      {/* Create Routes - Consolidated */}
+      <Route path="/create" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          <CreateEvent />
+          <ConsolidatedCreate />
         </Suspense>
       } />
+      {/* Redirects for old create routes */}
+      <Route path="/create-post" element={<Navigate to="/create?type=post" replace />} />
+      <Route path="/create-event" element={<Navigate to="/create?type=event" replace />} />
+      <Route path="/create-group" element={<Navigate to="/create?type=group" replace />} />
+      <Route path="/create-discussion" element={<Navigate to="/create?type=discussion" replace />} />
       
-      {/* Community Routes */}
-      <Route path="/community" element={
+      {/* Community Routes - Consolidated */}
+      <Route path="/communities" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading communities...</div>}>
+          <Community />
+        </Suspense>
+      } />
+      <Route path="/communities/:id" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading community...</div>}>
           <Community />
         </Suspense>
       } />
+      {/* Redirects for old community routes */}
+      <Route path="/community" element={<Navigate to="/communities" replace />} />
+      <Route path="/community/:id" element={<Navigate to="/communities/:id" replace />} />
       
-      {/* User Routes */}
+      {/* User Routes - Consolidated */}
       <Route path="/profile/:userId?" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading profile...</div>}>
-          <Profile />
+          <ConsolidatedProfile />
         </Suspense>
       } />
-      <Route path="/messages" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading messages...</div>}>
-          <Messages />
+      <Route path="/chat" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading chat...</div>}>
+          <ConsolidatedChat />
         </Suspense>
       } />
+      <Route path="/chat/:conversationId" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading chat...</div>}>
+          <ConsolidatedChat />
+        </Suspense>
+      } />
+      <Route path="/messages" element={<Navigate to="/chat" replace />} />
       <Route path="/notifications" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading notifications...</div>}>
-          <Notifications />
+          <ConsolidatedNotifications />
         </Suspense>
       } />
       <Route path="/settings" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading settings...</div>}>
-          <Settings />
+          <ConsolidatedSettings />
         </Suspense>
       } />
       
@@ -154,17 +188,15 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       
-      {/* Auth Routes */}
-      <Route path="/signin" element={
+      {/* Auth Routes - Consolidated */}
+      <Route path="/auth" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          <SignIn />
+          <ConsolidatedAuth />
         </Suspense>
       } />
-      <Route path="/signup" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          <SignUp />
-        </Suspense>
-      } />
+      {/* Redirects for old auth routes */}
+      <Route path="/signin" element={<Navigate to="/auth?tab=signin" replace />} />
+      <Route path="/signup" element={<Navigate to="/auth?tab=signup" replace />} />
       
       {/* About Route */}
       <Route path="/about" element={
@@ -205,42 +237,37 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       
-      {/* Artist & Booking Routes */}
-      <Route path="/book-artist" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading book artist...</div>}>
-          <BookArtist />
+      {/* Booking Routes - Consolidated */}
+      <Route path="/booking" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading booking...</div>}>
+          <ConsolidatedBooking />
         </Suspense>
       } />
+      <Route path="/booking/:artistId" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading booking...</div>}>
+          <ConsolidatedBooking />
+        </Suspense>
+      } />
+      {/* Redirects for old booking routes */}
+      <Route path="/book-artist" element={<Navigate to="/booking" replace />} />
+      <Route path="/book-artist-simple" element={<Navigate to="/booking" replace />} />
+      <Route path="/book-artist-test" element={<Navigate to="/booking" replace />} />
       
-      <Route path="/book-artist-simple" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading book artist...</div>}>
-          <BookArtistSimple />
+      {/* Artist Routes - Consolidated */}
+      <Route path="/artist" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading artist...</div>}>
+          <ConsolidatedArtist />
         </Suspense>
       } />
-      
-      <Route path="/book-artist-test" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading book artist test...</div>}>
-          <BookArtistTest />
+      <Route path="/artist/:artistId" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading artist...</div>}>
+          <ConsolidatedArtist />
         </Suspense>
       } />
-      
-      <Route path="/artist-dashboard" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading artist dashboard...</div>}>
-          <Dashboard />
-        </Suspense>
-      } />
-      
-      <Route path="/artist-profile" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading artist profile...</div>}>
-          <ArtistProfile />
-        </Suspense>
-      } />
-      
-      <Route path="/artist-onboarding" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading artist onboarding...</div>}>
-          <ArtistOnboarding />
-        </Suspense>
-      } />
+      {/* Redirects for old artist routes */}
+      <Route path="/artist-dashboard" element={<Navigate to="/artist?view=dashboard" replace />} />
+      <Route path="/artist-profile" element={<Navigate to="/artist" replace />} />
+      <Route path="/artist-onboarding" element={<Navigate to="/artist?view=onboarding" replace />} />
       
       {/* Local Services */}
       <Route path="/businesses" element={
@@ -255,39 +282,30 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       
-      {/* Subscription & Payment Routes */}
+      {/* Subscription & Payment Routes - Consolidated */}
       <Route path="/subscription" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading subscription...</div>}>
-          <SubscriptionPage />
+          <ConsolidatedSubscription />
         </Suspense>
       } />
-      
-      <Route path="/subscription-plans" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading subscription plans...</div>}>
-          <SubscriptionPlansPage />
-        </Suspense>
-      } />
-      
+      <Route path="/subscription-plans" element={<Navigate to="/subscription?view=plans" replace />} />
       <Route path="/subscription-success" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading subscription success...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
           <SubscriptionSuccess />
         </Suspense>
       } />
-      
       <Route path="/subscription-cancel" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading subscription cancel...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
           <SubscriptionCancel />
         </Suspense>
       } />
-      
       <Route path="/payment-success" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading payment success...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
           <PaymentSuccess />
         </Suspense>
       } />
-      
       <Route path="/payment-cancel" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading payment cancel...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
           <PaymentCancel />
         </Suspense>
       } />
@@ -311,19 +329,13 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       
-      {/* Onboarding Routes */}
+      {/* Onboarding Routes - Consolidated */}
       <Route path="/onboarding" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading onboarding...</div>}>
-          <Onboarding />
+          <ConsolidatedOnboarding />
         </Suspense>
       } />
-      
-      <Route path="/privacy-first-onboarding" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading privacy first onboarding...</div>}>
-          <PrivacyFirstOnboarding />
-        </Suspense>
-      } />
-      
+      <Route path="/privacy-first-onboarding" element={<Navigate to="/onboarding?focus=privacy" replace />} />
       <Route path="/location-setup" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading location setup...</div>}>
           <LocationSetup />

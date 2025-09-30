@@ -1,3 +1,12 @@
+/**
+ * @deprecated This file is deprecated and will be removed in a future version.
+ * Please use ConsolidatedCommunity.tsx instead.
+ * Category: community
+ * 
+ * This page has been consolidated to provide a better, more consistent user experience.
+ * All functionality from this page is available in the consolidated version.
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

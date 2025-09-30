@@ -1,4 +1,13 @@
 /**
+ * @deprecated This file is deprecated and will be removed in a future version.
+ * Please use ConsolidatedAuth.tsx instead.
+ * Category: auth
+ * 
+ * This page has been consolidated to provide a better, more consistent user experience.
+ * All functionality from this page is available in the consolidated version.
+ */
+
+/**
  * Sign Up Page
  * User registration page
  */

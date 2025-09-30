@@ -526,150 +526,337 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
     );
   }
 
-  // Render main/admin sidebar using shadcn/ui sidebar
+  // Render main/admin sidebar using Reddit-inspired clean design
+  const [customFeedsOpen, setCustomFeedsOpen] = useState(true);
+  const [recentOpen, setRecentOpen] = useState(true);
+  
+  // Get recent communities from localStorage
+  const getRecentCommunities = () => {
+    const recent = localStorage.getItem('recent_communities');
+    return recent ? JSON.parse(recent) : [
+      { name: 'Local Events', icon: Calendar, path: '/events' },
+      { name: 'Community News', icon: Newspaper, path: '/news' },
+      { name: 'Public Square', icon: Globe, path: '/public-square' },
+    ];
+  };
+
   return (
     <Sidebar
       className={cn(
-        variant === 'admin' ? "w-64" : "w-60",
+        variant === 'admin' ? "w-64" : "w-64",
+        "border-r border-border bg-background",
         className
       )}
       collapsible="icon"
     >
-      <SidebarContent>
-        {/* App Title */}
-        <div className="p-1 border-b border-sidebar-border">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-sidebar-foreground flex items-center gap-2">
-              <img 
-                src="/logo.png" 
-                alt="TheGlocal Logo" 
-                className="h-5 w-5 object-contain"
-              />
-              {variant === 'admin' ? 'Admin Panel' : 'TheGlocal'}
-            </h2>
-            {showNotifications && user && <NotificationButton />}
+      <SidebarContent className="p-0">
+        <ScrollArea className="h-full">
+          <div className="py-3 px-2 space-y-1">
+            {/* Primary Navigation */}
+            <SidebarMenu>
+              {/* Feed */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/feed' || location.pathname === '/'}>
+                  <Link to="/feed" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
+                    <Home className="h-5 w-5" />
+                    <span className="font-medium">Home</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Popular/Discover */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/discover'}>
+                  <Link to="/discover" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
+                    <TrendingUp className="h-5 w-5" />
+                    <span className="font-medium">Popular</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Explore */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/community'}>
+                  <Link to="/community" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
+                    <Search className="h-5 w-5" />
+                    <span className="font-medium">Explore</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* All */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/all'}>
+                  <Link to="/all" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
+                    <Globe className="h-5 w-5" />
+                    <span className="font-medium">All</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+
+            {/* Divider */}
+            <div className="h-px bg-border my-3" />
+
+            {/* Custom Feeds Section */}
+            <div className="space-y-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between px-3 py-1.5 h-auto font-normal text-xs text-muted-foreground hover:bg-transparent"
+                onClick={() => setCustomFeedsOpen(!customFeedsOpen)}
+              >
+                <span className="uppercase tracking-wider">Custom Feeds</span>
+                <ChevronRight className={cn(
+                  "h-3.5 w-3.5 transition-transform",
+                  customFeedsOpen && "rotate-90"
+                )} />
+              </Button>
+
+              {customFeedsOpen && (
+                <div className="space-y-0.5 pl-1">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/events'}>
+                      <Link to="/events" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                        <Calendar className="h-4 w-4" />
+                        <span>Events</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/news'}>
+                      <Link to="/news" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                        <Newspaper className="h-4 w-4" />
+                        <span>News</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/book-artist'}>
+                      <Link to="/book-artist" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                        <Palette className="h-4 w-4" />
+                        <span>Book Artists</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link to="/create-custom-feed" className="flex items-center gap-3 px-3 py-1.5 text-sm text-primary rounded-md hover:bg-muted">
+                        <Plus className="h-4 w-4" />
+                        <span>Create Custom Feed</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-border my-3" />
+
+            {/* Recent Section */}
+            <div className="space-y-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between px-3 py-1.5 h-auto font-normal text-xs text-muted-foreground hover:bg-transparent"
+                onClick={() => setRecentOpen(!recentOpen)}
+              >
+                <span className="uppercase tracking-wider">Recent</span>
+                <ChevronRight className={cn(
+                  "h-3.5 w-3.5 transition-transform",
+                  recentOpen && "rotate-90"
+                )} />
+              </Button>
+
+              {recentOpen && (
+                <div className="space-y-0.5 pl-1">
+                  {getRecentCommunities().map((community, index) => {
+                    const Icon = community.icon;
+                    return (
+                      <SidebarMenuItem key={index}>
+                        <SidebarMenuButton asChild isActive={location.pathname === community.path}>
+                          <Link to={community.path} className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                            <Icon className="h-4 w-4" />
+                            <span className="truncate">{community.name}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-border my-3" />
+
+            {/* Features Section */}
+            <div className="space-y-0.5">
+              <div className="px-3 py-1.5">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground">Features</span>
+              </div>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/public-square'}>
+                  <Link to="/public-square" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                    <Megaphone className="h-4 w-4" />
+                    <span>Public Square</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/polls'}>
+                  <Link to="/polls" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                    <Vote className="h-4 w-4" />
+                    <span>Polls</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/legal-assistant'}>
+                  <Link to="/legal-assistant" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                    <Scale className="h-4 w-4" />
+                    <span>Legal Assistant</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/life-wish'}>
+                  <Link to="/life-wish" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                    <Heart className="h-4 w-4" />
+                    <span>Life Wishes</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </div>
+
+            {/* Admin Section - Only for admins */}
+            {isAdmin && variant !== 'admin' && (
+              <>
+                <div className="h-px bg-border my-3" />
+                <div className="space-y-0.5">
+                  <div className="px-3 py-1.5">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Admin</span>
+                  </div>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location.pathname === '/admin'}>
+                      <Link to="/admin" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                        <Shield className="h-4 w-4" />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </div>
+              </>
+            )}
+
+            {/* Admin Navigation for admin variant */}
+            {variant === 'admin' && (
+              <>
+                <div className="h-px bg-border my-3" />
+                <div className="space-y-0.5">
+                  <div className="px-3 py-1.5">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Admin Panel</span>
+                  </div>
+
+                  {adminNavigationItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.href;
+                    
+                    return (
+                      <SidebarMenuItem key={item.label}>
+                        <SidebarMenuButton asChild isActive={isActive}>
+                          <Link to={item.href} className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                            <Icon className="h-4 w-4" />
+                            <span>{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        </ScrollArea>
 
-        {/* Create Button */}
-        {showCreateButton && variant !== 'admin' && (
-          <div className="p-1">
-            <SidebarMenuButton asChild>
-              <Link to="/create" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Plus className="h-4 w-4" />
-                <span>Create Post</span>
-              </Link>
-            </SidebarMenuButton>
-          </div>
-        )}
-
-        {/* Navigation Groups */}
-        {Object.entries(
-          navigationItems.reduce((groups, item) => {
-            const group = item.group || 'main';
-            if (!groups[group]) groups[group] = [];
-            groups[group].push(item);
-            return groups;
-          }, {} as Record<string, NavigationItem[]>)
-        ).map(([groupName, items]) => (
-          <SidebarGroup key={groupName}>
-            <SidebarGroupLabel>
-              {groupName.charAt(0).toUpperCase() + groupName.slice(1)}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.href;
-                  const showBadge = item.badge === 'unread' && counts.total > 0;
-                  
-                  return (
-                    <SidebarMenuItem key={item.label}>
-                      <SidebarMenuButton asChild isActive={isActive}>
-                        <Link to={item.href} className="flex items-center">
-                          <Icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                          {showBadge && (
-                            <Badge variant="destructive" className="ml-auto">
-                              {counts.total > 99 ? '99+' : counts.total}
-                            </Badge>
-                          )}
-                          {item.badge && typeof item.badge === 'number' && (
-                            <Badge variant="secondary" className="ml-auto">
-                              {item.badge}
-                            </Badge>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-
-        {/* User Menu */}
+        {/* User Profile Section at Bottom - Reddit style */}
         {showUserMenu && currentUser && (
-          <SidebarGroup className="mt-auto">
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <SidebarMenuButton className="w-full">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={currentUser.avatar_url} />
-                          <AvatarFallback>
-                            {currentUser.user_metadata?.username?.charAt(0) || 
-                             currentUser.email?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col items-start text-left">
-                          <span className="text-sm font-medium">
-                            {currentUser.user_metadata?.username || 
-                             currentUser.email || 'User'}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {variant === 'admin' ? 'Administrator' : 'User'}
-                          </span>
-                        </div>
-                      </SidebarMenuButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end">
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/profile">
-                          <User className="mr-2 h-4 w-4" />
-                          Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to="/settings">
-                          <Settings className="mr-2 h-4 w-4" />
-                          Settings
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleThemeToggle}>
-                        {theme === 'light' ? (
-                          <Moon className="mr-2 h-4 w-4" />
-                        ) : (
-                          <Sun className="mr-2 h-4 w-4" />
-                        )}
-                        {theme === 'light' ? 'Dark' : 'Light'} Mode
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <div className="mt-auto border-t border-border p-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 h-auto hover:bg-muted">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={currentUser.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {currentUser.user_metadata?.username?.charAt(0) || 
+                       currentUser.email?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-start flex-1 min-w-0">
+                    <span className="text-sm font-medium truncate w-full">
+                      {currentUser.user_metadata?.username || 
+                       currentUser.email?.split('@')[0] || 'User'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      View Profile
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" side="top">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-sm font-medium">
+                      u/{currentUser.user_metadata?.username || currentUser.email?.split('@')[0]}
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    View Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="cursor-pointer">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleThemeToggle} className="cursor-pointer">
+                  {theme === 'light' ? (
+                    <Moon className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Sun className="mr-2 h-4 w-4" />
+                  )}
+                  {theme === 'light' ? 'Dark' : 'Light'} Mode
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </SidebarContent>
     </Sidebar>

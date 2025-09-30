@@ -1,3 +1,12 @@
+/**
+ * @deprecated This file is deprecated and will be removed in a future version.
+ * Please use ConsolidatedOnboarding.tsx instead.
+ * Category: onboarding
+ * 
+ * This page has been consolidated to provide a better, more consistent user experience.
+ * All functionality from this page is available in the consolidated version.
+ */
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

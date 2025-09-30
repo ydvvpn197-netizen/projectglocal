@@ -1,3 +1,10 @@
+/**
+ * @internal Test/Demo page
+ * This page is for testing and demonstration purposes.
+ * Should be moved to /dev route behind feature flag.
+ * Not for production use.
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';

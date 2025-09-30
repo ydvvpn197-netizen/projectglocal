@@ -1,3 +1,12 @@
+/**
+ * @deprecated This file is deprecated and will be removed in a future version.
+ * Please use ConsolidatedSubscription.tsx instead.
+ * Category: subscription
+ * 
+ * This page has been consolidated to provide a better, more consistent user experience.
+ * All functionality from this page is available in the consolidated version.
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

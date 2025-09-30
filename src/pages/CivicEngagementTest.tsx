@@ -1,3 +1,10 @@
+/**
+ * @internal Test/Demo page
+ * This page is for testing and demonstration purposes.
+ * Should be moved to /dev route behind feature flag.
+ * Not for production use.
+ */
+
 import React from 'react';
 import { CivicEngagementDashboard } from '@/components/CivicEngagementDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

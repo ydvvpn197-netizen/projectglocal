@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { ConsolidatedHeader as Header } from './layout/ConsolidatedHeader';
 import { ConsolidatedSidebar as Sidebar } from './layout/ConsolidatedSidebar';
 import { ConsolidatedFooter as Footer } from './layout/ConsolidatedFooter';
+import { RightSidebar } from './layout/RightSidebar';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +13,7 @@ interface MainLayoutProps {
   className?: string;
   showHeader?: boolean;
   showSidebar?: boolean;
+  showRightSidebar?: boolean;
   showFooter?: boolean;
   headerVariant?: 'default' | 'minimal' | 'glass';
   sidebarCollapsible?: boolean;
@@ -24,6 +26,7 @@ export function MainLayout({
   className = '',
   showHeader = true,
   showSidebar = true,
+  showRightSidebar = false,
   showFooter = true,
   headerVariant = 'default',
   sidebarCollapsible = true,
@@ -34,22 +37,24 @@ export function MainLayout({
   const { sidebarOpen } = useLayout();
   const isMobile = useMediaQuery('(max-width: 1024px)');
   const isTablet = useMediaQuery('(max-width: 768px)');
+  const isDesktop = useMediaQuery('(min-width: 1280px)');
 
   const maxWidthClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-7xl',
-    '2xl': 'max-w-8xl',
+    '2xl': 'max-w-[1600px]',
     full: 'max-w-full'
   };
 
   // Don't show sidebar on mobile if user is not authenticated
   const shouldShowSidebar = showSidebar && user && !isTablet;
+  const shouldShowRightSidebar = showRightSidebar && user && isDesktop;
 
   return (
     <div className={cn(
-      'min-h-screen bg-background',
+      'min-h-screen bg-muted/20',
       'flex flex-col',
       className
     )}>
@@ -66,46 +71,55 @@ export function MainLayout({
       )}
 
       {/* Main Content Area */}
-      <div className={cn(
-        'flex flex-1',
-        'transition-all duration-300',
-        shouldShowSidebar && !isMobile && (sidebarOpen ? 'lg:ml-64' : 'lg:ml-16')
-      )}>
-        {/* Sidebar */}
+      <div className="flex flex-1">
+        {/* Left Sidebar */}
         {shouldShowSidebar && (
-          <Sidebar 
-            isOpen={sidebarOpen}
-            isMobile={isMobile}
-          />
+          <div className="fixed left-0 top-14 bottom-0 w-64 hidden lg:block z-30">
+            <Sidebar 
+              isOpen={sidebarOpen}
+              isMobile={isMobile}
+            />
+          </div>
         )}
 
-        {/* Content Area */}
+        {/* Main Content */}
         <main className={cn(
-          'flex-1 flex flex-col',
-          'w-full min-w-0', // Prevents flex item from overflowing
-          'bg-background'
+          'flex-1 flex',
+          'w-full min-w-0',
+          shouldShowSidebar && !isMobile && 'lg:ml-64'
         )}>
-          {/* Page Content */}
+          {/* Center Content Area */}
           <div className={cn(
             'flex-1',
-            'mx-auto w-full px-4 sm:px-6 lg:px-8',
-            maxWidthClasses[maxContentWidth]
+            'w-full',
+            shouldShowRightSidebar ? 'max-w-3xl' : maxWidthClasses[maxContentWidth],
+            'px-4 sm:px-6 lg:px-8',
+            'mx-auto'
           )}>
             <div className="py-6">
               {children}
             </div>
+
+            {/* Footer */}
+            {showFooter && !shouldShowRightSidebar && (
+              <Footer 
+                variant="default"
+                showNewsletter={true}
+                showSocialLinks={true}
+                showContactInfo={true}
+                showQuickLinks={true}
+                showLegalLinks={true}
+              />
+            )}
           </div>
 
-          {/* Footer */}
-          {showFooter && (
-            <Footer 
-              variant="default"
-              showNewsletter={true}
-              showSocialLinks={true}
-              showContactInfo={true}
-              showQuickLinks={true}
-              showLegalLinks={true}
-            />
+          {/* Right Sidebar */}
+          {shouldShowRightSidebar && (
+            <div className="hidden xl:block w-80 flex-shrink-0">
+              <div className="sticky top-20 pr-8 py-6">
+                <RightSidebar />
+              </div>
+            </div>
           )}
         </main>
       </div>

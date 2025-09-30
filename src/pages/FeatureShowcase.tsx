@@ -1,3 +1,10 @@
+/**
+ * @internal Test/Demo page
+ * This page is for testing and demonstration purposes.
+ * Should be moved to /dev route behind feature flag.
+ * Not for production use.
+ */
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

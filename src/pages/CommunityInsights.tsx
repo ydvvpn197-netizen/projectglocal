@@ -1,3 +1,12 @@
+/**
+ * @deprecated This file is deprecated and will be removed in a future version.
+ * Please use ConsolidatedCommunityInsights.tsx instead.
+ * Category: communityInsights
+ * 
+ * This page has been consolidated to provide a better, more consistent user experience.
+ * All functionality from this page is available in the consolidated version.
+ */
+
 import React, { useEffect } from 'react';
 import { RoleGuard } from '../components/RoleGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
