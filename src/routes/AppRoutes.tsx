@@ -69,6 +69,7 @@ const PublicSquare = lazy(() => import('@/pages/PublicSquare'));
 const Polls = lazy(() => import('@/pages/Polls'));
 const LocalBusinesses = lazy(() => import('@/pages/LocalBusinesses'));
 const LocalCommunities = lazy(() => import('@/pages/LocalCommunities'));
+const CivicEngagementTest = lazy(() => import('@/pages/CivicEngagementTest'));
 
 // Utility Pages
 const NotFound = lazy(() => import('@/pages/NotFound'));
