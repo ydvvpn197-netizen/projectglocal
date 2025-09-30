@@ -46,7 +46,8 @@ import {
   Filter,
   TrendingUp,
   TrendingDown,
-  Activity
+  Activity,
+  Flame
 } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
 import { usePosts } from '@/hooks/usePosts';
