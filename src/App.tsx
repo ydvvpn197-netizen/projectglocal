@@ -11,6 +11,7 @@ import { performanceMonitor } from '@/utils/performance';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { LayoutProvider } from '@/contexts/LayoutContext';
+import { EnhancedThemeProvider } from '@/components/ui/EnhancedThemeProvider';
 
 // Lazy load components for better performance
 const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
@@ -180,9 +181,11 @@ function App() {
   return (
     <QueryProvider>
       <LayoutProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <EnhancedThemeProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </EnhancedThemeProvider>
       </LayoutProvider>
     </QueryProvider>
   );
