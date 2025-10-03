@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { Event, CommunityGroup, UserProfile } from '@/types/common';
 
 // Enhanced API service with better error handling, caching, and real-time updates
@@ -7,7 +6,6 @@ export class EnhancedApiService {
   private static instance: EnhancedApiService;
   private cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
   private subscriptions = new Map<string, unknown>();
-  private toast = useToast();
 
   static getInstance(): EnhancedApiService {
     if (!EnhancedApiService.instance) {
