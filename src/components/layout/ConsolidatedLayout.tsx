@@ -84,19 +84,19 @@ export const ConsolidatedLayout = memo<ConsolidatedLayoutProps>(({
   // Mobile layout with bottom navigation
   if (layoutConfig.shouldShowMobileNav) {
     return (
-      <MobileLayout>
-        <div className={cn(
-          'w-full min-h-screen bg-background text-foreground mobile-safe-area',
-          className
-        )}>
-          <NetworkStatus />
-          <PromotionalBanner position="top" variant="default" maxCampaigns={1} className="z-40" />
-          
-          <div className={cn('w-full mx-auto space-y-4', styleClasses.maxWidth, styleClasses.padding)}>
-            {children}
-          </div>
+      <div className={cn(
+        'w-full min-h-screen bg-background text-foreground mobile-safe-area',
+        className
+      )}>
+        <NetworkStatus />
+        <PromotionalBanner position="top" variant="default" maxCampaigns={1} className="z-40" />
+        
+        <div className={cn('w-full mx-auto space-y-4', styleClasses.maxWidth, styleClasses.padding)}>
+          {children}
         </div>
-      </MobileLayout>
+        
+        <MobileLayout />
+      </div>
     );
   }
 

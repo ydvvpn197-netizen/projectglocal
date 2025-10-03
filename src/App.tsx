@@ -22,6 +22,30 @@ const ConsolidatedLayout = lazy(() => import('@/components/layout/ConsolidatedLa
 // Import hooks normally (hooks can't be lazy loaded)
 import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
 
+// Simple error boundary for component initialization
+const ComponentErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-4">Please refresh the page to try again.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+};
+
 // Inner App component that uses auth
 function AppContent() {
   const { user, isLoading } = useAuth();
@@ -131,17 +155,15 @@ function AppContent() {
         <Router>
           <div className="min-h-screen bg-background">
                    {/* Consolidated App Layout */}
-                   <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
-                     <ConsolidatedLayout>
-                       <Routes>
-                         <Route path="/*" element={
-                           <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
-                             <AppRoutes />
-                           </Suspense>
-                         } />
-                       </Routes>
-                     </ConsolidatedLayout>
-                   </Suspense>
+                   <ComponentErrorBoundary>
+                     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                       <ConsolidatedLayout>
+                         <Routes>
+                           <Route path="/*" element={<AppRoutes />} />
+                         </Routes>
+                       </ConsolidatedLayout>
+                     </Suspense>
+                   </ComponentErrorBoundary>
 
             {/* Voice Control Panel - Desktop only */}
             <div className="hidden md:block fixed bottom-4 right-4 z-40">
