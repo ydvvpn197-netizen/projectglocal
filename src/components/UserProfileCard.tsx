@@ -2,7 +2,7 @@
  * UserProfileCard Component
  * 
  * A modern, responsive user profile card component that displays user information
- * with proper security validation and accessibility features.
+ * with proper security validation, accessibility features, and enhanced functionality.
  * 
  * @component
  * @example
@@ -19,6 +19,9 @@
  *     followersCount: 1234,
  *     followingCount: 567
  *   }}
+ *   variant="premium"
+ *   animate={true}
+ *   interactive={true}
  *   onFollow={() => console.log('Follow clicked')}
  *   onMessage={() => console.log('Message clicked')}
  *   onViewProfile={() => console.log('Profile clicked')}

@@ -25,8 +25,14 @@ interface EventCardProps {
   onBook?: (eventId: string) => void;
   onLike?: (eventId: string) => void;
   onChat?: (eventId: string, organizerId: string) => void;
+  onShare?: (eventId: string) => void;
+  onReport?: (eventId: string) => void;
   showOrganizer?: boolean;
   verified?: boolean;
+  variant?: 'default' | 'compact' | 'detailed' | 'premium';
+  interactive?: boolean;
+  showRSVP?: boolean;
+  showGovernmentTagging?: boolean;
 }
 
 export const EventCard = ({ 
