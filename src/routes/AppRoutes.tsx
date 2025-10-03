@@ -51,8 +51,6 @@ const ConsolidatedArtist = lazy(() => import('@/pages/ConsolidatedArtist'));
 
 // Subscription - Consolidated
 const ConsolidatedSubscription = lazy(() => import('@/pages/ConsolidatedSubscription'));
-const SubscriptionSuccess = lazy(() => import('@/pages/SubscriptionSuccess'));
-const SubscriptionCancel = lazy(() => import('@/pages/SubscriptionCancel'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentCancel = lazy(() => import('@/pages/PaymentCancel'));
 
@@ -295,16 +293,8 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       <Route path="/subscription-plans" element={<Navigate to="/subscription?view=plans" replace />} />
-      <Route path="/subscription-success" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          <SubscriptionSuccess />
-        </Suspense>
-      } />
-      <Route path="/subscription-cancel" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-          <SubscriptionCancel />
-        </Suspense>
-      } />
+      <Route path="/subscription-success" element={<Navigate to="/subscription?status=success" replace />} />
+      <Route path="/subscription-cancel" element={<Navigate to="/subscription?status=cancelled" replace />} />
       <Route path="/payment-success" element={
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
           <PaymentSuccess />
