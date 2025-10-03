@@ -81,6 +81,56 @@ interface CommunityRecommendationSystemProps {
   className?: string;
 }
 
+// Mock data for recommendations - moved outside component to avoid dependency issues
+const mockRecommendations: CommunityRecommendation[] = [
+  {
+    id: '1',
+    name: 'Local Food Enthusiasts',
+    description: 'Discovering the best local restaurants and food spots in our area',
+    category: 'Food & Dining',
+    memberCount: 1250,
+    activityLevel: 85,
+    matchScore: 92,
+    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop',
+    tags: ['food', 'restaurants', 'local', 'dining'],
+    isJoined: false,
+    isRecommended: true,
+    lastActivity: '2 hours ago',
+    location: 'Downtown',
+    type: 'public'
+  },
+  {
+    id: '2',
+    name: 'Tech Entrepreneurs',
+    description: 'Connecting local tech professionals and entrepreneurs',
+    memberCount: 890,
+    activityLevel: 78,
+    matchScore: 88,
+    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=200&fit=crop',
+    tags: ['tech', 'entrepreneurship', 'startups', 'networking'],
+    isJoined: false,
+    isRecommended: true,
+    lastActivity: '1 hour ago',
+    location: 'Tech District',
+    type: 'public'
+  },
+  {
+    id: '3',
+    name: 'Art & Culture Lovers',
+    description: 'Exploring local art galleries, museums, and cultural events',
+    memberCount: 650,
+    activityLevel: 72,
+    matchScore: 85,
+    image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=200&fit=crop',
+    tags: ['art', 'culture', 'museums', 'galleries'],
+    isJoined: true,
+    isRecommended: false,
+    lastActivity: '30 minutes ago',
+    location: 'Arts Quarter',
+    type: 'public'
+  }
+];
+
 export const CommunityRecommendationSystem: React.FC<CommunityRecommendationSystemProps> = ({ 
   className 
 }) => {
@@ -97,55 +147,7 @@ export const CommunityRecommendationSystem: React.FC<CommunityRecommendationSyst
     type: 'all'
   });
 
-  // Mock data for recommendations
-  const mockRecommendations: CommunityRecommendation[] = [
-    {
-      id: '1',
-      name: 'Local Food Enthusiasts',
-      description: 'Discovering the best local restaurants and food spots in our area',
-      category: 'Food & Dining',
-      memberCount: 1250,
-      activityLevel: 85,
-      matchScore: 92,
-      image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=200&fit=crop',
-      tags: ['food', 'restaurants', 'local', 'dining'],
-      isJoined: false,
-      isRecommended: true,
-      lastActivity: '2 hours ago',
-      location: 'Downtown',
-      type: 'public'
-    },
-    {
-      id: '2',
-      name: 'Tech Entrepreneurs',
-      description: 'Connecting local tech professionals and entrepreneurs',
-      memberCount: 890,
-      activityLevel: 78,
-      matchScore: 88,
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=200&fit=crop',
-      tags: ['tech', 'entrepreneurship', 'startups', 'networking'],
-      isJoined: false,
-      isRecommended: true,
-      lastActivity: '1 hour ago',
-      location: 'Tech District',
-      type: 'public'
-    },
-    {
-      id: '3',
-      name: 'Art & Culture Lovers',
-      description: 'Exploring local art galleries, museums, and cultural events',
-      memberCount: 650,
-      activityLevel: 72,
-      matchScore: 85,
-      image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=200&fit=crop',
-      tags: ['art', 'culture', 'museums', 'galleries'],
-      isJoined: true,
-      isRecommended: false,
-      lastActivity: '30 minutes ago',
-      location: 'Arts Quarter',
-      type: 'public'
-    }
-  ];
+  // Mock data for recommendations - moved outside component to avoid dependency issues
 
   useEffect(() => {
     const loadRecommendations = async () => {

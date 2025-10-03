@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 
-interface LayoutContextType {
+export interface LayoutContextType {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -13,9 +13,7 @@ interface LayoutContextType {
   setFooterHeight: (height: number) => void;
 }
 
-const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
-
-// Hook moved to LayoutContext.hooks.ts
+export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 interface LayoutProviderProps {
   children: ReactNode;
@@ -85,12 +83,3 @@ const LayoutProvider: React.FC<LayoutProviderProps> = ({ children }) => {
 };
 
 export { LayoutProvider };
-
-// Export useLayout hook
-export const useLayout = () => {
-  const context = useContext(LayoutContext);
-  if (context === undefined) {
-    throw new Error('useLayout must be used within a LayoutProvider');
-  }
-  return context;
-};
