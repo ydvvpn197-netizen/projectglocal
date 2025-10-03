@@ -13,7 +13,7 @@ import { ConsolidatedHeader } from './ConsolidatedHeader';
 import { ConsolidatedFooter } from './ConsolidatedFooter';
 import { NetworkStatus } from '@/components/NetworkStatus';
 import { PromotionalBanner } from '@/components/marketing/PromotionalBanner';
-import { SimpleNews } from '@/components/SimpleNews';
+import { LocalNews } from '@/components/LocalNews';
 import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
 
 interface ConsolidatedLayoutProps {
@@ -181,7 +181,7 @@ export const ConsolidatedLayout = memo<ConsolidatedLayoutProps>(({
                   <div className="hidden lg:block lg:col-span-1">
                     <div className="sticky top-6">
                       <Suspense fallback={<div className="h-64 bg-muted animate-pulse rounded-lg"></div>}>
-                        <SimpleNews className="max-h-[calc(100vh-3rem)] overflow-y-auto" />
+                        <LocalNews className="max-h-[calc(100vh-3rem)] overflow-y-auto" />
                       </Suspense>
                     </div>
                   </div>
