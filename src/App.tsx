@@ -10,17 +10,15 @@ import { initializeSecurityAudit } from '@/utils/securityAudit';
 import { performanceMonitor } from '@/utils/performance';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
-import { LayoutProvider } from '@/contexts/LayoutContext';
+import { LayoutProvider } from '@/contexts/LayoutContext.provider';
 import { EnhancedThemeProvider } from '@/components/ui/EnhancedThemeProvider';
 
 // Simplified lazy loading to avoid initialization errors
-const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
-const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel'));
 const AppRoutes = lazy(() => import('@/routes/AppRoutes'));
 const ConsolidatedLayout = lazy(() => import('@/components/layout/ConsolidatedLayout'));
 
 // Import hooks normally (hooks can't be lazy loaded)
-import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
+// import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
 
 // Simple error boundary for component initialization
 class ComponentErrorBoundary extends React.Component<
@@ -69,7 +67,7 @@ function AppContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Register voice commands
-  useCommonVoiceCommands();
+  // useCommonVoiceCommands();
 
   // Initialize monitoring and security systems
   useEffect(() => {
