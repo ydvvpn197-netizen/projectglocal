@@ -1,4 +1,4 @@
-import React, { memo, Suspense, lazy, ComponentType } from 'react';
+import React, { memo, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import { DefaultFallback } from './LazyLoader.utils';
 
@@ -26,31 +26,3 @@ export const OptimizedLazyLoader = memo<LazyLoaderProps>(({
 });
 
 OptimizedLazyLoader.displayName = 'OptimizedLazyLoader';
-
-// Higher-order component for lazy loading
-export const withLazyLoading = <P extends object>(
-  Component: ComponentType<P>,
-  fallback?: React.ReactNode
-) => {
-  const LazyComponent = lazy(() => Promise.resolve({ default: Component }));
-  
-  return memo((props: P) => (
-    <OptimizedLazyLoader fallback={fallback}>
-      <LazyComponent {...props} />
-    </OptimizedLazyLoader>
-  ));
-};
-
-// Utility for creating lazy components
-export const createLazyComponent = <P extends object>(
-  importFn: () => Promise<{ default: ComponentType<P> }>,
-  fallback?: React.ReactNode
-) => {
-  const LazyComponent = lazy(importFn);
-  
-  return memo((props: P) => (
-    <OptimizedLazyLoader fallback={fallback}>
-      <LazyComponent {...props} />
-    </OptimizedLazyLoader>
-  ));
-};

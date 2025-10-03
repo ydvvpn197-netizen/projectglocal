@@ -18,14 +18,14 @@ export const useDebounce = <T>(value: T, delay: number): T => {
 };
 
 // Throttle hook for performance optimization
-export const useThrottle = <T extends (...args: any[]) => any>(
+export const useThrottle = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
   const lastRun = useRef(Date.now());
 
-  return useCallback(
-    ((...args: any[]) => {
+  return useMemo(
+    () => ((...args: unknown[]) => {
       if (Date.now() - lastRun.current >= delay) {
         callback(...args);
         lastRun.current = Date.now();
@@ -136,7 +136,7 @@ export const usePerformanceMonitor = (componentName: string) => {
 // Bundle size optimization utilities
 export const optimizeImports = {
   // Lazy load heavy components
-  lazy: <T extends React.ComponentType<any>>(
+  lazy: <T extends React.ComponentType<unknown>>(
     importFn: () => Promise<{ default: T }>
   ) => React.lazy(importFn),
   
@@ -147,7 +147,7 @@ export const optimizeImports = {
   },
   
   // Preload critical components
-  preload: (importFn: () => Promise<any>) => {
+  preload: (importFn: () => Promise<unknown>) => {
     if (typeof window !== 'undefined') {
       importFn();
     }
@@ -160,7 +160,7 @@ export const memoryOptimizations = {
   useCleanup: (cleanupFn: () => void) => {
     useEffect(() => {
       return cleanupFn;
-    }, []);
+    }, [cleanupFn]);
   },
   
   // Weak reference for large objects

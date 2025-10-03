@@ -56,7 +56,7 @@ export type PaginationParams = {
   sort?: string;
   order?: 'asc' | 'desc';
   search?: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
 };
 
 export type PaginationMeta = {
@@ -302,7 +302,7 @@ export type FeatureFlag = {
   enabled: boolean;
   description?: string;
   rollout?: number;
-  conditions?: Record<string, any>;
+  conditions?: Record<string, unknown>;
 };
 
 export type FeatureFlags = Record<string, FeatureFlag>;
@@ -313,7 +313,7 @@ export type ABTest = {
   variants: Array<{
     name: string;
     weight: number;
-    config: Record<string, any>;
+    config: Record<string, unknown>;
   }>;
   startDate: string;
   endDate?: string;

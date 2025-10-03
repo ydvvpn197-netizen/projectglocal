@@ -51,7 +51,7 @@ export const useOptimizedLayout = (config: Partial<LayoutConfig> = {}) => {
     }
 
     return mergedConfig;
-  }, [config, isMobile, isTablet]);
+  }, [config, isMobile]);
 
   const responsiveClasses = useMemo(() => {
     const classes = {

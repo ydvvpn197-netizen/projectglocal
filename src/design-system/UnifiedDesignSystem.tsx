@@ -2,7 +2,6 @@ import React, { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { type VariantProps } from 'class-variance-authority';
 import {
-  spacing,
   containerVariants,
   cardVariants,
   buttonVariants,
@@ -91,7 +90,7 @@ interface UnifiedTypographyProps extends VariantProps<typeof typographyVariants>
 
 export const UnifiedTypography = React.forwardRef<HTMLElement, UnifiedTypographyProps>(
   ({ children, className, variant, as: Component = 'p', ...props }, ref) => {
-    const ComponentRef = Component as any;
+    const ComponentRef = Component as keyof JSX.IntrinsicElements;
     return (
       <ComponentRef
         ref={ref}
@@ -103,13 +102,3 @@ export const UnifiedTypography = React.forwardRef<HTMLElement, UnifiedTypography
     );
   }
 );
-
-// Re-export constants for external use
-export {
-  spacing,
-  containerVariants,
-  cardVariants,
-  buttonVariants,
-  inputVariants,
-  typographyVariants
-} from './design-system-constants';
