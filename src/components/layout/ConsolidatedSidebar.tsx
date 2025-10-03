@@ -1,11 +1,9 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useState, memo, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   DropdownMenu,
@@ -18,13 +16,9 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from '@/components/ui/sidebarExports';
 import {
   Home,
@@ -100,32 +94,10 @@ interface NavigationItem {
   trending?: boolean;
 }
 
-// Sidebar variant types
-type SidebarVariant = 'main' | 'admin' | 'project' | 'mobile';
-
-// Consolidated sidebar props
+// Simplified sidebar props
 interface ConsolidatedSidebarProps {
-  variant?: SidebarVariant;
-  isOpen?: boolean;
-  isMobile?: boolean;
-  customContent?: ReactNode;
+  variant?: 'main' | 'admin';
   className?: string;
-  showSearch?: boolean;
-  showNotifications?: boolean;
-  showUserMenu?: boolean;
-  showCreateButton?: boolean;
-  // Project sidebar specific props
-  categories?: string[];
-  trendingProjects?: Array<{
-    id: number;
-    title: string;
-    artist: string;
-    image: string;
-    likes: number;
-  }>;
-  onSearch?: (query: string) => void;
-  onCategorySelect?: (category: string) => void;
-  onProjectClick?: (projectId: number) => void;
 }
 
 // Navigation data for main app
@@ -227,380 +199,66 @@ const categoryIcons: Record<string, React.ReactNode> = {
   "Location": <MapPin className="h-4 w-4" />
 };
 
-export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
+export const ConsolidatedSidebar = memo<ConsolidatedSidebarProps>(({
   variant = 'main',
-  isOpen = true,
-  isMobile = false,
-  customContent,
-  className,
-  showSearch = true,
-  showNotifications = true,
-  showUserMenu = true,
-  showCreateButton = true,
-  categories = [],
-  trendingProjects = [],
-  onSearch,
-  onCategorySelect,
-  onProjectClick,
+  className
 }) => {
   const location = useLocation();
   const { user } = useAuth();
   const { adminUser, logout: adminLogout } = useAdminAuth();
-  const { counts } = useNotifications();
   const isAdmin = useIsAdmin();
-  const { theme, setTheme } = useEnhancedTheme();
-  const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Projects");
-  
-  // State for collapsible sections - must be at top level
   const [customFeedsOpen, setCustomFeedsOpen] = useState(true);
   const [recentOpen, setRecentOpen] = useState(true);
 
-  // Get navigation items based on variant
-  const getNavigationItems = (): NavigationItem[] => {
-    switch (variant) {
-      case 'admin':
-        return adminNavigationItems;
-      case 'main':
-      default:
-        return mainNavigationItems.filter(item => {
-          // Hide Analytics for non-admin users
-          if (item.label === 'Analytics' && !isAdmin) {
-            return false;
-          }
-          return true;
-        });
-    }
-  };
-
-  const navigationItems = getNavigationItems();
-
-  // Handle search
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch?.(searchQuery);
-  };
-
-  // Handle category selection
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-    onCategorySelect?.(category);
-  };
+  // Memoized navigation items
+  const navigationItems = useMemo(() => {
+    return variant === 'admin' ? adminNavigationItems : mainNavigationItems;
+  }, [variant]);
 
   // Handle logout
   const handleLogout = async () => {
     try {
       if (variant === 'admin') {
         await adminLogout();
-      } else {
-        // Handle regular user logout
-        // Add your logout logic here
-        toast({
-          title: "Logged out",
-          description: "You have been successfully logged out.",
-        });
       }
     } catch (error) {
       console.error('Logout failed:', error);
-      toast({
-        title: "Logout failed",
-        description: "There was an error logging out. Please try again.",
-        variant: "destructive",
-      });
     }
-  };
-
-  // Handle theme toggle
-  const handleThemeToggle = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    toast({
-      title: "Theme updated",
-      description: `Switched to ${newTheme} theme`,
-    });
   };
 
   // Get current user for display
   const currentUser = variant === 'admin' ? adminUser : user;
 
-  // Render mobile sidebar
-  if (variant === 'mobile') {
-    return (
-      <div className={`fixed inset-0 z-50 lg:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => {/* Close sidebar */}} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4">
-            <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="TheGlocal Logo" className="h-8 w-8 object-contain" />
-              <span className="text-lg font-semibold">TheGlocal</span>
-            </div>
-            <Button variant="ghost" size="sm">
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          <ScrollArea className="flex-1 px-4">
-            <nav className="space-y-2">
-              {navigationItems
-                .filter(item => item.mobile)
-                .map((item) => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.href;
-                  
-                  return (
-                    <Link
-                      key={item.label}
-                      to={item.href}
-                      className={cn(
-                        "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-gray-700 hover:bg-gray-100"
-                      )}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span>{item.label}</span>
-                      {item.badge && (
-                        <Badge variant="destructive" className="ml-auto">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  );
-                })}
-            </nav>
-          </ScrollArea>
-          
-          <div className="border-t p-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={currentUser?.avatar_url} />
-                <AvatarFallback>
-                  {currentUser?.user_metadata?.username?.charAt(0) || 
-                   currentUser?.email?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {currentUser?.user_metadata?.username || 
-                   currentUser?.email || 'User'}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {variant === 'admin' ? 'Administrator' : 'User'}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render project sidebar
-  if (variant === 'project') {
-    return (
-      <div className={`space-y-6 ${className}`}>
-        {/* Search */}
-        {showSearch && (
-          <div className="bg-white rounded-xl border p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Search Projects</h3>
-            <form onSubmit={handleSearch} className="space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search by title, artist, or category..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                Search
-              </Button>
-            </form>
-          </div>
-        )}
-
-        {/* Categories */}
-        {categories.length > 0 && (
-          <div className="bg-white rounded-xl border p-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
-            <div className="space-y-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => handleCategorySelect(category)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2",
-                    selectedCategory === category
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  )}
-                >
-                  {categoryIcons[category] || <Filter className="h-4 w-4" />}
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Trending */}
-        {trendingProjects.length > 0 && (
-          <div className="bg-white rounded-xl border p-4">
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
-              Trending Now
-            </h3>
-            <div className="space-y-3">
-              {trendingProjects.map((project) => (
-                <div 
-                  key={project.id} 
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => onProjectClick?.(project.id)}
-                >
-                  <img 
-                    src={project.image} 
-                    alt={project.title}
-                    className="w-12 h-12 rounded-lg object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{project.title}</p>
-                    <p className="text-xs text-gray-500">{project.artist}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Heart className="h-3 w-3 text-red-500" />
-                      <span className="text-xs text-gray-500">{project.likes}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Quick Stats */}
-        <div className="bg-white rounded-xl border p-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Platform Stats</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Total Projects</span>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                2,847
-              </Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Active Artists</span>
-              <Badge variant="secondary" className="bg-green-100 text-green-700">
-                1,234
-              </Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">This Month</span>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                156
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        {/* Get Started CTA */}
-        <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-          <div className="text-center space-y-3">
-            <Sparkles className="h-8 w-8 mx-auto" />
-            <h3 className="font-semibold text-lg">Ready to Showcase Your Work?</h3>
-            <p className="text-sm text-blue-100">
-              Join thousands of local creators and start sharing your projects today.
-            </p>
-            <Button className="w-full bg-white text-blue-600 hover:bg-gray-100">
-              Create Your Profile
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Get recent communities from localStorage
-  const getRecentCommunities = () => {
-    const recent = localStorage.getItem('recent_communities');
-    return recent ? JSON.parse(recent) : [
-      { name: 'Local Events', icon: Calendar, path: '/events' },
-      { name: 'Community News', icon: Newspaper, path: '/news' },
-    ];
-  };
-  
-  // Render main/admin sidebar using Reddit-inspired clean design
 
   return (
-    <Sidebar
-      className={cn(
-        variant === 'admin' ? "w-64" : "w-64",
-        "border-r border-border bg-background",
-        className
-      )}
-      collapsible="icon"
-    >
+    <Sidebar className={cn("w-64 border-r border-border bg-background hidden lg:block", className)}>
       <SidebarContent className="p-0 flex flex-col h-full">
         <ScrollArea className="flex-1">
           <div className="py-3 px-2 space-y-1">
             {/* Primary Navigation */}
             <SidebarMenu>
-              {/* Feed */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/feed' || location.pathname === '/'}>
-                  <Link to="/feed" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
-                    <Home className="h-5 w-5" />
-                    <span className="font-medium">Home</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* Popular/Discover */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/discover'}>
-                  <Link to="/discover" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
-                    <TrendingUp className="h-5 w-5" />
-                    <span className="font-medium">Popular</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* Explore */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/community'}>
-                  <Link to="/community" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
-                    <Search className="h-5 w-5" />
-                    <span className="font-medium">Explore</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* All */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/all'}>
-                  <Link to="/all" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
-                    <Globe className="h-5 w-5" />
-                    <span className="font-medium">All</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {navigationItems
+                .filter(item => item.priority === 'high')
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.href;
+                  
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link to={item.href} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted">
+                          <Icon className="h-5 w-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
 
-            {/* Divider */}
             <div className="h-px bg-border my-3" />
 
-            {/* Custom Feeds Section */}
+            {/* Custom Feeds */}
             <div className="space-y-1">
               <Button
                 variant="ghost"
@@ -609,137 +267,61 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
                 onClick={() => setCustomFeedsOpen(!customFeedsOpen)}
               >
                 <span className="uppercase tracking-wider">Custom Feeds</span>
-                <ChevronRight className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  customFeedsOpen && "rotate-90"
-                )} />
+                <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", customFeedsOpen && "rotate-90")} />
               </Button>
 
               {customFeedsOpen && (
                 <div className="space-y-0.5 pl-1">
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === '/events'}>
-                      <Link to="/events" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                        <Calendar className="h-4 w-4" />
-                        <span>Events</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === '/news'}>
-                      <Link to="/news" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                        <Newspaper className="h-4 w-4" />
-                        <span>News</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname === '/book-artist'}>
-                      <Link to="/book-artist" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                        <Palette className="h-4 w-4" />
-                        <span>Book Artists</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link to="/create-custom-feed" className="flex items-center gap-3 px-3 py-1.5 text-sm text-primary rounded-md hover:bg-muted">
-                        <Plus className="h-4 w-4" />
-                        <span>Create Custom Feed</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {navigationItems
+                    .filter(item => item.priority === 'medium')
+                    .map((item) => {
+                      const Icon = item.icon;
+                      const isActive = location.pathname === item.href;
+                      
+                      return (
+                        <SidebarMenuItem key={item.label}>
+                          <SidebarMenuButton asChild isActive={isActive}>
+                            <Link to={item.href} className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                              <Icon className="h-4 w-4" />
+                              <span>{item.label}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
                 </div>
               )}
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-border my-3" />
 
-            {/* Recent Section */}
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-between px-3 py-1.5 h-auto font-normal text-xs text-muted-foreground hover:bg-transparent"
-                onClick={() => setRecentOpen(!recentOpen)}
-              >
-                <span className="uppercase tracking-wider">Recent</span>
-                <ChevronRight className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  recentOpen && "rotate-90"
-                )} />
-              </Button>
-
-              {recentOpen && (
-                <div className="space-y-0.5 pl-1">
-                  {getRecentCommunities().map((community, index) => {
-                    const Icon = community.icon;
-                    return (
-                      <SidebarMenuItem key={index}>
-                        <SidebarMenuButton asChild isActive={location.pathname === community.path}>
-                          <Link to={community.path} className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                            <Icon className="h-4 w-4" />
-                            <span className="truncate">{community.name}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="h-px bg-border my-3" />
-
-            {/* Features Section */}
+            {/* Features */}
             <div className="space-y-0.5">
               <div className="px-3 py-1.5">
                 <span className="text-xs uppercase tracking-wider text-muted-foreground">Features</span>
               </div>
 
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/public-square'}>
-                  <Link to="/public-square" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                    <Megaphone className="h-4 w-4" />
-                    <span>Public Square</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/polls'}>
-                  <Link to="/polls" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                    <Vote className="h-4 w-4" />
-                    <span>Polls</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/legal-assistant'}>
-                  <Link to="/legal-assistant" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                    <Scale className="h-4 w-4" />
-                    <span>Legal Assistant</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/life-wish'}>
-                  <Link to="/life-wish" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                    <Heart className="h-4 w-4" />
-                    <span>Life Wishes</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {navigationItems
+                .filter(item => item.priority === 'low')
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.href;
+                  
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link to={item.href} className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                          {item.featured && <span className="ml-auto text-xs text-primary">★</span>}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
             </div>
 
-            {/* Admin Section - Only for admins */}
+            {/* Admin Section */}
             {isAdmin && variant !== 'admin' && (
               <>
                 <div className="h-px bg-border my-3" />
@@ -747,7 +329,6 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
                   <div className="px-3 py-1.5">
                     <span className="text-xs uppercase tracking-wider text-muted-foreground">Admin</span>
                   </div>
-
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location.pathname === '/admin'}>
                       <Link to="/admin" className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
@@ -759,39 +340,11 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
                 </div>
               </>
             )}
-
-            {/* Admin Navigation for admin variant */}
-            {variant === 'admin' && (
-              <>
-                <div className="h-px bg-border my-3" />
-                <div className="space-y-0.5">
-                  <div className="px-3 py-1.5">
-                    <span className="text-xs uppercase tracking-wider text-muted-foreground">Admin Panel</span>
-                  </div>
-
-                  {adminNavigationItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.href;
-                    
-                    return (
-                      <SidebarMenuItem key={item.label}>
-                        <SidebarMenuButton asChild isActive={isActive}>
-                          <Link to={item.href} className="flex items-center gap-3 px-3 py-1.5 text-sm rounded-md hover:bg-muted">
-                            <Icon className="h-4 w-4" />
-                            <span>{item.label}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </div>
-              </>
-            )}
           </div>
         </ScrollArea>
 
-        {/* User Profile Section at Bottom - Reddit style */}
-        {showUserMenu && currentUser && (
+        {/* User Profile Section */}
+        {currentUser && (
           <div className="mt-auto border-t border-border p-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -808,9 +361,7 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
                       {currentUser.user_metadata?.username || 
                        currentUser.email?.split('@')[0] || 'User'}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      View Profile
-                    </span>
+                    <span className="text-xs text-muted-foreground">View Profile</span>
                   </div>
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
@@ -836,21 +387,6 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
                     Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleThemeToggle} className="cursor-pointer">
-                  {theme === 'light' ? (
-                    <Moon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Sun className="mr-2 h-4 w-4" />
-                  )}
-                  {theme === 'light' ? 'Dark' : 'Light'} Mode
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -863,6 +399,8 @@ export const ConsolidatedSidebar: React.FC<ConsolidatedSidebarProps> = ({
       </SidebarContent>
     </Sidebar>
   );
-};
+});
+
+ConsolidatedSidebar.displayName = 'ConsolidatedSidebar';
 
 export default ConsolidatedSidebar;

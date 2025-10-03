@@ -4,6 +4,8 @@
  * This service consolidates all news-related functionality into a single, comprehensive service.
  * It replaces multiple duplicate services: NewsAggregationService, EnhancedNewsAggregationService,
  * EnhancedNewsSummarizationService, and UnifiedNewsService.
+ * 
+ * PRIVACY-FIRST: All news operations respect user privacy settings and anonymous mode.
  */
 
 import { supabase } from '@/integrations/supabase/client';

@@ -148,14 +148,20 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
   const [localError, setLocalError] = useState<string | null>(error);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Memoized computed values
+  // Memoized computed values - Privacy-first: Always use anonymous handle if available
   const displayName = useMemo(() => {
-    if (!user.name || user.name.trim() === '') {
-      return 'Anonymous User';
+    // Priority: anonymous_handle > display_name > name > 'Anonymous User'
+    if (user.anonymous_handle) {
+      return user.anonymous_handle;
     }
-    const validation = validateInput(user.name, 'userName');
-    return validation.success ? user.name : 'Anonymous User';
-  }, [user.name]);
+    if (user.display_name && user.display_name.trim() !== '') {
+      return user.display_name;
+    }
+    if (user.name && user.name.trim() !== '') {
+      return user.name;
+    }
+    return 'Anonymous User';
+  }, [user.anonymous_handle, user.display_name, user.name]);
 
   const displayBio = useMemo(() => {
     if (!user.bio) return null;

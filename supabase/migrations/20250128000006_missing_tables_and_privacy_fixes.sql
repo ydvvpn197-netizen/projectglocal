@@ -33,6 +33,25 @@ CREATE TABLE IF NOT EXISTS public.privacy_settings (
 );
 
 -- ============================================================================
+-- ADD RLS POLICIES FOR PRIVACY_SETTINGS
+-- ============================================================================
+
+-- Enable RLS on privacy_settings table
+ALTER TABLE public.privacy_settings ENABLE ROW LEVEL SECURITY;
+
+-- Policy for users to view their own privacy settings
+CREATE POLICY "Users can view own privacy settings" ON public.privacy_settings
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Policy for users to update their own privacy settings
+CREATE POLICY "Users can update own privacy settings" ON public.privacy_settings
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Policy for users to insert their own privacy settings
+CREATE POLICY "Users can insert own privacy settings" ON public.privacy_settings
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ============================================================================
 -- ADD MISSING ARTISTS TABLE (if not exists)
 -- ============================================================================
 

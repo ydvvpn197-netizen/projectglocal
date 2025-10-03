@@ -13,13 +13,21 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { LayoutProvider } from '@/contexts/LayoutContext';
 import { EnhancedThemeProvider } from '@/components/ui/EnhancedThemeProvider';
 
-// Lazy load components for better performance
+// Optimized lazy loading with better performance and error handling
 const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
-const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation').then(module => ({ default: module.MobileLayout })));
 const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel').then(module => ({ default: module.VoiceControlPanel })));
 const AppRoutes = lazy(() => import('@/routes/AppRoutes').then(module => ({ default: module.AppRoutes })));
-const ResponsiveLayout = lazy(() => import('@/components/ResponsiveLayout').then(module => ({ default: module.ResponsiveLayout })));
-const LazyLoader = lazy(() => import('@/components/LazyLoader').then(module => ({ default: module.LazyLoader })));
+const ConsolidatedLayout = lazy(() => import('@/components/layout/ConsolidatedLayout').then(module => ({ default: module.ConsolidatedLayout })));
+
+// Error boundary for lazy loaded components
+const LazyErrorBoundary = ({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) => {
+  try {
+    return <>{children}</>;
+  } catch (error) {
+    console.error('Lazy loading error:', error);
+    return <>{fallback}</>;
+  }
+};
 
 // Import hooks normally (hooks can't be lazy loaded)
 import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
@@ -131,19 +139,23 @@ function AppContent() {
     <ComprehensiveErrorBoundary level="critical" showDetails={import.meta.env.DEV}>
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading app...</div>}>
         <Router>
-          <div className="min-h-screen bg-gray-50">
-            {/* Main App Layout */}
-            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
-              <ResponsiveLayout>
-                <Routes>
-                  <Route path="/*" element={
-                    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
-                      <AppRoutes />
-                    </Suspense>
-                  } />
-                </Routes>
-              </ResponsiveLayout>
-            </Suspense>
+          <div className="min-h-screen bg-background">
+                   {/* Consolidated App Layout with Error Boundaries */}
+                   <LazyErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center">Layout loading failed. Please refresh the page.</div>}>
+                     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
+                       <ConsolidatedLayout>
+                         <Routes>
+                           <Route path="/*" element={
+                             <LazyErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center">Routes loading failed. Please refresh the page.</div>}>
+                               <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
+                                 <AppRoutes />
+                               </Suspense>
+                             </LazyErrorBoundary>
+                           } />
+                         </Routes>
+                       </ConsolidatedLayout>
+                     </Suspense>
+                   </LazyErrorBoundary>
 
             {/* Voice Control Panel - Desktop only */}
             <div className="hidden md:block fixed bottom-4 right-4 z-40">
@@ -151,7 +163,6 @@ function AppContent() {
                 <VoiceControlPanel compact />
               </Suspense>
             </div>
-
 
             {/* Toast Notifications */}
             <Toaster />

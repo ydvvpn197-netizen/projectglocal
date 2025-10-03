@@ -161,13 +161,20 @@ export const EnhancedUserProfileCard: React.FC<EnhancedUserProfileCardProps> = (
     setIsHovered(hovered);
   }, []);
 
-  // Memoized computed values
+  // Memoized computed values - Privacy-first: Always use anonymous handle if available
   const displayName = useMemo(() => {
-    if (!user.name) {
-      return 'Anonymous User';
+    // Priority: anonymous_handle > display_name > name > 'Anonymous User'
+    if (user.anonymous_handle) {
+      return user.anonymous_handle;
     }
-    return user.name;
-  }, [user.name]);
+    if (user.display_name && user.display_name.trim() !== '') {
+      return user.display_name;
+    }
+    if (user.name && user.name.trim() !== '') {
+      return user.name;
+    }
+    return 'Anonymous User';
+  }, [user.anonymous_handle, user.display_name, user.name]);
 
   const displayBio = useMemo(() => {
     if (!user.bio) return null;
