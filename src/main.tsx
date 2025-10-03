@@ -8,21 +8,11 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 if (typeof window !== 'undefined') {
   // Make React available globally
   (window as Window & { React?: typeof React }).React = React;
-  
-  // Ensure React.Children is properly initialized
-  if (!React.Children) {
-    console.warn('React.Children not found, this may cause issues');
-  }
 }
 
 // Enhanced React availability check
 if (!React || typeof React.createContext !== 'function' || typeof React.createElement !== 'function') {
   throw new Error('React is not properly loaded - missing core functions');
-}
-
-// Verify React.Children is available
-if (!React.Children) {
-  console.error('React.Children is not available - this will cause runtime errors');
 }
 
 // Simple app initialization with error handling
