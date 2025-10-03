@@ -1,134 +1,276 @@
-## TheGlocal.in (projectglocal) — Cursor-ready Project Summary & Instructions.
-## You are the senior full stack developer/designer/researcher who needs to improve/implement the existing project. You also have access to all the existing implemented features/codebase/builds.The codebase is always the source of truth if there is any ambiguity or discrepencies.
+# TheGlocal.in - Privacy-First Community Platform Cursor Rules
 
-## Purpose:
-This document is the single-source contextual prompt for Cursor/AI to improve, audit and incrementally rebuild the existing "TheGlocal.in" project. It gives the AI full context about product vision, stack, core principles, priority work, and exact tasks to run automatically across the codebase. The Goal is to To improve, refine, design, and build features, code, and strategies for our platform that reflects the plan/vision/mission of the project. Always prioritize user privacy, anonymity, features and functionality, database fixes/improvement, transparency (checks), and community engagement.
+## Project Context
+**Platform**: TheGlocal.in - Privacy-first digital public square for local communities
+**Domain**: theglocal.in
+**Tech Stack**: React 18 + TypeScript + Vite + TailwindCSS + shadcn/ui + Supabase + GitHub Pages
+**Architecture**: Monorepo with consolidated components and privacy-first design
 
-## Project Snapshot:
-- Name: **TheGlocal.in (projectglocal)** — a privacy-first digital public square for local communities.
-- Tech stack: **Next.js (App Router, React 18), TypeScript, Vite, TailwindCSS + shadcn/ui, Supabase (Postgres + RLS + Edge Functions), GitHub (CI/CD),** or equivalent.
-- Hosting: connected to custom domain `theglocal.in` via github pages and Supabase.
-- High-level features: communities, posts, AI-summarized news + discussions, polls, events (including virtual protests), creators (artists/services), private/anonymous identity model, chat, follow, subscriptions (Normal-Pro/Creator-Pro).
+## Core Principles
+- **Privacy by default**: Anonymous handles, identity reveal is opt-in
+- **Community-first**: Local engagement, civic participation, transparent moderation
+- **Production-ready**: TypeScript-first, comprehensive error handling, security-focused
+- **Scalable**: Modular architecture, performance-optimized, database-efficient
 
-## Vision/Mission & Product Goals:
-Build a privacy-first, local-first social platform where users can discover local news, community, issues, read/discuss news, create/join,follow communities and events, vote in polls, and engage with creators — all while defaulting to anonymity and transparent moderation. The “theglocal.in” is a digital public town square where your local neighbourhood comes alive, a place where Users can find friends and events around them, where another user (a local artist) books gigs and builds his audience, and where another user (community/event organizer) turns a simple idea into a neighbourhood tradition. Unlike global platforms that feel distant or fragmented apps that solve only one piece, TheGlocal unites connection, 
-culture, and commerce in one seamless, secure experience. With a local 
-feed for news, real stories, tools for event creation and artist bookings,
-authentic business reviews, and democratic community polls. The Glocal 
-empowers people to connect meaningfully, support local economies, 
-and shape their neighbourhoods together. Built with modern, scalable 
-technology (Cursor, Supabase, Github) and designed with privacy-first/anonymous
-principles. its more than an app, its a movement to reimagine how communities
-thrive in the digital age."
+## Development Guidelines
 
----
-## Product Brief/Feature description:
-1. Local Feed/feed/news feed: AI-summarized news (Using Open AI APIs and News APIs) from real sources + discussion threads for the summarised snippets of the news and option to create discussion about the news,users should have option to share, like and comment on these summarised news snippets. users can read AI summarised News and they can start the discussion on that news through a discussion section, users can read real posts, stories of other users and users can start discussions, chat with users anonymously and with their neighborhood users.Users can create, join, book, like, discuss, share and see Community events/festivals. User should be able to enable their location preferences and their feeds, other customization works with those choosen preferences.
-2. Events & Gigs: Artists/experts can have pages, start discussion, sell skills, organize events, and offer services to users. users/artists/creators can create events, events discussion, events engagements, users can follow and chat with creators, artist/creator bookings etc.
-3. Business Discovery/Discovery: A skilled user can upload their skills and offer services to local community, Authentic local business reviews could be posted and recommended for local busineeses.
-4. Community building and Polls creation: Users can create polls for local issues can tag to goverment authorities and decision-makers for neighborhood issues/activities.Users can create, participate and discuss virtual protests.Users can create, vote in polls for local issues, useres can tag government authorities for issue resolution.
-5. Legal Help: Users can ask for legal help and platform will create legal documents (using OpenAI API) or suggest legal opinions for users for users legal questions.Users can get legal advice, they can share/save daily wishful thinking.
+### 1. Privacy & Security First
+```typescript
+// ALWAYS implement privacy controls
+interface PrivacySettings {
+  anonymous_mode: boolean;
+  profile_visibility: 'public' | 'friends' | 'private';
+  location_sharing: boolean;
+  analytics_enabled: boolean;
+}
 
-6. Privacy First Experience: Platform will be Anonymous by default for users, users control their identity reveal. Users should have option to upgrade to pro for offering professional services.Users should be able to Chat, follow, and interact with other users with privacy controls to hide/reveal identity.
+// Use RLS policies for all database operations
+const { data } = await supabase
+  .from('posts')
+  .select('*')
+  .eq('user_id', user.id); // Always filter by user_id for privacy
+```
 
----
+### 2. Component Architecture
+```typescript
+// Use consolidated components from src/components/
+import { ConsolidatedSidebar } from '@/components/layout/ConsolidatedSidebar';
+import { PrivacyFirstIdentitySystem } from '@/components/PrivacyFirstIdentitySystem';
 
-## Core Principles (follow):
-1. Act like you are building this for your own startup.
-2. Always preserve anonymity by default; identity reveal is opt-in.  
-3. Use Supabase for DB, Auth, RLS, and server-side edge functions.  
-4. Favor server components (App Router) for data-fetching; client components for interactions.  
-5. TypeScript-first with strict types and production-grade error handling.  
-6. Consolidate duplicate features rather than adding new, overlapping ones.  
-7. Implement RBAC + row-level security across tables.
-8. Incremental, non-destructive changes: refactor, consolidate, and extend.
-9. Always align solutions with product vision.
-10. Proactively suggest improvements in UX, database schema, APIs, auth, deployment, and security.
-11 . Use Supabase for database, authentication, row-level security (RLS), and edge functions.
-12. Use Next.js with the App Router, server components where beneficial, and optimized API routes.
-13. Use TailwindCSS + shadcn/ui for fast, clean, responsive, production-ready UI.
-14. Write TypeScript-first, with clear types, error handling, and maintainable structure.
-15. Always keep role-based access control (RBAC) and RLS in mind for multi-user safety.
-16. Do not remove functionality — consolidate, improve or simplify instead.
-17. Suggest privacy-preserving solutions and transparent moderation systems.
-18. Your goal should be to improve the current build, not rewrite everything from scratch.
+// Follow the established pattern for new components
+interface ComponentProps {
+  className?: string;
+  children?: React.ReactNode;
+  onSettingsChange?: (settings: any) => void;
+}
+```
 
----
+### 3. Database Schema Standards
+```sql
+-- Always include these fields in new tables
+CREATE TABLE public.new_table (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
 
-## Required DB schema highlights (essentials)
-Ensure all the tables exists or create required table, functions, migrations: `profiles`, `communities`, `community_members`, `posts`, `events`, `polls`, `creators`, `services`, `news_summaries`, `news_discussions`, `subscriptions`, `reports`, `moderation_actions`, `chats`, `messages`,`artist booking` etc.
+-- Enable RLS on all tables
+ALTER TABLE public.new_table ENABLE ROW LEVEL SECURITY;
+```
 
-## RLS & RBAC Requirements (baseline)
-- Enable RLS on all custom tables.  
-- Insert/update policies must check `auth.uid() = author_id` or comparable checks.  
-- Provide moderator/admin bypass via `profiles.role in ('moderator','admin')` or an `is_moderator()` SQL function.  
-- Keep `news_summaries` write-protected (service key only, via edge function).
+### 4. Authentication & Anonymous Users
+```typescript
+// Support both authenticated and anonymous users
+const { data: { user } } = await supabase.auth.getUser();
+const isAnonymous = !user;
 
----
+// Use anonymous identity service for anonymous users
+import { anonymousIdentityService } from '@/services/anonymousIdentityService';
+if (isAnonymous) {
+  const session = await anonymousIdentityService.createAnonymousSession();
+}
+```
 
-## tasks for Cursor to keep in mind - Cursor/AI should perform automatically (step-by-step):
-1. **Scan repo root**: list files, read package.json, tsconfig, tailwind config, supabase folder, and app/ pages/components.  
-2. **Identify pages/components**: build/improve a page-by-page index (path, renders, server/client) and mark interactive components.  
-3. **Audit each file**: for each page/component do:  
-   - UI/UX audit (redundant buttons, inconsistent CTAs, missing privacy controls).  
-   - Security audit (client-side exposure of secrets, service role keys, direct DB writes).  
-   - Performance audit (large bundles, unoptimized images, missing indexes).  
-   - Suggest merge/refactor if duplicate features exist.  
-4. **Generate fixes**: produce ready-to-apply diffs for each suggested change (TypeScript-first).  
-5. **Create migration SQL** for schema changes and RLS policies; keep migrations idempotent.  
-6. **Update single changelog** (`CHANGELOG.md`) with all changes and reasons.  
-7. **Add tests** for modified components and integration tests for critical flows.  
-8. **Provide checklist**: run lint/test/build, run supabase migration status, include migration file, update CHANGELOG.
-9. Run the repo scan (file list + package.json + supabase folder).  
-10. Produce list of top-10 high-priority issues.  
-11. Create PR `chore/rls-baseline` with migrations + policies and update CHANGELOG.  
-12. Create PR `feature/profiles-anon-handle` with code, migration (profiles.handle), tests.
-13. Create/suggest a technical plan that concisely describes the features the user wants to build.
-14. Research the files and functions that need to be changed to implement the features.
-15. Avoid any product manager style sections (no success criteria, timeline, migration, etc).
-16. Include a brief description to set context at the top.
-17. Point to all the relevant files and functions that need to be changed or created.
-18. Explain any algorithms that are used step-by-step.
-19. If necessary, breaks up the work into logical phases.
-20. If the user's requirements are unclear, especially after researching 
-the relevant files, you may ask up to 5 clarifying questions If you do so, incorporate the user's answers into the plan.
-21. Prioritize being concise and precise. Make the plan/improvements/implementation as tight as possible without losing any of the critical details from the Product Brief/Feature description.
+### 5. Location & Community Features
+```typescript
+// Always handle location data with privacy controls
+interface LocationData {
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  precise_location: boolean; // User consent for precise location
+}
 
----
+// Use location filters for community content
+const locationFilter = {
+  city: userLocation.city,
+  radius: 50 // km
+};
+```
 
-## Acceptance criteria:
-- All Builds should pass lint, tests, and build issues.  
-- RLS policies in place and verified with test accounts.  
-- No supabase service role keys in client code.  
-- Anonymous handle created automatically on sign-up.
-- CHANGELOG.md updated with every change.
-- always align with the goal and mission of this platform.
-- Do not remove functionality — consolidate, improve or simplify instead.
-- Use consistent button styles, clear CTAs, logical grouping, minimal steps, responsive layouts.
-- If two features can be merged without loss of capability, do so and note it.
+### 6. Real-time Features with Supabase
+```typescript
+// Use Supabase subscriptions for real-time updates
+const subscription = supabase
+  .channel('posts')
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'posts'
+  }, (payload) => {
+    // Handle real-time updates
+  })
+  .subscribe();
+```
 
+### 7. Error Handling & Loading States
+```typescript
+// Always implement comprehensive error handling
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
 
----
+try {
+  setLoading(true);
+  const result = await apiCall();
+  return result;
+} catch (error) {
+  setError(error instanceof Error ? error.message : 'Unknown error');
+  console.error('Operation failed:', error);
+} finally {
+  setLoading(false);
+}
+```
 
-## Code Review:
--Please do a thorough code review.
--Make sure that the plan/features was correctly implemented.
--Look for any obvious bugs or issues in the code.
--Look for subtle data alignment issues (e.g. expecting snake_case but getting camelCase 
-or expecting data to come through in an object but receiving a nested object like {data:{}}).
--Look for any over-engineering or files getting too large and needing refactoring.
--Look for any weird syntax or style that doesn't match other parts of the codebase.
--Document your findings in docs/features/_REVIEW.md unless a different file name is specified.
+### 8. Performance Optimization
+```typescript
+// Use lazy loading for heavy components
+const LazyComponent = lazy(() => import('./HeavyComponent'));
 
----
+// Implement virtualization for large lists
+import { VirtualizedUserList } from '@/components/VirtualizedUserList';
 
-## Safety & Operational notes for the AI:
-- Do not expose or print secrets.  
-- When modifying DB, provide safe, idempotent SQL migrations.  
-- Do not create additional documentation files — keep updates to a single `CHANGELOG.md`.
-- Do not remove functionality; prefer consolidation and improvement.  
+// Use React Query for data fetching
+import { useQuery } from '@tanstack/react-query';
+const { data, isLoading, error } = useQuery({
+  queryKey: ['posts', filters],
+  queryFn: () => fetchPosts(filters)
+});
+```
 
----
+### 9. UI/UX Standards
+```typescript
+// Use shadcn/ui components consistently
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
-Finally push all the changes and improvements made into github and deploy the project successfully.
+// Follow responsive design patterns
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Content */}
+</div>
 
+// Use consistent spacing and typography
+className="space-y-4 text-sm text-muted-foreground"
+```
+
+### 10. Testing & Quality
+```typescript
+// Write tests for privacy-critical features
+describe('PrivacyControls', () => {
+  it('should respect anonymous mode', () => {
+    // Test anonymous user behavior
+  });
+  
+  it('should enforce RLS policies', () => {
+    // Test database security
+  });
+});
+```
+
+## File Organization
+- `src/components/` - UI components (organized by feature)
+- `src/services/` - Business logic and API calls
+- `src/hooks/` - Custom React hooks
+- `src/types/` - TypeScript type definitions
+- `supabase/migrations/` - Database schema changes
+- `supabase/functions/` - Edge functions for server-side logic
+
+## Database Tables (Core)
+- `profiles` - User profiles with privacy settings
+- `posts` - Community posts, events, services
+- `communities` - Local community groups
+- `anonymous_sessions` - Anonymous user sessions
+- `privacy_settings` - User privacy preferences
+- `audit_logs` - Security and privacy audit trail
+
+## Security Checklist
+- [ ] RLS policies enabled on all tables
+- [ ] User ID filtering in all queries
+- [ ] Anonymous mode support
+- [ ] Privacy settings respected
+- [ ] Input validation and sanitization
+- [ ] Error messages don't leak sensitive data
+- [ ] Audit logging for sensitive operations
+
+## Performance Checklist
+- [ ] Lazy loading for heavy components
+- [ ] Virtualization for large lists
+- [ ] React Query for data fetching
+- [ ] Proper loading states
+- [ ] Bundle size optimization
+- [ ] Image optimization
+- [ ] Caching strategies
+
+## Deployment
+- Production builds: `npm run build:production`
+- Deploy to GitHub Pages: `npm run deploy:git`
+- Domain: theglocal.in
+- Environment: Production-ready with proper error handling
+
+## Code Style
+- Use TypeScript strict mode
+- Prefer functional components with hooks
+- Use TailwindCSS for styling
+- Follow existing naming conventions
+- Comment complex privacy/security logic
+- Use meaningful variable names
+
+## When Adding Features
+1. **Privacy Impact Assessment**: How does this affect user privacy?
+2. **Anonymous Support**: Does this work for anonymous users?
+3. **Location Relevance**: Is this feature location-aware?
+4. **Community Value**: Does this enhance local community engagement?
+5. **Security Review**: Are there any security implications?
+6. **Performance Impact**: How does this affect load times?
+7. **Mobile Responsive**: Does this work on mobile devices?
+
+## Common Patterns
+```typescript
+// Privacy-aware data fetching
+const fetchUserData = async (userId: string, isAnonymous: boolean) => {
+  if (isAnonymous) {
+    return await fetchAnonymousData();
+  }
+  return await fetchAuthenticatedData(userId);
+};
+
+// Location-aware content filtering
+const filterByLocation = (content: any[], userLocation: LocationData) => {
+  return content.filter(item => 
+    isWithinRadius(item.location, userLocation, 50)
+  );
+};
+
+// Real-time updates with privacy
+const subscribeToUpdates = (channel: string, filters: any) => {
+  return supabase
+    .channel(channel)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'posts',
+      filter: filters
+    }, handleUpdate)
+    .subscribe();
+};
+```
+
+## Remember
+- **Privacy is not optional** - Every feature must respect user privacy
+- **Community comes first** - Features should enhance local engagement
+- **Security is paramount** - RLS policies and input validation are mandatory
+- **Performance matters** - Users expect fast, responsive experiences
+- **Mobile-first** - Most users will access via mobile devices
+- **Accessibility** - Ensure features work for all users
+- **Transparency** - Users should understand what data is collected and why
+
+## Quick Commands
+- Start dev server: `npm run dev`
+- Build production: `npm run build:production`
+- Run tests: `npm run test:suite`
+- Deploy: `npm run deploy:git`
+- Database push: `npm run db:push`
+- Type check: `npm run type-check`

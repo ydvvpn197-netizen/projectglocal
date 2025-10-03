@@ -164,6 +164,8 @@ export default defineConfig(({ mode }) => ({
         // Ensure proper module handling
         format: 'es',
         exports: 'named',
+        // Fix variable hoisting issues
+        hoistTransitiveImports: false,
       },
     },
     chunkSizeWarningLimit: 1500, // Increased to prevent warnings during build
@@ -178,6 +180,9 @@ export default defineConfig(({ mode }) => ({
       legalComments: 'none',
       // Reduce memory usage
       treeShaking: true,
+      // Fix variable hoisting issues
+      target: 'es2015',
+      format: 'esm',
     },
     sourcemap: mode === 'development',
     // Performance optimizations
