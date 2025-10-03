@@ -13,21 +13,11 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { LayoutProvider } from '@/contexts/LayoutContext';
 import { EnhancedThemeProvider } from '@/components/ui/EnhancedThemeProvider';
 
-// Optimized lazy loading with better performance and error handling
-const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow').then(module => ({ default: module.OnboardingFlow })));
-const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel').then(module => ({ default: module.VoiceControlPanel })));
-const AppRoutes = lazy(() => import('@/routes/AppRoutes').then(module => ({ default: module.AppRoutes })));
-const ConsolidatedLayout = lazy(() => import('@/components/layout/ConsolidatedLayout').then(module => ({ default: module.ConsolidatedLayout })));
-
-// Error boundary for lazy loaded components
-const LazyErrorBoundary = ({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) => {
-  try {
-    return <>{children}</>;
-  } catch (error) {
-    console.error('Lazy loading error:', error);
-    return <>{fallback}</>;
-  }
-};
+// Simplified lazy loading to avoid initialization errors
+const OnboardingFlow = lazy(() => import('@/components/onboarding/OnboardingFlow'));
+const VoiceControlPanel = lazy(() => import('@/components/voice/VoiceControlPanel'));
+const AppRoutes = lazy(() => import('@/routes/AppRoutes'));
+const ConsolidatedLayout = lazy(() => import('@/components/layout/ConsolidatedLayout'));
 
 // Import hooks normally (hooks can't be lazy loaded)
 import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
@@ -140,22 +130,18 @@ function AppContent() {
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading app...</div>}>
         <Router>
           <div className="min-h-screen bg-background">
-                   {/* Consolidated App Layout with Error Boundaries */}
-                   <LazyErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center">Layout loading failed. Please refresh the page.</div>}>
-                     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
-                       <ConsolidatedLayout>
-                         <Routes>
-                           <Route path="/*" element={
-                             <LazyErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center">Routes loading failed. Please refresh the page.</div>}>
-                               <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
-                                 <AppRoutes />
-                               </Suspense>
-                             </LazyErrorBoundary>
-                           } />
-                         </Routes>
-                       </ConsolidatedLayout>
-                     </Suspense>
-                   </LazyErrorBoundary>
+                   {/* Consolidated App Layout */}
+                   <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading layout...</div>}>
+                     <ConsolidatedLayout>
+                       <Routes>
+                         <Route path="/*" element={
+                           <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading routes...</div>}>
+                             <AppRoutes />
+                           </Suspense>
+                         } />
+                       </Routes>
+                     </ConsolidatedLayout>
+                   </Suspense>
 
             {/* Voice Control Panel - Desktop only */}
             <div className="hidden md:block fixed bottom-4 right-4 z-40">

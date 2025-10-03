@@ -7,14 +7,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-// Lazy load components for better performance
-const ConsolidatedSidebar = lazy(() => import('./ConsolidatedSidebar').then(m => ({ default: m.ConsolidatedSidebar })));
-const ConsolidatedHeader = lazy(() => import('./ConsolidatedHeader').then(m => ({ default: m.ConsolidatedHeader })));
-const ConsolidatedFooter = lazy(() => import('./ConsolidatedFooter').then(m => ({ default: m.ConsolidatedFooter })));
-const NetworkStatus = lazy(() => import('@/components/NetworkStatus').then(m => ({ default: m.NetworkStatus })));
-const PromotionalBanner = lazy(() => import('@/components/marketing/PromotionalBanner').then(m => ({ default: m.PromotionalBanner })));
-const SimpleNews = lazy(() => import('@/components/SimpleNews').then(m => ({ default: m.SimpleNews })));
-const MobileLayout = lazy(() => import('@/components/navigation/MobileBottomNavigation').then(m => ({ default: m.MobileLayout })));
+// Import components directly to avoid circular dependencies
+import { ConsolidatedSidebar } from './ConsolidatedSidebar';
+import { ConsolidatedHeader } from './ConsolidatedHeader';
+import { ConsolidatedFooter } from './ConsolidatedFooter';
+import { NetworkStatus } from '@/components/NetworkStatus';
+import { PromotionalBanner } from '@/components/marketing/PromotionalBanner';
+import { SimpleNews } from '@/components/SimpleNews';
+import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
 
 interface ConsolidatedLayoutProps {
   children: ReactNode;
