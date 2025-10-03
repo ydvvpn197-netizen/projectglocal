@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnifiedButton } from '@/design-system';
 import { enhancedRealtimeService, CollaborationSession, TypingIndicator } from '@/services/EnhancedRealtimeService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface CollaborationUpdate {

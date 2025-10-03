@@ -11,5 +11,5 @@ export interface LayoutContextType {
 
 export const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
-// Re-export LayoutProvider and useLayout from LayoutContext.tsx
-export { LayoutProvider, useLayout } from './LayoutContext.tsx';
+// Re-export LayoutProvider from LayoutContext.provider.tsx
+export { LayoutProvider } from './LayoutContext.provider';

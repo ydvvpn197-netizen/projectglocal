@@ -9,7 +9,7 @@ import { AdvancedSearchInterface } from './AdvancedSearchInterface';
 import { LiveCollaboration } from '../realtime/LiveCollaboration';
 import { advancedSearchService, SearchResult } from '@/services/AdvancedSearchService';
 import { enhancedRealtimeService } from '@/services/EnhancedRealtimeService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface UnifiedSearchInterfaceProps {

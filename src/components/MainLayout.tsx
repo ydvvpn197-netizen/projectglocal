@@ -5,7 +5,7 @@ import { ConsolidatedFooter as Footer } from './layout/ConsolidatedFooter';
 import { RightSidebar } from './layout/RightSidebar';
 import { SidebarProvider } from '@/components/ui/sidebarExports';
 import { cn } from '@/lib/utils';
-import { useLayout } from '@/contexts/LayoutContext';
+import { useLayout } from '@/hooks/useLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 

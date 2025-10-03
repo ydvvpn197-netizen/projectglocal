@@ -49,7 +49,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useLayout } from '@/contexts/LayoutContext';
+import { useLayout } from '@/hooks/useLayout';
 import { useLocationManager } from '@/hooks/useLocationManager';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { NotificationBell } from '@/components/NotificationBell';
