@@ -43,8 +43,8 @@ const mobileNavItems = [
   { title: 'Feed', url: '/feed', icon: Home },
   { title: 'Discover', url: '/discover', icon: Search },
   { title: 'Events', url: '/events', icon: Calendar },
-  { title: 'Community', url: '/community', icon: Users },
-  { title: 'Book Artists', url: '/book-artist', icon: Palette },
+  { title: 'Community', url: '/communities', icon: Users },
+  { title: 'Book Artists', url: '/booking', icon: Palette },
 ];
 
 const newFeaturesItems = [
@@ -54,7 +54,7 @@ const newFeaturesItems = [
 
 const userItems = [
   { title: 'Dashboard', url: '/dashboard', icon: User },
-  { title: 'Messages', url: '/messages', icon: MessageSquare },
+  { title: 'Messages', url: '/chat', icon: MessageSquare },
   { title: 'News Feed', url: '/news', icon: Newspaper },
   { title: 'Profile', url: '/profile', icon: User },
   { title: 'Settings', url: '/settings', icon: Settings },
@@ -147,9 +147,9 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={String(user.user_metadata?.full_name || user.email || 'User')} />
                       <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-xs">
-                        {getInitials(user.user_metadata?.full_name || user.email)}
+                        {getInitials(String(user.user_metadata?.full_name || user.email || 'User'))}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -157,14 +157,14 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="flex items-center justify-start gap-2 p-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={String(user.user_metadata?.full_name || user.email || 'User')} />
                       <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-                        {getInitials(user.user_metadata?.full_name || user.email)}
+                        {getInitials(String(user.user_metadata?.full_name || user.email || 'User'))}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                        {String(user.user_metadata?.full_name || user.email?.split('@')[0] || 'User')}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
@@ -188,7 +188,7 @@ export function MobileLayout({ children }: MobileLayoutProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={() => navigate('/signin')} size="sm" className="btn-community">
+              <Button onClick={() => navigate('/auth?tab=signin')} size="sm" className="btn-community">
                 Sign In
               </Button>
             )}

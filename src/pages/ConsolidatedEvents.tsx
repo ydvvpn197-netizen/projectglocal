@@ -175,7 +175,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useEvents, Event } from "@/hooks/useEvents";
 import { useCommunities } from "@/hooks/useCommunities";
-import { usePosts } from "@/hooks/usePosts";
 import { EventCard } from "@/components/EventCard";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -203,7 +202,6 @@ const ConsolidatedEvents = () => {
   const { toast } = useToast();
   const { events, loading, toggleAttendance } = useEvents();
   const { communities } = useCommunities();
-  const { posts } = usePosts();
 
   // Enhanced state management
   const [searchQuery, setSearchQuery] = useState("");

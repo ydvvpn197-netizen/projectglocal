@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { newsService } from '@/services/newsService';
+import { getCurrentLocation } from '@/utils/locationUtils';
 import { NewsContext } from '@/contexts/NewsContextDefinition';
 import { NewsContextType } from '@/contexts/NewsContextTypes';
 import type { 
@@ -338,14 +339,21 @@ export const useLocation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getCurrentLocation = useCallback(async () => {
+  const fetchCurrentLocation = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const currentLocation = await newsService.getCurrentLocation();
-      setLocation(currentLocation);
-      return currentLocation;
+      const currentLocation = await getCurrentLocation();
+      // Convert Location to LocationData format
+      const locationData: LocationData = {
+        city: currentLocation.name || 'Unknown',
+        country: 'Unknown',
+        latitude: currentLocation.lat,
+        longitude: currentLocation.lng
+      };
+      setLocation(locationData);
+      return locationData;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get location';
       setError(errorMessage);
@@ -369,14 +377,14 @@ export const useLocation = () => {
   }, []);
 
   useEffect(() => {
-    getCurrentLocation();
-  }, [getCurrentLocation]);
+    fetchCurrentLocation();
+  }, [fetchCurrentLocation]);
 
   return {
     location,
     loading,
     error,
-    getCurrentLocation,
+    getCurrentLocation: fetchCurrentLocation,
     updateLocation
   };
 };

@@ -106,8 +106,8 @@ const mainNavigationItems: NavigationItem[] = [
   { label: 'Feed', href: '/feed', icon: Home, priority: 'high', group: 'main', mobile: true },
   { label: 'Discover', href: '/discover', icon: Search, priority: 'high', group: 'main', mobile: true },
   { label: 'Events', href: '/events', icon: Calendar, priority: 'high', group: 'main', mobile: true },
-  { label: 'Community', href: '/community', icon: Users, priority: 'high', group: 'main', mobile: true },
-  { label: 'Book Artists', href: '/book-artist', icon: Palette, priority: 'high', group: 'main', mobile: true },
+  { label: 'Community', href: '/communities', icon: Users, priority: 'high', group: 'main', mobile: true },
+  { label: 'Book Artists', href: '/booking', icon: Palette, priority: 'high', group: 'main', mobile: true },
   
   // Explore navigation
   { label: 'News', href: '/news', icon: Newspaper, priority: 'medium', group: 'explore', mobile: true },
@@ -123,8 +123,8 @@ const mainNavigationItems: NavigationItem[] = [
   { label: 'Trending', href: '/feed?tab=trending', icon: TrendingUp, featured: true, group: 'features' },
   
   // Account navigation
-  { label: 'My Dashboard', href: '/my-dashboard', icon: User, group: 'account' },
-  { label: 'Messages', href: '/messages', icon: MessageCircle, group: 'account' },
+  { label: 'My Dashboard', href: '/dashboard', icon: User, group: 'account' },
+  { label: 'Messages', href: '/chat', icon: MessageCircle, group: 'account' },
   { label: 'Profile', href: '/profile', icon: User, group: 'account' },
   { label: 'Privacy', href: '/privacy', icon: Shield, group: 'account' },
   { label: 'Subscription', href: '/subscription', icon: Crown, group: 'account' },
@@ -234,7 +234,7 @@ export const ConsolidatedSidebar = memo<ConsolidatedSidebarProps>(({
     <Sidebar className={cn("w-64 border-r border-border bg-background hidden lg:block", className)}>
       <SidebarContent className="p-0 flex flex-col h-full">
         <ScrollArea className="flex-1">
-          <div className="py-3 px-2 space-y-1">
+          <div className="pt-16 pb-3 px-2 space-y-1">
             {/* Primary Navigation */}
             <SidebarMenu>
               {navigationItems
@@ -352,14 +352,12 @@ export const ConsolidatedSidebar = memo<ConsolidatedSidebarProps>(({
                   <Avatar className="h-7 w-7">
                     <AvatarImage src={currentUser.avatar_url} />
                     <AvatarFallback className="text-xs">
-                      {currentUser.user_metadata?.username?.charAt(0) || 
-                       currentUser.email?.charAt(0) || 'U'}
+                      {String(currentUser.user_metadata?.username || currentUser.email || 'U').charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start flex-1 min-w-0">
                     <span className="text-sm font-medium truncate w-full">
-                      {currentUser.user_metadata?.username || 
-                       currentUser.email?.split('@')[0] || 'User'}
+                      {String(currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'User')}
                     </span>
                     <span className="text-xs text-muted-foreground">View Profile</span>
                   </div>
@@ -370,7 +368,7 @@ export const ConsolidatedSidebar = memo<ConsolidatedSidebarProps>(({
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <span className="text-sm font-medium">
-                      u/{currentUser.user_metadata?.username || currentUser.email?.split('@')[0]}
+                      u/{String(currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user')}
                     </span>
                   </div>
                 </DropdownMenuLabel>

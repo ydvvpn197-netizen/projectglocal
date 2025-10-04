@@ -50,8 +50,15 @@ export const usePosts = () => {
       // Try the direct query approach first since RPC might have authentication issues
       console.log('Attempting direct query to posts table...');
       const { data: directData, error: directError } = await supabase
-        .from('social_posts')
-        .select('*')
+        .from('community_posts')
+        .select(`
+          *,
+          profiles:profiles!community_posts_user_id_fkey(
+            display_name,
+            username,
+            avatar_url
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (directError) {

@@ -202,7 +202,7 @@ const VoiceControlPanel: React.FC<VoiceControlPanelProps> = ({
         window.location.href = '/events';
         toast({ title: "Navigating to Events", description: "Taking you to the events page." });
       } else if (lowerCommand.includes('community')) {
-        window.location.href = '/community';
+        window.location.href = '/communities';
         toast({ title: "Navigating to Community", description: "Taking you to the community page." });
       } else if (lowerCommand.includes('profile')) {
         window.location.href = '/profile';

@@ -36,7 +36,7 @@ export const DashboardRouter: React.FC = () => {
 
         if (artistData && !artistError) {
           // User is an artist, redirect to artist dashboard
-          navigate('/artist-dashboard', { replace: true });
+          navigate('/artist?view=dashboard', { replace: true });
           return;
         }
 

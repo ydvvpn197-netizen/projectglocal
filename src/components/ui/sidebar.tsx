@@ -300,11 +300,11 @@ export const SidebarInset = React.forwardRef<
   return (
     <main
       ref={ref}
-      className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.1))] md:peer-data-[variant=inset]:m-0 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none",
-        className
-      )}
+        className={cn(
+          "relative flex min-h-svh flex-1 flex-col bg-background",
+          "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.1))] md:peer-data-[variant=inset]:m-0 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none",
+          className
+        )}
       {...props}
     />
   )

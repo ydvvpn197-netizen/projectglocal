@@ -1,3 +1,6 @@
+/* Import layout-specific styles - must be at the very top */
+@import './styles/layout.css';
+
 /* CSS Fallback - Basic styling if Tailwind fails to load */
 * {
   box-sizing: border-box;
@@ -268,9 +271,6 @@ input, textarea, select {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import layout-specific styles */
-@import './styles/layout.css';
 
 /* Line clamp utilities for text truncation */
 @layer utilities {

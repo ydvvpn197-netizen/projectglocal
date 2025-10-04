@@ -1,4 +1,5 @@
 import React, { ReactNode, memo, useMemo, Suspense, lazy } from 'react';
+import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
@@ -13,8 +14,7 @@ import { ConsolidatedHeader } from './ConsolidatedHeader';
 import { ConsolidatedFooter } from './ConsolidatedFooter';
 import { NetworkStatus } from '@/components/NetworkStatus';
 import { PromotionalBanner } from '@/components/marketing/PromotionalBanner';
-import { LocalNews } from '@/components/LocalNews';
-import { MobileLayout } from '@/components/navigation/MobileBottomNavigation';
+import { MobileLayout } from '@/components/MobileLayout';
 
 interface ConsolidatedLayoutProps {
   children: ReactNode;
@@ -38,16 +38,32 @@ export const ConsolidatedLayout = memo<ConsolidatedLayoutProps>(({
   variant = 'main',
   maxWidth = 'xl',
   padding = 'md',
-  showHeader = false,
+  showHeader = true,
   showSidebar = true,
-  showFooter = false,
+  showFooter = true,
   showMobileNav = true,
 }) => {
   const { user } = useAuth();
+  const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 1024px)');
+
+  // Detect if we're on an auth page
+  const isAuthPage = useMemo(() => {
+    const authRoutes = ['/auth', '/signin', '/signup', '/forgot-password', '/reset-password', '/auth/callback'];
+    return authRoutes.includes(location.pathname) || location.pathname.startsWith('/auth');
+  }, [location.pathname]);
 
   // Memoized responsive logic
   const layoutConfig = useMemo(() => {
+    // For auth pages, use minimal layout
+    if (isAuthPage) {
+      return {
+        shouldShowSidebar: false,
+        shouldShowMobileNav: false,
+        isMobile
+      };
+    }
+
     const shouldShowSidebar = showSidebar && !isMobile && variant !== 'minimal';
     const shouldShowMobileNav = showMobileNav && isMobile && user && variant !== 'admin';
     
@@ -56,7 +72,7 @@ export const ConsolidatedLayout = memo<ConsolidatedLayoutProps>(({
       shouldShowMobileNav,
       isMobile
     };
-  }, [showSidebar, showMobileNav, isMobile, user, variant]);
+  }, [showSidebar, showMobileNav, isMobile, user, variant, isAuthPage]);
 
   // Memoized style classes
   const styleClasses = useMemo(() => {
@@ -80,6 +96,11 @@ export const ConsolidatedLayout = memo<ConsolidatedLayoutProps>(({
       padding: paddingMap[padding]
     };
   }, [maxWidth, padding]);
+
+  // Auth pages - render without any layout wrapper since they have their own full-screen layout
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
   // Mobile layout with bottom navigation
   if (layoutConfig.shouldShowMobileNav) {
@@ -171,20 +192,10 @@ export const ConsolidatedLayout = memo<ConsolidatedLayoutProps>(({
           <SidebarInset className="flex-1 min-w-0">
             <main className="flex-1 overflow-auto bg-background">
               <div className={cn('w-full pt-16 lg:pt-4 space-y-6', styleClasses.maxWidth, styleClasses.padding)}>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                  <div className="lg:col-span-3 min-h-0 space-y-4">
-                    <Suspense fallback={<div className="flex items-center justify-center min-h-[200px]">Loading content...</div>}>
-                      {children}
-                    </Suspense>
-                  </div>
-                  
-                  <div className="hidden lg:block lg:col-span-1">
-                    <div className="sticky top-6">
-                      <Suspense fallback={<div className="h-64 bg-muted animate-pulse rounded-lg"></div>}>
-                        <LocalNews className="max-h-[calc(100vh-3rem)] overflow-y-auto" />
-                      </Suspense>
-                    </div>
-                  </div>
+                <div className="max-w-7xl mx-auto">
+                  <Suspense fallback={<div className="flex items-center justify-center min-h-[200px]">Loading content...</div>}>
+                    {children}
+                  </Suspense>
                 </div>
               </div>
             </main>

@@ -13,9 +13,44 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { LayoutProvider } from '@/contexts/LayoutContext.provider';
 import { EnhancedThemeProvider } from '@/components/ui/EnhancedThemeProvider';
 
-// Simplified lazy loading to avoid initialization errors
-const AppRoutes = lazy(() => import('@/routes/AppRoutes'));
-const ConsolidatedLayout = lazy(() => import('@/components/layout/ConsolidatedLayout'));
+// Import components directly to avoid lazy loading issues
+import { AppRoutes } from '@/routes/AppRoutes';
+import { ConsolidatedLayout } from '@/components/layout/ConsolidatedLayout';
+import { AdminRoute } from '@/components/AdminRoute';
+
+const VoiceControlPanel = lazy(() => 
+  import('@/components/VoiceControlPanel').catch(error => {
+    console.error('Failed to load VoiceControlPanel:', error);
+    return { default: () => null };
+  })
+);
+
+const OnboardingFlow = lazy(() => 
+  import('@/components/onboarding/OnboardingFlow').catch(error => {
+    console.error('Failed to load OnboardingFlow:', error);
+    return { 
+      default: ({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) => (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4">Onboarding Error</h2>
+            <p className="text-gray-600 mb-4">Unable to load onboarding flow.</p>
+            <button 
+              onClick={onSkip}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )
+    };
+  })
+);
+
+const ConsolidatedAuth = lazy(() => import('@/pages/ConsolidatedAuth'));
+const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const AdminRoutes = lazy(() => import('@/routes/AdminRoutes'));
 
 // Import hooks normally (hooks can't be lazy loaded)
 // import { useCommonVoiceCommands } from '@/hooks/useVoiceControl';
@@ -31,11 +66,28 @@ class ComponentErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+    // Ensure error is properly serialized
+    let serializedError: Error;
+    try {
+      if (error instanceof Error) {
+        serializedError = error;
+      } else {
+        serializedError = new Error(String(error));
+      }
+    } catch (e) {
+      serializedError = new Error('Unknown error occurred');
+    }
+    return { hasError: true, error: serializedError };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ComponentErrorBoundary caught an error:', error, errorInfo);
+    
+    // Handle specific primitive conversion errors
+    if (error.message && error.message.includes('Cannot convert object to primitive value')) {
+      console.error('Primitive conversion error detected. This is likely a lazy loading issue.');
+      console.warn('Please refresh the page manually if the error persists');
+    }
   }
 
   render() {
@@ -74,8 +126,10 @@ function AppContent() {
     // Initialize performance monitoring
     initializePerformanceMonitoring();
     
-    // Initialize security audit
-    initializeSecurityAudit().catch(console.error);
+    // Initialize security audit (only in production to avoid dev issues)
+    if (process.env.NODE_ENV === 'production') {
+      initializeSecurityAudit().catch(console.error);
+    }
     
     // Initialize performance monitoring dashboard
     performanceMonitor.reportToAnalytics();
@@ -87,13 +141,21 @@ function AppContent() {
       try {
         const registration = await registerServiceWorker({
           onUpdate: (registration) => {
-            console.log('New content available, reloading...');
+            console.log('New content available, manual reload required');
             toast({
               title: "Update Available",
-              description: "A new version is available. The page will reload.",
-              duration: 5000
+              description: "A new version is available. Please refresh manually.",
+              duration: 10000,
+              action: (
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                >
+                  Refresh
+                </button>
+              )
             });
-            setTimeout(() => window.location.reload(), 2000);
+            // Remove auto-reload - let user decide when to refresh
           },
           onSuccess: (registration) => {
             console.log('Service Worker registered successfully');
@@ -165,32 +227,60 @@ function AppContent() {
 
   return (
     <ComprehensiveErrorBoundary level="critical" showDetails={import.meta.env.DEV}>
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading app...</div>}>
-        <Router>
-          <div className="min-h-screen bg-background">
-                   {/* Consolidated App Layout */}
-                   <ComponentErrorBoundary>
-                     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                       <ConsolidatedLayout>
-                         <Routes>
-                           <Route path="/*" element={<AppRoutes />} />
-                         </Routes>
-                       </ConsolidatedLayout>
-                     </Suspense>
-                   </ComponentErrorBoundary>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
+        <div className="min-h-screen bg-background">
+          {/* Consolidated App Layout */}
+          <ComponentErrorBoundary>
+            <Routes>
+              <Route path="/admin-login" element={
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                  <AdminLogin />
+                </Suspense>
+              } />
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin dashboard...</div>}>
+                    <AdminDashboard />
+                  </Suspense>
+                </AdminRoute>
+              } />
+              <Route path="/admin/*" element={
+                <AdminRoute>
+                  <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin...</div>}>
+                    <AdminRoutes />
+                  </Suspense>
+                </AdminRoute>
+              } />
+              <Route path="/*" element={
+                <ConsolidatedLayout 
+                  variant="main"
+                  showHeader={true}
+                  showSidebar={true}
+                  showFooter={true}
+                  showMobileNav={true}
+                >
+                  <AppRoutes />
+                </ConsolidatedLayout>
+              } />
+            </Routes>
+          </ComponentErrorBoundary>
 
-            {/* Voice Control Panel - Desktop only */}
-            <div className="hidden md:block fixed bottom-4 right-4 z-40">
+            {/* Voice Control Panel - Desktop only - Temporarily disabled for debugging */}
+            {/* <div className="hidden md:block fixed bottom-4 right-4 z-40">
               <Suspense fallback={<div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>}>
                 <VoiceControlPanel compact />
               </Suspense>
-            </div>
+            </div> */}
 
             {/* Toast Notifications */}
             <Toaster />
           </div>
         </Router>
-      </Suspense>
     </ComprehensiveErrorBoundary>
   );
 }

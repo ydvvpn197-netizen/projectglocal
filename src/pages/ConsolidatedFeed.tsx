@@ -65,9 +65,9 @@ const ConsolidatedFeed = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   // Enhanced data fetching
-  const { posts, loading: postsLoading, refreshPosts } = usePosts();
-  const { events, loading: eventsLoading, refreshEvents } = useEvents();
-  const { communities, loading: communitiesLoading, refreshCommunities } = useCommunities();
+  const { posts, loading: postsLoading, refetch: refreshPosts } = usePosts();
+  const { events, loading: eventsLoading, refetch: refreshEvents } = useEvents();
+  const { communities, loading: communitiesLoading, fetchCommunities: refreshCommunities } = useCommunities();
 
   // Enhanced trending topics
   const trendingTopics: TrendingTopic[] = [
@@ -105,22 +105,22 @@ const ConsolidatedFeed = () => {
     }
   ];
 
-  // Enhanced filtering and search
-  const filteredPosts = posts.filter(post => {
+  // Enhanced filtering and search with defensive programming
+  const filteredPosts = (posts || []).filter(post => {
     if (!searchQuery) return true;
     return post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            post.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
   });
 
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = (events || []).filter(event => {
     if (!searchQuery) return true;
     return event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            event.location_name?.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const filteredCommunities = communities.filter(community => {
+  const filteredCommunities = (communities || []).filter(community => {
     if (!searchQuery) return true;
     return community.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            community.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -178,6 +178,24 @@ const ConsolidatedFeed = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <h2 className="text-lg font-semibold mb-2">Loading Feed...</h2>
             <p className="text-muted-foreground">Getting the latest content for you</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state - if there's a critical error, show a fallback
+  if (!posts && !events && !communities && !postsLoading && !eventsLoading && !communitiesLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold mb-2">Unable to load feed</h2>
+            <p className="text-muted-foreground mb-4">There was an issue loading your feed content.</p>
+            <Button onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
@@ -254,8 +272,12 @@ const ConsolidatedFeed = () => {
 
             <TabsContent value="trending" className="space-y-4">
               <div className="space-y-4">
-                {filteredPosts
-                  .filter(post => post.likes_count > 10)
+                {filteredPosts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No trending posts found. Be the first to share something!</p>
+                  </div>
+                ) : filteredPosts
+                  .filter(post => (post.likes_count || 0) > 10)
                   .slice(0, 10)
                   .map((post, index) => (
                     <motion.div
@@ -265,7 +287,15 @@ const ConsolidatedFeed = () => {
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
                       <PostCard
-                        post={post}
+                        post={{
+                          ...post,
+                          author: {
+                            id: post.user_id,
+                            name: post.profiles?.display_name || post.profiles?.username || 'Anonymous',
+                            avatar: post.profiles?.avatar_url,
+                            verified: false
+                          }
+                        }}
                         onLike={(postId) => {
                           toast({
                             title: "Liked!",
@@ -298,7 +328,11 @@ const ConsolidatedFeed = () => {
 
             <TabsContent value="latest" className="space-y-4">
               <div className="space-y-4">
-                {filteredPosts
+                {filteredPosts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No posts found. Be the first to share something!</p>
+                  </div>
+                ) : filteredPosts
                   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                   .slice(0, 10)
                   .map((post, index) => (
@@ -309,7 +343,15 @@ const ConsolidatedFeed = () => {
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
                       <PostCard
-                        post={post}
+                        post={{
+                          ...post,
+                          author: {
+                            id: post.user_id,
+                            name: post.profiles?.display_name || post.profiles?.username || 'Anonymous',
+                            avatar: post.profiles?.avatar_url,
+                            verified: false
+                          }
+                        }}
                         onLike={(postId) => {
                           toast({
                             title: "Liked!",
@@ -342,8 +384,12 @@ const ConsolidatedFeed = () => {
 
             <TabsContent value="following" className="space-y-4">
               <div className="space-y-4">
-                {filteredPosts
-                  .filter(post => post.author_id === user?.id)
+                {filteredPosts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No posts from people you follow yet.</p>
+                  </div>
+                ) : filteredPosts
+                  .filter(post => post.user_id === user?.id)
                   .slice(0, 10)
                   .map((post, index) => (
                     <motion.div
@@ -353,7 +399,15 @@ const ConsolidatedFeed = () => {
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
                       <PostCard
-                        post={post}
+                        post={{
+                          ...post,
+                          author: {
+                            id: post.user_id,
+                            name: post.profiles?.display_name || post.profiles?.username || 'Anonymous',
+                            avatar: post.profiles?.avatar_url,
+                            verified: false
+                          }
+                        }}
                         onLike={(postId) => {
                           toast({
                             title: "Liked!",
@@ -386,7 +440,11 @@ const ConsolidatedFeed = () => {
 
             <TabsContent value="local" className="space-y-4">
               <div className="space-y-4">
-                {filteredEvents
+                {filteredEvents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No local events found. Check back later!</p>
+                  </div>
+                ) : filteredEvents
                   .slice(0, 5)
                   .map((event, index) => (
                     <motion.div

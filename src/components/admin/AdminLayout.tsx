@@ -17,13 +17,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
     <ConsolidatedLayout
       variant="admin"
+      showHeader={true}
       showSidebar={true}
-      showMobileNavigation={false}
-      showNewsFeed={false}
+      showFooter={false}
+      showMobileNav={false}
       maxWidth="full"
       padding="md"
-      sidebarOpen={sidebarOpen}
-      onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
     >
       {children}
     </ConsolidatedLayout>

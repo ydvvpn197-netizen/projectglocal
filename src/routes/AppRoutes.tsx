@@ -6,7 +6,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import { AdminRoute } from '@/components/AdminRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load pages for better performance - Using consolidated versions
@@ -61,6 +60,7 @@ const ConsolidatedOnboarding = lazy(() => import('@/pages/ConsolidatedOnboarding
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const AuthCallback = lazy(() => import('@/pages/AuthCallback'));
+const MonetizationTest = lazy(() => import('@/pages/MonetizationTest'));
 
 // Feature Pages
 const PublicSquare = lazy(() => import('@/pages/PublicSquare'));
@@ -72,7 +72,6 @@ const TestButtons = lazy(() => import('@/pages/TestButtons'));
 const PerformancePage = lazy(() => import('@/pages/PerformancePage'));
 const EnhancedSearchDemo = lazy(() => import('@/pages/EnhancedSearchDemo'));
 const VoiceControlDemo = lazy(() => import('@/pages/VoiceControlDemo'));
-const MonetizationTest = lazy(() => import('@/pages/MonetizationTest'));
 
 // Utility Pages
 const NotFound = lazy(() => import('@/pages/NotFound'));
@@ -80,15 +79,6 @@ const Pricing = lazy(() => import('@/pages/Pricing'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
 const LocationSetup = lazy(() => import('@/pages/LocationSetup'));
 const PostDetailPage = lazy(() => import('@/pages/PostDetailPage'));
-const AdminLogin = lazy(() => import('@/pages/AdminLogin'));
-const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
-const AdminAnalytics = lazy(() => import('@/pages/admin/Analytics'));
-const AdminManagement = lazy(() => import('@/pages/admin/AdminManagement'));
-const AdminSetup = lazy(() => import('@/pages/admin/AdminSetup'));
-const ContentModeration = lazy(() => import('@/pages/admin/ContentModeration'));
-const SystemSettings = lazy(() => import('@/pages/admin/SystemSettings'));
-const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
-const UserModeration = lazy(() => import('@/pages/admin/UserModeration'));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -382,84 +372,7 @@ export const AppRoutes: React.FC = () => {
         </Suspense>
       } />
       
-      {/* Admin Routes */}
-      <Route path="/admin-login" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin login...</div>}>
-          <AdminLogin />
-        </Suspense>
-      } />
-      
-      <Route path="/admin" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin dashboard...</div>}>
-            <AdminDashboard />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/analytics" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin analytics...</div>}>
-            <AdminAnalytics />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/management" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin management...</div>}>
-            <AdminManagement />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/setup" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin setup...</div>}>
-            <AdminSetup />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/content-moderation" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading content moderation...</div>}>
-            <ContentModeration />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/system-settings" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading system settings...</div>}>
-            <SystemSettings />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/user-management" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading user management...</div>}>
-            <UserManagement />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/admin/user-moderation" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading user moderation...</div>}>
-            <UserModeration />
-          </Suspense>
-        </AdminRoute>
-      } />
-      
-      <Route path="/community-insights" element={
-        <AdminRoute>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading community insights...</div>}>
-            <CommunityInsights />
-          </Suspense>
-        </AdminRoute>
-      } />
+      {/* Admin routes are now handled in App.tsx */}
       
       {/* Fallback */}
       <Route path="*" element={

@@ -149,17 +149,6 @@ export const LocalNews: React.FC<LocalNewsProps> = React.memo(({ className }) =>
     );
   }
 
-  if (locationError) {
-    return (
-      <div className={`container mx-auto px-4 py-8 ${className}`}>
-        <Alert>
-          <AlertDescription>
-            {locationError}. Using default location: Delhi, India
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
 
   return (
     <div className={`container mx-auto px-4 py-8 ${className}`}>

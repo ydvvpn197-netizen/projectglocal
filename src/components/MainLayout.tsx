@@ -3,7 +3,7 @@ import { ConsolidatedHeader as Header } from './layout/ConsolidatedHeader';
 import { ConsolidatedSidebar as Sidebar } from './layout/ConsolidatedSidebar';
 import { ConsolidatedFooter as Footer } from './layout/ConsolidatedFooter';
 import { RightSidebar } from './layout/RightSidebar';
-import { SidebarProvider } from '@/components/ui/sidebarExports';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/hooks/useLayout';
 import { useAuth } from '@/hooks/useAuth';

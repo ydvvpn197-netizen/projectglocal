@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: {
+      overlay: false // Disable error overlay to prevent refresh loops
+    },
     headers: {
       'Content-Security-Policy': 
         "default-src 'self'; " +
@@ -23,7 +26,10 @@ export default defineConfig(({ mode }) => ({
     }
   },
   plugins: [
-    react(),
+    react({
+      // Disable fast refresh to prevent refresh loops
+      fastRefresh: false
+    }),
     // Bundle analyzer for optimization
     process.env.ANALYZE && visualizer({
       filename: 'bundle-analysis.html',
